@@ -33,8 +33,8 @@ export function WelcomeHero() {
             />
           </p>
           <div className="flex flex-wrap gap-2 text-sm text-white/80">
-            <span>👋 Padrinhos de plantão: <strong className="text-white">
-              <EditableText storeKey="start.hero.padrinhos" defaultValue="Joelma & Pedro" className="font-bold text-white" />
+            <span>👋 Lideranças de plantão: <strong className="text-white">
+              <EditableText storeKey="start.hero.padrinhos" defaultValue="Joelma, Pedro & Anderson" className="font-bold text-white" />
             </strong></span>
           </div>
         </div>
