@@ -2,12 +2,12 @@
 import { Image as ImageIcon } from 'lucide-react';
 
 const FOTOS = [
-  { legenda: 'Reunião de Sexta — comemoração de meta',  emoji: '🎯' },
-  { legenda: 'Off-site Squad Águia',                     emoji: '🦅' },
-  { legenda: 'Berserker do mês — Marcos Vinicius',       emoji: '⚔️' },
-  { legenda: 'Cumbuca — discussão SPIN Selling',         emoji: '📚' },
-  { legenda: 'Onboarding turma de Janeiro',              emoji: '🌱' },
-  { legenda: 'Primeira venda do Ryan',                   emoji: '🚀' },
+  { legenda: 'Aguardando liderança', emoji: '⏳' },
+  { legenda: 'Aguardando liderança', emoji: '⏳' },
+  { legenda: 'Aguardando liderança', emoji: '⏳' },
+  { legenda: 'Aguardando liderança', emoji: '⏳' },
+  { legenda: 'Aguardando liderança', emoji: '⏳' },
+  { legenda: 'Aguardando liderança', emoji: '⏳' },
 ];
 
 export function MuralFotos() {
