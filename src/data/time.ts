@@ -15,7 +15,7 @@ export const TIME: Pessoa[] = [
   { id: 'whenna',     nome: 'Whenna Oliveira',                       cargo: 'Liderança de Closer',                   slack: '', bio: '' },
   { id: 'joao',       nome: 'João Paulo',                            cargo: 'SDR JR III',                            slack: '', bio: '' },
   { id: 'tatyanna',   nome: 'Tatyanna Freitas',                      cargo: 'SDR JR III',                            slack: '', bio: '' },
-  { id: 'gabrielly',  nome: 'Gabrielly de Oliveira Medeiros (Você)', cargo: 'SDR II',                                slack: '', bio: '' },
+  { id: 'gabrielly',  nome: 'Gabrielly de Oliveira Medeiros', cargo: 'SDR II',                                slack: '', bio: '' },
   { id: 'enizia',     nome: 'Enízia M. Evangelista',                 cargo: 'SDR II',                                slack: '', bio: '' },
   { id: 'jonas',      nome: 'Jonas Nicolas Lopez Sobreira',          cargo: 'SDR II',                                slack: '', bio: '' },
   { id: 'ryan',       nome: 'Ryan Felipe Ferreira Vieira',           cargo: 'SDR JR II',                             slack: '', bio: '' },
