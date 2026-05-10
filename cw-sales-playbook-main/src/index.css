@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CW Sales Playbook — Design System
+   Dark-first com paleta oficial Cardápio Web (roxo/vermelho/amarelo). */
+
+@layer base {
+  :root {
+    /* Base CW dark */
+    --background: 305 100% 3%;        /* cw-bg #0a0008 */
+    --foreground: 270 60% 96%;        /* cw-text #f5f0ff */
+
+    --card: 310 100% 4%;              /* cw-surface #120010 */
+    --card-foreground: 270 60% 96%;
+
+    --popover: 285 100% 8%;           /* cw-elevated */
+    --popover-foreground: 270 60% 96%;
+
+    --primary: 287 82% 32%;           /* cw-purple #760F95 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 285 100% 8%;         /* cw-elevated */
+    --secondary-foreground: 270 60% 96%;
+
+    --muted: 285 100% 8%;
+    --muted-foreground: 275 30% 62%;  /* cw-muted */
+
+    --accent: 285 100% 8%;
+    --accent-foreground: 270 60% 96%;
+
+    --destructive: 4 80% 56%;         /* cw-red #EA4335 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 285 65% 18%;            /* cw-border #3a1048 */
+    --input: 285 65% 18%;
+    --ring: 287 82% 32%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 305 100% 3%;
+    --sidebar-foreground: 275 30% 62%;
+    --sidebar-primary: 287 82% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 285 100% 8%;
+    --sidebar-accent-foreground: 270 60% 96%;
+    --sidebar-border: 285 65% 18%;
+    --sidebar-ring: 287 82% 32%;
+  }
+
+  .dark {
+    --background: 305 100% 3%;
+    --foreground: 270 60% 96%;
+    --card: 310 100% 4%;
+    --card-foreground: 270 60% 96%;
+    --popover: 285 100% 8%;
+    --popover-foreground: 270 60% 96%;
+    --primary: 287 82% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 285 100% 8%;
+    --secondary-foreground: 270 60% 96%;
+    --muted: 285 100% 8%;
+    --muted-foreground: 275 30% 62%;
+    --accent: 285 100% 8%;
+    --accent-foreground: 270 60% 96%;
+    --destructive: 4 80% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 285 65% 18%;
+    --input: 285 65% 18%;
+    --ring: 287 82% 32%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { scroll-behavior: smooth; }
+  body {
+    @apply bg-cw-bg text-cw-text font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+}
+
+@layer utilities {
+  /* Gradientes oficiais CW */
+  .gradient-primary {
+    background: linear-gradient(135deg, #760F95 0%, #59327A 100%);
+  }
+  .gradient-hot {
+    background: linear-gradient(135deg, #760F95 0%, #EA4335 100%);
+  }
+  .gradient-gold {
+    background: linear-gradient(135deg, #FBBC04 0%, #EA4335 100%);
+  }
+  .gradient-surface {
+    background: linear-gradient(180deg, #1e0028 0%, #120010 100%);
+  }
+  .gradient-glow {
+    background: radial-gradient(ellipse at top, rgba(118, 15, 149, 0.25) 0%, transparent 70%);
+  }
+  .text-gradient-primary {
+    background: linear-gradient(135deg, #9B1AC0 0%, #EA4335 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #FBBC04 0%, #EA4335 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Cards com sombra e glow */
+  .cw-card {
+    @apply bg-cw-surface border border-cw-border rounded-xl;
+    box-shadow: 0 0 0 1px rgba(58, 16, 72, 0.6), 0 4px 24px rgba(118, 15, 149, 0.06);
+    transition: box-shadow 200ms ease, border-color 200ms ease;
+  }
+  .cw-card-hover:hover {
+    border-color: #760F95;
+    box-shadow: 0 0 0 1px #760F95, 0 8px 32px rgba(118, 15, 149, 0.20);
+  }
+  .cw-elevated {
+    @apply bg-cw-elevated border border-cw-border rounded-xl;
+  }
+
+  /* Skeleton shimmer com cores da paleta */
+  .cw-shimmer {
+    background: linear-gradient(90deg, #1e0028 0%, #3a1048 50%, #1e0028 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  .scrollbar-cw::-webkit-scrollbar { width: 8px; height: 8px; }
+  .scrollbar-cw::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-cw::-webkit-scrollbar-thumb {
+    background: #3a1048; border-radius: 4px;
+  }
+  .scrollbar-cw::-webkit-scrollbar-thumb:hover { background: #760F95; }
+}
