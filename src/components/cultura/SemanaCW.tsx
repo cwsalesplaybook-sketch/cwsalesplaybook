@@ -2,11 +2,11 @@
 import { Calendar } from 'lucide-react';
 
 const MOMENTOS = [
-  { dia: 'Seg', emoji: '🔥', titulo: 'Kickoff da semana', desc: 'Squad Águia bateu metas de Q1' },
-  { dia: 'Ter', emoji: '📚', titulo: 'Cumbuca SPIN cap. 7-8', desc: 'Discussão sobre perguntas de implicação' },
-  { dia: 'Qua', emoji: '🎯', titulo: '1ª venda da Lara',     desc: 'Pizzaria com 3 unidades fechou' },
-  { dia: 'Qui', emoji: '🎭', titulo: 'Roleplay coletivo',    desc: 'Time todo praticou contorno de "achei caro"' },
-  { dia: 'Sex', emoji: '🏆', titulo: 'Reunião Geral',        desc: 'Marcos foi anunciado como Berserker' },
+  { dia: 'Seg', emoji: '⏳', titulo: 'Aguardando liderança', desc: '' },
+  { dia: 'Ter', emoji: '⏳', titulo: 'Aguardando liderança', desc: '' },
+  { dia: 'Qua', emoji: '⏳', titulo: 'Aguardando liderança', desc: '' },
+  { dia: 'Qui', emoji: '⏳', titulo: 'Aguardando liderança', desc: '' },
+  { dia: 'Sex', emoji: '⏳', titulo: 'Aguardando liderança', desc: '' },
 ];
 
 export function SemanaCW() {
