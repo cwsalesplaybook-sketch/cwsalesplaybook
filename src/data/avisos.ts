@@ -9,7 +9,5 @@ export interface Aviso {
 }
 
 export const AVISOS_PADRAO: Aviso[] = [
-  { id: 'a1', icon: 'BookOpen', badge: 'Esta semana', text: 'Cumbuca dessa semana: capítulos 7 e 8 do SPIN Selling.' },
-  { id: 'a2', icon: 'Swords', badge: 'Berserker', text: 'Métrica do Berserker deste mês: agendamentos realizados.' },
-  { id: 'a3', icon: 'Target', badge: 'Q2', text: 'Meta do trimestre: dobrar o time até o final de Q2.' },
+  { id: 'a1', icon: 'Megaphone', badge: 'Em breve', text: 'Aguardando liderança.' },
 ];

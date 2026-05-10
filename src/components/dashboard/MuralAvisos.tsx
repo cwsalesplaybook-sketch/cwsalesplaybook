@@ -1,5 +1,5 @@
 /** Mural de Avisos — CRUD completo no Modo Gestor. */
-import { Megaphone, BookOpen, Swords, Target, Calendar, Sparkles, Trophy, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Megaphone, BookOpen, Swords, Target, Calendar, Sparkles, Trophy, Plus, Trash2, ArrowUp, ArrowDown, Pencil, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useContentStore, useEditableContent } from '@/store/contentStore';
@@ -14,7 +14,7 @@ const ICON_KEYS: AvisoIcon[] = ['BookOpen', 'Swords', 'Target', 'Megaphone', 'Ca
 const STORE_KEY = 'dashboard.avisos';
 
 export function MuralAvisos() {
-  const { isEditing } = useEditor();
+  const { isEditing, openPasswordModal, lock } = useEditor();
   const avisos = useEditableContent<Aviso[]>(STORE_KEY, AVISOS_PADRAO);
   const saveOverride = useContentStore((s) => s.saveOverride);
 
@@ -63,6 +63,13 @@ export function MuralAvisos() {
         <div className="flex items-center gap-2">
           <Megaphone className="h-4 w-4 text-cw-purple-light" />
           <h3 className="text-sm font-semibold uppercase tracking-wider text-cw-muted">Mural de Avisos</h3>
+          <button
+            onClick={isEditing ? lock : openPasswordModal}
+            title={isEditing ? 'Sair do modo gestor' : 'Editar avisos'}
+            className={`h-6 w-6 rounded flex items-center justify-center transition-colors ${isEditing ? 'bg-cw-red/15 text-cw-red border border-cw-red/30 hover:bg-cw-red/25' : 'bg-cw-elevated border border-cw-border text-cw-muted hover:text-cw-purple-light hover:border-cw-purple/50'}`}
+          >
+            {isEditing ? <X className="h-3 w-3" /> : <Pencil className="h-3 w-3" />}
+          </button>
         </div>
         {isEditing && (
           <Button size="sm" onClick={add} className="gradient-primary text-white h-8">
