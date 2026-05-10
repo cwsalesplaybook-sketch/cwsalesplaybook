@@ -15,7 +15,6 @@ const FAQ_PADRAO: FaqItem[] = [
   { q: 'O que acontece se eu não ler a Cumbuca?', a: 'Nada formal — mas você fica de fora da conversa que vai pautar a próxima estratégia do time. Cumbuca é pacto coletivo: todo mundo ganha quando todo mundo lê.' },
   { q: 'Posso pedir ajuda mesmo se for óbvio?', a: 'Sim. Pergunta boba é a que ficou na sua cabeça. Slack do padrinho, do líder, da Joelma ou Pedro — tudo aberto.' },
   { q: 'Como funciona o Berserker?', a: 'Toda virada de mês a liderança define UMA métrica (ex: agendamentos). Quem performar mais nessa métrica vira o Berserker do mês — entra no Hall of Fame.' },
-  { q: 'Preciso ir presencial todo dia?', a: 'Combine com seu líder direto. O modelo padrão tem alguns dias presenciais para rituais críticos (Cumbuca, Reunião de Sexta).' },
 ];
 
 const STORE_KEY = 'start.faq';
