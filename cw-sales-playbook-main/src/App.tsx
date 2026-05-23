@@ -21,8 +21,6 @@ import Pipeline from '@/components/pipeline/Pipeline';
 import Gestao from '@/components/gestao/Gestao';
 import Start from '@/pages/Start';
 import BadgesPage from '@/pages/Badges';
-import ArsenalPlanos from '@/pages/ArsenalPlanos';
-import ArsenalLinks from '@/pages/ArsenalLinks';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -51,8 +49,6 @@ function AnimatedRoutes() {
           <Route path="/carreira" element={<Carreira />} />
           <Route path="/gestao" element={<Gestao />} />
           <Route path="/berserker" element={<Berserker />} />
-          <Route path="/arsenal/planos" element={<ArsenalPlanos />} />
-          <Route path="/arsenal/links" element={<ArsenalLinks />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>
