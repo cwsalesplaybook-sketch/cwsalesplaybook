@@ -1,9 +1,29 @@
-/** Ranking de Vendas — busca deals won do mês atual direto do Pipedrive. */
+/** Ranking de Agendamentos dos SDRs — agrupa deals do mês pelo campo [QUAL] SDR/BDR. */
 import { useEffect, useState } from 'react';
-import { Trophy, Crown, Medal, RefreshCw, TrendingUp } from 'lucide-react';
+import { Trophy, Crown, RefreshCw, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const TOKEN = (import.meta.env.VITE_PIPEDRIVE_TOKEN as string) || '***PIPEDRIVE_TOKEN_REMOVIDO***';
+
+// Campo customizado [QUAL] SDR/BDR
+const SDR_FIELD = 'ce39d035fad6c74095053ffe04bdb9bbc9ae2a53';
+
+// Mapa de ID → nome do SDR
+const SDR_OPTIONS: Record<string, string> = {
+  '47': 'Glauton Santos', '1193': 'Pedro Ferreira', '1336': 'Marcos Vinicius',
+  '1382': 'Tatyanna Freitas', '1393': 'Arthur Abreu', '1406': 'Larissa Santos',
+  '1407': 'Lara Stefanny', '1445': 'Gabrielly Oliveira', '1523': 'Miguel Nunes',
+  '1555': 'Ana Alice', '1556': 'Thais Giurizatto', '1557': 'Victória Viana',
+  '1607': 'Caique Silva', '1608': 'Ryan Felipe', '1641': 'Islene Santos',
+  '1666': 'Eduarda Costa', '1667': 'Luis Lincon', '1675': 'Vitoria Mendonça',
+  '1685': 'Dayana Ferreira', '1686': 'Jonas Sobreira', '1687': 'Matheus Cunha',
+  '1710': 'José Guilherme', '1218': 'Luan Nicolas', '1334': 'Beatriz Magalhães',
+  '1335': 'João Paulo', '1179': 'Hyorranes Souza', '1378': 'Layza Batista',
+  '1070': 'Gregory Lavor', '1041': 'Gustavo Duarte', '952': 'Vanessa Alencar',
+  '1727': 'Raquel Alves', '1728': 'Fabíola Azevedo', '1729': 'Enizia Evangelista',
+  '1730': 'Maria Gabriele', '1738': 'Clara Rodrigues', '1706': 'Raissa Fonseca',
+  '1707': 'Karoline Santos', '1708': 'Kailane Carvalho', '1709': 'Raissa Cristina',
+};
 
 interface Vendedor {
   userId: number;
@@ -27,41 +47,42 @@ async function fetchRanking(): Promise<Vendedor[]> {
   const mes = String(agora.getMonth() + 1).padStart(2, '0');
   const prefixo = `${ano}-${mes}`;
 
-  // Busca diretamente filtrando por won_time (close_time) no mês atual
   let start = 0;
   const limit = 200;
-  const contagem: Record<number, { nome: string; total: number }> = {};
+  // contagem por SDR option ID
+  const contagem: Record<string, number> = {};
 
   while (true) {
-    // pipeline_id=2 = Funil de Vendas
-    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=${limit}&start=${start}`;
+    // pipeline 2 = Funil de Vendas, todos os status, adicionados este mês
+    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&pipeline_id=2&limit=${limit}&start=${start}&sort=add_time+DESC`;
     const res = await fetch(url);
     if (!res.ok) break;
     const json = await res.json();
     if (!json.success || !json.data) break;
     const deals: any[] = json.data;
 
+    let passou = false;
     for (const deal of deals) {
-      const close: string = deal.close_time ?? deal.won_time ?? '';
-      if (close.startsWith(prefixo)) {
-        const uid: number = typeof deal.user_id === 'object' ? deal.user_id?.id : deal.user_id;
-        const nome: string = typeof deal.user_id === 'object' ? (deal.user_id?.name ?? 'Desconhecido') : (deal.owner_name ?? 'Desconhecido');
-        if (!contagem[uid]) contagem[uid] = { nome, total: 0 };
-        contagem[uid].total += 1;
+      const addTime: string = deal.add_time ?? '';
+      if (!addTime.startsWith(prefixo)) {
+        passou = true;
+        break;
+      }
+      const sdrId: string | null = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
+      if (sdrId && sdrId !== '1250' /* Nenhum */) {
+        contagem[sdrId] = (contagem[sdrId] ?? 0) + 1;
       }
     }
 
-    if (!json.additional_data?.pagination?.more_items_in_collection) break;
+    if (passou || !json.additional_data?.pagination?.more_items_in_collection) break;
     start += limit;
   }
 
   return Object.entries(contagem)
-    .map(([uid, v]) => ({
-      userId: Number(uid),
-      nome: v.nome,
-      iniciais: getIniciais(v.nome),
-      vendas: v.total,
-    }))
+    .map(([sdrId, total]) => {
+      const nome = SDR_OPTIONS[sdrId] ?? `SDR #${sdrId}`;
+      return { userId: Number(sdrId), nome, iniciais: getIniciais(nome), vendas: total };
+    })
     .sort((a, b) => b.vendas - a.vendas);
 }
 
