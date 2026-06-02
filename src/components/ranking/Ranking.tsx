@@ -50,43 +50,57 @@ function getIniciais(nome: string) {
     .join('');
 }
 
+// Managers/líderes que NÃO devem ser contados no ranking de SDRs
+const EXCLUDE_OWNERS = new Set([
+  22291180, // Gregory Lavor
+  11726977, // Glauton Santos
+  22991209, // Gustavo Duarte Pinheiro Silva
+  22122891, // Leandro dos Santos
+  12994693, // Johnny Alves
+  11871118, // Italo Huan
+]);
+
 async function fetchRanking(): Promise<Vendedor[]> {
   const agora = new Date();
   const ano = agora.getFullYear();
   const mes = String(agora.getMonth() + 1).padStart(2, '0');
   const prefixo = `${ano}-${mes}`;
-  // Primeiro dia do mês para filtrar via API
-  const iniciaMes = `${ano}-${mes}-01`;
 
   let start = 0;
   const limit = 200;
   const contagem: Record<string, number> = {};
-  let totalPaginas = 0;
+  let paginas = 0;
 
-  while (totalPaginas < 10) {
-    totalPaginas++;
-    // sort por won_time DESC — usa o mesmo campo que o Pipedrive Insights usa
-    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=${limit}&start=${start}&sort=won_time%20DESC`;
+  while (paginas < 15) {
+    paginas++;
+    // Busca por close_time DESC (campo suportado pela API do Pipedrive)
+    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=${limit}&start=${start}&sort=close_time%20DESC`;
     const res = await fetch(url);
     if (!res.ok) break;
     const json = await res.json();
     if (!json.success || !json.data?.length) break;
     const deals: any[] = json.data;
 
-    let foundOld = false;
+    let achouAntigo = false;
     for (const deal of deals) {
+      // Usa won_time como primário (igual ao Pipedrive Insights), close_time como fallback
       const wonTime: string = deal.won_time ?? deal.close_time ?? '';
       if (!wonTime) continue;
-      if (wonTime < iniciaMes) { foundOld = true; break; }
-      if (wonTime.startsWith(prefixo)) {
-        const sdrId = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
-        if (sdrId && SDRS_ATIVOS[sdrId]) {
-          contagem[sdrId] = (contagem[sdrId] ?? 0) + 1;
-        }
+      // Parar quando encontrar deal de mês anterior
+      if (wonTime < `${ano}-${mes}-01`) { achouAntigo = true; break; }
+      // Contar apenas deals deste mês
+      if (!wonTime.startsWith(prefixo)) continue;
+      // Excluir deals de managers
+      const ownerId: number = typeof deal.user_id === 'object' ? deal.user_id?.id : deal.user_id;
+      if (EXCLUDE_OWNERS.has(ownerId)) continue;
+      // Contar por SDR
+      const sdrId = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
+      if (sdrId && SDRS_ATIVOS[sdrId]) {
+        contagem[sdrId] = (contagem[sdrId] ?? 0) + 1;
       }
     }
 
-    if (foundOld || !json.additional_data?.pagination?.more_items_in_collection) break;
+    if (achouAntigo || !json.additional_data?.pagination?.more_items_in_collection) break;
     start += limit;
   }
 
