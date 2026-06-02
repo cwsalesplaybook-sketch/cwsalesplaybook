@@ -70,9 +70,7 @@ const App = () => (
               <Sidebar />
               <main className="flex-1 overflow-y-auto scrollbar-cw">
                 <EditorBanner />
-                <div className="max-w-6xl mx-auto w-full">
-                  <AnimatedRoutes />
-                </div>
+                <AnimatedRoutes />
               </main>
               <PasswordGate />
             </div>
