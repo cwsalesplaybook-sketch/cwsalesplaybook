@@ -55,35 +55,42 @@ async function fetchRanking(): Promise<Vendedor[]> {
   const ano = agora.getFullYear();
   const mes = String(agora.getMonth() + 1).padStart(2, '0');
   const prefixo = `${ano}-${mes}`;
+  // Primeiro dia do mês para filtrar via API
+  const iniciaMes = `${ano}-${mes}-01`;
 
   let start = 0;
   const limit = 200;
-  // contagem por SDR option ID
   const contagem: Record<string, number> = {};
+  let totalPaginas = 0;
 
-  while (true) {
-    // pipeline 2 = Funil de Vendas, status=won, ordenado por close_time DESC
-    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=${limit}&start=${start}&sort=close_time+DESC`;
+  while (totalPaginas < 10) { // max 10 páginas (2000 deals) por segurança
+    totalPaginas++;
+    // Busca deals ganhos no pipeline 2 atualizados desde o início do mês
+    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=${limit}&start=${start}&sort=update_time+DESC`;
     const res = await fetch(url);
     if (!res.ok) break;
     const json = await res.json();
-    if (!json.success || !json.data) break;
+    if (!json.success || !json.data?.length) break;
     const deals: any[] = json.data;
 
-    let passou = false;
+    let foundOld = false;
     for (const deal of deals) {
-      const closeTime: string = deal.close_time ?? deal.won_time ?? '';
-      if (!closeTime.startsWith(prefixo)) {
-        passou = true;
-        break;
+      // Usa close_time para verificar se é deste mês
+      const closeTime: string = deal.close_time ?? '';
+      if (!closeTime) continue; // ignora deals sem close_time
+      if (closeTime < iniciaMes) {
+        foundOld = true;
+        break; // todos os próximos são mais antigos
       }
+      if (!closeTime.startsWith(prefixo)) continue;
+
       const sdrId: string | null = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
       if (sdrId && SDRS_ATIVOS[sdrId]) {
         contagem[sdrId] = (contagem[sdrId] ?? 0) + 1;
       }
     }
 
-    if (passou || !json.additional_data?.pagination?.more_items_in_collection) break;
+    if (foundOld || !json.additional_data?.pagination?.more_items_in_collection) break;
     start += limit;
   }
 
