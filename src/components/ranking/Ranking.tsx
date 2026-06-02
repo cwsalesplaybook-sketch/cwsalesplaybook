@@ -8,25 +8,31 @@ const TOKEN = (import.meta.env.VITE_PIPEDRIVE_TOKEN as string) || '***PIPEDRIVE_
 // Campo customizado [QUAL] SDR/BDR
 const SDR_FIELD = 'ce39d035fad6c74095053ffe04bdb9bbc9ae2a53';
 
-// Mapa de ID → nome do SDR
-const SDR_OPTIONS: Record<string, string> = {
-  '1193': 'Pedro Ferreira', '1336': 'Marcos Vinicius', '1382': 'Tatyanna Freitas',
-  '1393': 'Arthur Abreu', '1406': 'Larissa Santos', '1407': 'Lara Stefanny',
-  '1445': 'Gabrielly Oliveira', '1523': 'Miguel Nunes', '1555': 'Ana Alice',
-  '1556': 'Thais Giurizatto', '1557': 'Victória Viana', '1607': 'Caique Silva',
-  '1608': 'Ryan Felipe', '1641': 'Islene Santos', '1666': 'Eduarda Costa',
-  '1667': 'Luis Lincon', '1675': 'Vitoria Mendonça', '1685': 'Dayana Ferreira',
-  '1686': 'Jonas Sobreira', '1687': 'Matheus Cunha', '1710': 'José Guilherme',
-  '1727': 'Raquel Alves', '1728': 'Fabíola Azevedo', '1729': 'Enizia Evangelista',
-  '1730': 'Maria Gabriele', '1706': 'Raissa Fonseca', '1707': 'Karoline Santos',
-  '1708': 'Kailane Carvalho', '1709': 'Raissa Cristina', '1738': 'Clara Rodrigues',
-  '1326': 'Pedro Marcos', '1335': 'João Paulo', '1359': 'Guilherme Rocha',
-  '1349': 'Mariana Almeida',
+// Apenas SDRs ATIVOS do time — whitelist oficial
+// (Marcos Telles, Felipe Queiroz e Gabriel Alves ainda não cadastrados no Pipedrive)
+const SDRS_ATIVOS: Record<string, string> = {
+  '1523': 'Miguel Nunes',
+  '1445': 'Gabrielly Oliveira',
+  '1556': 'Thais Giurizatto',
+  '1667': 'Luis Lincon',
+  '1686': 'Jonas Sobreira',
+  '1382': 'Tatyanna Freitas',
+  '1708': 'Kailane Carvalho',
+  '1407': 'Lara Stefanny',
+  '1727': 'Raquel Alves',
+  '1710': 'José Guilherme',
+  '1728': 'Fabíola Azevedo',
+  '1729': 'Enizia Evangelista',
+  '1607': 'Caique Silva',
+  '1555': 'Ana Alice',
+  '1608': 'Ryan Felipe',
+  '1730': 'Maria Gabriela',
+  '1707': 'Karoline Santos',
+  '1685': 'Dayana Ferreira',
+  '1738': 'Clara Rodrigues',
+  '1706': 'Raissa Fonseca',
+  '1335': 'João Paulo',
 };
-
-// IDs a excluir do ranking (bots, inativos, gestores)
-const EXCLUIR_IDS = new Set(['47', '952', '1070', '1041', '1179', '1218',
-  '1250', '1334', '1378', '1691', '1693']);  // Clara IA, bots, gestores
 
 interface Vendedor {
   userId: number;
@@ -72,7 +78,7 @@ async function fetchRanking(): Promise<Vendedor[]> {
         break;
       }
       const sdrId: string | null = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
-      if (sdrId && !EXCLUIR_IDS.has(sdrId) && SDR_OPTIONS[sdrId]) {
+      if (sdrId && SDRS_ATIVOS[sdrId]) {
         contagem[sdrId] = (contagem[sdrId] ?? 0) + 1;
       }
     }
@@ -83,7 +89,7 @@ async function fetchRanking(): Promise<Vendedor[]> {
 
   return Object.entries(contagem)
     .map(([sdrId, total]) => {
-      const nome = SDR_OPTIONS[sdrId] ?? `SDR #${sdrId}`;
+      const nome = SDRS_ATIVOS[sdrId] ?? `SDR #${sdrId}`;
       return { userId: Number(sdrId), nome, iniciais: getIniciais(nome), vendas: total };
     })
     .sort((a, b) => b.vendas - a.vendas);
