@@ -65,8 +65,8 @@ async function fetchRanking(): Promise<Vendedor[]> {
 
   while (totalPaginas < 10) {
     totalPaginas++;
-    // sort por close_time DESC — deals mais recentes primeiro
-    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=${limit}&start=${start}&sort=close_time%20DESC`;
+    // sort por won_time DESC — usa o mesmo campo que o Pipedrive Insights usa
+    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=${limit}&start=${start}&sort=won_time%20DESC`;
     const res = await fetch(url);
     if (!res.ok) break;
     const json = await res.json();
@@ -75,13 +75,10 @@ async function fetchRanking(): Promise<Vendedor[]> {
 
     let foundOld = false;
     for (const deal of deals) {
-      const closeTime: string = deal.close_time ?? '';
-      // null close_time: pula mas não para (pode haver deals de junho depois)
-      if (!closeTime) continue;
-      // deal anterior ao mês: pode parar a paginação
-      if (closeTime < iniciaMes) { foundOld = true; break; }
-      // deal do mês atual: conta
-      if (closeTime.startsWith(prefixo)) {
+      const wonTime: string = deal.won_time ?? deal.close_time ?? '';
+      if (!wonTime) continue;
+      if (wonTime < iniciaMes) { foundOld = true; break; }
+      if (wonTime.startsWith(prefixo)) {
         const sdrId = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
         if (sdrId && SDRS_ATIVOS[sdrId]) {
           contagem[sdrId] = (contagem[sdrId] ?? 0) + 1;
