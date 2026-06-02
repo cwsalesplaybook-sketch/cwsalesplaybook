@@ -83,16 +83,21 @@ async function fetchRanking(): Promise<Vendedor[]> {
 
     let achouAntigo = false;
     for (const deal of deals) {
-      // Usa won_time como primário (igual ao Pipedrive Insights), close_time como fallback
-      const wonTime: string = deal.won_time ?? deal.close_time ?? '';
-      if (!wonTime) continue;
-      // Parar quando encontrar deal de mês anterior
-      if (wonTime < `${ano}-${mes}-01`) { achouAntigo = true; break; }
-      // Contar apenas deals deste mês
+      // close_time controla o loop (ordenado por ele)
+      const closeTime: string = deal.close_time ?? '';
+      if (!closeTime) continue;
+      if (closeTime < `${ano}-${mes}-01`) { achouAntigo = true; break; }
+      if (!closeTime.startsWith(prefixo)) continue;
+
+      // won_time filtra o que realmente conta (igual ao Pipedrive Insights)
+      // Deals com close_time manual em 2026 mas won_time antigo são ignorados
+      const wonTime: string = deal.won_time ?? '';
       if (!wonTime.startsWith(prefixo)) continue;
+
       // Excluir deals de managers
       const ownerId: number = typeof deal.user_id === 'object' ? deal.user_id?.id : deal.user_id;
       if (EXCLUDE_OWNERS.has(ownerId)) continue;
+
       // Contar por SDR
       const sdrId = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
       if (sdrId && SDRS_ATIVOS[sdrId]) {
