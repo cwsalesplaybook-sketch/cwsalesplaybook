@@ -1,4 +1,5 @@
 /** Roteamento e layout global do CW Sales Playbook. */
+import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -10,6 +11,9 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { EditorProvider } from '@/admin/EditorContext';
 import { EditorBanner } from '@/admin/EditorBanner';
 import { PasswordGate } from '@/admin/PasswordGate';
+import { supabase } from '@/integrations/supabase/client';
+import type { Session } from '@supabase/supabase-js';
+import Login from '@/pages/Login';
 import Dashboard from '@/components/dashboard/Dashboard';
 import Agenda from '@/components/agenda/Agenda';
 import Cultura from '@/components/cultura/Cultura';
@@ -58,27 +62,56 @@ function AnimatedRoutes() {
   );
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <EditorProvider>
-          <SidebarProvider>
-            <div className="dark flex h-screen w-full overflow-hidden bg-cw-bg text-cw-text">
-              <Sidebar />
-              <main className="flex-1 overflow-y-auto scrollbar-cw">
-                <EditorBanner />
-                <AnimatedRoutes />
-              </main>
-              <PasswordGate />
-            </div>
-          </SidebarProvider>
-        </EditorProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function AppLayout() {
+  return (
+    <EditorProvider>
+      <SidebarProvider>
+        <div className="dark flex h-screen w-full overflow-hidden bg-cw-bg text-cw-text">
+          <Sidebar />
+          <main className="flex-1 overflow-y-auto scrollbar-cw">
+            <EditorBanner />
+            <AnimatedRoutes />
+          </main>
+          <PasswordGate />
+        </div>
+      </SidebarProvider>
+    </EditorProvider>
+  );
+}
+
+const App = () => {
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
+
+  useEffect(() => {
+    // Pega sessão atual
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    // Escuta mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Carregando sessão
+  if (session === undefined) {
+    return (
+      <div className="min-h-screen bg-[#0a0008] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#760F95] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          {session ? <AppLayout /> : <Login />}
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
