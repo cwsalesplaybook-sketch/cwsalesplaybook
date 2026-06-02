@@ -2,7 +2,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, Map as MapIcon,
-  TrendingUp, BarChart3, Sword, Sparkles, Award, Lock, Plus, Trash2, ArrowUp, ArrowDown, ChevronRight, Trophy,
+  TrendingUp, BarChart3, Sword, Sparkles, Award, Lock, Plus, Trash2, ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,12 +21,13 @@ interface NavItem {
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword, Trophy,
+  Award, TrendingUp, BarChart3, Sword, Trophy, Target,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
 const NAV_PADRAO: NavItem[] = [
   { to: '/start',      label: 'Comece Aqui', icon: 'Sparkles',        end: false },
+  { to: '/meta',       label: 'Meta do Mês', icon: 'Target',          end: false },
   { to: '/playbook',   label: 'Playbook',    icon: 'BookOpen',        end: false },
   { to: '/',           label: 'Dashboard',   icon: 'LayoutDashboard', end: true  },
   { to: '/agenda',     label: 'Agenda',      icon: 'Calendar',        end: false },
@@ -69,7 +70,7 @@ export function Sidebar() {
   };
 
   const SECTIONS = [
-    { label: 'Comercial',      routes: ['/playbook', '/', '/agenda', '/pipeline'] },
+    { label: 'Comercial',      routes: ['/playbook', '/', '/agenda', '/pipeline', '/meta'] },
     { label: 'Cultura e Time', routes: ['/cultura', '/onboarding', '/badges', '/carreira'] },
     { label: 'Gestão',         routes: ['/gestao', '/berserker', '/ranking'] },
   ];

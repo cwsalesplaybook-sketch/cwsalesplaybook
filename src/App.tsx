@@ -24,6 +24,7 @@ import Playbook from '@/components/playbook/Playbook';
 import Pipeline from '@/components/pipeline/Pipeline';
 import Gestao from '@/components/gestao/Gestao';
 import Ranking from '@/components/ranking/Ranking';
+import MetaMes from '@/components/meta/MetaMes';
 import Start from '@/pages/Start';
 import BadgesPage from '@/pages/Badges';
 import NotFound from './pages/NotFound';
@@ -55,6 +56,7 @@ function AnimatedRoutes() {
           <Route path="/gestao" element={<Gestao />} />
           <Route path="/berserker" element={<Berserker />} />
           <Route path="/ranking" element={<Ranking />} />
+          <Route path="/meta" element={<MetaMes />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>
