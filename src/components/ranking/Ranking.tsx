@@ -53,8 +53,8 @@ async function fetchRanking(): Promise<Vendedor[]> {
   const contagem: Record<string, number> = {};
 
   while (true) {
-    // pipeline 2 = Funil de Vendas, todos os status, adicionados este mês
-    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&pipeline_id=2&limit=${limit}&start=${start}&sort=add_time+DESC`;
+    // pipeline 2 = Funil de Vendas, status=won, ordenado por close_time DESC
+    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=${limit}&start=${start}&sort=close_time+DESC`;
     const res = await fetch(url);
     if (!res.ok) break;
     const json = await res.json();
@@ -63,8 +63,8 @@ async function fetchRanking(): Promise<Vendedor[]> {
 
     let passou = false;
     for (const deal of deals) {
-      const addTime: string = deal.add_time ?? '';
-      if (!addTime.startsWith(prefixo)) {
+      const closeTime: string = deal.close_time ?? deal.won_time ?? '';
+      if (!closeTime.startsWith(prefixo)) {
         passou = true;
         break;
       }
