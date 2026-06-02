@@ -171,10 +171,17 @@ export default function Ranking() {
 
   useEffect(() => { carregar(); }, []);
 
-  // Auto-refresh a cada 5 minutos
+  // Auto-refresh a cada 2 minutos
   useEffect(() => {
-    const id = setInterval(carregar, 5 * 60 * 1000);
+    const id = setInterval(carregar, 2 * 60 * 1000);
     return () => clearInterval(id);
+  }, []);
+
+  // Refresh ao voltar para a aba/janela
+  useEffect(() => {
+    const onFocus = () => carregar();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, []);
 
   const top3 = ranking.slice(0, 3);
@@ -321,7 +328,7 @@ export default function Ranking() {
 
             {lastUpdate && (
               <p className="text-xs text-purple-600 mt-6 text-center">
-                Atualiza a cada 5min · última atualização: {lastUpdate}
+                Atualiza a cada 2min · última atualização: {lastUpdate}
               </p>
             )}
           </div>
