@@ -33,7 +33,8 @@ async function fetchRanking(): Promise<Vendedor[]> {
   const contagem: Record<number, { nome: string; total: number }> = {};
 
   while (true) {
-    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&limit=${limit}&start=${start}`;
+    // pipeline_id=2 = Funil de Vendas
+    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=${limit}&start=${start}`;
     const res = await fetch(url);
     if (!res.ok) break;
     const json = await res.json();
@@ -135,7 +136,7 @@ export default function Ranking() {
   const [tempo0, tempo1, tempo2, tempo3] = tempo.split(':');
 
   return (
-    <div className="min-h-full bg-[#1a0028] text-white">
+    <div className="min-h-screen bg-[#1a0028] text-white">
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-4 border-b border-purple-900/40">
         <div className="text-center flex-1">
