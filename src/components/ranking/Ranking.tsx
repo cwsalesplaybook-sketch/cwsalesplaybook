@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Trophy, Crown, Medal, RefreshCw, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const TOKEN = import.meta.env.VITE_PIPEDRIVE_TOKEN as string;
+const TOKEN = (import.meta.env.VITE_PIPEDRIVE_TOKEN as string) || '***PIPEDRIVE_TOKEN_REMOVIDO***';
 
 interface Vendedor {
   userId: number;
@@ -25,34 +25,32 @@ async function fetchRanking(): Promise<Vendedor[]> {
   const agora = new Date();
   const ano = agora.getFullYear();
   const mes = String(agora.getMonth() + 1).padStart(2, '0');
-  const inicio = `${ano}-${mes}-01`;
-  const fim = `${ano}-${mes}-31`;
+  const prefixo = `${ano}-${mes}`;
 
+  // Busca diretamente filtrando por won_time (close_time) no mês atual
   let start = 0;
-  const limit = 500;
+  const limit = 200;
   const contagem: Record<number, { nome: string; total: number }> = {};
 
   while (true) {
-    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&limit=${limit}&start=${start}&sort=close_time+DESC`;
+    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&limit=${limit}&start=${start}`;
     const res = await fetch(url);
+    if (!res.ok) break;
     const json = await res.json();
-    const deals: any[] = json.data ?? [];
+    if (!json.success || !json.data) break;
+    const deals: any[] = json.data;
 
-    let temMaisAntigas = false;
     for (const deal of deals) {
-      const close = deal.close_time ?? '';
-      if (!close.startsWith(`${ano}-${mes}`)) {
-        // Se já passou do mês, para a paginação
-        temMaisAntigas = true;
-        break;
+      const close: string = deal.close_time ?? deal.won_time ?? '';
+      if (close.startsWith(prefixo)) {
+        const uid: number = typeof deal.user_id === 'object' ? deal.user_id?.id : deal.user_id;
+        const nome: string = typeof deal.user_id === 'object' ? (deal.user_id?.name ?? 'Desconhecido') : (deal.owner_name ?? 'Desconhecido');
+        if (!contagem[uid]) contagem[uid] = { nome, total: 0 };
+        contagem[uid].total += 1;
       }
-      const uid: number = deal.user_id?.id ?? deal.user_id;
-      const nome: string = deal.user_id?.name ?? 'Desconhecido';
-      if (!contagem[uid]) contagem[uid] = { nome, total: 0 };
-      contagem[uid].total += 1;
     }
 
-    if (temMaisAntigas || !json.additional_data?.pagination?.more_items_in_collection) break;
+    if (!json.additional_data?.pagination?.more_items_in_collection) break;
     start += limit;
   }
 
