@@ -224,7 +224,7 @@ export default function MetaMes() {
       </div>
 
       {/* Card principal */}
-      <div className="cw-card p-6 space-y-5">
+      <div className="rounded-2xl border border-[#3a1048] bg-[#1a0028] p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-bold text-cw-muted uppercase tracking-wider">
             <Target className="h-4 w-4" />
@@ -233,7 +233,7 @@ export default function MetaMes() {
               <RefreshCw className={cn('h-3.5 w-3.5 ml-1 text-cw-muted/50 hover:text-cw-muted', loading && 'animate-spin')} />
             </button>
           </div>
-          <span className={cn('text-xs font-black px-3 py-1 rounded-full border', status === 'no-ritmo' ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30')}>
+          <span className={cn('text-xs font-black px-3 py-1.5 rounded-full border', status === 'no-ritmo' ? 'bg-green-500/20 text-green-300 border-green-500/50' : 'bg-red-500/20 text-red-300 border-red-500/50')}>
             {status === 'no-ritmo' ? 'No Ritmo' : 'Atrasado'}
           </span>
         </div>
@@ -278,7 +278,7 @@ export default function MetaMes() {
           ].map(({ label, value }, i) => {
             const batida = totalGanhos >= value && value > 0;
             return (
-              <div key={i} className={cn('rounded-xl border p-4', batida ? 'border-green-500/30 bg-green-500/5' : 'border-cw-border bg-cw-bg')}>
+              <div key={i} className={cn('rounded-xl border p-4', batida ? 'border-green-500/40 bg-green-500/10' : 'border-[#3a1048] bg-[#120018]')}>
                 <p className="text-xs font-bold text-cw-muted uppercase tracking-wider mb-1">{label}</p>
                 <p className="text-xs text-cw-muted/60">{value > 0 ? `${value} fechamentos` : 'Não definida'}</p>
                 {batida ? (
@@ -299,18 +299,18 @@ export default function MetaMes() {
 
         {/* Projeção e dias restantes */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-cw-bg rounded-xl border border-cw-border px-4 py-3 flex items-center gap-3">
+          <div className="bg-[#120018] rounded-xl border border-[#3a1048] px-4 py-3 flex items-center gap-3">
             <TrendingUp className="h-5 w-5 text-cw-purple-light shrink-0" />
             <div>
-              <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Projeção Final</p>
-              <p className="text-lg font-black text-cw-text">{projecao} <span className="text-sm text-cw-muted font-normal">/ {metaReferencia || '?'}</span></p>
+              <p className="text-[10px] text-purple-300 uppercase font-bold tracking-wider">Projeção Final</p>
+              <p className="text-lg font-black text-white">{projecao} <span className="text-sm text-purple-400 font-normal">/ {metaReferencia || '?'}</span></p>
             </div>
           </div>
-          <div className="bg-cw-bg rounded-xl border border-cw-border px-4 py-3 flex items-center gap-3">
+          <div className="bg-[#120018] rounded-xl border border-[#3a1048] px-4 py-3 flex items-center gap-3">
             <Calendar className="h-5 w-5 text-cw-yellow shrink-0" />
             <div>
-              <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Dias Restantes</p>
-              <p className="text-lg font-black text-cw-text">{diasRestantes} <span className="text-sm text-cw-muted font-normal">úteis</span></p>
+              <p className="text-[10px] text-purple-300 uppercase font-bold tracking-wider">Dias Restantes</p>
+              <p className="text-lg font-black text-white">{diasRestantes} <span className="text-sm text-purple-400 font-normal">úteis</span></p>
             </div>
           </div>
         </div>
@@ -331,25 +331,35 @@ export default function MetaMes() {
         )}
       </div>
 
-      {/* Botões +1 / -1 */}
-      <div className="space-y-2">
+      {/* Botões +1 / -1 e Salvar */}
+      <div className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => alterarAjuste(-1)}
-            disabled={totalGanhos <= 0}
-            className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold text-base hover:bg-red-500/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            disabled={metaData.ajuste <= 0 && (apiData?.ganhos ?? 0) <= 0}
+            className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-300 font-bold text-base hover:bg-red-500/25 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             — -1 ganho
           </button>
           <button
             onClick={() => alterarAjuste(1)}
-            className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base transition-colors text-white"
-            style={{ background: 'linear-gradient(135deg, #d946ef, #7c3aed)' }}
+            className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base transition-colors text-white shadow-lg"
+            style={{ background: 'linear-gradient(135deg, #d946ef, #9333ea)' }}
           >
             + +1 ganho
           </button>
         </div>
-        <p className="text-center text-xs text-cw-muted/50">
+
+        <button
+          onClick={() => buscarGanhos(metaData.sdrId)}
+          disabled={loading || !metaData.sdrId}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-[#3a1048] bg-[#1a0028] text-purple-300 hover:text-white hover:border-purple-500/50 font-semibold text-sm transition-colors"
+        >
+          <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
+          Salvar ganhos
+        </button>
+
+        <p className="text-center text-xs text-purple-600">
           Ganhos do Pipedrive: {apiData?.ganhos ?? '...'} · Ajuste manual: {metaData.ajuste > 0 ? '+' : ''}{metaData.ajuste}
         </p>
       </div>
