@@ -13,33 +13,6 @@ const SDRS_ATIVOS = {
 
 const MANAGERS = new Set([22291180, 11726977, 22991209, 22122891, 12994693, 11871118]);
 
-async function contarMes(prefixo, iniciaMes) {
-  const contagem = {};
-  let start = 0;
-  while (true) {
-    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=200&start=${start}&sort=close_time%20DESC`;
-    const r = await fetch(url);
-    const json = await r.json();
-    if (!json.success || !Array.isArray(json.data) || json.data.length === 0) break;
-    let parar = false;
-    for (const deal of json.data) {
-      const ct = deal.close_time || '';
-      const wt = deal.won_time || '';
-      if (!ct) continue;
-      if (ct < iniciaMes) { parar = true; break; }
-      if (!ct.startsWith(prefixo)) continue;
-      if (!wt.startsWith(prefixo)) continue;
-      const ownerId = Number(deal.user_id?.id ?? deal.user_id);
-      if (MANAGERS.has(ownerId)) continue;
-      const sdrId = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
-      if (sdrId && SDRS_ATIVOS[sdrId]) contagem[sdrId] = (contagem[sdrId] || 0) + 1;
-    }
-    if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
-    start += 200;
-  }
-  return contagem;
-}
-
 function iniciais(nome) {
   return nome.split(' ').filter(Boolean).slice(0, 2).map(n => n[0].toUpperCase()).join('');
 }
@@ -50,38 +23,42 @@ export default async function handler(req, res) {
 
   try {
     const agora = new Date();
-    const anoAtual = agora.getUTCFullYear();
-    const mesAtual = agora.getUTCMonth(); // 0-indexed
+    const ano = agora.getUTCFullYear();
+    const mes = String(agora.getUTCMonth() + 1).padStart(2, '0');
+    const prefixo = `${ano}-${mes}`;
+    const iniciaMes = `${ano}-${mes}-01`;
 
-    // Mês atual
-    const anoC = anoAtual;
-    const mesC = String(mesAtual + 1).padStart(2, '0');
-    const prefixoC = `${anoC}-${mesC}`;
-    const inicioC = `${anoC}-${mesC}-01`;
+    const contagem = {};
+    let start = 0;
 
-    // Mês anterior
-    const dtAnterior = new Date(Date.UTC(anoAtual, mesAtual - 1, 1));
-    const anoB = dtAnterior.getUTCFullYear();
-    const mesB = String(dtAnterior.getUTCMonth() + 1).padStart(2, '0');
-    const prefixoB = `${anoB}-${mesB}`;
-    const inicioB = `${anoB}-${mesB}-01`;
+    while (true) {
+      const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=200&start=${start}&sort=close_time%20DESC`;
+      const r = await fetch(url);
+      const json = await r.json();
+      if (!json.success || !Array.isArray(json.data) || json.data.length === 0) break;
 
-    const [competicao, baseline] = await Promise.all([
-      contarMes(prefixoC, inicioC),
-      contarMes(prefixoB, inicioB),
-    ]);
+      let parar = false;
+      for (const deal of json.data) {
+        const ct = deal.close_time || '';
+        const wt = deal.won_time || '';
+        if (!ct) continue;
+        if (ct < iniciaMes) { parar = true; break; }
+        if (!ct.startsWith(prefixo)) continue;
+        if (!wt.startsWith(prefixo)) continue;
+        const ownerId = Number(deal.user_id?.id ?? deal.user_id);
+        if (MANAGERS.has(ownerId)) continue;
+        const sdrId = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
+        if (sdrId && SDRS_ATIVOS[sdrId]) contagem[sdrId] = (contagem[sdrId] || 0) + 1;
+      }
+      if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
+      start += 200;
+    }
 
-    const ranking = Object.keys(SDRS_ATIVOS)
-      .map(id => {
-        const b = baseline[id] || 0;
-        const c = competicao[id] || 0;
-        const crescimento = b > 0 ? ((c - b) / b) * 100 : c > 0 ? 100 : 0;
-        return { id, nome: SDRS_ATIVOS[id], iniciais: iniciais(SDRS_ATIVOS[id]), baseline: b, competicao: c, crescimento: Math.round(crescimento * 10) / 10 };
-      })
-      .filter(s => s.baseline > 0 || s.competicao > 0)
-      .sort((a, b) => b.crescimento - a.crescimento);
+    const ranking = Object.entries(contagem)
+      .map(([id, vendas]) => ({ id, nome: SDRS_ATIVOS[id], iniciais: iniciais(SDRS_ATIVOS[id]), vendas }))
+      .sort((a, b) => b.vendas - a.vendas);
 
-    res.status(200).json({ ok: true, ranking, mes: prefixoC, ts: new Date().toISOString() });
+    res.status(200).json({ ok: true, ranking, mes: prefixo, ts: new Date().toISOString() });
   } catch (e) {
     res.status(500).json({ ok: false, erro: String(e) });
   }
