@@ -10,20 +10,23 @@ const SDR_FIELD = 'ce39d035fad6c74095053ffe04bdb9bbc9ae2a53';
 
 // Mapa de ID → nome do SDR
 const SDR_OPTIONS: Record<string, string> = {
-  '47': 'Glauton Santos', '1193': 'Pedro Ferreira', '1336': 'Marcos Vinicius',
-  '1382': 'Tatyanna Freitas', '1393': 'Arthur Abreu', '1406': 'Larissa Santos',
-  '1407': 'Lara Stefanny', '1445': 'Gabrielly Oliveira', '1523': 'Miguel Nunes',
-  '1555': 'Ana Alice', '1556': 'Thais Giurizatto', '1557': 'Victória Viana',
-  '1607': 'Caique Silva', '1608': 'Ryan Felipe', '1641': 'Islene Santos',
-  '1666': 'Eduarda Costa', '1667': 'Luis Lincon', '1675': 'Vitoria Mendonça',
-  '1685': 'Dayana Ferreira', '1686': 'Jonas Sobreira', '1687': 'Matheus Cunha',
-  '1710': 'José Guilherme', '1218': 'Luan Nicolas', '1334': 'Beatriz Magalhães',
-  '1335': 'João Paulo', '1179': 'Hyorranes Souza', '1378': 'Layza Batista',
-  '1070': 'Gregory Lavor', '1041': 'Gustavo Duarte', '952': 'Vanessa Alencar',
+  '1193': 'Pedro Ferreira', '1336': 'Marcos Vinicius', '1382': 'Tatyanna Freitas',
+  '1393': 'Arthur Abreu', '1406': 'Larissa Santos', '1407': 'Lara Stefanny',
+  '1445': 'Gabrielly Oliveira', '1523': 'Miguel Nunes', '1555': 'Ana Alice',
+  '1556': 'Thais Giurizatto', '1557': 'Victória Viana', '1607': 'Caique Silva',
+  '1608': 'Ryan Felipe', '1641': 'Islene Santos', '1666': 'Eduarda Costa',
+  '1667': 'Luis Lincon', '1675': 'Vitoria Mendonça', '1685': 'Dayana Ferreira',
+  '1686': 'Jonas Sobreira', '1687': 'Matheus Cunha', '1710': 'José Guilherme',
   '1727': 'Raquel Alves', '1728': 'Fabíola Azevedo', '1729': 'Enizia Evangelista',
-  '1730': 'Maria Gabriele', '1738': 'Clara Rodrigues', '1706': 'Raissa Fonseca',
-  '1707': 'Karoline Santos', '1708': 'Kailane Carvalho', '1709': 'Raissa Cristina',
+  '1730': 'Maria Gabriele', '1706': 'Raissa Fonseca', '1707': 'Karoline Santos',
+  '1708': 'Kailane Carvalho', '1709': 'Raissa Cristina', '1738': 'Clara Rodrigues',
+  '1326': 'Pedro Marcos', '1335': 'João Paulo', '1359': 'Guilherme Rocha',
+  '1349': 'Mariana Almeida',
 };
+
+// IDs a excluir do ranking (bots, inativos, gestores)
+const EXCLUIR_IDS = new Set(['47', '952', '1070', '1041', '1179', '1218',
+  '1250', '1334', '1378', '1691', '1693']);  // Clara IA, bots, gestores
 
 interface Vendedor {
   userId: number;
@@ -69,7 +72,7 @@ async function fetchRanking(): Promise<Vendedor[]> {
         break;
       }
       const sdrId: string | null = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
-      if (sdrId && sdrId !== '1250' /* Nenhum */) {
+      if (sdrId && !EXCLUIR_IDS.has(sdrId) && SDR_OPTIONS[sdrId]) {
         contagem[sdrId] = (contagem[sdrId] ?? 0) + 1;
       }
     }
