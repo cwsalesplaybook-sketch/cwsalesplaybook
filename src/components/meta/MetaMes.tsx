@@ -1,8 +1,9 @@
 /** Meta do Mês — layout completo com gráfico de evolução e top guerreiros */
 import { useEffect, useState, useCallback } from 'react';
-import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Trophy, TrendingDown } from 'lucide-react';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Trophy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend,
@@ -148,6 +149,7 @@ export default function MetaMes() {
   const pctBarra = Math.min(100, (totalGanhos / maxMeta) * 100);
 
   const pontos = totalGanhos * 100;
+  const userProfile = useUserProfile();
 
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
   const nomeSDR = SDRS_ATIVOS[metaData.sdrId] || '';
@@ -399,9 +401,18 @@ export default function MetaMes() {
                     <span className={cn('text-sm font-black w-5 text-center shrink-0',
                       pos === 1 ? 'text-cw-yellow' : pos === 2 ? 'text-slate-400' : pos === 3 ? 'text-amber-500' : 'text-cw-muted'
                     )}>{pos}</span>
-                    <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-xs font-black text-white shrink-0">
-                      {sdr.iniciais}
-                    </div>
+                    {eu && userProfile.avatarUrl ? (
+                      <img
+                        src={userProfile.avatarUrl}
+                        alt={userProfile.fullName ?? ''}
+                        className="h-8 w-8 rounded-full object-cover shrink-0 border border-cw-border"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-xs font-black text-white shrink-0">
+                        {eu ? userProfile.initials : sdr.iniciais}
+                      </div>
+                    )}
                     <p className={cn('flex-1 text-sm font-semibold truncate', eu ? 'text-cw-text' : 'text-cw-text/80')}>
                       {sdr.nome}{eu && <span className="text-xs text-cw-muted ml-1">(você)</span>}
                     </p>

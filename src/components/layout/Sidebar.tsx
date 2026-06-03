@@ -2,7 +2,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, Map as MapIcon,
-  TrendingUp, BarChart3, Sword, Sparkles, Award, Lock, Plus, Trash2, ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
+  TrendingUp, BarChart3, Sword, Sparkles, Award, Lock, Plus, Trash2, ArrowUp, ArrowDown, ChevronRight, Trophy, Target, LogOut,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -11,6 +11,8 @@ import { useEditor } from '@/admin/EditorContext';
 import { useContentStore, useEditableContent } from '@/store/contentStore';
 import { EditableText } from '@/admin/EditableText';
 import { toast } from '@/hooks/use-toast';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { supabase } from '@/integrations/supabase/client';
 
 interface NavItem {
   to: string;
@@ -46,6 +48,8 @@ const STORE_KEY = 'sidebar.nav';
 export function Sidebar() {
   const { papel, setPapel } = useSidebarContext();
   const { isEditing, openPasswordModal, lock } = useEditor();
+  const userProfile = useUserProfile();
+  const handleSignOut = async () => { await supabase.auth.signOut(); };
   const items = useEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
   const saveOverride = useContentStore((s) => s.saveOverride);
 
@@ -208,6 +212,38 @@ export function Sidebar() {
 
       {/* Footer */}
       <div className="px-3 py-3 space-y-2">
+
+        {/* Perfil do usuário logado */}
+        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl bg-[#1e0030]/60 border border-[#2a0a3a]">
+          {userProfile.avatarUrl ? (
+            <img
+              src={userProfile.avatarUrl}
+              alt={userProfile.fullName ?? ''}
+              className="h-8 w-8 rounded-full object-cover shrink-0 border border-white/10"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-[#4a006a] border border-purple-600/40 flex items-center justify-center text-[11px] font-black text-purple-200 shrink-0">
+              {userProfile.initials}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-[12px] font-semibold text-white truncate leading-tight">
+              {userProfile.fullName ?? 'Usuário'}
+            </p>
+            <p className="text-[10px] text-[#9b6fc4] truncate leading-tight">
+              {userProfile.email ?? ''}
+            </p>
+          </div>
+          <button
+            onClick={handleSignOut}
+            title="Sair"
+            className="shrink-0 text-[#6a4a80] hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
         <button
           onClick={() => (isEditing ? lock() : openPasswordModal())}
           className={cn(
