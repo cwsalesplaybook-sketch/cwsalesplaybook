@@ -36,7 +36,6 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/faq',        label: 'FAQ',             icon: 'HelpCircle',      end: false },
   { to: '/cultura',    label: 'Cultura',         icon: 'Heart',           end: false },
   { to: '/onboarding', label: 'Onboarding',      icon: 'MapIcon',         end: false },
-  { to: '/badges',     label: 'Badges',          icon: 'Award',           end: false },
   { to: '/carreira',   label: 'Carreira',        icon: 'TrendingUp',      end: false },
   { to: '/gestao',     label: 'Gestão',          icon: 'BarChart3',       end: false },
   { to: '/berserker',  label: 'Berserker',       icon: 'Sword',           end: false },
@@ -46,7 +45,7 @@ const NAV_PADRAO: NavItem[] = [
 const SECTIONS = [
   { label: 'Geral',          routes: ['/mural'] },
   { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/agenda', '/pipeline', '/faq'] },
-  { label: 'Cultura e Time', routes: ['/cultura', '/onboarding', '/badges', '/carreira'] },
+  { label: 'Cultura e Time', routes: ['/cultura', '/onboarding', '/carreira'] },
   { label: 'Gestão',         routes: ['/gestao', '/berserker', '/ranking'] },
 ];
 
