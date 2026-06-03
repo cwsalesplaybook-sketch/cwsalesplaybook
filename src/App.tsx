@@ -27,6 +27,8 @@ import Ranking from '@/components/ranking/Ranking';
 import MetaMes from '@/components/meta/MetaMes';
 import Start from '@/pages/Start';
 import BadgesPage from '@/pages/Badges';
+import FaqPage from '@/pages/Faq';
+import MuralPage from '@/pages/MuralPage';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -57,6 +59,8 @@ function AnimatedRoutes() {
           <Route path="/berserker" element={<Berserker />} />
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/meta" element={<MetaMes />} />
+          <Route path="/faq" element={<FaqPage />} />
+          <Route path="/mural" element={<MuralPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>
