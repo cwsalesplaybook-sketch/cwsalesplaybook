@@ -1,5 +1,5 @@
 /** Hero da página Comece por Aqui — boas-vindas com vídeo placeholder. */
-import { Sparkles, PlayCircle } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { EditableText } from '@/admin/EditableText';
 
 export function WelcomeHero() {
@@ -43,17 +43,14 @@ export function WelcomeHero() {
           </div>
         </div>
 
-        <div className="relative h-36 rounded-xl bg-black/30 border border-white/20 flex items-center justify-center backdrop-blur-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
-          <div className="relative text-center text-white/80">
-            <div className="w-12 h-12 rounded-full bg-white/20 border border-white/30 flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition-colors cursor-pointer">
-              <PlayCircle className="h-6 w-6 text-white" />
-            </div>
-            <p className="text-xs font-medium">
-              <EditableText storeKey="start.hero.videoLegenda" defaultValue="Vídeo de boas-vindas do CEO" className="text-xs font-medium" />
-            </p>
-            <p className="text-[10px] text-white/50 mt-0.5">Dê play para conhecer mais sobre nossa missão e direção</p>
-          </div>
+        <div className="relative h-36 rounded-xl overflow-hidden border border-white/20 shadow-lg">
+          <iframe
+            src="https://www.youtube.com/embed/At4i9h8-fNI"
+            title="Vídeo de boas-vindas do CEO"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full"
+          />
         </div>
       </div>
     </section>
