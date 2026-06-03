@@ -8,6 +8,9 @@ import {
   PLAYBOOK_URL, CARGOS, JORNADA, SPIN, BANT, OBJECOES, PASSAGEM_BASTAO, MOTIVOS_PERDA,
 } from '@/data/playbook';
 import CulturaEstrategia from './CulturaEstrategia';
+import { PlaybookProduto } from './PlaybookProduto';
+import { PlaybookPlanos } from './PlaybookPlanos';
+import { PlaybookConcorrentes } from './PlaybookConcorrentes';
 import { cn } from '@/lib/utils';
 import { EditableText } from '@/admin/EditableText';
 import { useEditableContent, useContentStore } from '@/store/contentStore';
@@ -67,17 +70,19 @@ function SheetLink({ label = 'Abrir na planilha completa', urlKey = 'playbook.ur
 }
 
 const TABS_DEFAULT = [
-  { id: 'cultura',    label: '🧭 Cultura & Estratégia' },
-  { id: 'cargos',     label: '📋 Cargos' },
-  { id: 'icp',        label: '🎯 ICP' },
-  { id: 'jornada',    label: '🗺️ Jornada' },
-  { id: 'spin',       label: '🔄 SPIN' },
-  { id: 'bant',       label: '✅ BANT' },
-  { id: 'hacks',      label: '💡 Hacks' },
-  { id: 'objecoes',   label: '⚡ Objeções' },
-  { id: 'passagem',   label: '🤝 Passagem' },
-  { id: 'perda',      label: '❌ Motivos de Perda' },
-  { id: 'planos',     label: '📈 Planos' },
+  { id: 'cultura',      label: '🧭 Cultura & Estratégia' },
+  { id: 'produto',      label: '🛠️ Produto' },
+  { id: 'planos',       label: '💰 Planos & Preços' },
+  { id: 'concorrentes', label: '⚔️ Concorrentes' },
+  { id: 'jornada',      label: '🗺️ Jornada' },
+  { id: 'cargos',       label: '📋 Cargos' },
+  { id: 'icp',          label: '🎯 ICP' },
+  { id: 'spin',         label: '🔄 SPIN' },
+  { id: 'bant',         label: '✅ BANT' },
+  { id: 'hacks',        label: '💡 Hacks' },
+  { id: 'objecoes',     label: '⚡ Objeções' },
+  { id: 'passagem',     label: '🤝 Passagem' },
+  { id: 'perda',        label: '❌ Motivos de Perda' },
 ];
 
 export default function Playbook() {
@@ -114,6 +119,21 @@ export default function Playbook() {
           {/* CULTURA & ESTRATÉGIA */}
           <TabsContent value="cultura" className="mt-6">
             <CulturaEstrategia />
+          </TabsContent>
+
+          {/* PRODUTO */}
+          <TabsContent value="produto" className="mt-6">
+            <PlaybookProduto />
+          </TabsContent>
+
+          {/* PLANOS & PREÇOS */}
+          <TabsContent value="planos" className="mt-6">
+            <PlaybookPlanos />
+          </TabsContent>
+
+          {/* CONCORRENTES */}
+          <TabsContent value="concorrentes" className="mt-6">
+            <PlaybookConcorrentes />
           </TabsContent>
 
           {/* CARGOS */}
@@ -336,19 +356,26 @@ export default function Playbook() {
               </p>
             </SectionCard>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {objs.items.map((o, i) => (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {objs.items.map((o: any, i: number) => (
                 <div key={o.objecao + i} className="cw-card cw-card-hover p-5 relative group/it">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-cw-red/15 text-red-300 border border-cw-red/40">
-                      Objeção
-                    </span>
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    {o.tipo && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cw-red/10 text-cw-red border border-cw-red/25">
+                        {o.tipo}
+                      </span>
+                    )}
+                    {o.momento && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cw-elevated border border-cw-border text-cw-muted">
+                        {o.momento}
+                      </span>
+                    )}
                   </div>
-                  <h4 className="font-bold text-cw-text mb-3">
-                    "<EditableText storeKey={`playbook.objecoes.${i}.objecao`} defaultValue={o.objecao} className="font-bold" />"
+                  <h4 className="font-bold text-cw-text mb-3 text-sm">
+                    "<EditableText storeKey={`playbook.objecoes.${i}.objecao`} defaultValue={o.objecao} className="font-bold text-sm" />"
                   </h4>
                   <div className="border-l-2 border-cw-purple pl-3">
-                    <p className="text-xs text-cw-purple-light font-semibold uppercase mb-1 tracking-wider">Argumento</p>
+                    <p className="text-xs text-cw-purple font-semibold uppercase mb-1 tracking-wider">Como responder</p>
                     <p className="text-sm text-cw-muted leading-relaxed">
                       <EditableText storeKey={`playbook.objecoes.${i}.argumento`} defaultValue={o.argumento} multiline className="text-sm" />
                     </p>
@@ -359,7 +386,7 @@ export default function Playbook() {
             </div>
             {objs.isEditing && (
               <div className="flex justify-center">
-                <Button size="sm" variant="outline" onClick={() => objs.add({ objecao: 'Nova objeção', argumento: 'Argumento.' })} className="border-dashed border-cw-purple-light/40 text-cw-purple-light">
+                <Button size="sm" variant="outline" onClick={() => objs.add({ tipo: 'Valores', momento: 'Fim', objecao: 'Nova objeção', argumento: 'Argumento.' })} className="border-dashed border-cw-purple/40 text-cw-purple">
                   <Plus className="h-3.5 w-3.5 mr-1" /> Objeção
                 </Button>
               </div>
@@ -456,36 +483,7 @@ export default function Playbook() {
             </div>
           </TabsContent>
 
-          {/* PLANOS */}
-          <TabsContent value="planos" className="mt-6 space-y-4 max-w-2xl">
-            <SectionCard>
-              <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="h-5 w-5 text-cw-yellow" />
-                <h3 className="text-lg font-bold">
-                  <EditableText storeKey="playbook.planos.titulo" defaultValue="Planos e Preços" className="text-lg font-bold" />
-                </h3>
-              </div>
-              <p className="text-cw-muted leading-relaxed">
-                <EditableText
-                  storeKey="playbook.planos.texto"
-                  defaultValue="Os planos e preços são atualizados com frequência. Sempre consulte a versão mais recente na planilha oficial antes de uma negociação."
-                  multiline
-                  className="text-cw-muted"
-                />
-              </p>
-            </SectionCard>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Button onClick={() => openSheet(url)} className="gradient-primary text-white hover:brightness-110 gap-2 h-12">
-                <ExternalLink className="h-4 w-4" />
-                <EditableText storeKey="playbook.planos.btn1" defaultValue="Ver Planos Atualizados" />
-              </Button>
-              <Button onClick={() => openSheet(url)} variant="outline" className="border-cw-purple/40 hover:bg-cw-elevated text-cw-text gap-2 h-12">
-                <ExternalLink className="h-4 w-4" />
-                <EditableText storeKey="playbook.planos.btn2" defaultValue="Calculadora de Planos" />
-              </Button>
-            </div>
-          </TabsContent>
+          {/* PLANOS — renderizado pelo componente dedicado */}
         </Tabs>
       </div>
     </>
