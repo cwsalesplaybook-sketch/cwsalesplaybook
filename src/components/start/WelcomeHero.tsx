@@ -4,7 +4,7 @@ import { EditableText } from '@/admin/EditableText';
 
 export function WelcomeHero() {
   return (
-    <section className="relative overflow-hidden rounded-2xl gradient-hot p-7 md:p-8">
+    <section className="relative overflow-hidden rounded-2xl gradient-hot p-6">
       <div className="absolute inset-0 gradient-glow pointer-events-none" />
       <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
 
@@ -43,7 +43,7 @@ export function WelcomeHero() {
           </div>
         </div>
 
-        <div className="relative aspect-video rounded-xl bg-black/30 border border-white/20 flex items-center justify-center backdrop-blur-sm overflow-hidden">
+        <div className="relative h-36 rounded-xl bg-black/30 border border-white/20 flex items-center justify-center backdrop-blur-sm overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
           <div className="relative text-center text-white/80">
             <div className="w-12 h-12 rounded-full bg-white/20 border border-white/30 flex items-center justify-center mx-auto mb-2 hover:bg-white/30 transition-colors cursor-pointer">
