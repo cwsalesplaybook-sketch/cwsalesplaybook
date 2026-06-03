@@ -1,13 +1,13 @@
 /** Seção Playbook — abas com conteúdo de referência do time.
  *  Todos os textos e listas são editáveis no Modo Gestor. */
-import { ExternalLink, Briefcase, Target, Map, Sparkles, CheckCircle2, Zap, Swords, Handshake, XCircle, DollarSign, ArrowRight, Trash2, Plus, Megaphone, Lightbulb, HelpCircle, Monitor } from 'lucide-react';
+import { ExternalLink, Briefcase, Target, Map, Sparkles, CheckCircle2, Zap, Swords, Handshake, XCircle, DollarSign, ArrowRight, Trash2, Plus, Megaphone, Lightbulb } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   PLAYBOOK_URL, CARGOS, JORNADA, SPIN, BANT, OBJECOES, PASSAGEM_BASTAO, MOTIVOS_PERDA,
-  HACKS, AIDA, SPIN_FUNCIONALIDADES, FAQ,
+  HACKS, AIDA, SPIN_FUNCIONALIDADES,
 } from '@/data/playbook';
 import CulturaEstrategia from './CulturaEstrategia';
 import { PlaybookProduto } from './PlaybookProduto';
@@ -86,7 +86,6 @@ const TABS_DEFAULT = [
   { id: 'objecoes',     label: '⚡ Objeções' },
   { id: 'passagem',     label: '🤝 Passagem' },
   { id: 'perda',        label: '❌ Motivos de Perda' },
-  { id: 'faq',          label: '❓ FAQ' },
 ];
 
 export default function Playbook() {
@@ -571,64 +570,6 @@ export default function Playbook() {
             <div className="cw-card p-4">
               <SheetLink label="Ver lista completa" />
             </div>
-          </TabsContent>
-
-          {/* FAQ */}
-          <TabsContent value="faq" className="mt-6 space-y-6">
-            {/* Bloco Totem em destaque */}
-            <div className="cw-card p-6 border-l-4 border-l-cw-purple">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-lg gradient-primary flex items-center justify-center shrink-0">
-                  <Monitor className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-cw-purple-light">Novo módulo · lançado em 22/05/2026</span>
-                  <h3 className="text-lg font-bold text-cw-text">Totem de Autoatendimento</h3>
-                </div>
-              </div>
-              <p className="text-sm text-cw-muted leading-relaxed mb-4">
-                O cliente faz o pedido completo sozinho em um tablet ou monitor touchscreen — navega pelo cardápio, escolhe complementos, se identifica pelo telefone (fidelidade), seleciona "comer aqui" ou "para levar", aplica cupons e paga via Dinheiro, Pix ou cartão. Sem garçom, sem fila, sem erro de anotação.
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { label: 'Preço', valor: 'R$99,99/dispositivo' },
-                  { label: 'Hardware', valor: 'Qualquer touchscreen' },
-                  { label: 'Sistemas', valor: 'Android, Windows, Linux' },
-                  { label: 'Pagamentos', valor: 'Dinheiro, Pix, Cartão' },
-                ].map(({ label, valor }) => (
-                  <div key={label} className="rounded-lg bg-cw-elevated border border-cw-border p-3 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-cw-muted">{label}</p>
-                    <p className="text-sm font-bold text-cw-text mt-1">{valor}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Perguntas agrupadas por categoria */}
-            {Array.from(new Set(FAQ.map(f => f.categoria))).map(cat => (
-              <div key={cat}>
-                <div className="flex items-center gap-2 mb-3">
-                  <HelpCircle className="h-4 w-4 text-cw-purple-light shrink-0" />
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-cw-muted">{cat}</h3>
-                </div>
-                <Accordion type="single" collapsible className="space-y-2">
-                  {FAQ.filter(f => f.categoria === cat).map((item, i) => (
-                    <AccordionItem
-                      key={i}
-                      value={`faq-${cat}-${i}`}
-                      className="border border-cw-border rounded-lg px-4 bg-cw-bg/50 hover:border-cw-purple/50 transition-colors"
-                    >
-                      <AccordionTrigger className="text-sm font-semibold text-cw-text hover:no-underline py-3 text-left">
-                        {item.pergunta}
-                      </AccordionTrigger>
-                      <AccordionContent className="text-sm text-cw-muted leading-relaxed pb-4 whitespace-pre-line">
-                        {item.resposta}
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </div>
-            ))}
           </TabsContent>
 
           {/* PLANOS — renderizado pelo componente dedicado */}
