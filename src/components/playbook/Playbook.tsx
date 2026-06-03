@@ -1,11 +1,13 @@
 /** Seção Playbook — abas com conteúdo de referência do time.
  *  Todos os textos e listas são editáveis no Modo Gestor. */
-import { ExternalLink, Briefcase, Target, Map, Sparkles, CheckCircle2, Zap, Swords, Handshake, XCircle, DollarSign, ArrowRight, Trash2, Plus } from 'lucide-react';
+import { ExternalLink, Briefcase, Target, Map, Sparkles, CheckCircle2, Zap, Swords, Handshake, XCircle, DollarSign, ArrowRight, Trash2, Plus, Megaphone, Lightbulb, HelpCircle, Monitor } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   PLAYBOOK_URL, CARGOS, JORNADA, SPIN, BANT, OBJECOES, PASSAGEM_BASTAO, MOTIVOS_PERDA,
+  HACKS, AIDA, SPIN_FUNCIONALIDADES, FAQ,
 } from '@/data/playbook';
 import CulturaEstrategia from './CulturaEstrategia';
 import { PlaybookProduto } from './PlaybookProduto';
@@ -77,12 +79,14 @@ const TABS_DEFAULT = [
   { id: 'jornada',      label: '🗺️ Jornada' },
   { id: 'cargos',       label: '📋 Cargos' },
   { id: 'icp',          label: '🎯 ICP' },
+  { id: 'aida',         label: '📣 AIDA' },
   { id: 'spin',         label: '🔄 SPIN' },
   { id: 'bant',         label: '✅ BANT' },
   { id: 'hacks',        label: '💡 Hacks' },
   { id: 'objecoes',     label: '⚡ Objeções' },
   { id: 'passagem',     label: '🤝 Passagem' },
   { id: 'perda',        label: '❌ Motivos de Perda' },
+  { id: 'faq',          label: '❓ FAQ' },
 ];
 
 export default function Playbook() {
@@ -247,20 +251,56 @@ export default function Playbook() {
             </div>
           </TabsContent>
 
+          {/* AIDA */}
+          <TabsContent value="aida" className="mt-6 space-y-4">
+            <SectionCard>
+              <div className="flex items-center gap-2 mb-2">
+                <Megaphone className="h-5 w-5 text-cw-purple-light" />
+                <h3 className="text-lg font-bold">Modelo AIDA — Cold Call</h3>
+              </div>
+              <p className="text-sm text-cw-muted leading-relaxed">
+                O modelo AIDA é um roteiro de Cold Call que guia o lead pelos estágios de Atenção, Interesse, Desejo e Ação dentro de uma única ligação. Na prospecção é muito poderoso pois permite que o lead progrida na jornada de compra antes mesmo da videochamada.
+              </p>
+            </SectionCard>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {AIDA.map((etapa, i) => {
+                const colors = [
+                  'border-cw-purple/50 bg-cw-purple/10',
+                  'border-orange-500/50 bg-orange-500/10',
+                  'border-cw-yellow/50 bg-cw-yellow/10',
+                  'border-emerald-500/50 bg-emerald-500/10',
+                ];
+                const labelColors = ['text-cw-purple-light', 'text-orange-300', 'text-cw-yellow', 'text-emerald-300'];
+                return (
+                  <div key={etapa.letra} className={`rounded-xl border-2 p-5 ${colors[i]}`}>
+                    <div className="flex items-baseline gap-3 mb-2">
+                      <span className={`text-5xl font-black tracking-tighter ${labelColors[i]}`}>{etapa.letra}</span>
+                      <span className="text-xl font-bold text-cw-text">{etapa.nome}</span>
+                    </div>
+                    <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${labelColors[i]}`}>
+                      {etapa.estrutura}
+                    </p>
+                    <p className="text-sm text-cw-muted leading-relaxed whitespace-pre-line">{etapa.roteiro}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+
           {/* SPIN */}
           <TabsContent value="spin" className="mt-6 space-y-4">
             <SectionCard>
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="h-5 w-5 text-cw-purple-light" />
-                <h3 className="text-lg font-bold">
-                  <EditableText storeKey="playbook.spin.titulo" defaultValue="SPIN Selling" className="text-lg font-bold" />
-                </h3>
+                <h3 className="text-lg font-bold">SPIN Selling</h3>
               </div>
               <p className="text-sm text-cw-muted leading-relaxed">
-                <EditableText storeKey="playbook.spin.intro" defaultValue="Metodologia criada por Neil Rackham que estrutura a venda com perguntas estratégicas nos 4 pilares abaixo." multiline className="text-sm" />
+                Metodologia criada por Neil Rackham que estrutura a venda com perguntas estratégicas nos 4 pilares abaixo. Use as perguntas por funcionalidade para guiar a conversa com o lead.
               </p>
             </SectionCard>
 
+            {/* 4 pilares */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {spinList.items.map((s, i) => (
                 <div
@@ -287,6 +327,43 @@ export default function Playbook() {
                   {spinList.isEditing && <RemoveBtn onClick={() => spinList.remove(i)} />}
                 </div>
               ))}
+            </div>
+
+            {/* SPIN por funcionalidade */}
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-cw-muted mb-3">SPIN por Funcionalidade</h3>
+              <Accordion type="single" collapsible className="space-y-2">
+                {SPIN_FUNCIONALIDADES.map((f, i) => (
+                  <AccordionItem
+                    key={i}
+                    value={`sf-${i}`}
+                    className="border border-cw-border rounded-lg px-4 bg-cw-bg/50 hover:border-cw-purple/50 transition-colors"
+                  >
+                    <AccordionTrigger className="text-sm font-semibold text-cw-text hover:no-underline py-3 text-left">
+                      {f.funcionalidade}
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        {[
+                          { label: 'S — Situação', color: 'text-cw-purple-light border-cw-purple/40', text: f.situacao },
+                          { label: 'P — Problema',  color: 'text-red-300 border-cw-red/40',           text: f.problema },
+                          { label: 'I — Implicação', color: 'text-cw-yellow border-cw-yellow/40',     text: f.implicacao },
+                          { label: 'N — Necessidade', color: 'text-emerald-300 border-emerald-500/40', text: f.necessidade },
+                        ].map((col) => (
+                          <div key={col.label} className={`rounded-lg border p-3 bg-cw-surface ${col.color}`}>
+                            <p className={`font-bold mb-1 ${col.color.split(' ')[0]}`}>{col.label}</p>
+                            <p className="text-cw-muted leading-relaxed">{col.text}</p>
+                          </div>
+                        ))}
+                        <div className="md:col-span-2 rounded-lg border border-cw-border p-3 bg-cw-elevated">
+                          <p className="font-bold text-cw-purple-light mb-1">Apresentação do Produto</p>
+                          <p className="text-cw-muted leading-relaxed">{f.apresentacao}</p>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </div>
           </TabsContent>
 
@@ -325,20 +402,33 @@ export default function Playbook() {
           </TabsContent>
 
           {/* HACKS */}
-          <TabsContent value="hacks" className="mt-6 space-y-4 max-w-3xl">
+          <TabsContent value="hacks" className="mt-6 space-y-4">
             <SectionCard>
               <div className="flex items-center gap-2 mb-2">
-                <Zap className="h-5 w-5 text-cw-yellow" />
-                <h3 className="text-lg font-bold">
-                  <EditableText storeKey="playbook.hacks.titulo" defaultValue="Hacks de Performance" className="text-lg font-bold" />
-                </h3>
+                <Lightbulb className="h-5 w-5 text-cw-yellow" />
+                <h3 className="text-lg font-bold">Hacks de Pré-vendas</h3>
               </div>
-              <p className="text-cw-muted leading-relaxed">
-                <EditableText storeKey="playbook.hacks.texto" defaultValue="Técnicas e atalhos práticos para melhorar performance nas ligações e prospecção." multiline className="text-cw-muted" />
+              <p className="text-sm text-cw-muted leading-relaxed">
+                Técnicas e scripts práticos para lidar com situações específicas durante prospecção e negociação.
               </p>
             </SectionCard>
-            <div className="cw-card p-4">
-              <SheetLink label="Acesse os hacks completos na planilha" />
+
+            <div className="space-y-4 max-w-3xl">
+              {HACKS.map((hack, i) => (
+                <div key={i} className="cw-card cw-card-hover p-5 border-l-4 border-l-cw-yellow/70">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-cw-yellow/15 text-cw-yellow border border-cw-yellow/40">
+                      Hack {i + 1}
+                    </span>
+                    <h4 className="font-bold text-cw-text text-sm">{hack.titulo}</h4>
+                  </div>
+                  <p className="text-xs text-cw-muted mb-3 italic">{hack.contexto}</p>
+                  <div className="border-l-2 border-cw-purple pl-3">
+                    <p className="text-xs font-semibold text-cw-purple-light uppercase tracking-wider mb-2">Como conduzir</p>
+                    <p className="text-sm text-cw-muted leading-relaxed whitespace-pre-line">{hack.como_conduzir}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </TabsContent>
 
@@ -481,6 +571,64 @@ export default function Playbook() {
             <div className="cw-card p-4">
               <SheetLink label="Ver lista completa" />
             </div>
+          </TabsContent>
+
+          {/* FAQ */}
+          <TabsContent value="faq" className="mt-6 space-y-6">
+            {/* Bloco Totem em destaque */}
+            <div className="cw-card p-6 border-l-4 border-l-cw-purple">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-lg gradient-primary flex items-center justify-center shrink-0">
+                  <Monitor className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-cw-purple-light">Novo módulo · lançado em 22/05/2026</span>
+                  <h3 className="text-lg font-bold text-cw-text">Totem de Autoatendimento</h3>
+                </div>
+              </div>
+              <p className="text-sm text-cw-muted leading-relaxed mb-4">
+                O cliente faz o pedido completo sozinho em um tablet ou monitor touchscreen — navega pelo cardápio, escolhe complementos, se identifica pelo telefone (fidelidade), seleciona "comer aqui" ou "para levar", aplica cupons e paga via Dinheiro, Pix ou cartão. Sem garçom, sem fila, sem erro de anotação.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { label: 'Preço', valor: 'R$99,99/dispositivo' },
+                  { label: 'Hardware', valor: 'Qualquer touchscreen' },
+                  { label: 'Sistemas', valor: 'Android, Windows, Linux' },
+                  { label: 'Pagamentos', valor: 'Dinheiro, Pix, Cartão' },
+                ].map(({ label, valor }) => (
+                  <div key={label} className="rounded-lg bg-cw-elevated border border-cw-border p-3 text-center">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-cw-muted">{label}</p>
+                    <p className="text-sm font-bold text-cw-text mt-1">{valor}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Perguntas agrupadas por categoria */}
+            {Array.from(new Set(FAQ.map(f => f.categoria))).map(cat => (
+              <div key={cat}>
+                <div className="flex items-center gap-2 mb-3">
+                  <HelpCircle className="h-4 w-4 text-cw-purple-light shrink-0" />
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-cw-muted">{cat}</h3>
+                </div>
+                <Accordion type="single" collapsible className="space-y-2">
+                  {FAQ.filter(f => f.categoria === cat).map((item, i) => (
+                    <AccordionItem
+                      key={i}
+                      value={`faq-${cat}-${i}`}
+                      className="border border-cw-border rounded-lg px-4 bg-cw-bg/50 hover:border-cw-purple/50 transition-colors"
+                    >
+                      <AccordionTrigger className="text-sm font-semibold text-cw-text hover:no-underline py-3 text-left">
+                        {item.pergunta}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-sm text-cw-muted leading-relaxed pb-4 whitespace-pre-line">
+                        {item.resposta}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+            ))}
           </TabsContent>
 
           {/* PLANOS — renderizado pelo componente dedicado */}

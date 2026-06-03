@@ -39,11 +39,12 @@ const PLANOS = [
 ];
 
 const MODULOS = [
-  { nome: 'iFood',             anual: 'R$29,99/mês',  mensal: 'R$29,99/mês' },
-  { nome: 'Estoque Avançado',  anual: 'R$29,99/mês',  mensal: 'R$29,99/mês' },
-  { nome: 'Cupom Fiscal',      anual: 'R$69,99/mês',  mensal: 'R$69,99/mês' },
-  { nome: 'Entregadores',      anual: 'R$54,99/mês',  mensal: 'R$54,99/mês' },
-  { nome: 'Financeiro',        anual: 'R$69,99/mês',  mensal: 'R$69,99/mês' },
+  { nome: 'iFood',             anual: 'R$29,99/mês',  mensal: 'R$29,99/mês',  desc: 'Integração completa com iFood' },
+  { nome: 'Estoque Avançado',  anual: 'R$29,99/mês',  mensal: 'R$29,99/mês',  desc: 'Com ficha técnica de insumos' },
+  { nome: 'Cupom Fiscal',      anual: 'R$69,99/mês',  mensal: 'R$69,99/mês',  desc: 'Emissão de NF-e/NFC-e' },
+  { nome: 'Entregadores',      anual: 'R$54,99/mês',  mensal: 'R$54,99/mês',  desc: 'Gestão e rotas de entrega' },
+  { nome: 'Financeiro',        anual: 'R$69,99/mês',  mensal: 'R$69,99/mês',  desc: 'Gestão financeira completa' },
+  { nome: 'Totem',             anual: 'R$99,99/dispositivo', mensal: 'R$99,99/dispositivo', desc: 'Autoatendimento touchscreen — pedidos sem garçom ou atendente' },
 ];
 
 const DESCONTOS = [
@@ -90,11 +91,12 @@ export function PlaybookPlanos() {
       {/* Módulos */}
       <div className="cw-card p-5">
         <p className="text-[10px] font-black text-cw-purple uppercase tracking-widest mb-4">Módulos add-on</p>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {MODULOS.map(m => (
             <div key={m.nome} className="rounded-xl bg-cw-elevated border border-cw-border p-3 text-center">
               <p className="text-xs font-bold text-cw-text">{m.nome}</p>
-              <p className="text-sm font-black text-cw-purple mt-1">{m.anual}</p>
+              {m.desc && <p className="text-[10px] text-cw-muted mt-0.5 leading-tight">{m.desc}</p>}
+              <p className="text-sm font-black text-cw-purple mt-1.5">{m.anual}</p>
               <p className="text-[10px] text-cw-muted">anual ou mensal</p>
             </div>
           ))}

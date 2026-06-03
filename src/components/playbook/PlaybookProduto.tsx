@@ -107,7 +107,7 @@ const MODULOS = [
   { nome: 'Cupom Fiscal', desc: 'Emissão de NF-e/NFC-e' },
   { nome: 'Entregadores', desc: 'Gestão e rotas de entrega' },
   { nome: 'Financeiro', desc: 'Gestão financeira completa' },
-  { nome: 'Totem', desc: 'Autoatendimento em tablet' },
+  { nome: 'Totem', desc: 'Autoatendimento touchscreen — cliente faz o pedido sozinho, com pagamento integrado. R$99,99/dispositivo.' },
 ];
 
 export function PlaybookProduto() {

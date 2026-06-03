@@ -33,7 +33,8 @@ export function NextTasks() {
         {next.map((item) => (
           <li
             key={item.id}
-            className="flex items-start gap-3 p-3.5 rounded-xl bg-cw-elevated border border-cw-border hover:border-cw-purple/40 hover:bg-white transition-all duration-150 cursor-default group"
+            onClick={() => nav('/onboarding')}
+            className="flex items-start gap-3 p-3.5 rounded-xl bg-cw-elevated border border-cw-border hover:border-cw-purple/40 hover:bg-white transition-all duration-150 cursor-pointer group"
           >
             <Circle className="h-4 w-4 text-cw-border mt-0.5 shrink-0 group-hover:text-cw-purple transition-colors" />
             <div className="flex-1 min-w-0">
