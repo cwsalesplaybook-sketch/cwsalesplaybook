@@ -39,14 +39,13 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/carreira',   label: 'Carreira',        icon: 'TrendingUp',      end: false },
   { to: '/gestao',     label: 'Gestão',          icon: 'BarChart3',       end: false },
   { to: '/berserker',  label: 'Berserker',       icon: 'Sword',           end: false },
-  { to: '/ranking',    label: 'Ranking',         icon: 'Trophy',          end: false },
 ];
 
 const SECTIONS = [
   { label: 'Geral',          routes: ['/mural'] },
   { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/agenda', '/pipeline', '/faq'] },
   { label: 'Cultura e Time', routes: ['/cultura', '/onboarding', '/carreira'] },
-  { label: 'Gestão',         routes: ['/gestao', '/berserker', '/ranking'] },
+  { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];
 
 const STORE_KEY = 'sidebar.nav';
