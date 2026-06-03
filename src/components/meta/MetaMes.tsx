@@ -21,6 +21,7 @@ const SDRS_ATIVOS: Record<string, string> = {
 interface MetaData { meta1: number; meta2: number; meta3: number; ajuste: number; sdrId: string; }
 interface EvolucaoPonto { dia: string; noDia: number; acumulado: number; }
 interface ApiData  { ganhos: number; mes: string; diasUteisTotal: number; diasPassados: number; diasRestantes: number; diasUteisSemanais: number; evolucao?: EvolucaoPonto[]; }
+interface RankingSDR { id: string; nome: string; iniciais: string; vendas: number; }
 
 function getStatus(ganhos: number, meta1: number, diasPassados: number, diasUteisTotal: number) {
   if (!meta1 || !diasPassados) return 'no-ritmo';
@@ -70,12 +71,14 @@ function ConfigModal({ metaData, onSave, onClose }: { metaData: MetaData; onSave
 }
 
 export default function MetaMes() {
-  const [metaData, setMetaData] = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, ajuste: 0, sdrId: '' });
-  const [apiData, setApiData]   = useState<ApiData | null>(null);
-  const [loading, setLoading]   = useState(false);
-  const [config, setConfig]     = useState(false);
-  const [userId, setUserId]     = useState('');
-  const [mes, setMes]           = useState('');
+  const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, ajuste: 0, sdrId: '' });
+  const [apiData, setApiData]     = useState<ApiData | null>(null);
+  const [loading, setLoading]     = useState(false);
+  const [config, setConfig]       = useState(false);
+  const [userId, setUserId]       = useState('');
+  const [mes, setMes]             = useState('');
+  const [ranking, setRanking]     = useState<RankingSDR[]>([]);
+  const [loadingRank, setLoadingRank] = useState(false);
 
   const carregarPerfil = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -98,12 +101,24 @@ export default function MetaMes() {
     } finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { carregarPerfil(); }, [carregarPerfil]);
+  const buscarRanking = useCallback(async () => {
+    setLoadingRank(true);
+    try {
+      const r = await fetch('/api/ranking', { cache: 'no-store' });
+      const json = await r.json();
+      if (json.ok) setRanking(json.ranking ?? []);
+    } finally { setLoadingRank(false); }
+  }, []);
+
+  useEffect(() => { carregarPerfil(); buscarRanking(); }, [carregarPerfil, buscarRanking]);
   useEffect(() => { if (metaData.sdrId) buscarGanhos(metaData.sdrId); }, [metaData.sdrId, buscarGanhos]);
   useEffect(() => {
-    const id = setInterval(() => { if (metaData.sdrId) buscarGanhos(metaData.sdrId); }, 5 * 60 * 1000);
+    const id = setInterval(() => {
+      if (metaData.sdrId) buscarGanhos(metaData.sdrId);
+      buscarRanking();
+    }, 5 * 60 * 1000);
     return () => clearInterval(id);
-  }, [metaData.sdrId, buscarGanhos]);
+  }, [metaData.sdrId, buscarGanhos, buscarRanking]);
 
   const salvarConfig = async (novosDados: MetaData) => {
     await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: novosDados.sdrId, meta1: novosDados.meta1, meta2: novosDados.meta2, meta3: novosDados.meta3, ajuste: novosDados.ajuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
@@ -357,45 +372,54 @@ export default function MetaMes() {
           </div>
         </div>
 
-        {/* Top Guerreiros */}
+        {/* Top Guerreiros — dados reais da /api/ranking */}
         <div className="cw-card p-6 flex flex-col">
           <div className="flex items-center gap-2 mb-1">
             <Trophy className="h-5 w-5 text-cw-yellow" />
             <h3 className="text-base font-black text-cw-text uppercase tracking-wide">Top Guerreiros</h3>
           </div>
-          <p className="text-xs text-cw-muted mb-5">Os maiores pontuadores do mês</p>
+          <p className="text-xs text-cw-muted mb-5">Negócios ganhos no mês · Pipedrive ao vivo</p>
 
           <div className="space-y-2 flex-1">
-            {[
-              { pos: 1, nome: 'Miguel Nunes',      pts: totalGanhos > 0 ? totalGanhos * 100 : 3250, eu: metaData.sdrId === '1523' },
-              { pos: 2, nome: 'Caique Silva',       pts: 2480,  eu: metaData.sdrId === '1607' },
-              { pos: 3, nome: 'Tatyanna Freitas',   pts: 2150,  eu: metaData.sdrId === '1382' },
-              { pos: 4, nome: nomeSDR || 'Você',    pts: pontos, eu: true },
-              { pos: 5, nome: 'Gabrielly Oliveira', pts: 980,   eu: metaData.sdrId === '1445' },
-            ].map(({ pos, nome, pts: p, eu }) => (
-              <div key={pos} className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors',
-                eu ? 'bg-cw-purple/8 border border-cw-purple/20' : 'bg-cw-elevated border border-transparent hover:border-cw-border'
-              )}>
-                <span className={cn('text-sm font-black w-5 text-center shrink-0',
-                  pos === 1 ? 'text-cw-yellow' : pos === 2 ? 'text-slate-400' : pos === 3 ? 'text-amber-500' : 'text-cw-muted'
-                )}>{pos}</span>
-                <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-xs font-black text-white shrink-0">
-                  {nome.split(' ').slice(0, 2).map(n => n[0]).join('')}
-                </div>
-                <p className={cn('flex-1 text-sm font-semibold truncate', eu ? 'text-cw-text' : 'text-cw-text/80')}>
-                  {nome}{eu && nomeSDR && <span className="text-xs text-cw-muted ml-1">(você)</span>}
-                </p>
-                <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-xs">🪙</span>
-                  <span className="text-sm font-black text-cw-text">{p.toLocaleString()}</span>
-                  <span className="text-cw-muted text-xs font-normal">pts</span>
-                </div>
+            {loadingRank ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-5 w-5 animate-spin text-cw-purple" />
               </div>
-            ))}
+            ) : ranking.length === 0 ? (
+              <div className="text-center py-8 text-cw-muted text-sm">Sem dados ainda este mês.</div>
+            ) : (
+              ranking.slice(0, 5).map((sdr, idx) => {
+                const eu = sdr.id === metaData.sdrId;
+                const pos = idx + 1;
+                return (
+                  <div key={sdr.id} className={cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors',
+                    eu ? 'bg-cw-purple/8 border border-cw-purple/20' : 'bg-cw-elevated border border-transparent hover:border-cw-border'
+                  )}>
+                    <span className={cn('text-sm font-black w-5 text-center shrink-0',
+                      pos === 1 ? 'text-cw-yellow' : pos === 2 ? 'text-slate-400' : pos === 3 ? 'text-amber-500' : 'text-cw-muted'
+                    )}>{pos}</span>
+                    <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-xs font-black text-white shrink-0">
+                      {sdr.iniciais}
+                    </div>
+                    <p className={cn('flex-1 text-sm font-semibold truncate', eu ? 'text-cw-text' : 'text-cw-text/80')}>
+                      {sdr.nome}{eu && <span className="text-xs text-cw-muted ml-1">(você)</span>}
+                    </p>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-xs">🏆</span>
+                      <span className="text-sm font-black text-cw-text">{sdr.vendas}</span>
+                      <span className="text-cw-muted text-xs font-normal">ganhos</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
 
-          <button className="w-full mt-4 py-2.5 rounded-xl border border-cw-border text-cw-purple hover:bg-cw-purple/5 hover:border-cw-purple/40 text-sm font-semibold transition-colors">
+          <button
+            onClick={buscarRanking}
+            className="w-full mt-4 py-2.5 rounded-xl border border-cw-border text-cw-purple hover:bg-cw-purple/5 hover:border-cw-purple/40 text-sm font-semibold transition-colors"
+          >
             Ver ranking completo
           </button>
         </div>
