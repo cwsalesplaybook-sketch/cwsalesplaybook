@@ -68,7 +68,7 @@ function AppLayout() {
   return (
     <EditorProvider>
       <SidebarProvider>
-        <div className="dark flex h-screen w-full overflow-hidden bg-cw-bg text-cw-text">
+        <div className="flex h-screen w-full overflow-hidden bg-cw-bg text-cw-text">
           <Sidebar />
           <main className="flex-1 overflow-y-auto scrollbar-cw">
             <EditorBanner />
@@ -97,8 +97,8 @@ const App = () => {
   // Carregando sessão
   if (session === undefined) {
     return (
-      <div className="min-h-screen bg-[#0a0008] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#760F95] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-cw-bg flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-cw-purple border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

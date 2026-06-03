@@ -5,71 +5,73 @@
 @tailwind utilities;
 
 /* CW Sales Playbook — Design System
-   Dark-first com paleta oficial Cardápio Web (roxo/vermelho/amarelo). */
+   Light main area + dark sidebar. Paleta oficial Cardápio Web. */
 
 @layer base {
   :root {
-    /* Base CW dark */
-    --background: 305 100% 3%;        /* cw-bg #0a0008 */
-    --foreground: 270 60% 96%;        /* cw-text #f5f0ff */
+    /* Light main area */
+    --background: 290 43% 95%;         /* cw-bg  #F4EDF7 magnolia */
+    --foreground: 270 62% 11%;         /* cw-text #1A0A2E */
 
-    --card: 310 100% 4%;              /* cw-surface #120010 */
-    --card-foreground: 270 60% 96%;
+    --card: 0 0% 100%;                 /* cw-surface #FFFFFF */
+    --card-foreground: 270 62% 11%;
 
-    --popover: 285 100% 8%;           /* cw-elevated */
-    --popover-foreground: 270 60% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 270 62% 11%;
 
-    --primary: 287 82% 32%;           /* cw-purple #760F95 */
+    --primary: 281 95% 62%;            /* cw-purple #A543FA */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 285 100% 8%;         /* cw-elevated */
-    --secondary-foreground: 270 60% 96%;
+    --secondary: 286 43% 97%;          /* cw-elevated #FAF7FC */
+    --secondary-foreground: 270 62% 11%;
 
-    --muted: 285 100% 8%;
-    --muted-foreground: 275 30% 62%;  /* cw-muted */
+    --muted: 286 43% 97%;
+    --muted-foreground: 270 35% 50%;   /* cw-muted #7B5EA7 */
 
-    --accent: 285 100% 8%;
-    --accent-foreground: 270 60% 96%;
+    --accent: 286 43% 97%;
+    --accent-foreground: 270 62% 11%;
 
-    --destructive: 4 80% 56%;         /* cw-red #EA4335 */
+    --destructive: 0 100% 67%;         /* cw-red #FF5959 */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 285 65% 18%;            /* cw-border #3a1048 */
-    --input: 285 65% 18%;
-    --ring: 287 82% 32%;
+    --border: 285 42% 89%;             /* cw-border #E9DDF2 */
+    --input: 285 42% 89%;
+    --ring: 281 95% 62%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 305 100% 3%;
-    --sidebar-foreground: 275 30% 62%;
-    --sidebar-primary: 287 82% 32%;
+    /* Sidebar stays dark — always */
+    --sidebar-background: 282 72% 11%;  /* #20092F */
+    --sidebar-foreground: 275 30% 75%;
+    --sidebar-primary: 281 95% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 285 100% 8%;
+    --sidebar-accent: 281 68% 17%;
     --sidebar-accent-foreground: 270 60% 96%;
-    --sidebar-border: 285 65% 18%;
-    --sidebar-ring: 287 82% 32%;
+    --sidebar-border: 280 60% 20%;
+    --sidebar-ring: 281 95% 62%;
   }
 
+  /* Keep .dark identical to :root light so we don't accidentally re-darken */
   .dark {
-    --background: 305 100% 3%;
-    --foreground: 270 60% 96%;
-    --card: 310 100% 4%;
-    --card-foreground: 270 60% 96%;
-    --popover: 285 100% 8%;
-    --popover-foreground: 270 60% 96%;
-    --primary: 287 82% 32%;
+    --background: 290 43% 95%;
+    --foreground: 270 62% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 270 62% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 270 62% 11%;
+    --primary: 281 95% 62%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 285 100% 8%;
-    --secondary-foreground: 270 60% 96%;
-    --muted: 285 100% 8%;
-    --muted-foreground: 275 30% 62%;
-    --accent: 285 100% 8%;
-    --accent-foreground: 270 60% 96%;
-    --destructive: 4 80% 56%;
+    --secondary: 286 43% 97%;
+    --secondary-foreground: 270 62% 11%;
+    --muted: 286 43% 97%;
+    --muted-foreground: 270 35% 50%;
+    --accent: 286 43% 97%;
+    --accent-foreground: 270 62% 11%;
+    --destructive: 0 100% 67%;
     --destructive-foreground: 0 0% 100%;
-    --border: 285 65% 18%;
-    --input: 285 65% 18%;
-    --ring: 287 82% 32%;
+    --border: 285 42% 89%;
+    --input: 285 42% 89%;
+    --ring: 281 95% 62%;
   }
 }
 
@@ -85,58 +87,60 @@
 @layer utilities {
   /* Gradientes oficiais CW */
   .gradient-primary {
-    background: linear-gradient(135deg, #760F95 0%, #59327A 100%);
+    background: linear-gradient(135deg, #A543FA 0%, #59327A 100%);
   }
+  /* Hero gradient — institucional vibrante */
   .gradient-hot {
-    background: linear-gradient(135deg, #760F95 0%, #EA4335 100%);
+    background: linear-gradient(135deg, #A543FA 0%, #C05AFD 40%, #FF5959 100%);
   }
   .gradient-gold {
-    background: linear-gradient(135deg, #FBBC04 0%, #EA4335 100%);
+    background: linear-gradient(135deg, #FFB600 0%, #FF5959 100%);
   }
   .gradient-surface {
-    background: linear-gradient(180deg, #1e0028 0%, #120010 100%);
+    background: linear-gradient(180deg, #F8F4FA 0%, #F4EDF7 100%);
   }
+  /* Sutil glow no hero */
   .gradient-glow {
-    background: radial-gradient(ellipse at top, rgba(118, 15, 149, 0.25) 0%, transparent 70%);
+    background: radial-gradient(ellipse at top left, rgba(165, 67, 250, 0.18) 0%, transparent 65%);
   }
   .text-gradient-primary {
-    background: linear-gradient(135deg, #9B1AC0 0%, #EA4335 100%);
+    background: linear-gradient(135deg, #A543FA 0%, #FF5959 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .text-gradient-gold {
-    background: linear-gradient(135deg, #FBBC04 0%, #EA4335 100%);
+    background: linear-gradient(135deg, #FFB600 0%, #FF5959 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
-  /* Cards com sombra e glow */
+  /* Cards — white surface, soft shadow */
   .cw-card {
-    @apply bg-cw-surface border border-cw-border rounded-xl;
-    box-shadow: 0 0 0 1px rgba(58, 16, 72, 0.6), 0 4px 24px rgba(118, 15, 149, 0.06);
+    @apply bg-cw-surface border border-cw-border rounded-2xl;
+    box-shadow: 0 4px 20px rgba(89, 50, 122, 0.06), 0 1px 3px rgba(89, 50, 122, 0.04);
     transition: box-shadow 200ms ease, border-color 200ms ease;
   }
   .cw-card-hover:hover {
-    border-color: #760F95;
-    box-shadow: 0 0 0 1px #760F95, 0 8px 32px rgba(118, 15, 149, 0.20);
+    border-color: #A543FA;
+    box-shadow: 0 8px 32px rgba(165, 67, 250, 0.14);
   }
   .cw-elevated {
     @apply bg-cw-elevated border border-cw-border rounded-xl;
   }
 
-  /* Skeleton shimmer com cores da paleta */
+  /* Skeleton shimmer — light palette */
   .cw-shimmer {
-    background: linear-gradient(90deg, #1e0028 0%, #3a1048 50%, #1e0028 100%);
+    background: linear-gradient(90deg, #F4EDF7 0%, #E9DDF2 50%, #F4EDF7 100%);
     background-size: 1000px 100%;
     animation: shimmer 2s linear infinite;
   }
 
-  .scrollbar-cw::-webkit-scrollbar { width: 8px; height: 8px; }
+  .scrollbar-cw::-webkit-scrollbar { width: 6px; height: 6px; }
   .scrollbar-cw::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-cw::-webkit-scrollbar-thumb {
-    background: #3a1048; border-radius: 4px;
+    background: #D8B8F7; border-radius: 3px;
   }
-  .scrollbar-cw::-webkit-scrollbar-thumb:hover { background: #760F95; }
+  .scrollbar-cw::-webkit-scrollbar-thumb:hover { background: #A543FA; }
 }

@@ -112,8 +112,8 @@ export function Sidebar() {
         </NavLink>
         {isEditing && (
           <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover/nav:opacity-100 transition-opacity">
-            <button onClick={() => move(idx, -1)} disabled={idx === 0} className="h-5 w-5 rounded bg-cw-bg border border-cw-border flex items-center justify-center disabled:opacity-30 hover:bg-cw-purple/20"><ArrowUp className="h-3 w-3" /></button>
-            <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="h-5 w-5 rounded bg-cw-bg border border-cw-border flex items-center justify-center disabled:opacity-30 hover:bg-cw-purple/20"><ArrowDown className="h-3 w-3" /></button>
+            <button onClick={() => move(idx, -1)} disabled={idx === 0} className="h-5 w-5 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-cw-purple/20"><ArrowUp className="h-3 w-3" /></button>
+            <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="h-5 w-5 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-cw-purple/20"><ArrowDown className="h-3 w-3" /></button>
             <button onClick={() => remove(idx)} className="h-5 w-5 rounded bg-cw-red/20 border border-cw-red/40 text-cw-red flex items-center justify-center hover:bg-cw-red/30"><Trash2 className="h-3 w-3" /></button>
           </div>
         )}

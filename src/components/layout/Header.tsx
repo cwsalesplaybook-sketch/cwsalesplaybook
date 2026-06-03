@@ -13,11 +13,11 @@ interface HeaderProps {
 export function Header({ titulo, subtitulo, acoes, storeKey }: HeaderProps) {
   const key = storeKey ?? `header.${titulo.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
   return (
-    <header className="border-b border-cw-border bg-cw-bg/80 backdrop-blur-sm sticky top-0 z-20">
+    <header className="border-b border-cw-border bg-cw-bg/90 backdrop-blur-sm sticky top-0 z-20">
       <div className="px-8 py-5 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-cw-text tracking-tight">
-            <EditableText storeKey={`${key}.titulo`} defaultValue={titulo} className="text-2xl font-bold" />
+            <EditableText storeKey={`${key}.titulo`} defaultValue={titulo} className="text-2xl font-bold text-cw-text" />
           </h1>
           {subtitulo && (
             <p className="text-sm text-cw-muted mt-0.5">

@@ -27,8 +27,8 @@ export function TimelineEmpresa() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-cw-purple-light" />
-          <h2 className="text-xl font-bold">
-            <EditableText storeKey="start.timeline.titulo" defaultValue="A jornada da CW" className="text-xl font-bold" />
+          <h2 className="text-xl font-bold text-cw-text">
+            <EditableText storeKey="start.timeline.titulo" defaultValue="A jornada da CW" className="text-xl font-bold text-cw-text" />
           </h2>
         </div>
         {isEditing && (
@@ -38,32 +38,32 @@ export function TimelineEmpresa() {
         )}
       </div>
 
-      <ol className="relative border-l-2 border-cw-border ml-3 space-y-6">
+      <ol className="relative border-l-2 border-[#D8B8F7] ml-3 space-y-6">
         {items.map((m, idx) => {
           const isFuture = m.ano === '2040';
           return (
             <li key={`${m.ano}-${idx}`} className="ml-6 group/m">
-              <span className={`absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold ${isFuture ? 'bg-cw-yellow text-cw-purple-dark' : idx === 0 ? 'gradient-primary text-white' : 'bg-cw-elevated border border-cw-border text-cw-purple-light'}`}>
+              <span className={`absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold border-2 border-white shadow-sm ${isFuture ? 'bg-cw-yellow text-cw-purple-dark' : idx === 0 ? 'gradient-primary text-white border-white' : 'bg-white border-[#D8B8F7] text-cw-purple'}`}>
                 ●
               </span>
               <div className="flex items-baseline gap-3 flex-wrap">
-                <p className={`text-lg font-black ${isFuture ? 'text-cw-yellow' : 'text-cw-purple-light'}`}>
-                  <EditableText storeKey={`${STORE_KEY}.${idx}.ano`} defaultValue={m.ano} className={`text-lg font-black ${isFuture ? 'text-cw-yellow' : 'text-cw-purple-light'}`} />
+                <p className={`text-lg font-black ${isFuture ? 'text-cw-yellow' : 'text-cw-purple'}`}>
+                  <EditableText storeKey={`${STORE_KEY}.${idx}.ano`} defaultValue={m.ano} className={`text-lg font-black ${isFuture ? 'text-cw-yellow' : 'text-cw-purple'}`} />
                 </p>
-                <p className="font-bold">
-                  <EditableText storeKey={`${STORE_KEY}.${idx}.titulo`} defaultValue={m.titulo} className="font-bold" />
+                <p className="font-bold text-cw-text">
+                  <EditableText storeKey={`${STORE_KEY}.${idx}.titulo`} defaultValue={m.titulo} className="font-bold text-cw-text" />
                 </p>
                 {isEditing && (
                   <button
                     onClick={() => remove(idx)}
-                    className="h-6 w-6 rounded bg-cw-red/15 text-cw-red border border-cw-red/30 hover:bg-cw-red/25 flex items-center justify-center opacity-0 group-hover/m:opacity-100 transition-opacity ml-auto"
+                    className="h-6 w-6 rounded bg-cw-red/10 text-cw-red border border-cw-red/25 hover:bg-cw-red/20 flex items-center justify-center opacity-0 group-hover/m:opacity-100 transition-opacity ml-auto"
                     title="Remover"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>
                 )}
               </div>
-              <p className="text-sm text-cw-muted mt-1">
+              <p className="text-sm text-cw-muted mt-1 leading-relaxed">
                 <EditableText storeKey={`${STORE_KEY}.${idx}.descricao`} defaultValue={m.descricao} multiline className="text-sm text-cw-muted" />
               </p>
             </li>

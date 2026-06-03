@@ -29,8 +29,8 @@ export function TimeGrid() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-cw-purple-light" />
-          <h2 className="text-xl font-bold">
-            <EditableText storeKey="start.time.titulo" defaultValue="Quem é quem no time" className="text-xl font-bold" />
+          <h2 className="text-xl font-bold text-cw-text">
+            <EditableText storeKey="start.time.titulo" defaultValue="Quem é quem no time" className="text-xl font-bold text-cw-text" />
           </h2>
         </div>
         {isEditing && (
@@ -43,7 +43,7 @@ export function TimeGrid() {
         {items.map((p, idx) => {
           const initials = p.nome.split(' ').slice(0, 2).map((n) => n[0]).join('');
           return (
-            <div key={p.id} className="group p-4 rounded-lg bg-cw-bg border border-cw-border hover:border-cw-purple/50 transition-colors relative">
+            <div key={p.id} className="group p-4 rounded-xl bg-cw-elevated border border-cw-border hover:border-cw-purple/50 hover:shadow-md transition-all duration-150 relative">
               {isEditing && (
                 <button
                   onClick={() => remove(idx)}
@@ -56,20 +56,20 @@ export function TimeGrid() {
               <div className="h-12 w-12 rounded-full gradient-primary flex items-center justify-center text-white font-bold mb-3">
                 {initials}
               </div>
-              <p className="font-bold text-sm">
-                <EditableText storeKey={`${STORE_KEY}.${idx}.nome`} defaultValue={p.nome} className="font-bold text-sm" />
+              <p className="font-bold text-sm text-cw-text">
+                <EditableText storeKey={`${STORE_KEY}.${idx}.nome`} defaultValue={p.nome} className="font-bold text-sm text-cw-text" />
               </p>
               <p className="text-xs text-cw-muted mb-2">
                 <EditableText storeKey={`${STORE_KEY}.${idx}.cargo`} defaultValue={p.cargo} className="text-xs text-cw-muted" />
               </p>
               {p.bio && (
-                <p className="text-xs text-cw-text/80 leading-relaxed mb-2">
-                  <EditableText storeKey={`${STORE_KEY}.${idx}.bio`} defaultValue={p.bio} multiline className="text-xs" />
+                <p className="text-xs text-cw-text/70 leading-relaxed mb-2">
+                  <EditableText storeKey={`${STORE_KEY}.${idx}.bio`} defaultValue={p.bio} multiline className="text-xs text-cw-text/70" />
                 </p>
               )}
               {p.slack && (
-                <p className="text-xs text-cw-purple-light font-mono">
-                  <EditableText storeKey={`${STORE_KEY}.${idx}.slack`} defaultValue={p.slack} className="text-xs text-cw-purple-light font-mono" />
+                <p className="text-xs text-cw-purple font-mono">
+                  <EditableText storeKey={`${STORE_KEY}.${idx}.slack`} defaultValue={p.slack} className="text-xs text-cw-purple font-mono" />
                 </p>
               )}
             </div>
