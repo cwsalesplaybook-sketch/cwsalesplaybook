@@ -49,13 +49,15 @@ export const CARGOS = [
 ];
 
 export const JORNADA = [
-  { etapa: 'Prospecção',          desc: 'Identificação e contato inicial com leads.' },
-  { etapa: 'Qualificação',        desc: 'Aplicação de BANT/SPIN para validar o fit.' },
-  { etapa: 'Agendamento',         desc: 'Marcação da reunião com o Closer.' },
-  { etapa: 'Reunião',             desc: 'Apresentação técnica e descoberta de dor.' },
-  { etapa: 'Proposta',            desc: 'Envio da proposta comercial personalizada.' },
-  { etapa: 'Fechamento',          desc: 'Negociação final e assinatura do contrato.' },
-  { etapa: 'Onboarding',          desc: 'Passagem para o time de sucesso do cliente.' },
+  { etapa: 'Marketing / Growth',  desc: 'Rodrigo Bruno gera demanda via anúncios e redes sociais. Leads chegam já com interesse declarado na CW.' },
+  { etapa: 'Parcerias',           desc: 'Vanessa Alencar: agências, gestores de tráfego e influenciadores indicam clientes e recebem comissão por fechamento.' },
+  { etapa: 'SDR (lead quente)',   desc: 'Joelma Vieira / Pedro Ferreira: qualificam leads que solicitaram atendimento. Passam para o Closer apenas quem tem fit e potencial.' },
+  { etapa: 'BDR (lead frio/morno)', desc: 'Hyorranes Abreu: prospecta leads frios (nunca ouviram da CW) e mornos (já passaram pela apresentação mas não fecharam). Qualifica e encaminha.' },
+  { etapa: 'Closer',              desc: 'Whenna Oliveira: demonstra a plataforma, fecha a contratação, cria a conta e repassa ao time de implementação.' },
+  { etapa: 'ISM (Implementação)', desc: 'Samuel Morais / Lara Ferreira: garantem a configuração técnica, integração inicial e que o cliente gere o primeiro ROI rapidamente.' },
+  { etapa: 'Suporte N0 (IA)',     desc: 'IA atende primeiro — resolve 40% dos casos. Casos não resolvidos vão para N1.' },
+  { etapa: 'Suporte N1',          desc: 'Karen / Lethycia / Leiliane / Thais: triagem e resolução de casos simples não resolvidos pela IA.' },
+  { etapa: 'Suporte N2',          desc: 'Gabriel Barbosa: casos técnicos — impressora, ativação remota, configurações avançadas.' },
 ];
 
 export const SPIN = [
@@ -98,19 +100,46 @@ export const BANT = [
 
 export const OBJECOES = [
   {
-    objecao: 'Já tenho um sistema',
-    argumento:
-      'Entendo! Mas você está satisfeito com os resultados que ele traz hoje? Nossa plataforma vai além de um sistema — é um canal próprio de vendas que elimina as taxas do iFood.',
+    tipo: 'Valores',
+    objecao: 'Eu só quero saber o preço',
+    momento: 'Início',
+    argumento: 'Nós temos planos a partir de R$139,99/mês (anual). Mas antes de falar de preço, preciso entender a sua operação — assim consigo te indicar o plano certo e mostrar como o investimento já se paga nos primeiros meses.',
   },
   {
-    objecao: 'Está caro',
-    argumento:
-      'Faz sentido avaliar o custo. Quanto você paga de taxa pro iFood por mês? Nossos clientes recuperam o investimento no primeiro mês só eliminando essa dependência.',
+    tipo: 'Valores',
+    objecao: 'Eu achei muito caro',
+    momento: 'Fim',
+    argumento: 'Se você achou caro é porque eu ainda não consegui mostrar todo o valor da ferramenta. Uma das funcionalidades nativas é o disparador de WhatsApp — com ele, um único disparo costuma pagar vários meses de mensalidade. Posso te mostrar como funciona?',
   },
   {
-    objecao: 'Preciso pensar',
-    argumento:
-      'Claro! O que exatamente você precisa avaliar? Posso te ajudar a ter essas informações agora para você decidir com mais segurança.',
+    tipo: 'Concorrente',
+    objecao: 'A ferramenta que tenho hoje tem tudo que vocês têm',
+    momento: 'Fim',
+    argumento: 'Você consegue identificar algum ponto de melhoria no sistema atual? É muito comum ferramentas se apresentarem como completas, mas com funcionalidades incompletas ou em módulos separados. O que você usa hoje e sente que poderia ser melhor?',
+  },
+  {
+    tipo: 'Ceticismo',
+    objecao: 'Minhas vendas estão fracas, não é bom momento',
+    momento: 'Início',
+    argumento: 'Entendo o receio. Mas deixa eu te perguntar: você já teve dificuldade de atender clientes no WhatsApp? Essa dificuldade compromete o atendimento? Automatizando esse processo, você evita perder pedidos e constrói uma base de clientes para fidelizar.',
+  },
+  {
+    tipo: 'Processo',
+    objecao: 'Essa videochamada é realmente necessária?',
+    momento: 'Fim',
+    argumento: 'Sim! A gente faz isso para que você faça uma contratação com segurança — o consultor vai te mostrar exatamente o que a plataforma faz pela sua operação, personalizado para o seu negócio.',
+  },
+  {
+    tipo: 'Dispensa',
+    objecao: 'Me manda no WhatsApp que eu olho e te dou retorno',
+    momento: 'Fim',
+    argumento: 'Posso sim te passar as informações no WhatsApp. Mas antes de encerrar, você consegue me dizer qual é o principal desafio da sua operação hoje? Assim eu te envio exatamente o que faz sentido para você avaliar.',
+  },
+  {
+    tipo: 'Deal Breaker',
+    objecao: 'Só tenho R$60 para investir',
+    momento: 'Qualquer',
+    argumento: 'Entendo. Nesse caso, nossos planos começam em R$139,99/mês. Se o orçamento não se encaixa agora, posso te passar nosso contato para quando o momento estiver melhor?',
   },
 ];
 
