@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import {
   Megaphone, BookOpen, Swords, Target, Calendar, Sparkles, Trophy,
-  Plus, Trash2, ArrowUp, ArrowDown, Bell,
+  Plus, Trash2, ArrowUp, ArrowDown, Bell, CheckCheck,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ export default function MuralPage() {
   const { isEditing } = useEditor();
   const avisos = useEditableContent<Aviso[]>(STORE_KEY, AVISOS_PADRAO);
   const saveOverride = useContentStore((s) => s.saveOverride);
-  const { markAllRead } = useMuralNotifications();
+  const { markAllRead, markOneRead, isRead } = useMuralNotifications();
 
   // Marca todos como lidos ao abrir a página
   useEffect(() => { markAllRead(); }, [markAllRead]);
@@ -86,11 +86,17 @@ export default function MuralPage() {
       <div className="space-y-3 max-w-3xl">
         {avisos.map((a, i) => {
           const Icon = ICON_MAP[a.icon] ?? Megaphone;
+          const lido = isRead(a.id);
           return (
             <div
               key={a.id}
-              className="group cw-card cw-card-hover p-5 flex items-start gap-4 relative"
+              className={`group cw-card p-5 flex items-start gap-4 relative transition-all duration-200 ${lido ? 'opacity-60' : 'cw-card-hover'}`}
             >
+              {/* Indicador não lido */}
+              {!lido && (
+                <span className="absolute top-4 right-4 h-2 w-2 rounded-full bg-cw-red animate-pulse" />
+              )}
+
               <button
                 type="button"
                 onClick={isEditing ? () => cycleIcon(a.id) : undefined}
@@ -119,22 +125,42 @@ export default function MuralPage() {
                 </p>
               </div>
 
-              {isEditing && (
-                <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  <button onClick={() => move(a.id, -1)} disabled={i === 0} title="Mover para cima"
-                    className="h-7 w-7 rounded-lg bg-cw-elevated border border-cw-border hover:bg-cw-purple/20 disabled:opacity-30 flex items-center justify-center">
-                    <ArrowUp className="h-3.5 w-3.5" />
+              <div className="flex flex-col gap-1 shrink-0">
+                {/* Botão Lido */}
+                {!isEditing && (
+                  <button
+                    onClick={() => markOneRead(a.id)}
+                    disabled={lido}
+                    title={lido ? 'Já marcado como lido' : 'Marcar como lido'}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${
+                      lido
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 cursor-default'
+                        : 'bg-cw-elevated border-cw-border text-cw-muted hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30 opacity-0 group-hover:opacity-100'
+                    }`}
+                  >
+                    <CheckCheck className="h-3.5 w-3.5" />
+                    {lido ? 'Lido' : 'Marcar lido'}
                   </button>
-                  <button onClick={() => move(a.id, 1)} disabled={i === avisos.length - 1} title="Mover para baixo"
-                    className="h-7 w-7 rounded-lg bg-cw-elevated border border-cw-border hover:bg-cw-purple/20 disabled:opacity-30 flex items-center justify-center">
-                    <ArrowDown className="h-3.5 w-3.5" />
-                  </button>
-                  <button onClick={() => remove(a.id)} title="Remover"
-                    className="h-7 w-7 rounded-lg bg-cw-red/15 text-cw-red border border-cw-red/30 hover:bg-cw-red/25 flex items-center justify-center">
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )}
+                )}
+
+                {/* Controles do gestor */}
+                {isEditing && (
+                  <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => move(a.id, -1)} disabled={i === 0} title="Mover para cima"
+                      className="h-7 w-7 rounded-lg bg-cw-elevated border border-cw-border hover:bg-cw-purple/20 disabled:opacity-30 flex items-center justify-center">
+                      <ArrowUp className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => move(a.id, 1)} disabled={i === avisos.length - 1} title="Mover para baixo"
+                      className="h-7 w-7 rounded-lg bg-cw-elevated border border-cw-border hover:bg-cw-purple/20 disabled:opacity-30 flex items-center justify-center">
+                      <ArrowDown className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => remove(a.id)} title="Remover"
+                      className="h-7 w-7 rounded-lg bg-cw-red/15 text-cw-red border border-cw-red/30 hover:bg-cw-red/25 flex items-center justify-center">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
