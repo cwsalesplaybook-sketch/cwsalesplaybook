@@ -9,7 +9,7 @@ import { MuralAvisos } from './MuralAvisos';
 export default function Dashboard() {
   return (
     <>
-      <div className="p-8 space-y-6 max-w-6xl mx-auto">
+      <div className="p-8 space-y-6 ">
         <GreetingBanner />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -8,7 +8,7 @@ import { EditableText } from '@/admin/EditableText';
 export default function Carreira() {
   return (
     <>
-      <div className="p-8 space-y-8 max-w-6xl mx-auto">
+      <div className="p-8 space-y-8 ">
         <section>
           <h3 className="text-sm font-semibold uppercase tracking-wider text-cw-muted mb-3">
             <EditableText storeKey="carreira.trilha.titulo" defaultValue="Trilha de Níveis" className="text-sm font-semibold uppercase tracking-wider" />

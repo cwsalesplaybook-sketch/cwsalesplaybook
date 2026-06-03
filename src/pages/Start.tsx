@@ -10,7 +10,7 @@ import { FaqNovato } from '@/components/start/FaqNovato';
 export default function Start() {
   return (
     <>
-      <div className="p-8 space-y-6 max-w-6xl mx-auto">
+      <div className="p-8 space-y-6 ">
         <WelcomeHero />
 
         <div className="grid lg:grid-cols-3 gap-6">

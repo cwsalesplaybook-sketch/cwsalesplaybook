@@ -11,7 +11,7 @@ export default function BadgesPage() {
 
   return (
     <>
-      <div className="p-8 max-w-6xl mx-auto">
+      <div className="p-8 ">
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {badges.map((b) => (
             <div

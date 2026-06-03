@@ -148,7 +148,7 @@ export default function Cultura() {
 
   return (
     <>
-      <div className="p-8 space-y-6 max-w-6xl mx-auto">
+      <div className="p-8 space-y-6 ">
         <div className="cw-card p-8 gradient-surface">
           <p className="text-2xl md:text-3xl font-bold tracking-tight max-w-3xl">
             "<EditableText

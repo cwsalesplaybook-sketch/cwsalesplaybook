@@ -146,7 +146,7 @@ export default function MetaMes() {
   const nomeSDR = SDRS_ATIVOS[metaData.sdrId] || '';
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-4">
+    <div className="p-6  space-y-4">
       {config && <ConfigModal metaData={metaData} onSave={salvarConfig} onClose={() => setConfig(false)} />}
 
       {/* Header */}

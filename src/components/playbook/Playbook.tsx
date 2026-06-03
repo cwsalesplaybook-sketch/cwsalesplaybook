@@ -95,7 +95,7 @@ export default function Playbook() {
   return (
     <>
 
-      <div className="p-8 max-w-6xl mx-auto">
+      <div className="p-8 ">
         <Tabs defaultValue="cultura" className="w-full">
           <div className="overflow-x-auto scrollbar-cw -mx-1 pb-2">
             <TabsList className="bg-cw-surface border border-cw-border p-1 inline-flex w-max">

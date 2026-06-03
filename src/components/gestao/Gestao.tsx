@@ -10,7 +10,7 @@ export default function Gestao() {
   return (
     <>
 
-      <div className="p-8 max-w-6xl mx-auto">
+      <div className="p-8 ">
         <Tabs defaultValue="framework" className="w-full">
           <TabsList className="bg-cw-surface border border-cw-border p-1">
             <TabsTrigger

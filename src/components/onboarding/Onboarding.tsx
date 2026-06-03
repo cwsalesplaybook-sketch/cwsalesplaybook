@@ -18,7 +18,7 @@ export default function Onboarding() {
 
   return (
     <>
-      <div className="p-8 space-y-6 max-w-6xl mx-auto">
+      <div className="p-8 space-y-6 ">
         <div className="cw-card p-6 bg-gradient-to-br from-cw-surface to-cw-elevated">
           <p className="text-cw-muted leading-relaxed">
             Esse guia foi feito para te ajudar a se sentir{' '}
