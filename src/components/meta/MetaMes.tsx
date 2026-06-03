@@ -1,8 +1,12 @@
-/** Meta do Mês — layout completo com pontos, resgates e top guerreiros */
+/** Meta do Mês — layout completo com gráfico de evolução e top guerreiros */
 import { useEffect, useState, useCallback } from 'react';
-import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Trophy, Lock, Gift, Coffee, Plane, Headphones } from 'lucide-react';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Trophy, TrendingDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import {
+  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend,
+} from 'recharts';
 
 const SDRS_ATIVOS: Record<string, string> = {
   '1523': 'Miguel Nunes', '1445': 'Gabrielly Oliveira', '1556': 'Thais Giurizatto',
@@ -14,16 +18,9 @@ const SDRS_ATIVOS: Record<string, string> = {
   '1738': 'Clara Rodrigues', '1706': 'Raissa Fonseca', '1335': 'João Paulo',
 };
 
-const PREMIOS = [
-  { icon: Coffee,     nome: 'Vale Café',      pts: 300,   cor: 'text-amber-500' },
-  { icon: Calendar,   nome: 'Dia de Folga',   pts: 1000,  cor: 'text-blue-500'  },
-  { icon: Headphones, nome: 'Fone Bluetooth', pts: 2500,  cor: 'text-cw-purple' },
-  { icon: Gift,       nome: 'Vale Presente',  pts: 5000,  cor: 'text-pink-500'  },
-  { icon: Plane,      nome: 'Viagem',         pts: 10000, cor: 'text-green-500' },
-];
-
 interface MetaData { meta1: number; meta2: number; meta3: number; ajuste: number; sdrId: string; }
-interface ApiData  { ganhos: number; mes: string; diasUteisTotal: number; diasPassados: number; diasRestantes: number; diasUteisSemanais: number; }
+interface EvolucaoPonto { dia: string; noDia: number; acumulado: number; }
+interface ApiData  { ganhos: number; mes: string; diasUteisTotal: number; diasPassados: number; diasRestantes: number; diasUteisSemanais: number; evolucao?: EvolucaoPonto[]; }
 
 function getStatus(ganhos: number, meta1: number, diasPassados: number, diasUteisTotal: number) {
   if (!meta1 || !diasPassados) return 'no-ritmo';
@@ -135,12 +132,7 @@ export default function MetaMes() {
   const maxMeta  = meta3 || meta2 || meta1 || 1;
   const pctBarra = Math.min(100, (totalGanhos / maxMeta) * 100);
 
-  const pontos      = totalGanhos * 100;
-  const nivelPts    = [0, 500, 1000, 2000, 5000, 10000];
-  const nivel       = nivelPts.findIndex(n => pontos < n) - 1;
-  const nivelAtual  = Math.max(0, nivel < 0 ? nivelPts.length - 1 : nivel);
-  const proximoNivel = nivelPts[nivelAtual + 1] ?? nivelPts[nivelPts.length - 1];
-  const pctNivel    = Math.min(100, ((pontos - nivelPts[nivelAtual]) / (proximoNivel - nivelPts[nivelAtual])) * 100);
+  const pontos = totalGanhos * 100;
 
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
   const nomeSDR = SDRS_ATIVOS[metaData.sdrId] || '';
@@ -283,62 +275,86 @@ export default function MetaMes() {
       {/* Seção inferior */}
       <div className="grid grid-cols-[1fr_380px] gap-4">
 
-        {/* Cardápio do Guerreiro */}
+        {/* Gráfico Evolução de Fechamentos */}
         <div className="cw-card p-6">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-lg">⚔️</span>
-            <h3 className="text-base font-black text-cw-text uppercase tracking-wide">Cardápio do Guerreiro</h3>
-          </div>
-          <p className="text-xs text-cw-muted mb-5">Troque seus ganhos por prêmios e benefícios</p>
-
-          {/* Pontos e barra de nível */}
-          <div className="mb-5">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm">🪙</span>
-                <span className="text-xs text-cw-muted font-semibold">Seus pontos</span>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-cw-purple/10 flex items-center justify-center">
+                <TrendingUp className="h-4 w-4 text-cw-purple" />
               </div>
-              <span className="text-xs text-cw-muted">Próximo nível: {proximoNivel.toLocaleString()} pts</span>
+              <div>
+                <h3 className="text-base font-black text-cw-text">Evolução de Fechamentos</h3>
+                <p className="text-xs text-cw-muted">Acumulado diário no mês</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-2xl font-black text-cw-text">
-                {pontos.toLocaleString()} <span className="text-sm text-cw-yellow font-bold">pts</span>
+            <div className="flex items-center gap-4 text-xs text-cw-muted">
+              <span className="flex items-center gap-1.5">
+                <span className="w-6 h-0.5 bg-cw-purple rounded inline-block" /> Acumulado
               </span>
-              <div className="flex-1 h-2 bg-cw-border rounded-full overflow-hidden">
-                <div className="h-full bg-cw-purple rounded-full transition-all duration-700" style={{ width: `${pctNivel}%` }} />
-              </div>
-              <span className="text-xs font-black text-cw-yellow bg-cw-yellow/10 border border-cw-yellow/30 px-2 py-0.5 rounded-lg">
-                🏆 NÍVEL {nivelAtual + 1}
+              <span className="flex items-center gap-1.5">
+                <span className="w-6 border-t-2 border-dashed border-cw-red inline-block" /> No dia
               </span>
             </div>
           </div>
 
-          {/* Prêmios */}
-          <div className="grid grid-cols-5 gap-2">
-            {PREMIOS.map(({ icon: Icon, nome, pts, cor }) => {
-              const podeResgatar = pontos >= pts;
-              return (
-                <div key={nome} className="rounded-xl border border-cw-border bg-cw-elevated p-3 flex flex-col items-center gap-2 text-center hover:border-cw-purple/40 transition-colors">
-                  <Icon className={cn('h-6 w-6', cor)} />
-                  <p className="text-[11px] font-semibold text-cw-text leading-tight">{nome}</p>
-                  <p className="text-[10px] text-cw-muted font-bold">{pts.toLocaleString()} pts</p>
-                  {podeResgatar ? (
-                    <button className="w-full py-1 rounded-lg gradient-primary text-white text-[10px] font-bold hover:opacity-90 transition-opacity">
-                      Resgatar
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-1 text-cw-muted text-[10px]">
-                      <Lock className="h-3 w-3" /> Bloqueado
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <div className="mt-5 h-52">
+            {(apiData?.evolucao?.length ?? 0) === 0 ? (
+              <div className="h-full flex items-center justify-center text-cw-muted text-sm">
+                {loading ? <RefreshCw className="h-5 w-5 animate-spin text-cw-purple" /> : 'Sem dados ainda este mês.'}
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={apiData!.evolucao} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E9DDF2" vertical={false} />
+                  <XAxis
+                    dataKey="dia"
+                    tick={{ fontSize: 10, fill: '#7B5EA7' }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: '#7B5EA7' }}
+                    tickLine={false}
+                    axisLine={false}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: '#fff',
+                      border: '1px solid #E9DDF2',
+                      borderRadius: 12,
+                      fontSize: 12,
+                      color: '#1A0A2E',
+                      boxShadow: '0 4px 20px rgba(89,50,122,0.10)',
+                    }}
+                    labelStyle={{ fontWeight: 700, color: '#A543FA' }}
+                    formatter={(value: number, name: string) => [
+                      value,
+                      name === 'acumulado' ? 'Acumulado' : 'No dia',
+                    ]}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="acumulado"
+                    stroke="#A543FA"
+                    strokeWidth={2.5}
+                    dot={{ r: 3, fill: '#A543FA', strokeWidth: 0 }}
+                    activeDot={{ r: 5, fill: '#A543FA' }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="noDia"
+                    stroke="#FF5959"
+                    strokeWidth={2}
+                    strokeDasharray="5 3"
+                    dot={{ r: 2.5, fill: '#FF5959', strokeWidth: 0 }}
+                    activeDot={{ r: 4, fill: '#FF5959' }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
-
-          <button className="w-full mt-4 py-2.5 rounded-xl border border-cw-border text-cw-purple hover:bg-cw-purple/5 hover:border-cw-purple/40 text-sm font-semibold transition-colors">
-            Ver todos os prêmios
-          </button>
         </div>
 
         {/* Top Guerreiros */}

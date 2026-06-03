@@ -17,6 +17,7 @@ export default async function handler(req, res) {
   const iniciaMes = `${ano}-${mes}-01`;
 
   let ganhos = 0;
+  const porDia = {}; // { 'YYYY-MM-DD': count }
   let start = 0;
 
   try {
@@ -36,7 +37,11 @@ export default async function handler(req, res) {
         const ownerId = Number(deal.user_id?.id ?? deal.user_id);
         if (MANAGERS.has(ownerId)) continue;
         const id = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
-        if (id === String(sdrId)) ganhos++;
+        if (id === String(sdrId)) {
+          ganhos++;
+          const dia = ct.slice(0, 10); // 'YYYY-MM-DD'
+          porDia[dia] = (porDia[dia] || 0) + 1;
+        }
       }
       if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
       start += 200;
@@ -44,8 +49,8 @@ export default async function handler(req, res) {
 
     // Calcular dias úteis
     const primeiroDia = new Date(Date.UTC(ano, mesNum, 1));
-    const ultimoDia = new Date(Date.UTC(ano, mesNum + 1, 0));
-    const hoje = new Date();
+    const ultimoDia   = new Date(Date.UTC(ano, mesNum + 1, 0));
+    const hoje        = new Date();
 
     let diasUteisTotal = 0, diasPassados = 0, diasRestantes = 0;
     for (let d = new Date(primeiroDia); d <= ultimoDia; d.setUTCDate(d.getUTCDate() + 1)) {
@@ -61,16 +66,30 @@ export default async function handler(req, res) {
     inicioSemana.setDate(hoje.getDate() - hoje.getDay() + 1);
     const fimSemana = new Date(inicioSemana);
     fimSemana.setDate(inicioSemana.getDate() + 4);
-
     let diasUteisSemanais = 0;
     for (let d = new Date(inicioSemana); d <= fimSemana; d.setDate(d.getDate() + 1)) {
       const dow = d.getDay();
       if (dow !== 0 && dow !== 6) diasUteisSemanais++;
     }
 
+    // Montar série diária para o gráfico (somente até hoje)
+    const evolucao = [];
+    let acumulado = 0;
+    for (let d = new Date(primeiroDia); d <= hoje && d <= ultimoDia; d.setUTCDate(d.getUTCDate() + 1)) {
+      const chave = d.toISOString().slice(0, 10);
+      const noDia = porDia[chave] || 0;
+      acumulado += noDia;
+      evolucao.push({
+        dia: `${String(d.getUTCDate()).padStart(2, '0')}/${mes}`,
+        noDia,
+        acumulado,
+      });
+    }
+
     res.status(200).json({
       ok: true, ganhos, mes: prefixo,
       diasUteisTotal, diasPassados, diasRestantes, diasUteisSemanais,
+      evolucao,
       ts: new Date().toISOString(),
     });
   } catch (e) {
