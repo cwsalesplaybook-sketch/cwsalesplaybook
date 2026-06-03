@@ -15,8 +15,7 @@ const STORE_KEY = 'start.time';
 const GRUPOS = [
   { label: 'Sócio Fundador',         match: (c: string) => c.toLowerCase().includes('sócio') || c.toLowerCase().includes('socio') },
   { label: 'Coordenação',            match: (c: string) => c.toLowerCase().includes('coordenador') },
-  { label: 'Supervisão',             match: (c: string) => c.toLowerCase().includes('supervisor') || c.toLowerCase().includes('supervisora') },
-  { label: 'Liderança',              match: (c: string) => c.toLowerCase().includes('liderança') || c.toLowerCase().includes('lideranca') },
+  { label: 'Liderança',              match: (c: string) => c.toLowerCase().includes('liderança') || c.toLowerCase().includes('lideranca') || c.toLowerCase().includes('supervisor') || c.toLowerCase().includes('supervisora') },
   { label: 'Analistas & Assessores', match: (c: string) => c.toLowerCase().includes('analista') || c.toLowerCase().includes('assessor') },
   { label: 'Closers',                match: (c: string) => c.toLowerCase().includes('closer') },
   { label: 'SDRs',                   match: (c: string) => c.toLowerCase().includes('sdr') },
@@ -87,49 +86,40 @@ export function TimeGrid() {
               <span className="text-[11px] text-cw-muted">{pessoas.length}</span>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
               {pessoas.map(({ p, idx }) => {
                 const initials = p.nome.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
-                // Verifica se é o usuário logado pelo email (slack ou nome)
                 const isMe = email ? p.slack?.includes(email.split('@')[0]) : false;
 
                 return (
-                  <div key={p.id} className="group relative p-4 rounded-xl bg-cw-elevated border border-cw-border hover:border-cw-purple/40 hover:bg-white hover:shadow-md transition-all duration-150">
+                  <div key={p.id} className="group relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-cw-elevated border border-cw-border hover:border-cw-purple/40 hover:bg-white hover:shadow-sm transition-all duration-150">
                     {isEditing && (
                       <button
                         onClick={() => remove(idx)}
-                        className="absolute top-2 right-2 h-6 w-6 rounded bg-cw-red/10 text-cw-red border border-cw-red/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1.5 right-1.5 h-5 w-5 rounded bg-cw-red/10 text-cw-red border border-cw-red/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Remover"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-2.5 w-2.5" />
                       </button>
                     )}
 
-                    {/* Avatar — foto Google se for o usuário logado, senão iniciais */}
+                    {/* Avatar */}
                     {isMe && avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt={p.nome}
-                        className="h-11 w-11 rounded-full object-cover mb-3 border-2 border-cw-purple/30"
-                        referrerPolicy="no-referrer"
-                      />
+                      <img src={avatarUrl} alt={p.nome} className="h-9 w-9 rounded-full object-cover shrink-0 border-2 border-cw-purple/30" referrerPolicy="no-referrer" />
                     ) : (
-                      <div className="h-11 w-11 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-sm mb-3">
+                      <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-xs shrink-0">
                         {initials}
                       </div>
                     )}
 
-                    <p className="font-bold text-sm text-cw-text leading-snug">
-                      <EditableText storeKey={`${STORE_KEY}.${idx}.nome`} defaultValue={p.nome} className="font-bold text-sm text-cw-text" />
-                    </p>
-                    <p className="text-xs text-cw-muted mt-0.5">
-                      <EditableText storeKey={`${STORE_KEY}.${idx}.cargo`} defaultValue={p.cargo} className="text-xs text-cw-muted" />
-                    </p>
-                    {p.slack && (
-                      <p className="text-[11px] text-cw-purple font-mono mt-1.5 truncate">
-                        <EditableText storeKey={`${STORE_KEY}.${idx}.slack`} defaultValue={p.slack} className="text-[11px] text-cw-purple font-mono" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-xs text-cw-text leading-snug truncate">
+                        <EditableText storeKey={`${STORE_KEY}.${idx}.nome`} defaultValue={p.nome} className="font-semibold text-xs text-cw-text" />
                       </p>
-                    )}
+                      <p className="text-[11px] text-cw-muted truncate">
+                        <EditableText storeKey={`${STORE_KEY}.${idx}.cargo`} defaultValue={p.cargo} className="text-[11px] text-cw-muted" />
+                      </p>
+                    </div>
                   </div>
                 );
               })}

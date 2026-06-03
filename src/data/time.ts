@@ -10,9 +10,9 @@ export const TIME: Pessoa[] = [
   { id: 'ana-clara-lobo',  nome: 'Ana Clara Lobo',                 cargo: 'Coordenadora Comercial',              slack: '@anaclara'  },
   { id: 'vanessa',         nome: 'Vanessa Alencar',                cargo: 'Coordenadora de Parcerias',           slack: '@vanessa'   },
 
-  // ── SUPERVISÃO ──────────────────────────────────────────────────
-  { id: 'beatriz',         nome: 'Beatriz Magalhães',              cargo: 'Supervisora de Parcerias',            slack: '@beatriz'   },
-  { id: 'hyorranes',       nome: 'Hyorranes',                      cargo: 'Supervisor de Representantes e Revendedores', slack: '@hyorranes' },
+  // ── LIDERANÇA (continuação) ─────────────────────────────────────
+  { id: 'beatriz',         nome: 'Beatriz Magalhães',              cargo: 'Liderança de Parcerias',              slack: '@beatriz'   },
+  { id: 'hyorranes',       nome: 'Hyorranes',                      cargo: 'Liderança de Representantes',         slack: '@hyorranes' },
 
   // ── LIDERANÇA ───────────────────────────────────────────────────
   { id: 'joelma',          nome: 'Joelma Vieira',                  cargo: 'Liderança de Pré-Vendas (SDR)',       slack: '@joelma'    },
