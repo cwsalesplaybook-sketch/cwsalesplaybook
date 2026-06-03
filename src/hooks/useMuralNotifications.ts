@@ -22,7 +22,6 @@ export function useMuralNotifications() {
   const avisos = useEditableContent<Aviso[]>('dashboard.avisos', AVISOS_PADRAO);
   const [seenIds, setSeenIds] = useState<Set<string>>(getSeenIds);
 
-  // Recalcula quando avisos mudam (novo aviso postado pelo gestor)
   useEffect(() => {
     setSeenIds(getSeenIds());
   }, [avisos.length]);
@@ -35,5 +34,14 @@ export function useMuralNotifications() {
     setSeenIds(next);
   }, [avisos]);
 
-  return { unreadCount, markAllRead };
+  const markOneRead = useCallback((id: string) => {
+    const next = new Set(seenIds);
+    next.add(id);
+    saveSeenIds(next);
+    setSeenIds(next);
+  }, [seenIds]);
+
+  const isRead = useCallback((id: string) => seenIds.has(id), [seenIds]);
+
+  return { unreadCount, markAllRead, markOneRead, isRead };
 }

@@ -26,26 +26,26 @@ const ICON_MAP = {
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
 const NAV_PADRAO: NavItem[] = [
-  { to: '/start',      label: 'Comece Aqui',    icon: 'Sparkles',        end: false },
-  { to: '/mural',      label: 'Mural de Avisos', icon: 'Bell',           end: false },
-  { to: '/meta',       label: 'Meta do Mês',    icon: 'Target',          end: false },
-  { to: '/playbook',   label: 'Playbook',        icon: 'BookOpen',       end: false },
-  { to: '/faq',        label: 'FAQ',             icon: 'HelpCircle',     end: false },
+  { to: '/start',      label: 'Comece Aqui',     icon: 'Sparkles',        end: false },
+  { to: '/mural',      label: 'Mural de Avisos', icon: 'Bell',            end: false },
+  { to: '/meta',       label: 'Meta do Mês',     icon: 'Target',          end: false },
+  { to: '/playbook',   label: 'Playbook',        icon: 'BookOpen',        end: false },
   { to: '/',           label: 'Dashboard',       icon: 'LayoutDashboard', end: true  },
-  { to: '/agenda',     label: 'Agenda',          icon: 'Calendar',       end: false },
-  { to: '/pipeline',   label: 'Pipeline',        icon: 'BarChart2',      end: false },
-  { to: '/cultura',    label: 'Cultura',         icon: 'Heart',          end: false },
-  { to: '/onboarding', label: 'Onboarding',      icon: 'MapIcon',        end: false },
-  { to: '/badges',     label: 'Badges',          icon: 'Award',          end: false },
-  { to: '/carreira',   label: 'Carreira',        icon: 'TrendingUp',     end: false },
-  { to: '/gestao',     label: 'Gestão',          icon: 'BarChart3',      end: false },
-  { to: '/berserker',  label: 'Berserker',       icon: 'Sword',          end: false },
-  { to: '/ranking',    label: 'Ranking',         icon: 'Trophy',         end: false },
+  { to: '/agenda',     label: 'Agenda',          icon: 'Calendar',        end: false },
+  { to: '/pipeline',   label: 'Pipeline',        icon: 'BarChart2',       end: false },
+  { to: '/faq',        label: 'FAQ',             icon: 'HelpCircle',      end: false },
+  { to: '/cultura',    label: 'Cultura',         icon: 'Heart',           end: false },
+  { to: '/onboarding', label: 'Onboarding',      icon: 'MapIcon',         end: false },
+  { to: '/badges',     label: 'Badges',          icon: 'Award',           end: false },
+  { to: '/carreira',   label: 'Carreira',        icon: 'TrendingUp',      end: false },
+  { to: '/gestao',     label: 'Gestão',          icon: 'BarChart3',       end: false },
+  { to: '/berserker',  label: 'Berserker',       icon: 'Sword',           end: false },
+  { to: '/ranking',    label: 'Ranking',         icon: 'Trophy',          end: false },
 ];
 
 const SECTIONS = [
-  { label: 'Geral',          routes: ['/mural', '/faq'] },
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/agenda', '/pipeline'] },
+  { label: 'Geral',          routes: ['/mural'] },
+  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/agenda', '/pipeline', '/faq'] },
   { label: 'Cultura e Time', routes: ['/cultura', '/onboarding', '/badges', '/carreira'] },
   { label: 'Gestão',         routes: ['/gestao', '/berserker', '/ranking'] },
 ];
@@ -114,11 +114,6 @@ export function Sidebar() {
             ? <EditableText storeKey={`${STORE_KEY}.${idx}.label`} defaultValue={item.label} className="text-[13px] font-medium flex-1" />
             : <span className="flex-1">{item.label}</span>
           }
-          {showBadge && !isEditing && (
-            <span className="ml-auto h-5 min-w-[20px] px-1 rounded-full bg-cw-red text-white text-[10px] font-black flex items-center justify-center">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
         </NavLink>
         {isEditing && (
           <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover/nav:opacity-100 transition-opacity">
