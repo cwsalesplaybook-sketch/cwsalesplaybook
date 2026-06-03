@@ -14,6 +14,7 @@ import { PlaybookProduto } from './PlaybookProduto';
 import { PlaybookPlanos } from './PlaybookPlanos';
 import { PlaybookConcorrentes } from './PlaybookConcorrentes';
 import { cn } from '@/lib/utils';
+import { useSearchParams } from 'react-router-dom';
 import { EditableText } from '@/admin/EditableText';
 import { useEditableContent, useContentStore } from '@/store/contentStore';
 import { useEditor } from '@/admin/EditorContext';
@@ -89,6 +90,8 @@ const TABS_DEFAULT = [
 ];
 
 export default function Playbook() {
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab') ?? 'cultura';
   const url = useEditableContent<string>('playbook.url', PLAYBOOK_URL);
   const tabs = useEditableContent('playbook.tabs', TABS_DEFAULT);
 
@@ -104,7 +107,7 @@ export default function Playbook() {
     <>
 
       <div className="p-8 ">
-        <Tabs defaultValue="cultura" className="w-full">
+        <Tabs defaultValue={tabFromUrl} key={tabFromUrl} className="w-full">
           <div className="overflow-x-auto scrollbar-cw -mx-1 pb-2">
             <TabsList className="bg-cw-surface border border-cw-border p-1 inline-flex w-max">
               {tabs.map((t, i) => (

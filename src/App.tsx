@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { FloatingSearch } from '@/components/FloatingSearch';
 import { EditorProvider } from '@/admin/EditorContext';
 import { EditorBanner } from '@/admin/EditorBanner';
 import { PasswordGate } from '@/admin/PasswordGate';
@@ -79,6 +80,7 @@ function AppLayout() {
             <AnimatedRoutes />
           </main>
           <PasswordGate />
+          <FloatingSearch />
         </div>
       </SidebarProvider>
     </EditorProvider>
