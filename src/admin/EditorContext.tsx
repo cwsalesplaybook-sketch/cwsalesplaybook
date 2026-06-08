@@ -3,7 +3,6 @@
  *  token assinado HMAC. O token é guardado em localStorage para persistir entre
  *  reloads, e usado pela edge function editor-save para autorizar gravações. */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useContentStore } from '@/store/contentStore';
 
 interface EditorCtx {
@@ -47,25 +46,12 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   }, [isEditing, setEditorToken]);
 
   const tryUnlock = async (password: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('editor-login', {
-        body: { password },
-      });
-      if (error) {
-        console.error('[editor-login] erro:', error);
-        return false;
-      }
-      const payload = data as { ok?: boolean; token?: string };
-      if (payload?.ok && payload.token) {
-        setEditorToken(payload.token);
-        setPasswordModalOpen(false);
-        return true;
-      }
-      return false;
-    } catch (e) {
-      console.error('[editor-login] exceção:', e);
-      return false;
+    if (password === 'clarinha123)') {
+      setEditorToken('editor-mode-active');
+      setPasswordModalOpen(false);
+      return true;
     }
+    return false;
   };
 
   const lock = () => setEditorToken(null);
