@@ -173,7 +173,7 @@ export default function MetaMes() {
         </div>
         <button onClick={() => setConfig(true)}
           title="Configurar metas"
-          className="fixed top-3 right-[3.25rem] z-50 h-9 w-9 rounded-xl bg-[#1a0f2e] border border-[#ffffff12] text-[#b89fd4] hover:text-white hover:bg-[#2d1760] flex items-center justify-center transition-all shadow-lg">
+          className="h-9 w-9 rounded-xl bg-cw-elevated border border-cw-border text-cw-muted hover:text-cw-text hover:bg-cw-bg flex items-center justify-center transition-all">
           <Settings className="h-[18px] w-[18px]" />
         </button>
       </div>

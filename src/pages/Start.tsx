@@ -7,11 +7,15 @@ import { Glossario } from '@/components/start/Glossario';
 import { TimelineEmpresa } from '@/components/start/TimelineEmpresa';
 import { FaqNovato } from '@/components/start/FaqNovato';
 import { Valores } from '@/components/start/Valores';
+import { NotificationBell } from '@/components/layout/NotificationBell';
 
 export default function Start() {
   return (
     <>
-      <div className="p-8 space-y-6 ">
+      <div className="flex items-center justify-end px-8 pt-5 pb-0">
+        <NotificationBell />
+      </div>
+      <div className="p-8 pt-4 space-y-6">
         <WelcomeHero />
 
         <div className="grid lg:grid-cols-3 gap-6">

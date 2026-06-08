@@ -25,7 +25,7 @@ export function NotificationBell() {
   }, []);
 
   return (
-    <div ref={ref} className="fixed top-3 right-4 z-50">
+    <div ref={ref} className="relative">
       {/* Botão do sino */}
       <button
         onClick={() => setOpen(o => !o)}
