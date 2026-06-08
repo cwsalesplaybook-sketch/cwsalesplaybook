@@ -48,12 +48,8 @@ export function NotificationBell() {
 
       {open && (
         <div
-          className="fixed z-50 w-80 rounded-2xl border border-[#ffffff12] shadow-2xl overflow-hidden"
-          style={{
-            left: '228px',
-            top: '76px',
-            background: 'linear-gradient(180deg, #1f1040 0%, #150d30 100%)',
-          }}
+          className="absolute left-0 right-0 z-50 mt-1 rounded-2xl border border-[#ffffff18] shadow-2xl overflow-hidden"
+          style={{ background: '#1a0f2e' }}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#ffffff0a]">
