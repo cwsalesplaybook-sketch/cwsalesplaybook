@@ -245,31 +245,29 @@ export default function MetaMes() {
         </div>
       </div>
 
-      {/* Botões +1 / -1 */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Botões +1 / Salvar / -1 */}
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
         <button onClick={() => alterarAjuste(-1)}
           className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-white border border-cw-red/30 text-cw-red font-bold text-base hover:bg-red-50 transition-colors shadow-sm">
           — 1 ganho
         </button>
+        <div className="flex flex-col items-center gap-1">
+          <button onClick={() => buscarGanhos(metaData.sdrId)} disabled={loading || !metaData.sdrId}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-cw-border bg-white text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 font-semibold text-sm transition-colors disabled:opacity-40 shadow-sm whitespace-nowrap">
+            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} /> Salvar ganhos
+          </button>
+          <p className="text-[10px] text-cw-muted whitespace-nowrap">
+            Pipedrive: {apiData?.ganhos ?? '...'} · Manual: {metaData.ajuste >= 0 ? '+' : ''}{metaData.ajuste}
+          </p>
+        </div>
         <button onClick={() => alterarAjuste(1)}
           className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base text-white gradient-primary shadow-md transition-opacity hover:opacity-90">
           + 1 ganho
         </button>
       </div>
 
-      {/* Info Pipedrive */}
-      <div className="text-center space-y-1">
-        <button onClick={() => buscarGanhos(metaData.sdrId)} disabled={loading || !metaData.sdrId}
-          className="flex items-center justify-center gap-2 mx-auto px-6 py-2.5 rounded-xl border border-cw-border bg-white text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 font-semibold text-sm transition-colors disabled:opacity-40 shadow-sm">
-          <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} /> Salvar ganhos
-        </button>
-        <p className="text-xs text-cw-muted">
-          Ganhos do Pipedrive: {apiData?.ganhos ?? '...'} · Ajuste manual: {metaData.ajuste >= 0 ? '+' : ''}{metaData.ajuste}
-        </p>
-      </div>
-
       {/* Seção inferior — Ritmo Diário + Insights */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 max-w-4xl mx-auto w-full">
 
         {/* Ritmo Diário por Meta */}
         <div className="cw-card p-6 space-y-4">
