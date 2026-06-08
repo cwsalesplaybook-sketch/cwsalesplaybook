@@ -9,7 +9,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { FloatingSearch } from '@/components/FloatingSearch';
-import { NotificationBell } from '@/components/layout/NotificationBell';
 import { EditorProvider } from '@/admin/EditorContext';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { EditorBanner } from '@/admin/EditorBanner';
@@ -88,7 +87,6 @@ function AppLayout() {
           </main>
           <PasswordGate />
           <FloatingSearch />
-          <NotificationBell />
         </div>
       </SidebarProvider>
     </EditorProvider>
