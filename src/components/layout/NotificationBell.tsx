@@ -1,4 +1,4 @@
-/** Sino de notificações — painel lateral com mural de avisos */
+/** Sino de notificações fixo no canto superior direito — estilo Netflix */
 import { useState, useRef, useEffect } from 'react';
 import { Bell, CheckCheck, X, Megaphone } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
@@ -25,31 +25,30 @@ export function NotificationBell() {
   }, []);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="fixed top-3 right-4 z-50">
+      {/* Botão do sino */}
       <button
         onClick={() => setOpen(o => !o)}
         className={cn(
-          'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
+          'relative h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-150 shadow-lg',
           open
             ? 'bg-[#2d1760] text-white'
-            : 'text-[#b89fd4] hover:text-white hover:bg-white/5'
+            : 'bg-[#1a0f2e] border border-[#ffffff12] text-[#b89fd4] hover:text-white hover:bg-[#2d1760]'
         )}
       >
-        <div className="relative shrink-0">
-          <Bell className="h-[18px] w-[18px]" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 h-4 min-w-[16px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </div>
-        <span className="flex-1 text-left">Avisos</span>
+        <Bell className="h-[18px] w-[18px]" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
       </button>
 
+      {/* Painel de avisos */}
       {open && (
         <div
-          className="absolute left-0 right-0 z-50 mt-1 rounded-2xl border border-[#ffffff18] shadow-2xl overflow-hidden"
-          style={{ background: '#1a0f2e' }}
+          className="absolute top-11 right-0 w-80 rounded-2xl border border-[#ffffff12] shadow-2xl overflow-hidden"
+          style={{ background: 'linear-gradient(180deg, #1f1040 0%, #150d30 100%)' }}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#ffffff0a]">
@@ -64,10 +63,7 @@ export function NotificationBell() {
             </div>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
-                <button
-                  onClick={markAllRead}
-                  className="text-[10px] text-[#9b6fc4] hover:text-white transition-colors"
-                >
+                <button onClick={markAllRead} className="text-[10px] text-[#9b6fc4] hover:text-white transition-colors">
                   Ler todos
                 </button>
               )}
@@ -77,7 +73,7 @@ export function NotificationBell() {
             </div>
           </div>
 
-          {/* Lista de avisos */}
+          {/* Lista */}
           <div className="max-h-80 overflow-y-auto">
             {avisos.length === 0 ? (
               <div className="text-center py-8">
@@ -104,24 +100,17 @@ export function NotificationBell() {
                         <Icon className="h-4 w-4 text-white" />
                       </div>
                     </div>
-
                     <div className="flex-1 min-w-0">
                       <span className="text-[9px] font-bold uppercase text-[#7c5aa8] tracking-wider">{a.badge}</span>
                       <p className="text-[12px] text-[#d4c0ee] leading-snug mt-0.5 line-clamp-3">{a.text}</p>
                     </div>
-
                     {!lido ? (
-                      <button
-                        onClick={() => markOneRead(a.id)}
-                        title="Marcar como lido"
-                        className="shrink-0 mt-1 text-[#7c5aa8] hover:text-emerald-400 transition-colors"
-                      >
+                      <button onClick={() => markOneRead(a.id)} title="Marcar como lido"
+                        className="shrink-0 mt-1 text-[#7c5aa8] hover:text-emerald-400 transition-colors">
                         <CheckCheck className="h-4 w-4" />
                       </button>
                     ) : (
-                      <span className="shrink-0 mt-1 text-emerald-500">
-                        <CheckCheck className="h-4 w-4" />
-                      </span>
+                      <span className="shrink-0 mt-1 text-emerald-500"><CheckCheck className="h-4 w-4" /></span>
                     )}
                   </div>
                 );

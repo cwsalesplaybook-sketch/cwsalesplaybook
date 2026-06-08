@@ -15,7 +15,6 @@ import { EditableText } from '@/admin/EditableText';
 import { toast } from '@/hooks/use-toast';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
-import { NotificationBell } from '@/components/layout/NotificationBell';
 
 interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?: boolean; }
 
@@ -53,7 +52,9 @@ export function Sidebar() {
   const { papel, setPapel } = useSidebarContext();
   const { isEditing, openPasswordModal, lock } = useEditor();
   const userProfile = useUserProfile();
-  const items = useEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
+  const rawItems = useEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
+  // Remove /mural do sidebar — o sino de avisos fica no canto superior direito
+  const items = rawItems.filter(i => i.to !== '/mural');
   const saveOverride = useContentStore((s) => s.saveOverride);
   const update = async (next: NavItem[]) => {
     try { await saveOverride(STORE_KEY, next); }
@@ -164,9 +165,6 @@ export function Sidebar() {
             </div>
           );
         })()}
-
-        {/* Sino de notificações */}
-        <NotificationBell />
 
         {/* Seções */}
         {SECTIONS.map(section => {
