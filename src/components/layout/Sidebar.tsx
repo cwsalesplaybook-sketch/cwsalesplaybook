@@ -29,7 +29,6 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/meta',       label: 'Meta do Mês',  icon: 'Target',          end: false },
   { to: '/playbook',   label: 'Playbook',     icon: 'BookOpen',        end: false },
   { to: '/',           label: 'Dashboard',    icon: 'LayoutDashboard', end: true  },
-  { to: '/agenda',     label: 'Agenda',       icon: 'Calendar',        end: false },
   { to: '/pipeline',   label: 'Pipeline',     icon: 'BarChart2',       end: false },
   { to: '/faq',        label: 'FAQ',          icon: 'HelpCircle',      end: false },
   { to: '/changelog',  label: 'Changelog',    icon: 'Zap',             end: false },
@@ -42,7 +41,7 @@ const NAV_PADRAO: NavItem[] = [
 ];
 
 const SECTIONS = [
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/agenda', '/pipeline', '/faq', '/changelog'] },
+  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline', '/faq', '/changelog'] },
   { label: 'Cultura e Time', routes: ['/cultura', '/historias', '/onboarding', '/carreira'] },
   { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];

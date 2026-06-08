@@ -1,8 +1,7 @@
-/** Seção Cultura — agora interativa: cards + mural + histórias + semana + mood + grito de guerra. */
-import { useState } from 'react';
+/** Seção Cultura — cards + mood + grito de guerra + rotinas do time. */
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, Megaphone, ArrowRight, Plus, Trash2 } from 'lucide-react';
-import { Header } from '@/components/layout/Header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CULTURA_CARDS, type CulturaCard } from '@/data/cultura';
@@ -13,6 +12,11 @@ import { useEditableContent, useContentStore } from '@/store/contentStore';
 import { useEditor } from '@/admin/EditorContext';
 import { EditableText } from '@/admin/EditableText';
 import { toast } from '@/hooks/use-toast';
+import { RITUAIS } from '@/data/rituais';
+import { useSidebarContext } from '@/context/SidebarContext';
+import { RitualCard } from '@/components/agenda/RitualCard';
+import { RitualPanel } from '@/components/agenda/RitualPanel';
+import type { Ritual } from '@/types';
 
 const COLOR_MAP: Record<CulturaCard['cor'], { border: string; accent: string; bg: string }> = {
   orange: { border: 'border-cw-purple/40',      accent: 'text-cw-purple-light', bg: 'from-cw-purple/15 to-transparent' },
@@ -131,8 +135,21 @@ function CardBlock({ card, idx, onRemove }: { card: CulturaCard; idx: number; on
 
 export default function Cultura() {
   const { isEditing } = useEditor();
+  const { papel } = useSidebarContext();
+  const [selectedRitual, setSelectedRitual] = useState<Ritual | null>(null);
   const cards = useEditableContent<CulturaCard[]>(STORE_KEY, CULTURA_CARDS);
   const saveOverride = useContentStore((s) => s.saveOverride);
+
+  const rituais = useMemo(() =>
+    RITUAIS.filter((r) =>
+      papel === 'SDR'
+        ? r.participantes === 'SDR' || r.participantes === 'Ambos'
+        : r.participantes === 'Closer' || r.participantes === 'Ambos'
+    ), [papel]);
+
+  const diarias = rituais.filter((r) => r.frequencia.includes('Diária'));
+  const semanais = rituais.filter((r) => r.frequencia.includes('Semanal') || r.frequencia.includes('Quinzenal'));
+  const mensais  = rituais.filter((r) => r.frequencia.includes('Mensal'));
 
   const update = async (next: CulturaCard[]) => {
     try { await saveOverride(STORE_KEY, next); }
@@ -174,7 +191,28 @@ export default function Cultura() {
         )}
 
         <MoodMeter />
+
+        {/* Rotinas do Time */}
+        <div className="space-y-8">
+          <h2 className="text-lg font-black text-cw-text uppercase tracking-widest">Rotinas do Time</h2>
+          {[
+            { titulo: 'Diárias', items: diarias },
+            { titulo: 'Semanais & Quinzenais', items: semanais },
+            { titulo: 'Mensais', items: mensais },
+          ].map((sec) => sec.items.length > 0 && (
+            <div key={sec.titulo}>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-cw-muted mb-4">{sec.titulo}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sec.items.map((r) => (
+                  <RitualCard key={r.id} ritual={r} onClick={() => setSelectedRitual(r)} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
       </div>
+      <RitualPanel ritual={selectedRitual} onClose={() => setSelectedRitual(null)} />
     </>
   );
 }
