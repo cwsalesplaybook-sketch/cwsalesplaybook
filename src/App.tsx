@@ -32,6 +32,7 @@ import BadgesPage from '@/pages/Badges';
 import FaqPage from '@/pages/Faq';
 import MuralPage from '@/pages/MuralPage';
 import ChangelogPage from '@/pages/ChangelogPage';
+import HistoriasSucesso from '@/pages/HistoriasSucesso';
 import GestorAdminPage from '@/pages/GestorAdminPage';
 import NotFound from './pages/NotFound';
 
@@ -56,6 +57,7 @@ function AnimatedRoutes() {
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/pipeline" element={<Pipeline />} />
           <Route path="/cultura" element={<Cultura />} />
+          <Route path="/historias" element={<HistoriasSucesso />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/badges" element={<BadgesPage />} />
           <Route path="/carreira" element={<Carreira />} />

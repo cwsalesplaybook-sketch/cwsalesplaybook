@@ -7,9 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CULTURA_CARDS, type CulturaCard } from '@/data/cultura';
 import { cn } from '@/lib/utils';
-import { MuralFotos } from './MuralFotos';
-import { HistoriasVitoria } from './HistoriasVitoria';
-import { SemanaCW } from './SemanaCW';
 import { MoodMeter } from './MoodMeter';
 import { GritoDeGuerra } from './GritoDeGuerra';
 import { useEditableContent, useContentStore } from '@/store/contentStore';
@@ -176,14 +173,7 @@ export default function Cultura() {
           </div>
         )}
 
-        <SemanaCW />
-
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2"><HistoriasVitoria /></div>
-          <MoodMeter />
-        </div>
-
-        <MuralFotos />
+        <MoodMeter />
       </div>
     </>
   );

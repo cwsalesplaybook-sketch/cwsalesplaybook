@@ -33,16 +33,17 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/pipeline',   label: 'Pipeline',     icon: 'BarChart2',       end: false },
   { to: '/faq',        label: 'FAQ',          icon: 'HelpCircle',      end: false },
   { to: '/changelog',  label: 'Changelog',    icon: 'Zap',             end: false },
-  { to: '/cultura',    label: 'Cultura',      icon: 'Heart',           end: false },
-  { to: '/onboarding', label: 'Onboarding',   icon: 'MapIcon',         end: false },
-  { to: '/carreira',   label: 'Carreira',     icon: 'TrendingUp',      end: false },
+  { to: '/cultura',    label: 'Cultura',           icon: 'Heart',       end: false },
+  { to: '/historias',  label: 'Histórias de Sucesso', icon: 'Trophy',  end: false },
+  { to: '/onboarding', label: 'Onboarding',        icon: 'MapIcon',    end: false },
+  { to: '/carreira',   label: 'Carreira',          icon: 'TrendingUp', end: false },
   { to: '/gestao',     label: 'Gestão',       icon: 'BarChart3',       end: false },
   { to: '/berserker',  label: 'Berserker',    icon: 'Sword',           end: false },
 ];
 
 const SECTIONS = [
   { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/agenda', '/pipeline', '/faq', '/changelog'] },
-  { label: 'Cultura e Time', routes: ['/cultura', '/onboarding', '/carreira'] },
+  { label: 'Cultura e Time', routes: ['/cultura', '/historias', '/onboarding', '/carreira'] },
   { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];
 
