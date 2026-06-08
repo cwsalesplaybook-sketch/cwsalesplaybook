@@ -267,7 +267,7 @@ export default function MetaMes() {
       </div>
 
       {/* Seção inferior — Ritmo Diário + Insights */}
-      <div className="grid grid-cols-2 gap-4 max-w-4xl mx-auto w-full">
+      <div className="grid grid-cols-2 gap-4">
 
         {/* Ritmo Diário por Meta */}
         <div className="cw-card p-6 space-y-4">
