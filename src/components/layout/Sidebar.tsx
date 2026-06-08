@@ -4,10 +4,9 @@ import {
   BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, Map as MapIcon,
   TrendingUp, BarChart3, Sword, Sparkles, Award, Lock, Plus, Trash2,
   ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trophy, Target,
-  Bell, HelpCircle,
+  HelpCircle, Zap, ShieldCheck,
   type LucideIcon,
 } from 'lucide-react';
-import { useMuralNotifications } from '@/hooks/useMuralNotifications';
 import { cn } from '@/lib/utils';
 import { useSidebarContext, type Papel } from '@/context/SidebarContext';
 import { useEditor } from '@/admin/EditorContext';
@@ -16,34 +15,34 @@ import { EditableText } from '@/admin/EditableText';
 import { toast } from '@/hooks/use-toast';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
+import { NotificationBell } from '@/components/layout/NotificationBell';
 
 interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?: boolean; }
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword, Trophy, Target, Bell, HelpCircle,
+  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
 const NAV_PADRAO: NavItem[] = [
-  { to: '/start',      label: 'Comece Aqui',     icon: 'Sparkles',        end: false },
-  { to: '/mural',      label: 'Mural de Avisos', icon: 'Bell',            end: false },
-  { to: '/meta',       label: 'Meta do Mês',     icon: 'Target',          end: false },
-  { to: '/playbook',   label: 'Playbook',        icon: 'BookOpen',        end: false },
-  { to: '/',           label: 'Dashboard',       icon: 'LayoutDashboard', end: true  },
-  { to: '/agenda',     label: 'Agenda',          icon: 'Calendar',        end: false },
-  { to: '/pipeline',   label: 'Pipeline',        icon: 'BarChart2',       end: false },
-  { to: '/faq',        label: 'FAQ',             icon: 'HelpCircle',      end: false },
-  { to: '/cultura',    label: 'Cultura',         icon: 'Heart',           end: false },
-  { to: '/onboarding', label: 'Onboarding',      icon: 'MapIcon',         end: false },
-  { to: '/carreira',   label: 'Carreira',        icon: 'TrendingUp',      end: false },
-  { to: '/gestao',     label: 'Gestão',          icon: 'BarChart3',       end: false },
-  { to: '/berserker',  label: 'Berserker',       icon: 'Sword',           end: false },
+  { to: '/start',      label: 'Comece Aqui',  icon: 'Sparkles',        end: false },
+  { to: '/meta',       label: 'Meta do Mês',  icon: 'Target',          end: false },
+  { to: '/playbook',   label: 'Playbook',     icon: 'BookOpen',        end: false },
+  { to: '/',           label: 'Dashboard',    icon: 'LayoutDashboard', end: true  },
+  { to: '/agenda',     label: 'Agenda',       icon: 'Calendar',        end: false },
+  { to: '/pipeline',   label: 'Pipeline',     icon: 'BarChart2',       end: false },
+  { to: '/faq',        label: 'FAQ',          icon: 'HelpCircle',      end: false },
+  { to: '/changelog',  label: 'Changelog',    icon: 'Zap',             end: false },
+  { to: '/cultura',    label: 'Cultura',      icon: 'Heart',           end: false },
+  { to: '/onboarding', label: 'Onboarding',   icon: 'MapIcon',         end: false },
+  { to: '/carreira',   label: 'Carreira',     icon: 'TrendingUp',      end: false },
+  { to: '/gestao',     label: 'Gestão',       icon: 'BarChart3',       end: false },
+  { to: '/berserker',  label: 'Berserker',    icon: 'Sword',           end: false },
 ];
 
 const SECTIONS = [
-  { label: 'Geral',          routes: ['/mural'] },
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/agenda', '/pipeline', '/faq'] },
+  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/agenda', '/pipeline', '/faq', '/changelog'] },
   { label: 'Cultura e Time', routes: ['/cultura', '/onboarding', '/carreira'] },
   { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];
@@ -56,8 +55,6 @@ export function Sidebar() {
   const userProfile = useUserProfile();
   const items = useEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
   const saveOverride = useContentStore((s) => s.saveOverride);
-  const { unreadCount } = useMuralNotifications();
-
   const update = async (next: NavItem[]) => {
     try { await saveOverride(STORE_KEY, next); }
     catch (e) { toast({ title: 'Falha ao salvar', description: e instanceof Error ? e.message : '', variant: 'destructive' }); }
@@ -74,16 +71,14 @@ export function Sidebar() {
     const next = [...items]; next[idx] = { ...next[idx], icon: ICON_KEYS[(cur + 1) % ICON_KEYS.length] }; update(next);
   };
 
-  const startItem       = items.find(i => i.to === '/start');
-  const sectionItems    = (routes: string[]) => items.filter(i => routes.includes(i.to));
+  const startItem        = items.find(i => i.to === '/start');
+  const sectionItems     = (routes: string[]) => items.filter(i => routes.includes(i.to));
   const allSectionRoutes = SECTIONS.flatMap(s => s.routes);
 
   /* ── Nav item reutilizável ── */
   const NavItemEl = ({ item }: { item: NavItem }) => {
     const idx = items.indexOf(item);
     const Icon = ICON_MAP[item.icon] ?? Sparkles;
-    const isMural = item.to === '/mural';
-    const showBadge = isMural && unreadCount > 0;
     return (
       <div className="group/nav relative">
         <NavLink
@@ -102,11 +97,6 @@ export function Sidebar() {
             className={cn('shrink-0 relative', isEditing && 'cursor-pointer hover:scale-110')}
           >
             <Icon className="h-[18px] w-[18px]" />
-            {showBadge && (
-              <span className="absolute -top-1.5 -right-1.5 h-4 min-w-[16px] px-0.5 rounded-full bg-cw-red text-white text-[9px] font-black flex items-center justify-center leading-none">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
           </button>
           {isEditing
             ? <EditableText storeKey={`${STORE_KEY}.${idx}.label`} defaultValue={item.label} className="text-[13px] font-medium flex-1" />
@@ -175,6 +165,9 @@ export function Sidebar() {
           );
         })()}
 
+        {/* Sino de notificações */}
+        <NotificationBell />
+
         {/* Seções */}
         {SECTIONS.map(section => {
           const sItems = sectionItems(section.routes);
@@ -205,6 +198,23 @@ export function Sidebar() {
 
       {/* ── Footer ── */}
       <div className="px-3 pb-4 space-y-2">
+
+        {/* Painel Admin — só visível no Modo Gestor */}
+        {isEditing && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) => cn(
+              'w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150',
+              isActive
+                ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
+                : 'bg-amber-400/5 text-amber-400/80 hover:bg-amber-400/15 hover:text-amber-300 border border-amber-400/15'
+            )}
+          >
+            <ShieldCheck className="h-4 w-4 shrink-0" />
+            <span className="flex-1 text-left">Painel Admin</span>
+            <ChevronRight className="h-3.5 w-3.5 opacity-40" />
+          </NavLink>
+        )}
 
         {/* Modo Gestor */}
         <button

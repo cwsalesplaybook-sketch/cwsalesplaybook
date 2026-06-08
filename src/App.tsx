@@ -10,6 +10,7 @@ import { SidebarProvider } from '@/context/SidebarContext';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { FloatingSearch } from '@/components/FloatingSearch';
 import { EditorProvider } from '@/admin/EditorContext';
+import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { EditorBanner } from '@/admin/EditorBanner';
 import { PasswordGate } from '@/admin/PasswordGate';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,6 +31,8 @@ import Start from '@/pages/Start';
 import BadgesPage from '@/pages/Badges';
 import FaqPage from '@/pages/Faq';
 import MuralPage from '@/pages/MuralPage';
+import ChangelogPage from '@/pages/ChangelogPage';
+import GestorAdminPage from '@/pages/GestorAdminPage';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -62,6 +65,8 @@ function AnimatedRoutes() {
           <Route path="/meta" element={<MetaMes />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/mural" element={<MuralPage />} />
+          <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="/admin" element={<GestorAdminPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>
@@ -70,6 +75,7 @@ function AnimatedRoutes() {
 }
 
 function AppLayout() {
+  useActivityTracker();
   return (
     <EditorProvider>
       <SidebarProvider>
