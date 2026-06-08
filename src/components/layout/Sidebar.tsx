@@ -105,7 +105,7 @@ export function Sidebar() {
           }
         </NavLink>
         {isEditing && (
-          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover/nav:opacity-100 transition-opacity">
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
             <button onClick={() => move(idx, -1)} disabled={idx === 0} className="h-5 w-5 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowUp className="h-3 w-3" /></button>
             <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="h-5 w-5 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowDown className="h-3 w-3" /></button>
             <button onClick={() => remove(idx)} className="h-5 w-5 rounded bg-red-900/30 border border-red-500/30 text-red-400 flex items-center justify-center hover:bg-red-900/50"><Trash2 className="h-3 w-3" /></button>
