@@ -1,12 +1,16 @@
 /** Hero da página Comece por Aqui — boas-vindas com vídeo placeholder. */
 import { Sparkles } from 'lucide-react';
 import { EditableText } from '@/admin/EditableText';
+import { NotificationBell } from '@/components/layout/NotificationBell';
 
 export function WelcomeHero() {
   return (
     <section className="relative overflow-hidden rounded-2xl gradient-hot p-6">
       <div className="absolute inset-0 gradient-glow pointer-events-none" />
       <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
+      <div className="absolute top-4 right-4 z-20">
+        <NotificationBell />
+      </div>
 
       <div className="relative grid md:grid-cols-2 gap-7 items-center">
         <div>
