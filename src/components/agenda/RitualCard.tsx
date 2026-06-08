@@ -18,10 +18,10 @@ const ACCENT: Record<Categoria, string> = {
 };
 
 const BADGE: Record<Categoria, string> = {
-  performance:     'bg-red-900/30 text-red-300 border border-red-800',
-  desenvolvimento: 'bg-purple-900/30 text-purple-300 border border-purple-800',
-  cultura:         'bg-yellow-900/30 text-yellow-300 border border-yellow-800',
-  gestao:          'bg-violet-900/30 text-violet-300 border border-violet-800',
+  performance:     'bg-red-100 text-red-700 border border-red-200',
+  desenvolvimento: 'bg-purple-100 text-purple-700 border border-purple-200',
+  cultura:         'bg-yellow-100 text-yellow-700 border border-yellow-200',
+  gestao:          'bg-violet-100 text-violet-700 border border-violet-200',
 };
 
 const CAT_LABEL: Record<Categoria, string> = {
