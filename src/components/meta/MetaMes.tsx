@@ -1,13 +1,8 @@
-/** Meta do Mês — layout completo com gráfico de evolução e top guerreiros */
+/** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useState, useCallback } from 'react';
-import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Trophy } from 'lucide-react';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, AlertTriangle, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend,
-} from 'recharts';
 
 const SDRS_ATIVOS: Record<string, string> = {
   '1523': 'Miguel Nunes', '1445': 'Gabrielly Oliveira', '1556': 'Thais Giurizatto',
@@ -22,7 +17,6 @@ const SDRS_ATIVOS: Record<string, string> = {
 interface MetaData { meta1: number; meta2: number; meta3: number; ajuste: number; sdrId: string; }
 interface EvolucaoPonto { dia: string; noDia: number; acumulado: number; }
 interface ApiData  { ganhos: number; mes: string; diasUteisTotal: number; diasPassados: number; diasRestantes: number; diasUteisSemanais: number; evolucao?: EvolucaoPonto[]; }
-interface RankingSDR { id: string; nome: string; iniciais: string; vendas: number; }
 
 function getStatus(ganhos: number, meta1: number, diasPassados: number, diasUteisTotal: number) {
   if (!meta1 || !diasPassados) return 'no-ritmo';
@@ -78,8 +72,7 @@ export default function MetaMes() {
   const [config, setConfig]       = useState(false);
   const [userId, setUserId]       = useState('');
   const [mes, setMes]             = useState('');
-  const [ranking, setRanking]     = useState<RankingSDR[]>([]);
-  const [loadingRank, setLoadingRank] = useState(false);
+  const [conversao, setConversao] = useState(50);
 
   const carregarPerfil = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -102,24 +95,12 @@ export default function MetaMes() {
     } finally { setLoading(false); }
   }, []);
 
-  const buscarRanking = useCallback(async () => {
-    setLoadingRank(true);
-    try {
-      const r = await fetch('/api/ranking', { cache: 'no-store' });
-      const json = await r.json();
-      if (json.ok) setRanking(json.ranking ?? []);
-    } finally { setLoadingRank(false); }
-  }, []);
-
-  useEffect(() => { carregarPerfil(); buscarRanking(); }, [carregarPerfil, buscarRanking]);
+  useEffect(() => { carregarPerfil(); }, [carregarPerfil]);
   useEffect(() => { if (metaData.sdrId) buscarGanhos(metaData.sdrId); }, [metaData.sdrId, buscarGanhos]);
   useEffect(() => {
-    const id = setInterval(() => {
-      if (metaData.sdrId) buscarGanhos(metaData.sdrId);
-      buscarRanking();
-    }, 5 * 60 * 1000);
+    const id = setInterval(() => { if (metaData.sdrId) buscarGanhos(metaData.sdrId); }, 5 * 60 * 1000);
     return () => clearInterval(id);
-  }, [metaData.sdrId, buscarGanhos, buscarRanking]);
+  }, [metaData.sdrId, buscarGanhos]);
 
   const salvarConfig = async (novosDados: MetaData) => {
     await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: novosDados.sdrId, meta1: novosDados.meta1, meta2: novosDados.meta2, meta3: novosDados.meta3, ajuste: novosDados.ajuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
@@ -147,9 +128,6 @@ export default function MetaMes() {
   const falta    = (m: number) => Math.max(0, m - totalGanhos);
   const maxMeta  = meta3 || meta2 || meta1 || 1;
   const pctBarra = Math.min(100, (totalGanhos / maxMeta) * 100);
-
-  const pontos = totalGanhos * 100;
-  const userProfile = useUserProfile();
 
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
   const nomeSDR = SDRS_ATIVOS[metaData.sdrId] || '';
@@ -290,151 +268,173 @@ export default function MetaMes() {
         </p>
       </div>
 
-      {/* Seção inferior */}
-      <div className="grid grid-cols-[1fr_380px] gap-4">
+      {/* Seção inferior — Ritmo Diário + Insights */}
+      <div className="grid grid-cols-2 gap-4">
 
-        {/* Gráfico Evolução de Fechamentos */}
-        <div className="cw-card p-6">
-          <div className="flex items-center justify-between mb-1">
+        {/* Ritmo Diário por Meta */}
+        <div className="cw-card p-6 space-y-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-cw-purple/10 flex items-center justify-center">
-                <TrendingUp className="h-4 w-4 text-cw-purple" />
+                <Zap className="h-4 w-4 text-cw-purple" />
               </div>
               <div>
-                <h3 className="text-base font-black text-cw-text">Evolução de Fechamentos</h3>
-                <p className="text-xs text-cw-muted">Acumulado diário no mês</p>
+                <h3 className="text-base font-black text-cw-text">Ritmo Diário por Meta</h3>
+                <p className="text-xs text-cw-muted">{diasRestantes} dias restantes</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-xs text-cw-muted">
-              <span className="flex items-center gap-1.5">
-                <span className="w-6 h-0.5 bg-cw-purple rounded inline-block" /> Acumulado
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-6 border-t-2 border-dashed border-cw-red inline-block" /> No dia
-              </span>
+            <div className="flex items-center gap-1.5 bg-cw-elevated border border-cw-border rounded-xl px-3 py-1.5">
+              <button onClick={() => setConversao(c => Math.max(10, c - 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">−</button>
+              <span className="text-xs font-bold text-cw-purple w-16 text-center">{conversao}% conv.</span>
+              <button onClick={() => setConversao(c => Math.min(100, c + 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">+</button>
             </div>
           </div>
 
-          <div className="mt-5 h-52">
-            {(apiData?.evolucao?.length ?? 0) === 0 ? (
-              <div className="h-full flex items-center justify-center text-cw-muted text-sm">
-                {loading ? <RefreshCw className="h-5 w-5 animate-spin text-cw-purple" /> : 'Sem dados ainda este mês.'}
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={apiData!.evolucao} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E9DDF2" vertical={false} />
-                  <XAxis
-                    dataKey="dia"
-                    tick={{ fontSize: 10, fill: '#7B5EA7' }}
-                    tickLine={false}
-                    axisLine={false}
-                    interval="preserveStartEnd"
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: '#7B5EA7' }}
-                    tickLine={false}
-                    axisLine={false}
-                    allowDecimals={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: '#fff',
-                      border: '1px solid #E9DDF2',
-                      borderRadius: 12,
-                      fontSize: 12,
-                      color: '#1A0A2E',
-                      boxShadow: '0 4px 20px rgba(89,50,122,0.10)',
-                    }}
-                    labelStyle={{ fontWeight: 700, color: '#A543FA' }}
-                    formatter={(value: number, name: string) => [
-                      value,
-                      name === 'acumulado' ? 'Acumulado' : 'No dia',
-                    ]}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="acumulado"
-                    stroke="#A543FA"
-                    strokeWidth={2.5}
-                    dot={{ r: 3, fill: '#A543FA', strokeWidth: 0 }}
-                    activeDot={{ r: 5, fill: '#A543FA' }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="noDia"
-                    stroke="#FF5959"
-                    strokeWidth={2}
-                    strokeDasharray="5 3"
-                    dot={{ r: 2.5, fill: '#FF5959', strokeWidth: 0 }}
-                    activeDot={{ r: 4, fill: '#FF5959' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
+          <div className="space-y-2">
+            {[
+              { label: 'Meta 1', value: meta1, star: false },
+              { label: 'Meta 2', value: meta2, star: false },
+              { label: 'Meta 3', value: meta3, star: true },
+            ].map(({ label, value, star }) => {
+              if (!value) return null;
+              const fechDia = diasRestantes > 0 ? Math.ceil(Math.max(0, value - totalGanhos) / diasRestantes) : 0;
+              const agendDia = conversao > 0 ? Math.ceil(fechDia / (conversao / 100)) : 0;
+              const batida = totalGanhos >= value;
+              return (
+                <div key={label} className={cn(
+                  'flex items-center gap-3 px-4 py-3 rounded-xl border',
+                  batida ? 'border-green-200 bg-green-50' : 'border-cw-border bg-cw-elevated'
+                )}>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-cw-purple uppercase tracking-wider">
+                      {label}{star && ' ★'}
+                    </p>
+                    <p className="text-[11px] text-cw-muted">{value} fechamentos</p>
+                  </div>
+                  {batida ? (
+                    <div className="flex items-center gap-1 text-green-600 text-xs font-bold">
+                      <Check className="h-4 w-4" /> Atingida
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4 shrink-0">
+                      <div className="text-right">
+                        <p className="text-lg font-black text-cw-text leading-none">{fechDia}</p>
+                        <p className="text-[10px] text-cw-muted">fech/dia</p>
+                      </div>
+                      <div className="w-px h-8 bg-cw-border" />
+                      <div className="text-right">
+                        <p className="text-lg font-black text-cw-purple leading-none">{agendDia}</p>
+                        <p className="text-[10px] text-cw-muted">agend/dia</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Top Guerreiros — dados reais da /api/ranking */}
-        <div className="cw-card p-6 flex flex-col">
-          <div className="flex items-center gap-2 mb-1">
-            <Trophy className="h-5 w-5 text-cw-yellow" />
-            <h3 className="text-base font-black text-cw-text uppercase tracking-wide">Top Guerreiros</h3>
+        {/* Insights Rápidos */}
+        <div className="cw-card p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-amber-400/10 flex items-center justify-center">
+              <Lightbulb className="h-4 w-4 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-cw-text">Insights Rápidos</h3>
+              <p className="text-xs text-cw-muted">Análise do seu desempenho</p>
+            </div>
           </div>
-          <p className="text-xs text-cw-muted mb-5">Negócios ganhos no mês · Pipedrive ao vivo</p>
 
-          <div className="space-y-2 flex-1">
-            {loadingRank ? (
-              <div className="flex items-center justify-center py-8">
-                <RefreshCw className="h-5 w-5 animate-spin text-cw-purple" />
-              </div>
-            ) : ranking.length === 0 ? (
-              <div className="text-center py-8 text-cw-muted text-sm">Sem dados ainda este mês.</div>
-            ) : (
-              ranking.slice(0, 5).map((sdr, idx) => {
-                const eu = sdr.id === metaData.sdrId;
-                const pos = idx + 1;
+          <div className="space-y-3">
+            {(() => {
+              const mediaFechDia = diasPassados > 0 ? (totalGanhos / diasPassados) : 0;
+              const ritmoNecessarioM1 = diasUteisTotal > 0 && meta1 > 0 ? meta1 / diasUteisTotal : 0;
+              const pctRitmo = ritmoNecessarioM1 > 0 ? ((mediaFechDia - ritmoNecessarioM1) / ritmoNecessarioM1) * 100 : 0;
+              const projecaoFinal = diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * diasUteisTotal) : 0;
+
+              const insights: { icon: React.ReactNode; texto: string; sub: string; cor: string }[] = [];
+
+              if (meta1 > 0 && diasPassados > 0) {
+                if (pctRitmo < 0) {
+                  insights.push({
+                    icon: <AlertTriangle className="h-4 w-4" />,
+                    texto: `${Math.abs(Math.round(pctRitmo))}% abaixo do ritmo necessário da Meta 1`,
+                    sub: 'Acelere o ritmo!',
+                    cor: 'text-red-500 bg-red-50 border-red-200',
+                  });
+                } else {
+                  insights.push({
+                    icon: <TrendingUp className="h-4 w-4" />,
+                    texto: `${Math.round(pctRitmo)}% acima do ritmo necessário da Meta 1`,
+                    sub: 'Continue assim!',
+                    cor: 'text-green-600 bg-green-50 border-green-200',
+                  });
+                }
+              }
+
+              if (diasPassados > 0) {
+                insights.push({
+                  icon: <Zap className="h-4 w-4" />,
+                  texto: `Média de ${mediaFechDia.toFixed(1)} fechamentos por dia`,
+                  sub: 'Continue registrando seus ganhos',
+                  cor: 'text-cw-purple bg-cw-purple/5 border-cw-purple/20',
+                });
+              }
+
+              if (projecaoFinal > 0 && meta3 > 0 && projecaoFinal >= meta3) {
+                insights.push({
+                  icon: <Star className="h-4 w-4" />,
+                  texto: 'Projeção aponta para Meta 3',
+                  sub: `Projeção final: ${projecaoFinal} fechamentos`,
+                  cor: 'text-amber-600 bg-amber-50 border-amber-200',
+                });
+              } else if (projecaoFinal > 0 && meta2 > 0 && projecaoFinal >= meta2) {
+                insights.push({
+                  icon: <Star className="h-4 w-4" />,
+                  texto: 'Projeção aponta para Meta 2',
+                  sub: `Projeção final: ${projecaoFinal} fechamentos`,
+                  cor: 'text-amber-600 bg-amber-50 border-amber-200',
+                });
+              } else if (projecaoFinal > 0 && meta1 > 0) {
+                insights.push({
+                  icon: <Star className="h-4 w-4" />,
+                  texto: `Projeção final: ${projecaoFinal} fechamentos`,
+                  sub: meta1 > 0 ? `Faltam ${Math.max(0, meta1 - projecaoFinal)} para fechar Meta 1` : '',
+                  cor: 'text-cw-muted bg-cw-elevated border-cw-border',
+                });
+              }
+
+              if (meta3 > 0 && totalGanhos >= meta3) {
+                insights.push({
+                  icon: <Star className="h-4 w-4" />,
+                  texto: 'Meta 3 batida!',
+                  sub: 'Performance excepcional este mês',
+                  cor: 'text-amber-600 bg-amber-50 border-amber-200',
+                });
+              }
+
+              if (insights.length === 0) {
                 return (
-                  <div key={sdr.id} className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors',
-                    eu ? 'bg-cw-purple/8 border border-cw-purple/20' : 'bg-cw-elevated border border-transparent hover:border-cw-border'
-                  )}>
-                    <span className={cn('text-sm font-black w-5 text-center shrink-0',
-                      pos === 1 ? 'text-cw-yellow' : pos === 2 ? 'text-slate-400' : pos === 3 ? 'text-amber-500' : 'text-cw-muted'
-                    )}>{pos}</span>
-                    {eu && userProfile.avatarUrl ? (
-                      <img
-                        src={userProfile.avatarUrl}
-                        alt={userProfile.fullName ?? ''}
-                        className="h-8 w-8 rounded-full object-cover shrink-0 border border-cw-border"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-xs font-black text-white shrink-0">
-                        {eu ? userProfile.initials : sdr.iniciais}
-                      </div>
-                    )}
-                    <p className={cn('flex-1 text-sm font-semibold truncate', eu ? 'text-cw-text' : 'text-cw-text/80')}>
-                      {sdr.nome}{eu && <span className="text-xs text-cw-muted ml-1">(você)</span>}
-                    </p>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span className="text-xs">🏆</span>
-                      <span className="text-sm font-black text-cw-text">{sdr.vendas}</span>
-                      <span className="text-cw-muted text-xs font-normal">ganhos</span>
-                    </div>
+                  <div className="flex items-center justify-center py-8 text-cw-muted text-sm">
+                    Configure suas metas para ver os insights.
                   </div>
                 );
-              })
-            )}
-          </div>
+              }
 
-          <button
-            onClick={buscarRanking}
-            className="w-full mt-4 py-2.5 rounded-xl border border-cw-border text-cw-purple hover:bg-cw-purple/5 hover:border-cw-purple/40 text-sm font-semibold transition-colors"
-          >
-            Ver ranking completo
-          </button>
+              return insights.map((ins, i) => (
+                <div key={i} className={cn('flex items-start gap-3 px-4 py-3 rounded-xl border', ins.cor)}>
+                  <span className="shrink-0 mt-0.5">{ins.icon}</span>
+                  <div>
+                    <p className="text-sm font-semibold leading-snug">{ins.texto}</p>
+                    {ins.sub && <p className="text-xs opacity-70 mt-0.5">{ins.sub}</p>}
+                  </div>
+                </div>
+              ));
+            })()}
+          </div>
         </div>
+
       </div>
     </div>
   );
