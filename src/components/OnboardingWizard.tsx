@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import {
   BookOpen, Target, Calendar, Trophy, HelpCircle, Zap,
-  Sparkles, ArrowRight, Check, Bell,
+  Sparkles, ArrowRight, Check, Bell, AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +22,25 @@ const TABS_OVERVIEW = [
 
 const SQUADS_SDR = ['Lobo', 'Águia', 'Tubarão'];
 
+/** Emails com permissão para selecionar Liderança */
+const EMAILS_LIDERANCA = [
+  'hyorranes.souza@cardapioweb.com',
+  'antonio.anderson@cardapioweb.com',
+  'pedro.ferreira@cardapioweb.com',
+  'joelma.vieira@cardapioweb.com',
+  'whenna.oliveira@cardapioweb.com',
+  'ana.clara@cardapioweb.com',
+  'vanessa.alencar@cardapioweb.com',
+];
+
+const PAPEIS_INFO: Record<Papel, { desc: string; aviso?: string }> = {
+  SDR:          { desc: 'Prospecção, qualificação e cadências de outbound' },
+  Closer:       { desc: 'Negociação, fechamento e expansão de contas' },
+  Representante:{ desc: 'Atendimento e gestão de representantes externos', aviso: 'Escolha seu setor específico para que seu dashboard seja direcionado corretamente.' },
+  Parcerias:    { desc: 'Gestão de canais e parcerias estratégicas', aviso: 'Escolha seu setor específico para que seu dashboard seja direcionado corretamente.' },
+  Liderança:    { desc: 'Gestão, acompanhamento e desenvolvimento do time comercial' },
+};
+
 interface Props {
   onComplete: () => void;
   /** Quando true, renderiza inline na página (sem overlay fullscreen). */
@@ -30,32 +49,36 @@ interface Props {
 
 export function OnboardingWizard({ onComplete, inline = false }: Props) {
   const userProfile = useUserProfile();
+  const userEmail = userProfile.email?.toLowerCase() ?? '';
+  const podeEscolherLideranca = EMAILS_LIDERANCA.includes(userEmail);
+
   const [step, setStep] = useState(0);
   const [papel, setPapel] = useState<Papel | null>(null);
   const [squad, setSquad] = useState<string | null>(null);
   const [apelido, setApelido] = useState('');
   const [saving, setSaving] = useState(false);
 
-  /* ── Navegação ── */
-  const totalSteps = papel === 'Closer' ? 3 : 4;
+  /* Só SDR precisa do passo de squad */
+  const needsSquad = papel === 'SDR';
+  const totalSteps = needsSquad ? 4 : 3;
 
   const stepPosition = () => {
     if (step === 0) return 0;
     if (step === 1) return 1;
-    if (step === 2) return 2;
+    if (step === 2) return needsSquad ? 2 : totalSteps - 1;
     return totalSteps - 1;
   };
 
   const handleNext = () => {
     if (step === 0) setStep(1);
     else if (step === 1 && papel) {
-      if (papel === 'Closer') setStep(3);
-      else setStep(2);
+      if (needsSquad) setStep(2);
+      else setStep(3);
     } else if (step === 2) setStep(3);
   };
 
   const handleBack = () => {
-    if (step === 3 && papel === 'Closer') setStep(1);
+    if (step === 3 && !needsSquad) setStep(1);
     else if (step > 0) setStep(prev => prev - 1);
   };
 
@@ -158,41 +181,52 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
 
           {/* ── Step 1: Cargo ── */}
           {step === 1 && (
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
                 <h2 className="text-xl font-black text-cw-text mb-1">Qual é o seu cargo?</h2>
                 <p className="text-sm text-cw-muted">
-                  Isso define o conteúdo do Playbook e como você aparece no Ranking.
+                  Isso define seu dashboard e como você aparece na plataforma.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                {(['SDR', 'Closer'] as Papel[]).map(p => (
-                  <button
-                    key={p}
-                    onClick={() => setPapel(p)}
-                    className={cn(
-                      'p-5 rounded-xl border-2 text-left transition-all duration-150',
-                      papel === p
-                        ? 'border-cw-purple bg-cw-purple/10'
-                        : 'border-cw-border bg-cw-elevated hover:border-cw-purple/40'
-                    )}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-[18px] font-black text-cw-text">{p}</span>
-                      {papel === p && (
-                        <div className="h-5 w-5 rounded-full gradient-primary flex items-center justify-center">
-                          <Check className="h-3 w-3 text-white" />
+              <div className="grid grid-cols-1 gap-2.5">
+                {((['SDR', 'Closer', 'Representante', 'Parcerias'] as Papel[]).concat(
+                  podeEscolherLideranca ? ['Liderança' as Papel] : []
+                )).map(p => {
+                  const info = PAPEIS_INFO[p];
+                  const selected = papel === p;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => { setPapel(p); setSquad(null); }}
+                      className={cn(
+                        'w-full p-4 rounded-xl border-2 text-left transition-all duration-150',
+                        selected
+                          ? 'border-cw-purple bg-cw-purple/10'
+                          : 'border-cw-border bg-cw-elevated hover:border-cw-purple/40'
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-[15px] font-black text-cw-text">{p}</span>
+                          <p className="text-[11px] text-cw-muted leading-snug mt-0.5">{info.desc}</p>
+                        </div>
+                        {selected && (
+                          <div className="h-5 w-5 rounded-full gradient-primary flex items-center justify-center shrink-0 ml-3">
+                            <Check className="h-3 w-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                      {/* Aviso para Representante e Parcerias */}
+                      {selected && info.aviso && (
+                        <div className="mt-2.5 flex items-start gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                          <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
+                          <p className="text-[11px] text-amber-300 leading-snug">{info.aviso}</p>
                         </div>
                       )}
-                    </div>
-                    <p className="text-[12px] text-cw-muted leading-snug">
-                      {p === 'SDR'
-                        ? 'Prospecção, qualificação e cadências de outbound'
-                        : 'Negociação, fechamento e expansão de contas'}
-                    </p>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

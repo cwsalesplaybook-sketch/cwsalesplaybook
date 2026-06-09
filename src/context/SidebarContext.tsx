@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export type Papel = 'SDR' | 'Closer';
+export type Papel = 'SDR' | 'Closer' | 'Representante' | 'Parcerias' | 'Liderança';
 
 interface Ctx {
   papel: Papel;
