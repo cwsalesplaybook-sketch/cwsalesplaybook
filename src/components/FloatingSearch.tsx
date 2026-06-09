@@ -1,7 +1,7 @@
 /** Assistente flutuante CW — chat com navegação por palavras-chave. */
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, X, ArrowRight, Send } from 'lucide-react';
+import { X, ArrowRight, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Destino {
@@ -136,14 +136,28 @@ function buscar(query: string): Destino[] {
   return scored.slice(0, 4).map(x => x.d);
 }
 
+function MascoteAvatar({ size = 28 }: { size?: number }) {
+  return (
+    <div
+      className="rounded-full gradient-primary shrink-0 overflow-hidden flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
+      <img
+        src="/cardapinho-rock.png"
+        alt="Cardapinho"
+        style={{ width: size * 1.1, height: size * 1.1, objectFit: 'contain', mixBlendMode: 'multiply' }}
+      />
+    </div>
+  );
+}
+
 export function FloatingSearch() {
   const [aberto, setAberto] = useState(false);
   const [query, setQuery]   = useState('');
-  const [novo, setNovo]     = useState(false); // pulsa no botão quando ainda não abriu
+  const [novo, setNovo]     = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const nav = useNavigate();
 
-  // Auto-abre uma vez por sessão após 2 s
   useEffect(() => {
     const jaAbriu = sessionStorage.getItem('cw.assistant.opened');
     if (!jaAbriu) {
@@ -153,7 +167,6 @@ export function FloatingSearch() {
       }, 2000);
       return () => clearTimeout(t);
     } else {
-      // sessões seguintes: botão pulsa por 4 s para indicar disponibilidade
       setNovo(true);
       const t = setTimeout(() => setNovo(false), 4000);
       return () => clearTimeout(t);
@@ -205,12 +218,10 @@ export function FloatingSearch() {
           >
             {/* Header */}
             <div className="flex items-center gap-2.5 px-4 py-3 border-b border-[#ffffff0a]">
-              <div className="h-7 w-7 rounded-full gradient-primary flex items-center justify-center shrink-0">
-                <Zap className="h-3.5 w-3.5 text-white" />
-              </div>
+              <MascoteAvatar size={32} />
               <div className="flex-1">
-                <p className="text-[12px] font-bold text-white leading-tight">Assistente CW</p>
-                <p className="text-[10px] text-[#9b6fc4]">Sales Enablement</p>
+                <p className="text-[13px] font-bold text-white leading-tight">Cardapinho 🤘</p>
+                <p className="text-[10px] text-[#9b6fc4]">Assistente de Vendas</p>
               </div>
               <button onClick={() => setAberto(false)} className="text-[#7c5aa8] hover:text-white transition-colors">
                 <X className="h-4 w-4" />
@@ -221,9 +232,7 @@ export function FloatingSearch() {
             <div className="px-4 py-4 space-y-3 max-h-72 overflow-y-auto">
               {/* Mensagens do bot */}
               <div className="flex items-end gap-2">
-                <div className="h-6 w-6 rounded-full gradient-primary flex items-center justify-center shrink-0 mb-0.5">
-                  <Zap className="h-3 w-3 text-white" />
-                </div>
+                <MascoteAvatar size={24} />
                 <div className="flex flex-col gap-1.5 max-w-[85%]">
                   <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2">
                     <p className="text-[13px] text-white leading-snug">Posso ajudar? 👋</p>
@@ -236,7 +245,7 @@ export function FloatingSearch() {
                 </div>
               </div>
 
-              {/* Quick replies — só quando não está digitando */}
+              {/* Quick replies */}
               {!query && (
                 <div className="ml-8 flex flex-wrap gap-1.5">
                   {QUICK_REPLIES.map(r => (
@@ -251,12 +260,10 @@ export function FloatingSearch() {
                 </div>
               )}
 
-              {/* Resultados como chips de ação */}
+              {/* Resultados */}
               {resultados.length > 0 && (
                 <div className="flex items-end gap-2">
-                  <div className="h-6 w-6 rounded-full gradient-primary flex items-center justify-center shrink-0 mb-0.5">
-                    <Zap className="h-3 w-3 text-white" />
-                  </div>
+                  <MascoteAvatar size={24} />
                   <div className="flex flex-col gap-1.5 max-w-[85%]">
                     <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2">
                       <p className="text-[12px] text-[#d4c0ee]">Encontrei isso para você:</p>
@@ -283,9 +290,7 @@ export function FloatingSearch() {
               {/* Nenhum resultado */}
               {query.trim() && resultados.length === 0 && (
                 <div className="flex items-end gap-2">
-                  <div className="h-6 w-6 rounded-full gradient-primary flex items-center justify-center shrink-0">
-                    <Zap className="h-3 w-3 text-white" />
-                  </div>
+                  <MascoteAvatar size={24} />
                   <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2 max-w-[85%]">
                     <p className="text-[12px] text-[#d4c0ee]">Hmm, não encontrei nada para <span className="text-white font-semibold">"{query}"</span>.</p>
                     <p className="text-[11px] text-[#7c5aa8] mt-1">Tente: totem, calculadora, objeção, spin...</p>
@@ -307,10 +312,7 @@ export function FloatingSearch() {
                 />
                 {query ? (
                   <button
-                    onClick={() => {
-                      const res = buscar(query);
-                      if (res.length > 0) ir(res[0]);
-                    }}
+                    onClick={() => { const res = buscar(query); if (res.length > 0) ir(res[0]); }}
                     className="h-6 w-6 rounded-lg gradient-primary flex items-center justify-center shrink-0"
                   >
                     <Send className="h-3 w-3 text-white" />
@@ -323,18 +325,26 @@ export function FloatingSearch() {
           </div>
         )}
 
-        {/* Botão flutuante */}
+        {/* Botão flutuante — mascote */}
         <button
           onClick={() => setAberto(v => !v)}
-          title="Assistente CW"
-          className={cn(
-            'relative flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 gradient-primary text-white rounded-full',
-            aberto && 'rotate-[20deg]'
-          )}
-          style={{ height: 52, width: 52 }}
+          title="Fala com o Cardapinho"
+          className="relative shadow-2xl transition-all duration-200 hover:scale-110 rounded-full"
+          style={{ height: 56, width: 56 }}
         >
-          {aberto ? <X className="h-5 w-5" /> : <Zap className="h-5 w-5" />}
-          {/* Pulso de atenção */}
+          {aberto ? (
+            <div className="h-full w-full rounded-full gradient-primary flex items-center justify-center">
+              <X className="h-5 w-5 text-white" />
+            </div>
+          ) : (
+            <div className="h-full w-full rounded-full gradient-primary overflow-hidden flex items-center justify-center" style={{ boxShadow: '0 4px 20px rgba(165,67,250,0.5)' }}>
+              <img
+                src="/cardapinho-rock.png"
+                alt="Cardapinho"
+                style={{ width: 56, height: 56, objectFit: 'contain', mixBlendMode: 'multiply' }}
+              />
+            </div>
+          )}
           {novo && !aberto && (
             <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-cw-yellow border-2 border-[#150d30] animate-pulse" />
           )}
