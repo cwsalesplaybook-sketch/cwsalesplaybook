@@ -28,9 +28,8 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/start',      label: 'Comece Aqui',  icon: 'Sparkles',        end: false },
   { to: '/meta',       label: 'Meta do Mês',  icon: 'Target',          end: false },
   { to: '/playbook',   label: 'Playbook',     icon: 'BookOpen',        end: false },
-  { to: '/',           label: 'Central',      icon: 'LayoutDashboard', end: true  },
-  { to: '/pipeline',     label: 'Pipeline',             icon: 'BarChart2',       end: false },
-  { to: '/calculadora', label: 'Calculadora de Planos', icon: 'Calculator',      end: false },
+  { to: '/',         label: 'Sales Enablement', icon: 'LayoutDashboard', end: true  },
+  { to: '/pipeline', label: 'Pipeline',          icon: 'BarChart2',       end: false },
   { to: '/cultura',    label: 'Cultura',           icon: 'Heart',       end: false },
   { to: '/historias',  label: 'Histórias de Sucesso', icon: 'Trophy',  end: false },
   { to: '/onboarding', label: 'Onboarding',        icon: 'MapIcon',    end: false },
@@ -40,7 +39,7 @@ const NAV_PADRAO: NavItem[] = [
 ];
 
 const SECTIONS = [
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline', '/calculadora'] },
+  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline'] },
   { label: 'Cultura e Time', routes: ['/cultura', '/historias', '/onboarding', '/carreira'] },
   { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];
