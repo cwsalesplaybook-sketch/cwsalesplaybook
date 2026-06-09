@@ -1,5 +1,5 @@
 /** Roteamento e layout global do CW Sales Playbook. */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -40,12 +40,32 @@ import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
 
-function OneTimeRedirect({ to, onDone }: { to: string; onDone: () => void }) {
+const SESSION_KEY = 'cw-login-redirected';
+
+/**
+ * Roda dentro do BrowserRouter para ter acesso ao useNavigate.
+ * Redireciona para /start UMA única vez por login.
+ * sessionStorage garante que o flag sobrevive re-renders mas é limpo ao fechar a aba.
+ */
+function LoginRedirectHandler() {
   const navigate = useNavigate();
+
   useEffect(() => {
-    navigate(to, { replace: true });
-    onDone();
-  }, []);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (_event === 'SIGNED_IN') {
+        // Só redireciona se ainda não o fez nesta sessão do browser
+        if (!sessionStorage.getItem(SESSION_KEY)) {
+          sessionStorage.setItem(SESSION_KEY, '1');
+          navigate('/start', { replace: true });
+        }
+      }
+      if (_event === 'SIGNED_OUT') {
+        sessionStorage.removeItem(SESSION_KEY);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
   return null;
 }
 
@@ -110,9 +130,6 @@ function AppLayout() {
 
 const App = () => {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
-  const [loginRedirect, setLoginRedirect] = useState<string | null>(null);
-  // Garante que o redirect para /start só acontece UMA vez por login real
-  const didRedirect = useRef(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -120,17 +137,6 @@ const App = () => {
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s ?? null);
-      if (s) {
-        // SIGNED_IN dispara no login real E no refresh de token.
-        // Usamos didRedirect para só redirecionar no login real (primeira vez).
-        if (_event === 'SIGNED_IN' && !didRedirect.current) {
-          didRedirect.current = true;
-          setLoginRedirect('/start');
-        }
-      } else {
-        didRedirect.current = false;
-        setLoginRedirect(null);
-      }
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -152,7 +158,7 @@ const App = () => {
           {session ? (
             <>
               <AppLayout />
-              {loginRedirect && <OneTimeRedirect to={loginRedirect} onDone={() => setLoginRedirect(null)} />}
+              <LoginRedirectHandler />
             </>
           ) : (
             <Login />
