@@ -47,7 +47,7 @@ const SECTIONS = [
 const STORE_KEY = 'sidebar.nav';
 
 export function Sidebar() {
-  const { papel, setPapel, lockedPapel, squad, apelido } = useSidebarContext();
+  const { papel, setPapel, lockedPapel, squad, apelido, onboardingActive } = useSidebarContext();
   const { isEditing, openPasswordModal, lock } = useEditor();
   const userProfile = useUserProfile();
   const rawItems = useEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
@@ -78,16 +78,21 @@ export function Sidebar() {
   const NavItemEl = ({ item }: { item: NavItem }) => {
     const idx = items.indexOf(item);
     const Icon = ICON_MAP[item.icon] ?? Sparkles;
+    // Bloqueia todas as abas (exceto /start) durante o onboarding
+    const locked = onboardingActive && item.to !== '/start';
     return (
       <div className="group/nav relative">
         <NavLink
-          to={item.to}
+          to={locked ? '/start' : item.to}
           end={item.end}
+          onClick={locked ? (e) => e.preventDefault() : undefined}
           className={({ isActive }) => cn(
             'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
-            isActive
-              ? 'bg-[#2d1760] text-white font-semibold'
-              : 'text-[#b89fd4] hover:text-white hover:bg-white/5'
+            locked
+              ? 'text-[#4a3560] cursor-not-allowed pointer-events-none'
+              : isActive
+                ? 'bg-[#2d1760] text-white font-semibold'
+                : 'text-[#b89fd4] hover:text-white hover:bg-white/5'
           )}
         >
           <button type="button"

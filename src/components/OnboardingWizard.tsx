@@ -84,7 +84,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
   };
 
   const wrapper = inline
-    ? 'min-h-screen flex items-start justify-center py-12 px-4'
+    ? 'w-full'
     : 'fixed inset-0 z-50 flex items-center justify-center overflow-y-auto py-8';
 
   const wrapperStyle = inline
@@ -93,7 +93,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
 
   return (
     <div className={wrapper} style={wrapperStyle}>
-      <div className="w-full max-w-[520px] mx-4">
+      <div className={inline ? 'w-full max-w-[680px] mx-auto' : 'w-full max-w-[520px] mx-4'}>
 
         {/* Logo */}
         <div className="flex justify-center mb-8">

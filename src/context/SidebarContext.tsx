@@ -11,6 +11,9 @@ interface Ctx {
   lockedPapel: Papel | null;
   squad: string | null;
   apelido: string | null;
+  /** Bloqueia navegação na sidebar enquanto o wizard de onboarding está ativo. */
+  onboardingActive: boolean;
+  setOnboardingActive: (v: boolean) => void;
 }
 
 const SidebarContext = createContext<Ctx | undefined>(undefined);
@@ -22,6 +25,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [lockedPapel, setLockedPapel] = useState<Papel | null>(null);
   const [squad, setSquad] = useState<string | null>(null);
   const [apelido, setApelido] = useState<string | null>(null);
+  const [onboardingActive, setOnboardingActive] = useState(false);
 
   const applyMeta = (m: Record<string, unknown>) => {
     const saved = m?.papel as Papel | undefined;
@@ -58,7 +62,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <SidebarContext.Provider value={{ papel, setPapel, lockedPapel, squad, apelido }}>
+    <SidebarContext.Provider value={{ papel, setPapel, lockedPapel, squad, apelido, onboardingActive, setOnboardingActive }}>
       {children}
     </SidebarContext.Provider>
   );

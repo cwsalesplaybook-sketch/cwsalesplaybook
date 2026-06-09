@@ -9,27 +9,34 @@ import { Glossario } from '@/components/start/Glossario';
 import { TimelineEmpresa } from '@/components/start/TimelineEmpresa';
 import { FaqNovato } from '@/components/start/FaqNovato';
 import { Valores } from '@/components/start/Valores';
+import { useSidebarContext } from '@/context/SidebarContext';
 
 export default function Start() {
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
+  const { setOnboardingActive } = useSidebarContext();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       const done = data.user?.user_metadata?.onboarding_done === true;
-      setNeedsOnboarding(!done);
+      const needs = !done;
+      setNeedsOnboarding(needs);
+      setOnboardingActive(needs); // bloqueia sidebar se precisa de onboarding
     });
+    return () => { setOnboardingActive(false); };
   }, []);
 
-  // Aguarda carregar
+  const handleComplete = () => {
+    setNeedsOnboarding(false);
+    setOnboardingActive(false);
+  };
+
   if (needsOnboarding === null) return null;
 
-  // Primeira vez: mostra wizard dentro da página
   if (needsOnboarding) {
     return (
-      <OnboardingWizard
-        inline
-        onComplete={() => setNeedsOnboarding(false)}
-      />
+      <div className="min-h-screen flex items-center justify-center p-8">
+        <OnboardingWizard inline onComplete={handleComplete} />
+      </div>
     );
   }
 

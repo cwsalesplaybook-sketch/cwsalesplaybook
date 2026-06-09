@@ -1,5 +1,5 @@
 /** Roteamento e layout global do CW Sales Playbook. */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -111,6 +111,8 @@ function AppLayout() {
 const App = () => {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [loginRedirect, setLoginRedirect] = useState<string | null>(null);
+  // Garante que o redirect para /start só acontece UMA vez por login real
+  const didRedirect = useRef(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -119,11 +121,14 @@ const App = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s ?? null);
       if (s) {
-        // Todo usuário que loga vai para /start (onde o onboarding ou o conteúdo normal é exibido)
-        if (_event === 'SIGNED_IN') {
+        // SIGNED_IN dispara no login real E no refresh de token.
+        // Usamos didRedirect para só redirecionar no login real (primeira vez).
+        if (_event === 'SIGNED_IN' && !didRedirect.current) {
+          didRedirect.current = true;
           setLoginRedirect('/start');
         }
       } else {
+        didRedirect.current = false;
         setLoginRedirect(null);
       }
     });
