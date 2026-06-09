@@ -14,7 +14,7 @@ type Tab = 'inicio' | 'faq' | 'changelog';
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'inicio',    label: 'Início',    icon: LayoutDashboard },
   { id: 'faq',       label: 'FAQ',       icon: HelpCircle      },
-  { id: 'changelog', label: 'Novidades', icon: Zap             },
+  { id: 'changelog', label: 'Changelog', icon: Zap             },
 ];
 
 export default function Dashboard() {

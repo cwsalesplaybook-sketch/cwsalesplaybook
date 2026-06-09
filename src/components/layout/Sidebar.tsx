@@ -4,7 +4,7 @@ import {
   BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, Map as MapIcon,
   TrendingUp, BarChart3, Sword, Sparkles, Award, Lock, Plus, Trash2,
   ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trophy, Target,
-  HelpCircle, Zap, ShieldCheck,
+  HelpCircle, Zap, ShieldCheck, Calculator,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,7 +20,7 @@ interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck,
+  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
@@ -29,7 +29,8 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/meta',       label: 'Meta do Mês',  icon: 'Target',          end: false },
   { to: '/playbook',   label: 'Playbook',     icon: 'BookOpen',        end: false },
   { to: '/',           label: 'Central',      icon: 'LayoutDashboard', end: true  },
-  { to: '/pipeline',   label: 'Pipeline',     icon: 'BarChart2',       end: false },
+  { to: '/pipeline',     label: 'Pipeline',             icon: 'BarChart2',       end: false },
+  { to: '/calculadora', label: 'Calculadora de Planos', icon: 'Calculator',      end: false },
   { to: '/cultura',    label: 'Cultura',           icon: 'Heart',       end: false },
   { to: '/historias',  label: 'Histórias de Sucesso', icon: 'Trophy',  end: false },
   { to: '/onboarding', label: 'Onboarding',        icon: 'MapIcon',    end: false },
@@ -39,7 +40,7 @@ const NAV_PADRAO: NavItem[] = [
 ];
 
 const SECTIONS = [
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline'] },
+  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline', '/calculadora'] },
   { label: 'Cultura e Time', routes: ['/cultura', '/historias', '/onboarding', '/carreira'] },
   { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];

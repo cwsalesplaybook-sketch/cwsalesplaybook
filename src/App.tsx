@@ -33,6 +33,7 @@ import FaqPage from '@/pages/Faq';
 import MuralPage from '@/pages/MuralPage';
 import ChangelogPage from '@/pages/ChangelogPage';
 import HistoriasSucesso from '@/pages/HistoriasSucesso';
+import Calculadora from '@/pages/Calculadora';
 import GestorAdminPage from '@/pages/GestorAdminPage';
 import NotFound from './pages/NotFound';
 
@@ -68,6 +69,7 @@ function AnimatedRoutes() {
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/mural" element={<MuralPage />} />
           <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="/calculadora" element={<Calculadora />} />
           <Route path="/admin" element={<GestorAdminPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
