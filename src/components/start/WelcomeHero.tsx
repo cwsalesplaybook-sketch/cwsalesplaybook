@@ -49,13 +49,13 @@ export function WelcomeHero() {
           </div>
         </div>
 
-        <div className="relative h-36 rounded-xl overflow-hidden border border-white/20 shadow-lg">
+        <div className="relative w-full rounded-xl overflow-hidden border border-white/20 shadow-lg" style={{ paddingTop: '56.25%' }}>
           <iframe
             src="https://www.youtube.com/embed/At4i9h8-fNI"
             title="Vídeo de boas-vindas do CEO"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-            className="w-full h-full"
+            className="absolute inset-0 w-full h-full"
           />
         </div>
       </div>
