@@ -57,6 +57,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
+    id: 'whenna', nome: 'Whenna Oliveira', foto: '/hall/WhennaOliveira.jpeg',
+    cargo: 'Liderança de Closer', jornada: ['Estágio BDR', 'SDR', 'Liderança Pré-Vendas', 'Liderança Closer'],
+    frase: 'Cada etapa foi escolha, não sorte.',
+    historia: 'Whenna não pulou etapas — ela as dominou. Entrou como estagiária de BDR, foi SDR, assumiu a liderança de pré-vendas e hoje lidera os Closers. Cada promoção veio porque ela entregava mais do que o esperado no cargo que estava, antes de olhar pro próximo. É a prova viva de que a jornada mais longa costuma ser a mais sólida.',
+    stats: [
+      { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
+      { icon: 'star',     valor: 'Liderança Closer', label: 'CARGO' },
+      { icon: 'crown',    valor: 'Completa', label: 'PERFIL' },
+    ],
+  },
+  {
     id: 'pedro', nome: 'Pedro Ferreira', foto: '/hall/PedroFerreira.jpeg',
     cargo: 'Liderança Comercial', jornada: ['SDR', 'Closer', 'Liderança'],
     frase: 'Vender bem é processo. Escalar é engenharia.',
