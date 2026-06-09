@@ -11,6 +11,7 @@ const GESTOR_EMAILS = new Set([
   'hyorranes.souza@cardapioweb.com',
   'antonio.anderson@cardapioweb.com',
   'ana.clara@cardapioweb.com',
+  'joelma.vieira@cardapioweb.com',
 ]);
 
 interface EditorCtx {
