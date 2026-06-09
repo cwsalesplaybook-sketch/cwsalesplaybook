@@ -1,4 +1,5 @@
 /** Sidebar — visual idêntico ao print de referência. */
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, Map as MapIcon,
@@ -70,6 +71,8 @@ export function Sidebar() {
     const next = [...items]; next[idx] = { ...next[idx], icon: ICON_KEYS[(cur + 1) % ICON_KEYS.length] }; update(next);
   };
 
+  const [gestorOpen, setGestorOpen] = useState(false);
+
   const startItem        = items.find(i => i.to === '/start');
   const sectionItems     = (routes: string[]) => items.filter(i => routes.includes(i.to));
   const allSectionRoutes = SECTIONS.flatMap(s => s.routes);
@@ -103,10 +106,10 @@ export function Sidebar() {
           }
         </NavLink>
         {isEditing && (
-          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
-            <button onClick={() => move(idx, -1)} disabled={idx === 0} className="h-5 w-5 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowUp className="h-3 w-3" /></button>
-            <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="h-5 w-5 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowDown className="h-3 w-3" /></button>
-            <button onClick={() => remove(idx)} className="h-5 w-5 rounded bg-red-900/30 border border-red-500/30 text-red-400 flex items-center justify-center hover:bg-red-900/50"><Trash2 className="h-3 w-3" /></button>
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover/nav:opacity-100 transition-opacity duration-150">
+            <button onClick={() => move(idx, -1)} disabled={idx === 0} className="h-4 w-4 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowUp className="h-2.5 w-2.5" /></button>
+            <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="h-4 w-4 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowDown className="h-2.5 w-2.5" /></button>
+            <button onClick={() => remove(idx)} className="h-4 w-4 rounded bg-red-900/30 border border-red-500/30 text-red-400 flex items-center justify-center hover:bg-red-900/50"><Trash2 className="h-2.5 w-2.5" /></button>
           </div>
         )}
       </div>
@@ -193,44 +196,11 @@ export function Sidebar() {
       </nav>
 
       {/* ── Footer ── */}
-      <div className="px-3 pb-4 space-y-2">
+      <div className="px-3 pb-4 space-y-1.5">
 
-        {/* Painel Admin — só visível no Modo Gestor */}
-        {isEditing && (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) => cn(
-              'w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150',
-              isActive
-                ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
-                : 'bg-amber-400/5 text-amber-400/80 hover:bg-amber-400/15 hover:text-amber-300 border border-amber-400/15'
-            )}
-          >
-            <ShieldCheck className="h-4 w-4 shrink-0" />
-            <span className="flex-1 text-left">Painel Admin</span>
-            <ChevronRight className="h-3.5 w-3.5 opacity-40" />
-          </NavLink>
-        )}
-
-        {/* Modo Gestor */}
-        <button
-          onClick={() => (isEditing ? lock() : openPasswordModal())}
-          title="Ctrl+Shift+E"
-          className={cn(
-            'w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150',
-            isEditing
-              ? 'bg-amber-400/10 text-amber-300 border border-amber-400/20 hover:bg-amber-400/20'
-              : 'bg-[#1e1040] text-[#b89fd4] hover:bg-[#2d1760] hover:text-white border border-transparent'
-          )}
-        >
-          <Lock className="h-4 w-4 shrink-0" />
-          <span className="flex-1 text-left">{isEditing ? 'Sair do Modo Gestor' : 'Modo Gestor'}</span>
-          <ChevronRight className="h-3.5 w-3.5 opacity-40" />
-        </button>
-
-        {/* Visão SDR / Closer — oculta para usuários com cargo fixado pelo onboarding */}
+        {/* Visão SDR / Closer */}
         {(!lockedPapel || isEditing) && (
-          <div>
+          <div className="mb-0.5">
             <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7c5aa8]">Visão</p>
             <div className="flex gap-1 bg-[#0d0018] p-1 rounded-xl border border-[#ffffff08]">
               {(['SDR', 'Closer'] as Papel[]).map(p => (
@@ -246,6 +216,73 @@ export function Sidebar() {
             </div>
           </div>
         )}
+
+        {/* Painel de Controle — accordion, só no Modo Gestor */}
+        {isEditing && (
+          <div>
+            <button
+              onClick={() => setGestorOpen(o => !o)}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-semibold bg-amber-400/5 text-amber-400/80 hover:bg-amber-400/10 hover:text-amber-300 border border-amber-400/15 transition-all"
+            >
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+              <span className="flex-1 text-left">Painel de Controle</span>
+              <ChevronDown className={cn('h-3 w-3 opacity-40 transition-transform duration-200', gestorOpen && 'rotate-180')} />
+            </button>
+
+            {gestorOpen && (
+              <div className="mt-1 rounded-xl border border-amber-400/10 overflow-hidden" style={{ background: 'rgba(251,191,36,0.02)' }}>
+                <div className="px-3 pt-2.5 pb-1.5">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-amber-400/40 mb-1.5">Ativo agora</p>
+                  <div className="space-y-1">
+                    {['Textos e ícones inline', 'Controles de abas', 'Toggle SDR / Closer'].map(label => (
+                      <div key={label} className="flex items-center gap-1.5 text-[11px] text-amber-300/50">
+                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-400/80 shrink-0" />
+                        {label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mx-3 h-px bg-amber-400/10 my-1" />
+                <div className="px-2 pb-2">
+                  <p className="px-1 text-[9px] font-black uppercase tracking-widest text-amber-400/40 mb-1.5">Seções editáveis</p>
+                  <div className="space-y-0.5">
+                    {([
+                      { to: '/changelog', icon: Zap,      label: 'Changelog'   },
+                      { to: '/cultura',   icon: Heart,     label: 'Cultura'     },
+                      { to: '/start',     icon: Sparkles,  label: 'Comece Aqui' },
+                      { to: '/meta',      icon: Target,    label: 'Meta do Mês' },
+                    ] as const).map(({ to, icon: Icon, label }) => (
+                      <NavLink key={to} to={to}
+                        className={({ isActive }) => cn(
+                          'flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px] transition-colors',
+                          isActive ? 'bg-amber-400/15 text-amber-300 font-semibold' : 'text-amber-300/60 hover:text-amber-300 hover:bg-amber-400/10'
+                        )}
+                      >
+                        <Icon className="h-3 w-3 shrink-0" />
+                        {label}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Modo Gestor — minimal */}
+        <button
+          onClick={() => (isEditing ? lock() : openPasswordModal())}
+          title="Ctrl+Shift+E"
+          className={cn(
+            'w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all',
+            isEditing
+              ? 'text-amber-400/50 hover:text-amber-300/80 hover:bg-amber-400/5'
+              : 'text-[#5a3e70] hover:text-[#9b6fc4] hover:bg-white/5'
+          )}
+        >
+          <Lock className="h-3 w-3 shrink-0" />
+          <span>{isEditing ? 'Sair do Modo Gestor' : 'Modo Gestor'}</span>
+        </button>
 
         {/* Perfil do usuário */}
         <button
