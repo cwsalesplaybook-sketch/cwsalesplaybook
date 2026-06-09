@@ -1,6 +1,6 @@
 /** Sino de notificações fixo no canto superior direito — estilo Netflix */
 import { useState, useRef, useEffect } from 'react';
-import { Bell, CheckCheck, X, Megaphone } from 'lucide-react';
+import { CheckCheck, X, Megaphone } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { BookOpen, Swords, Target, Calendar, Sparkles, Trophy } from 'lucide-react';
 import { useMuralNotifications } from '@/hooks/useMuralNotifications';
@@ -26,17 +26,21 @@ export function NotificationBell() {
 
   return (
     <div ref={ref} className="relative">
-      {/* Botão do sino */}
+      {/* Botão mascote */}
       <button
         onClick={() => setOpen(o => !o)}
         className={cn(
-          'relative h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-150 shadow-lg',
+          'relative h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-150 shadow-lg overflow-hidden',
           open
-            ? 'bg-[#2d1760] text-white'
-            : 'bg-[#1a0f2e] border border-[#ffffff12] text-[#b89fd4] hover:text-white hover:bg-[#2d1760]'
+            ? 'bg-[#2d1760]'
+            : 'bg-[#1a0f2e] border border-[#ffffff12] hover:bg-[#2d1760]'
         )}
       >
-        <Bell className="h-[18px] w-[18px]" />
+        <img
+          src="/cardapinho-rock.png"
+          alt="Avisos"
+          style={{ width: 36, height: 36, objectFit: 'contain', mixBlendMode: 'multiply' }}
+        />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
             {unreadCount > 9 ? '9+' : unreadCount}
@@ -53,7 +57,13 @@ export function NotificationBell() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#ffffff0a]">
             <div className="flex items-center gap-2">
-              <Bell className="h-3.5 w-3.5 text-[#9b6fc4]" />
+              <div className="h-6 w-6 rounded-full gradient-primary overflow-hidden flex items-center justify-center shrink-0">
+                <img
+                  src="/cardapinho-rock.png"
+                  alt=""
+                  style={{ width: 24, height: 24, objectFit: 'contain', mixBlendMode: 'multiply' }}
+                />
+              </div>
               <span className="text-[12px] font-bold text-white uppercase tracking-wider">Mural de Avisos</span>
               {unreadCount > 0 && (
                 <span className="h-4 px-1.5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center">
@@ -76,9 +86,16 @@ export function NotificationBell() {
           {/* Lista */}
           <div className="max-h-80 overflow-y-auto">
             {avisos.length === 0 ? (
-              <div className="text-center py-8">
-                <Bell className="h-8 w-8 text-[#3a1a60] mx-auto mb-2" />
-                <p className="text-[12px] text-[#7c5aa8]">Nenhum aviso por enquanto.</p>
+              <div className="text-center py-8 px-4">
+                <div className="h-16 w-16 mx-auto rounded-full gradient-primary overflow-hidden flex items-center justify-center mb-3">
+                  <img
+                    src="/cardapinho-rock.png"
+                    alt=""
+                    style={{ width: 64, height: 64, objectFit: 'contain', mixBlendMode: 'multiply' }}
+                  />
+                </div>
+                <p className="text-[12px] text-[#d4c0ee] font-semibold">Tudo calmo por aqui! 🤘</p>
+                <p className="text-[11px] text-[#7c5aa8] mt-0.5">Nenhum aviso por enquanto.</p>
               </div>
             ) : (
               avisos.map(a => {
