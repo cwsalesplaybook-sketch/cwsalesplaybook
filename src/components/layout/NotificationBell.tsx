@@ -120,11 +120,11 @@ export function NotificationBell() {
 
           {/* Footer */}
           <NavLink
-            to="/mural"
+            to="/"
             onClick={() => setOpen(false)}
             className="flex items-center justify-center gap-1.5 py-3 text-[11px] font-semibold text-[#9b6fc4] hover:text-white border-t border-[#ffffff08] transition-colors"
           >
-            Ver mural completo →
+            Ver na Central →
           </NavLink>
         </div>
       )}

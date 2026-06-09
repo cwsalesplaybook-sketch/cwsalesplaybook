@@ -34,14 +34,39 @@ export function useMuralNotifications() {
     setSeenIds(next);
   }, [avisos]);
 
+  const clearAll = useCallback(() => {
+    saveSeenIds(new Set());
+    setSeenIds(new Set());
+  }, []);
+
   const markOneRead = useCallback((id: string) => {
-    const next = new Set(seenIds);
-    next.add(id);
-    saveSeenIds(next);
-    setSeenIds(next);
-  }, [seenIds]);
+    setSeenIds(prev => {
+      const next = new Set(prev);
+      next.add(id);
+      saveSeenIds(next);
+      return next;
+    });
+  }, []);
+
+  const markOneUnread = useCallback((id: string) => {
+    setSeenIds(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      saveSeenIds(next);
+      return next;
+    });
+  }, []);
+
+  const toggleRead = useCallback((id: string) => {
+    setSeenIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      saveSeenIds(next);
+      return next;
+    });
+  }, []);
 
   const isRead = useCallback((id: string) => seenIds.has(id), [seenIds]);
 
-  return { unreadCount, markAllRead, markOneRead, isRead };
+  return { unreadCount, markAllRead, clearAll, markOneRead, markOneUnread, toggleRead, isRead };
 }

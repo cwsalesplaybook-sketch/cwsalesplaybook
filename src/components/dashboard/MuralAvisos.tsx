@@ -1,5 +1,4 @@
 /** Mural de Avisos — CRUD completo no Modo Gestor. */
-import { useState, useCallback } from 'react';
 import { Megaphone, BookOpen, Swords, Target, Calendar, Sparkles, Trophy, Plus, Trash2, ArrowUp, ArrowDown, CheckCircle2, Circle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,50 +6,19 @@ import { useContentStore, useEditableContent } from '@/store/contentStore';
 import { useEditor } from '@/admin/EditorContext';
 import { EditableText } from '@/admin/EditableText';
 import { toast } from '@/hooks/use-toast';
+import { useMuralNotifications } from '@/hooks/useMuralNotifications';
 import { AVISOS_PADRAO, type Aviso, type AvisoIcon } from '@/data/avisos';
 
 const ICON_MAP = { BookOpen, Swords, Target, Megaphone, Calendar, Sparkles, Trophy } as const;
 const ICON_KEYS: AvisoIcon[] = ['BookOpen', 'Swords', 'Target', 'Megaphone', 'Calendar', 'Sparkles', 'Trophy'];
 
 const STORE_KEY = 'dashboard.avisos';
-const LIDOS_KEY = 'mural.avisos.lidos';
-
-function getLidos(): Set<string> {
-  try {
-    const raw = localStorage.getItem(LIDOS_KEY);
-    return new Set(raw ? JSON.parse(raw) : []);
-  } catch { return new Set(); }
-}
-
-function saveLidos(lidos: Set<string>) {
-  localStorage.setItem(LIDOS_KEY, JSON.stringify([...lidos]));
-}
 
 export function MuralAvisos() {
   const { isEditing } = useEditor();
   const avisos = useEditableContent<Aviso[]>(STORE_KEY, AVISOS_PADRAO);
   const saveOverride = useContentStore((s) => s.saveOverride);
-  const [lidos, setLidos] = useState<Set<string>>(getLidos);
-
-  const toggleLido = useCallback((id: string) => {
-    setLidos(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      saveLidos(next);
-      return next;
-    });
-  }, []);
-
-  const marcarTodos = useCallback(() => {
-    const next = new Set(avisos.map(a => a.id));
-    saveLidos(next);
-    setLidos(next);
-  }, [avisos]);
-
-  const desmarcarTodos = useCallback(() => {
-    saveLidos(new Set());
-    setLidos(new Set());
-  }, []);
+  const { toggleRead, markAllRead, clearAll, isRead } = useMuralNotifications();
 
   const update = async (next: Aviso[]) => {
     try { await saveOverride(STORE_KEY, next); }
@@ -91,8 +59,8 @@ export function MuralAvisos() {
     update(next);
   };
 
-  const todosLidos = avisos.length > 0 && avisos.every(a => lidos.has(a.id));
-  const algumLido = avisos.some(a => lidos.has(a.id));
+  const todosLidos = avisos.length > 0 && avisos.every(a => isRead(a.id));
+  const lidos = avisos.filter(a => isRead(a.id));
 
   return (
     <div className="cw-card p-6">
@@ -104,7 +72,7 @@ export function MuralAvisos() {
         <div className="flex items-center gap-2">
           {!isEditing && avisos.length > 0 && (
             <button
-              onClick={todosLidos ? desmarcarTodos : marcarTodos}
+              onClick={todosLidos ? clearAll : markAllRead}
               className="text-[11px] font-medium text-cw-muted hover:text-cw-purple transition-colors underline underline-offset-2"
             >
               {todosLidos ? 'Desmarcar todos' : 'Marcar todos como lido'}
@@ -121,12 +89,12 @@ export function MuralAvisos() {
       <ul className="space-y-3">
         {avisos.map((a, i) => {
           const Icon = ICON_MAP[a.icon] ?? Megaphone;
-          const isLido = lidos.has(a.id);
+          const lido = isRead(a.id);
           return (
             <li
               key={a.id}
               className={`group flex items-start gap-3 p-3 rounded-lg border transition-colors relative ${
-                isLido
+                lido
                   ? 'bg-cw-bg/40 border-cw-border/40 opacity-60'
                   : 'bg-cw-bg border-cw-border hover:border-cw-purple/40'
               }`}
@@ -137,7 +105,7 @@ export function MuralAvisos() {
                 disabled={!isEditing}
                 title={isEditing ? 'Clique para trocar o ícone' : undefined}
                 className={`h-8 w-8 rounded-md flex items-center justify-center shrink-0 ${
-                  isLido ? 'bg-cw-muted/30' : 'gradient-primary'
+                  lido ? 'bg-cw-muted/30' : 'gradient-primary'
                 } ${isEditing ? 'cursor-pointer hover:scale-110 transition-transform' : ''}`}
               >
                 <Icon className="h-4 w-4 text-white" />
@@ -151,7 +119,7 @@ export function MuralAvisos() {
                     className="text-[10px]"
                   />
                 </Badge>
-                <p className={`text-sm ${isLido ? 'line-through text-cw-muted' : 'text-cw-text'}`}>
+                <p className={`text-sm ${lido ? 'line-through text-cw-muted' : 'text-cw-text'}`}>
                   <EditableText
                     storeKey={`${STORE_KEY}.${a.id}.text`}
                     defaultValue={a.text}
@@ -163,11 +131,11 @@ export function MuralAvisos() {
 
               {!isEditing && (
                 <button
-                  onClick={() => toggleLido(a.id)}
-                  title={isLido ? 'Marcar como não lido' : 'Marcar como lido'}
+                  onClick={() => toggleRead(a.id)}
+                  title={lido ? 'Marcar como não lido' : 'Marcar como lido'}
                   className="shrink-0 mt-0.5 text-cw-muted hover:text-cw-purple transition-colors opacity-0 group-hover:opacity-100"
                 >
-                  {isLido
+                  {lido
                     ? <CheckCircle2 className="h-4 w-4 text-cw-purple" />
                     : <Circle className="h-4 w-4" />
                   }
@@ -209,9 +177,9 @@ export function MuralAvisos() {
         )}
       </ul>
 
-      {!isEditing && algumLido && (
+      {!isEditing && lidos.length > 0 && (
         <p className="text-[11px] text-cw-muted mt-3 text-center">
-          {avisos.filter(a => lidos.has(a.id)).length} de {avisos.length} lido{avisos.filter(a => lidos.has(a.id)).length !== 1 ? 's' : ''}
+          {lidos.length} de {avisos.length} lido{lidos.length !== 1 ? 's' : ''}
         </p>
       )}
 
