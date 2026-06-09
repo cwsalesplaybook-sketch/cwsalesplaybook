@@ -16,7 +16,6 @@ import { PasswordGate } from '@/admin/PasswordGate';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
 import Login from '@/pages/Login';
-import { OnboardingWizard } from '@/components/OnboardingWizard';
 import Dashboard from '@/components/dashboard/Dashboard';
 import Agenda from '@/components/agenda/Agenda';
 import Cultura from '@/components/cultura/Cultura';
@@ -111,29 +110,20 @@ function AppLayout() {
 
 const App = () => {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
-  const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [loginRedirect, setLoginRedirect] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session) {
-        setNeedsOnboarding(data.session.user.user_metadata?.onboarding_done !== true);
-      }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s ?? null);
       if (s) {
-        setNeedsOnboarding(s.user.user_metadata?.onboarding_done !== true);
-        // SDRs que concluíram onboarding abrem direto em "Comece Aqui"
+        // Todo usuário que loga vai para /start (onde o onboarding ou o conteúdo normal é exibido)
         if (_event === 'SIGNED_IN') {
-          const meta = s.user.user_metadata;
-          if (meta?.papel === 'SDR' && meta?.onboarding_done === true) {
-            setLoginRedirect('/start');
-          }
+          setLoginRedirect('/start');
         }
       } else {
-        setNeedsOnboarding(false);
         setLoginRedirect(null);
       }
     });
@@ -158,9 +148,6 @@ const App = () => {
             <>
               <AppLayout />
               {loginRedirect && <OneTimeRedirect to={loginRedirect} onDone={() => setLoginRedirect(null)} />}
-              {needsOnboarding && (
-                <OnboardingWizard onComplete={() => setNeedsOnboarding(false)} />
-              )}
             </>
           ) : (
             <Login />

@@ -24,9 +24,11 @@ const SQUADS_SDR = ['Lobo', 'Águia', 'Tubarão'];
 
 interface Props {
   onComplete: () => void;
+  /** Quando true, renderiza inline na página (sem overlay fullscreen). */
+  inline?: boolean;
 }
 
-export function OnboardingWizard({ onComplete }: Props) {
+export function OnboardingWizard({ onComplete, inline = false }: Props) {
   const userProfile = useUserProfile();
   const [step, setStep] = useState(0);
   const [papel, setPapel] = useState<Papel | null>(null);
@@ -81,11 +83,16 @@ export function OnboardingWizard({ onComplete }: Props) {
     onComplete();
   };
 
+  const wrapper = inline
+    ? 'min-h-screen flex items-start justify-center py-12 px-4'
+    : 'fixed inset-0 z-50 flex items-center justify-center overflow-y-auto py-8';
+
+  const wrapperStyle = inline
+    ? {}
+    : { background: 'linear-gradient(180deg, #1a0f2e 0%, #130a22 100%)' };
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto py-8"
-      style={{ background: 'linear-gradient(180deg, #1a0f2e 0%, #130a22 100%)' }}
-    >
+    <div className={wrapper} style={wrapperStyle}>
       <div className="w-full max-w-[520px] mx-4">
 
         {/* Logo */}
