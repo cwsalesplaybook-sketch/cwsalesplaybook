@@ -62,7 +62,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     jornada: ['Estágio BDR', 'Liderança BDR', 'Liderança Rep.'],
     frase: 'Estagiário é só o ponto de partida — o destino você escolhe.',
     historia:
-      'Hyorranes entrou como estagiário de BDR quando muita gente ainda estava aprendendo o que era prospecção. Enquanto outros esperavam a oportunidade chegar, ele foi construindo a própria — com consistência, presença e resultado. Virou liderança de BDR antes do esperado e hoje comanda os Representantes, provando que dentro da CW, quem mostra comprometimento não para de crescer.',
+      'Entrou como estagiário de BDR quando muita gente ainda estava aprendendo o que era prospecção. Enquanto outros esperavam a oportunidade chegar, ele foi construindo a própria. Virou liderança de BDR antes do esperado e hoje comanda os Representantes sendo liderança de representantes.',
     stats: [
       { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
       { icon: 'star', valor: 'Liderança Rep.', label: 'CARGO' },
@@ -77,7 +77,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     jornada: ['SDR', 'Closer', 'Liderança'],
     frase: 'Vender bem é processo. Escalar é engenharia.',
     historia:
-      'Pedro entrou como SDR e desde cedo mostrou que enxergava o jogo além do script: enquanto batia meta, já estava pensando em como fazer o time inteiro bater mais fácil. Criou automações que até hoje rodam nos bastidores da operação — economizando tempo, eliminando erro e dando ao time mais energia para o que importa. Hoje lidera comercialmente e segue construindo o processo que ninguém vê, mas todo mundo sente.',
+      'Desde SDR já pensava em como ajudar o time. Criou automações que até hoje rodam nos bastidores da operação, economizando tempo, eliminando erro. Hoje lidera e segue construindo o processo que ninguém vê, mas todo mundo sente sendo referência e inspiração.',
     stats: [
       { icon: 'trending', valor: '1', label: 'PROMOÇÕES' },
       { icon: 'star', valor: 'Liderança', label: 'CARGO' },
