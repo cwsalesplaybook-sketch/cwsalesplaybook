@@ -46,24 +46,19 @@ export default function Login() {
 
         {/* Logo card — matches sidebar logo style */}
         <div className="text-center mb-8">
-          <div className="inline-block bg-white rounded-2xl px-6 py-3.5 mb-5 shadow-lg shadow-black/30">
+          <div className="inline-flex items-center gap-3 bg-white rounded-2xl px-5 py-3 mb-5 shadow-lg shadow-black/30">
             <img
               src="https://cardapioweb.com/wp-content/uploads/2024/01/Logo-Cardapio-Web.png"
               alt="Cardápio Web"
               className="h-9 w-auto object-contain"
             />
-          </div>
-
-          {/* Cardapinho mascot */}
-          <div className="flex justify-center mb-4">
-            <div className="h-24 w-24 rounded-full bg-white shadow-xl shadow-purple-500/30 flex items-center justify-center overflow-hidden">
-              <img
-                src="/cardapinho-rock.png"
-                alt=""
-                className="h-20 w-20 object-contain"
-                style={{ mixBlendMode: 'multiply' }}
-              />
-            </div>
+            <div className="w-px h-7 bg-gray-200" />
+            <img
+              src="/cardapinho-rock.png"
+              alt=""
+              className="h-11 w-auto object-contain"
+              style={{ mixBlendMode: 'multiply' }}
+            />
           </div>
 
           <h1 className="text-2xl font-black text-white tracking-tight">Time Comercial</h1>
