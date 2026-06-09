@@ -16,6 +16,7 @@ import { PasswordGate } from '@/admin/PasswordGate';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
 import Login from '@/pages/Login';
+import { OnboardingWizard } from '@/components/OnboardingWizard';
 import Dashboard from '@/components/dashboard/Dashboard';
 import Agenda from '@/components/agenda/Agenda';
 import Cultura from '@/components/cultura/Cultura';
@@ -99,18 +100,26 @@ function AppLayout() {
 
 const App = () => {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
-    // Pega sessão atual
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    // Escuta mudanças de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      if (data.session) {
+        setNeedsOnboarding(data.session.user.user_metadata?.onboarding_done !== true);
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s ?? null);
+      if (s) {
+        setNeedsOnboarding(s.user.user_metadata?.onboarding_done !== true);
+      } else {
+        setNeedsOnboarding(false);
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
 
-  // Carregando sessão
   if (session === undefined) {
     return (
       <div className="min-h-screen bg-cw-bg flex items-center justify-center">
@@ -125,7 +134,16 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          {session ? <AppLayout /> : <Login />}
+          {session ? (
+            <>
+              <AppLayout />
+              {needsOnboarding && (
+                <OnboardingWizard onComplete={() => setNeedsOnboarding(false)} />
+              )}
+            </>
+          ) : (
+            <Login />
+          )}
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

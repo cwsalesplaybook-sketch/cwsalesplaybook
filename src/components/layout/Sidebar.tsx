@@ -47,7 +47,7 @@ const SECTIONS = [
 const STORE_KEY = 'sidebar.nav';
 
 export function Sidebar() {
-  const { papel, setPapel } = useSidebarContext();
+  const { papel, setPapel, lockedPapel, squad, apelido } = useSidebarContext();
   const { isEditing, openPasswordModal, lock } = useEditor();
   const userProfile = useUserProfile();
   const rawItems = useEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
@@ -228,22 +228,24 @@ export function Sidebar() {
           <ChevronRight className="h-3.5 w-3.5 opacity-40" />
         </button>
 
-        {/* Visão SDR / Closer */}
-        <div>
-          <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7c5aa8]">Visão</p>
-          <div className="flex gap-1 bg-[#0d0018] p-1 rounded-xl border border-[#ffffff08]">
-            {(['SDR', 'Closer'] as Papel[]).map(p => (
-              <button key={p} onClick={() => setPapel(p)}
-                className={cn(
-                  'flex-1 py-1.5 rounded-lg text-xs font-bold transition-all duration-150',
-                  papel === p ? 'bg-[#6b21a8] text-white shadow-md' : 'text-[#6a4a80] hover:text-[#b89fd4]'
-                )}
-              >
-                {p}
-              </button>
-            ))}
+        {/* Visão SDR / Closer — oculta para usuários com cargo fixado pelo onboarding */}
+        {(!lockedPapel || isEditing) && (
+          <div>
+            <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7c5aa8]">Visão</p>
+            <div className="flex gap-1 bg-[#0d0018] p-1 rounded-xl border border-[#ffffff08]">
+              {(['SDR', 'Closer'] as Papel[]).map(p => (
+                <button key={p} onClick={() => setPapel(p)}
+                  className={cn(
+                    'flex-1 py-1.5 rounded-lg text-xs font-bold transition-all duration-150',
+                    papel === p ? 'bg-[#6b21a8] text-white shadow-md' : 'text-[#6a4a80] hover:text-[#b89fd4]'
+                  )}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Perfil do usuário */}
         <button
@@ -264,10 +266,10 @@ export function Sidebar() {
           )}
           <div className="flex-1 min-w-0 text-left">
             <p className="text-[12px] font-semibold text-white truncate leading-tight">
-              {userProfile.fullName ?? 'Usuário'}
+              {apelido ?? userProfile.fullName ?? 'Usuário'}
             </p>
             <p className="text-[10px] text-[#7c5aa8] truncate leading-tight">
-              {papel}
+              {papel}{squad ? ` · Squad ${squad}` : ''}
             </p>
           </div>
           <ChevronDown className="h-3.5 w-3.5 text-[#7c5aa8] shrink-0 group-hover:text-white transition-colors" />
