@@ -1,6 +1,6 @@
 /** Sino de notificações fixo no canto superior direito — estilo Netflix */
 import { useState, useRef, useEffect } from 'react';
-import { CheckCheck, X, Megaphone } from 'lucide-react';
+import { Bell, CheckCheck, X, Megaphone } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { BookOpen, Swords, Target, Calendar, Sparkles, Trophy } from 'lucide-react';
 import { useMuralNotifications } from '@/hooks/useMuralNotifications';
@@ -26,21 +26,17 @@ export function NotificationBell() {
 
   return (
     <div ref={ref} className="relative">
-      {/* Botão mascote */}
+      {/* Botão do sino */}
       <button
         onClick={() => setOpen(o => !o)}
         className={cn(
-          'relative h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-150 shadow-lg overflow-hidden',
+          'relative h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-150 shadow-lg',
           open
-            ? 'bg-[#2d1760]'
-            : 'bg-[#1a0f2e] border border-[#ffffff12] hover:bg-[#2d1760]'
+            ? 'bg-[#2d1760] text-white'
+            : 'bg-[#1a0f2e] border border-[#ffffff12] text-[#b89fd4] hover:text-white hover:bg-[#2d1760]'
         )}
       >
-        <img
-          src="/cardapinho-rock.png"
-          alt="Avisos"
-          style={{ width: 36, height: 36, objectFit: 'contain', mixBlendMode: 'multiply' }}
-        />
+        <Bell className="h-[18px] w-[18px]" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
             {unreadCount > 9 ? '9+' : unreadCount}

@@ -159,7 +159,7 @@ export default function MetaMes() {
       {/* Card principal — status */}
       <div className="relative rounded-2xl border border-cw-border bg-white overflow-hidden shadow-sm">
         {/* Cardapinho viking */}
-        <img src="/cardapinho viking.png" alt="" className="absolute right-0 bottom-0 h-56 object-contain pointer-events-none select-none z-10" />
+        <img src="/cardapinho-viking.png" alt="" className="absolute right-0 bottom-0 h-56 object-contain pointer-events-none select-none z-10" />
 
         <div className="relative z-0 p-6 space-y-5">
           {/* Topo */}
