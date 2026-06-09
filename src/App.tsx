@@ -1,7 +1,7 @@
 /** Roteamento e layout global do CW Sales Playbook. */
 import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
@@ -103,6 +103,7 @@ function AppLayout() {
 const App = () => {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [loginRedirect, setLoginRedirect] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -115,8 +116,16 @@ const App = () => {
       setSession(s ?? null);
       if (s) {
         setNeedsOnboarding(s.user.user_metadata?.onboarding_done !== true);
+        // SDRs que concluíram onboarding abrem direto em "Comece Aqui"
+        if (_event === 'SIGNED_IN') {
+          const meta = s.user.user_metadata;
+          if (meta?.papel === 'SDR' && meta?.onboarding_done === true) {
+            setLoginRedirect('/start');
+          }
+        }
       } else {
         setNeedsOnboarding(false);
+        setLoginRedirect(null);
       }
     });
     return () => subscription.unsubscribe();
@@ -139,6 +148,7 @@ const App = () => {
           {session ? (
             <>
               <AppLayout />
+              {loginRedirect && <Navigate to={loginRedirect} replace />}
               {needsOnboarding && (
                 <OnboardingWizard onComplete={() => setNeedsOnboarding(false)} />
               )}

@@ -269,7 +269,7 @@ export default function PainelControle() {
   }
 
   return (
-    <div className="p-8 space-y-6 max-w-5xl">
+    <div className="p-8 space-y-6">
 
       {/* ── Header ── */}
       <div className="flex items-center gap-3">
@@ -345,7 +345,7 @@ export default function PainelControle() {
             <h2 className="text-base font-black text-cw-text mb-4">
               O que você pode editar em cada aba
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {GUIDE_SECTIONS.map(({ icon: Icon, label, route, color, bg, border, items }) => (
                 <div key={label} className={cn('cw-card p-5 border', border)}>
                   <div className="flex items-center gap-3 mb-4">
