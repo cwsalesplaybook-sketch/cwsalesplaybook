@@ -158,10 +158,10 @@ export default function MetaMes() {
 
       {/* Card principal — status */}
       <div className="relative rounded-2xl border border-cw-border bg-white overflow-hidden shadow-sm">
-        {/* Cardapinho viking */}
-        <img src="/cardapinho-viking.png" alt="" className="absolute right-0 bottom-0 h-56 object-contain pointer-events-none select-none z-10" />
+        {/* Cardapinho viking — atrás do conteúdo */}
+        <img src="/cardapinho-viking.png" alt="" className="absolute right-0 bottom-0 h-52 object-contain pointer-events-none select-none opacity-90" style={{ zIndex: 0 }} />
 
-        <div className="relative z-0 p-6 space-y-5">
+        <div className="relative p-6 space-y-5" style={{ zIndex: 1 }}>
           {/* Topo */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
@@ -181,7 +181,7 @@ export default function MetaMes() {
           </div>
 
           {/* Número + forecast */}
-          <div className="pr-52">
+          <div>
             <div className="flex items-baseline gap-2">
               <span className="text-6xl font-black text-cw-purple">{totalGanhos}</span>
               <span className="text-xl text-cw-muted font-bold">/ {metaReferencia || '?'}</span>
@@ -201,7 +201,7 @@ export default function MetaMes() {
           </div>
 
           {/* Cards Meta 1/2/3 */}
-          <div className="grid grid-cols-3 gap-3 pr-52">
+          <div className="grid grid-cols-3 gap-3">
             {[{ label: 'META 1', value: meta1 }, { label: 'META 2', value: meta2 }, { label: 'META 3 ⭐', value: meta3 }].map(({ label, value }, i) => {
               const batida = value > 0 && totalGanhos >= value;
               return (
@@ -226,7 +226,7 @@ export default function MetaMes() {
           </div>
 
           {/* Projeção + dias */}
-          <div className="grid grid-cols-2 gap-3 pr-52">
+          <div className="grid grid-cols-2 gap-3">
             <div className="bg-cw-elevated rounded-xl border border-cw-border px-4 py-3 flex items-center gap-3">
               <TrendingUp className="h-4 w-4 text-cw-purple shrink-0" />
               <div>
