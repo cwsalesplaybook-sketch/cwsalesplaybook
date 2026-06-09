@@ -1,5 +1,5 @@
 /** Página de Changelog — histórico de atualizações do sistema */
-import { Zap, Plus, Trash2, ArrowUp, ArrowDown, Check } from 'lucide-react';
+import { Zap, Plus, Trash2, ArrowUp, ArrowDown, Check, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useContentStore, useEditableContent } from '@/store/contentStore';
@@ -84,6 +84,20 @@ export default function ChangelogPage() {
           </Button>
         )}
       </div>
+
+      {/* Banner featurebase */}
+      <a
+        href="https://cardpioweb.featurebase.app/en"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-3 max-w-3xl px-5 py-3.5 rounded-xl border border-cw-purple/30 bg-cw-purple/5 hover:bg-cw-purple/10 transition-colors group"
+      >
+        <Zap className="h-4 w-4 text-cw-purple shrink-0" />
+        <p className="text-[13px] text-cw-muted flex-1">
+          Veja <span className="font-semibold text-cw-purple">todos os changelogs da plataforma</span> no portal oficial do Cardápio Web
+        </p>
+        <ExternalLink className="h-3.5 w-3.5 text-cw-purple/60 group-hover:text-cw-purple shrink-0 transition-colors" />
+      </a>
 
       {/* Entries */}
       <div className="space-y-0 max-w-3xl relative">

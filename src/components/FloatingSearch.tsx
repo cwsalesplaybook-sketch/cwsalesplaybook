@@ -1,7 +1,7 @@
 /** Assistente flutuante CW — chat com navegação por palavras-chave. */
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ArrowRight, Send } from 'lucide-react';
+import { X, ArrowRight, Send, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Destino {
@@ -136,17 +136,13 @@ function buscar(query: string): Destino[] {
   return scored.slice(0, 4).map(x => x.d);
 }
 
-function MascoteAvatar({ size = 28 }: { size?: number }) {
+function BotAvatar({ size = 28 }: { size?: number }) {
   return (
     <div
-      className="rounded-full gradient-primary shrink-0 overflow-hidden flex items-center justify-center"
+      className="rounded-full gradient-primary shrink-0 flex items-center justify-center"
       style={{ width: size, height: size }}
     >
-      <img
-        src="/cardapinho-rock.png"
-        alt="Cardapinho"
-        style={{ width: size * 1.1, height: size * 1.1, objectFit: 'contain', mixBlendMode: 'multiply' }}
-      />
+      <Zap style={{ width: size * 0.5, height: size * 0.5 }} className="text-white" />
     </div>
   );
 }
@@ -197,7 +193,7 @@ export function FloatingSearch() {
   function handleEnter(e: React.KeyboardEvent) {
     if (e.key === 'Enter') {
       const res = buscar(query);
-      if (res.length === 1) ir(res[0]);
+      if (res.length >= 1) ir(res[0]);
     }
   }
 
@@ -218,10 +214,10 @@ export function FloatingSearch() {
           >
             {/* Header */}
             <div className="flex items-center gap-2.5 px-4 py-3 border-b border-[#ffffff0a]">
-              <MascoteAvatar size={32} />
+              <BotAvatar size={32} />
               <div className="flex-1">
-                <p className="text-[13px] font-bold text-white leading-tight">Cardapinho 🤘</p>
-                <p className="text-[10px] text-[#9b6fc4]">Assistente de Vendas</p>
+                <p className="text-[13px] font-bold text-white leading-tight">Assistente CW</p>
+                <p className="text-[10px] text-[#9b6fc4]">Sales Enablement</p>
               </div>
               <button onClick={() => setAberto(false)} className="text-[#7c5aa8] hover:text-white transition-colors">
                 <X className="h-4 w-4" />
@@ -232,7 +228,7 @@ export function FloatingSearch() {
             <div className="px-4 py-4 space-y-3 max-h-72 overflow-y-auto">
               {/* Mensagens do bot */}
               <div className="flex items-end gap-2">
-                <MascoteAvatar size={24} />
+                <BotAvatar size={24} />
                 <div className="flex flex-col gap-1.5 max-w-[85%]">
                   <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2">
                     <p className="text-[13px] text-white leading-snug">Posso ajudar? 👋</p>
@@ -263,7 +259,7 @@ export function FloatingSearch() {
               {/* Resultados */}
               {resultados.length > 0 && (
                 <div className="flex items-end gap-2">
-                  <MascoteAvatar size={24} />
+                  <BotAvatar size={24} />
                   <div className="flex flex-col gap-1.5 max-w-[85%]">
                     <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2">
                       <p className="text-[12px] text-[#d4c0ee]">Encontrei isso para você:</p>
@@ -290,7 +286,7 @@ export function FloatingSearch() {
               {/* Nenhum resultado */}
               {query.trim() && resultados.length === 0 && (
                 <div className="flex items-end gap-2">
-                  <MascoteAvatar size={24} />
+                  <BotAvatar size={24} />
                   <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2 max-w-[85%]">
                     <p className="text-[12px] text-[#d4c0ee]">Hmm, não encontrei nada para <span className="text-white font-semibold">"{query}"</span>.</p>
                     <p className="text-[11px] text-[#7c5aa8] mt-1">Tente: totem, calculadora, objeção, spin...</p>
@@ -325,26 +321,14 @@ export function FloatingSearch() {
           </div>
         )}
 
-        {/* Botão flutuante — mascote */}
+        {/* Botão flutuante */}
         <button
           onClick={() => setAberto(v => !v)}
-          title="Fala com o Cardapinho"
-          className="relative shadow-2xl transition-all duration-200 hover:scale-110 rounded-full"
-          style={{ height: 56, width: 56 }}
+          title="Assistente CW"
+          className="relative h-14 w-14 rounded-full gradient-primary shadow-2xl transition-all duration-200 hover:scale-110 flex items-center justify-center"
+          style={{ boxShadow: '0 4px 20px rgba(165,67,250,0.5)' }}
         >
-          {aberto ? (
-            <div className="h-full w-full rounded-full gradient-primary flex items-center justify-center">
-              <X className="h-5 w-5 text-white" />
-            </div>
-          ) : (
-            <div className="h-full w-full rounded-full gradient-primary overflow-hidden flex items-center justify-center" style={{ boxShadow: '0 4px 20px rgba(165,67,250,0.5)' }}>
-              <img
-                src="/cardapinho-rock.png"
-                alt="Cardapinho"
-                style={{ width: 56, height: 56, objectFit: 'contain', mixBlendMode: 'multiply' }}
-              />
-            </div>
-          )}
+          {aberto ? <X className="h-5 w-5 text-white" /> : <Zap className="h-6 w-6 text-white" />}
           {novo && !aberto && (
             <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-cw-yellow border-2 border-[#150d30] animate-pulse" />
           )}
