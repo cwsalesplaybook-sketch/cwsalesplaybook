@@ -1,4 +1,4 @@
-/** Sino de notificações fixo no canto superior direito — estilo Netflix */
+/** Sino de notificações na sidebar — estilo item de menu */
 import { useState, useRef, useEffect } from 'react';
 import { Bell, CheckCheck, X, Megaphone } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
@@ -26,28 +26,29 @@ export function NotificationBell() {
 
   return (
     <div ref={ref} className="relative">
-      {/* Botão do sino */}
+      {/* Botão estilo item de sidebar */}
       <button
         onClick={() => setOpen(o => !o)}
         className={cn(
-          'relative h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-150 shadow-lg',
+          'relative w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
           open
-            ? 'bg-[#2d1760] text-white'
-            : 'bg-[#1a0f2e] border border-[#ffffff12] text-[#b89fd4] hover:text-white hover:bg-[#2d1760]'
+            ? 'bg-[#2d1760] text-white font-semibold'
+            : 'text-[#b89fd4] hover:text-white hover:bg-white/5'
         )}
       >
-        <Bell className="h-[18px] w-[18px]" />
+        <Bell className="h-[18px] w-[18px] shrink-0" />
+        <span className="flex-1 text-left">Avisos</span>
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
+          <span className="h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
-      {/* Painel de avisos */}
+      {/* Painel de avisos — abre para CIMA e para a direita */}
       {open && (
         <div
-          className="absolute top-11 right-0 w-80 rounded-2xl border border-[#ffffff12] shadow-2xl overflow-hidden"
+          className="absolute bottom-full left-full ml-2 mb-0 w-80 rounded-2xl border border-[#ffffff12] shadow-2xl overflow-hidden"
           style={{ background: 'linear-gradient(180deg, #1f1040 0%, #150d30 100%)' }}
         >
           {/* Header */}
