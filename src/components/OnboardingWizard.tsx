@@ -20,7 +20,7 @@ const TABS_OVERVIEW = [
   { icon: Zap,      label: 'Changelog',   desc: 'Últimas atualizações da plataforma' },
 ];
 
-const SQUADS_SDR = ['Alfa', 'Beta', 'Gama'];
+const SQUADS_SDR = ['Lobo', 'Águia', 'Tubarão'];
 
 interface Props {
   onComplete: () => void;
