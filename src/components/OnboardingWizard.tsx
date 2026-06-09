@@ -70,7 +70,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
     if (!papel) return;
     setSaving(true);
     const name = apelido.trim() || null;
-    await supabase.auth.updateUser({
+    const { error } = await supabase.auth.updateUser({
       data: {
         papel,
         squad: papel === 'SDR' ? squad : null,
@@ -78,8 +78,12 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
         onboarding_done: true,
       },
     });
+    if (error) {
+      setSaving(false);
+      return; // não desmonta — spinner para, usuário pode tentar de novo
+    }
     localStorage.setItem('cw-papel', papel);
-    setSaving(false);
+    // só desmonta após salvar com sucesso
     onComplete();
   };
 

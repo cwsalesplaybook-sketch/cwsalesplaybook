@@ -20,17 +20,21 @@ export default function Start() {
       const done = data.user?.user_metadata?.onboarding_done === true;
       const needs = !done;
       setNeedsOnboarding(needs);
-      setOnboardingActive(needs); // bloqueia sidebar se precisa de onboarding
+      setOnboardingActive(needs);
     });
     return () => { setOnboardingActive(false); };
-  }, []);
+  }, [setOnboardingActive]);
 
   const handleComplete = () => {
     setNeedsOnboarding(false);
     setOnboardingActive(false);
   };
 
-  if (needsOnboarding === null) return null;
+  if (needsOnboarding === null) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-cw-purple border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   if (needsOnboarding) {
     return (

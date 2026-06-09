@@ -85,7 +85,7 @@ export function Sidebar() {
         <NavLink
           to={locked ? '/start' : item.to}
           end={item.end}
-          onClick={locked ? (e) => e.preventDefault() : undefined}
+
           className={({ isActive }) => cn(
             'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
             locked
