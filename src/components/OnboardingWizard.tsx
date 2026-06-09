@@ -105,7 +105,9 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
     if (!papel) return;
     setSaving(true);
     const name = apelido.trim() || null;
-    const { error } = await supabase.auth.updateUser({
+
+    // 1. Atualiza metadados do auth (visão do sidebar)
+    const { error, data: authData } = await supabase.auth.updateUser({
       data: {
         papel,
         squad: papel === 'SDR' ? squad : null,
@@ -115,6 +117,23 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
       },
     });
     if (error) { setSaving(false); return; }
+
+    // 2. Salva perfil na tabela pública (visível aos gestores)
+    const uid = authData?.user?.id;
+    const email = authData?.user?.email ?? userEmail;
+    if (uid) {
+      await supabase.from('sdr_profiles').upsert({
+        user_id: uid,
+        email,
+        apelido: name,
+        papel,
+        squad: papel === 'SDR' ? squad : null,
+        cargo_lideranca: papel === 'Liderança' ? cargoLideranca : null,
+        onboarding_done: true,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+    }
+
     localStorage.setItem('cw-papel', papel);
     onComplete();
   };

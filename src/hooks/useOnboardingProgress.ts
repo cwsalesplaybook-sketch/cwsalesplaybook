@@ -1,7 +1,7 @@
-/** Persistência leve para checks do onboarding e textos livres do novato.
- *  Usa localStorage para que o progresso sobreviva ao refresh. */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+/** Persistência do progresso de onboarding: localStorage (imediato) + Supabase (visível ao gestor). */
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ONBOARDING } from '@/data/onboarding';
+import { supabase } from '@/integrations/supabase/client';
 
 const KEY_CHECKS = 'cw-onboarding-checks';
 const KEY_NOTES = 'cw-onboarding-notes';
@@ -15,6 +15,29 @@ function loadJSON<T>(key: string, fallback: T): T {
   }
 }
 
+/** Envia progresso ao Supabase (debounced 2s para não spammar a cada clique) */
+async function syncToSupabase(checked: Record<string, boolean>) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
+
+  const checkedIds = Object.entries(checked)
+    .filter(([, v]) => v)
+    .map(([id]) => id);
+
+  const total = ONBOARDING.length;
+  const done = checkedIds.length;
+  const percent = Math.round((done / total) * 100);
+
+  await supabase.from('onboarding_progress').upsert({
+    user_id: session.user.id,
+    checked_ids: checkedIds,
+    done_items: done,
+    total_items: total,
+    percent,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'user_id' });
+}
+
 export function useOnboardingProgress() {
   const [checked, setChecked] = useState<Record<string, boolean>>(() =>
     loadJSON<Record<string, boolean>>(KEY_CHECKS, {})
@@ -23,8 +46,19 @@ export function useOnboardingProgress() {
     loadJSON<Record<string, string>>(KEY_NOTES, {})
   );
 
+  // Debounce ref para o sync ao Supabase
+  const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     localStorage.setItem(KEY_CHECKS, JSON.stringify(checked));
+
+    // Debounce: espera 2s de inatividade antes de sincronizar
+    if (syncTimer.current) clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(() => {
+      syncToSupabase(checked);
+    }, 2000);
+
+    return () => { if (syncTimer.current) clearTimeout(syncTimer.current); };
   }, [checked]);
 
   useEffect(() => {
