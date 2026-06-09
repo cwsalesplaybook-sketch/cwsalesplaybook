@@ -46,6 +46,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
+    id: 'pedro', nome: 'Pedro Ferreira', foto: '/hall/PedroFerreira.jpeg',
+    cargo: 'Liderança Comercial', jornada: ['SDR', 'Closer', 'Liderança'],
+    frase: 'Vender bem é processo. Escalar é engenharia.',
+    historia: 'Desde SDR já pensava em como ajudar o time. Criou automações que até hoje rodam nos bastidores da operação, economizando tempo, eliminando erro. Hoje lidera e segue construindo o processo que ninguém vê, mas todo mundo sente sendo referência e inspiração.',
+    stats: [
+      { icon: 'trending', valor: '1', label: 'PROMOÇÕES' },
+      { icon: 'star',     valor: 'Liderança', label: 'CARGO' },
+      { icon: 'crown',    valor: 'Builder', label: 'STATUS' },
+    ],
+  },
+  {
     id: 'hyorranes', nome: 'Hyorranes Souza', foto: '/hall/Hyorranes.jpeg',
     cargo: 'Liderança de Representantes', jornada: ['Estágio BDR', 'Liderança BDR', 'Liderança Rep.'],
     frase: 'Estagiário é só o ponto de partida — o destino você escolhe.',
@@ -65,17 +76,6 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Liderança Closer', label: 'CARGO' },
       { icon: 'crown',    valor: 'Completa', label: 'PERFIL' },
-    ],
-  },
-  {
-    id: 'pedro', nome: 'Pedro Ferreira', foto: '/hall/PedroFerreira.jpeg',
-    cargo: 'Liderança Comercial', jornada: ['SDR', 'Closer', 'Liderança'],
-    frase: 'Vender bem é processo. Escalar é engenharia.',
-    historia: 'Desde SDR já pensava em como ajudar o time. Criou automações que até hoje rodam nos bastidores da operação, economizando tempo, eliminando erro. Hoje lidera e segue construindo o processo que ninguém vê, mas todo mundo sente sendo referência e inspiração.',
-    stats: [
-      { icon: 'trending', valor: '1', label: 'PROMOÇÕES' },
-      { icon: 'star',     valor: 'Liderança', label: 'CARGO' },
-      { icon: 'crown',    valor: 'Builder', label: 'STATUS' },
     ],
   },
 ];
