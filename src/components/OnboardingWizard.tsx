@@ -22,15 +22,23 @@ const TABS_OVERVIEW = [
 
 const SQUADS_SDR = ['Lobo', 'Águia', 'Tubarão'];
 
-/** Emails com permissão para selecionar Liderança */
-const EMAILS_LIDERANCA = [
-  'hyorranes.souza@cardapioweb.com',
-  'antonio.anderson@cardapioweb.com',
-  'pedro.ferreira@cardapioweb.com',
-  'joelma.vieira@cardapioweb.com',
-  'whenna.oliveira@cardapioweb.com',
-  'ana.clara@cardapioweb.com',
-  'vanessa.alencar@cardapioweb.com',
+/** Emails com permissão para selecionar Liderança + cargo específico */
+const EMAILS_LIDERANCA: Record<string, string> = {
+  'hyorranes.souza@cardapioweb.com':    'Liderança de Representantes',
+  'antonio.anderson@cardapioweb.com':   'Liderança Comercial',
+  'pedro.ferreira@cardapioweb.com':     'Liderança Comercial',
+  'joelma.vieira@cardapioweb.com':      'Liderança Comercial',
+  'whenna.oliveira@cardapioweb.com':    'Liderança de Closer',
+  'ana.clara@cardapioweb.com':          'Coordenação Comercial',
+  'vanessa.alencar@cardapioweb.com':    'Coordenação de Parcerias',
+};
+
+const CARGOS_LIDERANCA = [
+  'Liderança Comercial',
+  'Liderança de Closer',
+  'Liderança de Representantes',
+  'Coordenação Comercial',
+  'Coordenação de Parcerias',
 ];
 
 const PAPEIS_INFO: Record<Papel, { desc: string; aviso?: string }> = {
@@ -50,42 +58,46 @@ interface Props {
 export function OnboardingWizard({ onComplete, inline = false }: Props) {
   const userProfile = useUserProfile();
   const userEmail = userProfile.email?.toLowerCase() ?? '';
-  const podeEscolherLideranca = EMAILS_LIDERANCA.includes(userEmail);
+  const cargoSugerido = EMAILS_LIDERANCA[userEmail] ?? null;
+  const podeEscolherLideranca = cargoSugerido !== null;
 
   const [step, setStep] = useState(0);
   const [papel, setPapel] = useState<Papel | null>(null);
   const [squad, setSquad] = useState<string | null>(null);
+  // cargo específico de liderança (ex: "Liderança Comercial")
+  const [cargoLideranca, setCargoLideranca] = useState<string | null>(null);
   const [apelido, setApelido] = useState('');
   const [saving, setSaving] = useState(false);
 
-  /* Só SDR precisa do passo de squad */
-  const needsSquad = papel === 'SDR';
-  const totalSteps = needsSquad ? 4 : 3;
+  const needsSquad     = papel === 'SDR';
+  const needsSubCargo  = papel === 'Liderança';
+  // steps: 0=boas-vindas 1=cargo 2=squad/subcargo 3=apelido
+  const totalSteps = (needsSquad || needsSubCargo) ? 4 : 3;
 
   const stepPosition = () => {
     if (step === 0) return 0;
     if (step === 1) return 1;
-    if (step === 2) return needsSquad ? 2 : totalSteps - 1;
+    if (step === 2) return 2;
     return totalSteps - 1;
   };
 
   const handleNext = () => {
     if (step === 0) setStep(1);
     else if (step === 1 && papel) {
-      if (needsSquad) setStep(2);
+      if (needsSquad || needsSubCargo) setStep(2);
       else setStep(3);
     } else if (step === 2) setStep(3);
   };
 
   const handleBack = () => {
-    if (step === 3 && !needsSquad) setStep(1);
+    if (step === 3 && !needsSquad && !needsSubCargo) setStep(1);
     else if (step > 0) setStep(prev => prev - 1);
   };
 
   const canNext = () => {
     if (step === 0) return true;
     if (step === 1) return papel !== null;
-    if (step === 2) return squad !== null;
+    if (step === 2) return needsSubCargo ? cargoLideranca !== null : squad !== null;
     return true;
   };
 
@@ -97,16 +109,13 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
       data: {
         papel,
         squad: papel === 'SDR' ? squad : null,
+        cargo_lideranca: papel === 'Liderança' ? cargoLideranca : null,
         apelido: name,
         onboarding_done: true,
       },
     });
-    if (error) {
-      setSaving(false);
-      return; // não desmonta — spinner para, usuário pode tentar de novo
-    }
+    if (error) { setSaving(false); return; }
     localStorage.setItem('cw-papel', papel);
-    // só desmonta após salvar com sucesso
     onComplete();
   };
 
@@ -231,8 +240,52 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
             </div>
           )}
 
-          {/* ── Step 2: Squad (SDR) ── */}
-          {step === 2 && (
+          {/* ── Step 2a: Sub-cargo de Liderança ── */}
+          {step === 2 && needsSubCargo && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-xl font-black text-cw-text mb-1">Qual é o seu cargo de liderança?</h2>
+                <p className="text-sm text-cw-muted">
+                  Isso direciona você para o dashboard correto da sua área.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2.5">
+                {CARGOS_LIDERANCA.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setCargoLideranca(c)}
+                    className={cn(
+                      'w-full px-4 py-3.5 rounded-xl border-2 text-left font-bold text-sm transition-all duration-150 flex items-center justify-between',
+                      cargoLideranca === c
+                        ? 'border-cw-purple bg-cw-purple/10 text-cw-purple'
+                        : 'border-cw-border bg-cw-elevated text-cw-muted hover:border-cw-purple/40 hover:text-cw-text'
+                    )}
+                  >
+                    {c}
+                    {cargoLideranca === c && (
+                      <div className="h-5 w-5 rounded-full gradient-primary flex items-center justify-center shrink-0">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Dica: pré-seleciona o cargo sugerido pelo email */}
+              {cargoSugerido && cargoLideranca === null && (
+                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-cw-purple/10 border border-cw-purple/20">
+                  <AlertCircle className="h-3.5 w-3.5 text-cw-purple-light shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-cw-muted leading-snug">
+                    Baseado no seu email, sugerimos: <span className="font-bold text-cw-text">{cargoSugerido}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Step 2b: Squad (SDR) ── */}
+          {step === 2 && needsSquad && (
             <div className="space-y-5">
               <div>
                 <h2 className="text-xl font-black text-cw-text mb-1">Qual é o seu squad?</h2>
@@ -303,6 +356,14 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
                     <Check className="h-3.5 w-3.5 text-cw-purple shrink-0" />
                     <p className="text-[12px] text-cw-muted">
                       Squad: <span className="font-bold text-cw-text">{squad}</span>
+                    </p>
+                  </div>
+                )}
+                {cargoLideranca && (
+                  <div className="flex items-center gap-2">
+                    <Check className="h-3.5 w-3.5 text-cw-purple shrink-0" />
+                    <p className="text-[12px] text-cw-muted">
+                      Área: <span className="font-bold text-cw-text">{cargoLideranca}</span>
                     </p>
                   </div>
                 )}
