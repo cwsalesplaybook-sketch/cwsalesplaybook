@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import {
   Megaphone, BookOpen, Swords, Target, Calendar, Sparkles, Trophy,
-  Plus, Trash2, ArrowUp, ArrowDown, Bell, CheckCheck,
+  Plus, Trash2, ArrowUp, ArrowDown, Bell, CheckCheck, Zap,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { useEditor } from '@/admin/EditorContext';
 import { EditableText } from '@/admin/EditableText';
 import { toast } from '@/hooks/use-toast';
 import { AVISOS_PADRAO, type Aviso, type AvisoIcon } from '@/data/avisos';
+import { CHANGELOG_PADRAO } from '@/data/changelog';
 import { useMuralNotifications } from '@/hooks/useMuralNotifications';
 
 const ICON_MAP = { BookOpen, Swords, Target, Megaphone, Calendar, Sparkles, Trophy } as const;
@@ -179,6 +180,34 @@ export default function MuralPage() {
           💡 Clique nos textos para editar · Clique no ícone para alternar · Use as setas para reordenar
         </p>
       )}
+
+      {/* Novidades da Plataforma — pulls automático do changelog */}
+      <div>
+        <div className="flex items-center gap-3 mb-3 max-w-3xl">
+          <span className="text-[11px] font-black uppercase tracking-widest text-cw-purple">Novidades da Plataforma</span>
+          <div className="flex-1 h-px bg-cw-border" />
+          <span className="text-[11px] text-cw-muted">{CHANGELOG_PADRAO.length}</span>
+        </div>
+        <div className="space-y-3 max-w-3xl">
+          {CHANGELOG_PADRAO.map((entry) => (
+            <div key={entry.id} className="cw-card p-5 flex items-start gap-4">
+              <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shrink-0">
+                <Zap className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                  <Badge variant="outline" className="border-cw-border text-cw-muted text-[10px]">{entry.date}</Badge>
+                  <Badge variant="outline" className="border-cw-purple/30 text-cw-purple text-[10px]">Nova funcionalidade</Badge>
+                </div>
+                <p className="text-sm font-semibold text-cw-text mb-1">{entry.title}</p>
+                <p className="text-xs text-cw-muted leading-relaxed line-clamp-3">
+                  {entry.description.split('\n\n')[0]}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

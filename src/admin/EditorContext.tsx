@@ -1,12 +1,21 @@
 /** EditorContext — controla se o Modo Gestor está ativo na sessão atual.
- *  Senha é validada no servidor (edge function editor-login) que devolve um
- *  token assinado HMAC. O token é guardado em localStorage para persistir entre
- *  reloads, e usado pela edge function editor-save para autorizar gravações. */
+ *  Lideranças listadas em GESTOR_EMAILS têm acesso direto sem senha.
+ *  Demais usuários precisam da senha para desbloquear. */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useContentStore } from '@/store/contentStore';
+import { supabase } from '@/integrations/supabase/client';
+
+const GESTOR_EMAILS = new Set([
+  'pedro.ferreira@cardapioweb.com',
+  'whenna.oliveira@cardapioweb.com',
+  'hyorranes.souza@cardapioweb.com',
+  'antonio.anderson@cardapioweb.com',
+  'ana.clara@cardapioweb.com',
+]);
 
 interface EditorCtx {
   isEditing: boolean;
+  isGestor: boolean;
   passwordModalOpen: boolean;
   openPasswordModal: () => void;
   closePasswordModal: () => void;
@@ -21,11 +30,24 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const setEditorToken = useContentStore((s) => s.setEditorToken);
   const initStore = useContentStore((s) => s.init);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [isGestor, setIsGestor] = useState(false);
 
-  // Inicializa o store (carrega overrides + assina realtime) no mount.
   useEffect(() => {
     initStore();
   }, [initStore]);
+
+  // Verifica se o usuário logado é uma liderança com acesso direto
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const email = session?.user?.email ?? '';
+      setIsGestor(GESTOR_EMAILS.has(email));
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      const email = session?.user?.email ?? '';
+      setIsGestor(GESTOR_EMAILS.has(email));
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const isEditing = !!editorToken;
 
@@ -36,6 +58,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         e.preventDefault();
         if (isEditing) {
           setEditorToken(null);
+        } else if (isGestor) {
+          setEditorToken('editor-mode-active');
         } else {
           setPasswordModalOpen(true);
         }
@@ -43,10 +67,11 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isEditing, setEditorToken]);
+  }, [isEditing, isGestor, setEditorToken]);
 
   const tryUnlock = async (password: string) => {
-    if (password === 'clarinha123)') {
+    const editorPw = import.meta.env.VITE_EDITOR_PASSWORD;
+    if (editorPw && password === editorPw) {
       setEditorToken('editor-mode-active');
       setPasswordModalOpen(false);
       return true;
@@ -56,12 +81,21 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const lock = () => setEditorToken(null);
 
+  const openPasswordModal = () => {
+    if (isGestor) {
+      setEditorToken('editor-mode-active');
+    } else {
+      setPasswordModalOpen(true);
+    }
+  };
+
   return (
     <Ctx.Provider
       value={{
         isEditing,
+        isGestor,
         passwordModalOpen,
-        openPasswordModal: () => setPasswordModalOpen(true),
+        openPasswordModal,
         closePasswordModal: () => setPasswordModalOpen(false),
         tryUnlock,
         lock,

@@ -89,6 +89,7 @@ export interface Pessoa {
   slack?: string;
   bio?: string;
   foto?: string;
+  email?: string;
 }
 
 export interface GlossarioTermo {

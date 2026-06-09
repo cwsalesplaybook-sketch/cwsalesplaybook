@@ -89,7 +89,10 @@ export function TimeGrid() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
               {pessoas.map(({ p, idx }) => {
                 const initials = p.nome.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
-                const isMe = email ? p.slack?.includes(email.split('@')[0]) : false;
+                const isMe = !!email && (
+                  p.email === email ||
+                  p.slack?.toLowerCase().includes(email.split('@')[0].toLowerCase()) === true
+                );
 
                 return (
                   <div key={p.id} className="group relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-cw-elevated border border-cw-border hover:border-cw-purple/40 hover:bg-white hover:shadow-sm transition-all duration-150">
@@ -103,9 +106,11 @@ export function TimeGrid() {
                       </button>
                     )}
 
-                    {/* Avatar */}
+                    {/* Avatar — prioridade: foto Google (eu logado) > foto estática > iniciais */}
                     {isMe && avatarUrl ? (
-                      <img src={avatarUrl} alt={p.nome} className="h-9 w-9 rounded-full object-cover shrink-0 border-2 border-cw-purple/30" referrerPolicy="no-referrer" />
+                      <img src={avatarUrl} alt={p.nome} className="h-9 w-9 rounded-full object-cover shrink-0 border-2 border-cw-purple/40" referrerPolicy="no-referrer" />
+                    ) : p.foto ? (
+                      <img src={p.foto} alt={p.nome} className="h-9 w-9 rounded-full object-cover shrink-0 border border-cw-border" />
                     ) : (
                       <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-xs shrink-0">
                         {initials}
