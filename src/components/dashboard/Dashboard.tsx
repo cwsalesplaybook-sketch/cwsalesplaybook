@@ -1,5 +1,6 @@
 /** Sales Enablement — hub operacional do time comercial. */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { LayoutDashboard, HelpCircle, Zap, Calculator, Target } from 'lucide-react';
 import { GreetingBanner } from './GreetingBanner';
 import { MonthCountdown } from './MonthCountdown';
@@ -19,8 +20,18 @@ const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: st
   { id: 'changelog',   label: 'Changelog',   icon: Zap             },
 ];
 
+const VALID_TABS: Tab[] = ['inicio', 'calculadora', 'faq', 'changelog'];
+
 export default function Dashboard() {
-  const [tab, setTab] = useState<Tab>('inicio');
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab') as Tab | null;
+  const [tab, setTab] = useState<Tab>(
+    tabFromUrl && VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'inicio'
+  );
+
+  useEffect(() => {
+    if (tabFromUrl && VALID_TABS.includes(tabFromUrl)) setTab(tabFromUrl);
+  }, [tabFromUrl]);
 
   return (
     <>
