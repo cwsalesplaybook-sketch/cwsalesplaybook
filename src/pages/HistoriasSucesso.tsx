@@ -39,6 +39,21 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'crown', valor: 'Top performer', label: 'STATUS' },
     ],
   },
+  {
+    id: 'anaclara',
+    nome: 'Ana Clara',
+    foto: '/hall/AnaClara.jpeg',
+    cargo: 'Coordenadora Comercial',
+    jornada: ['SDR', 'Liderança', 'Coordenação'],
+    frase: 'Quem lidera pelo exemplo não precisa pedir silêncio — o resultado fala.',
+    historia:
+      'Ana Clara entrou como SDR e não parou: assumiu a liderança comercial do time e construiu autoridade tijolo por tijolo. Hoje coordena o comercial inteiro — não porque foi escolhida, mas porque provou, dia após dia, que sabia o caminho. É referência de postura, visão e resultado dentro da CW.',
+    stats: [
+      { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
+      { icon: 'star', valor: 'Coordenação', label: 'CARGO' },
+      { icon: 'crown', valor: 'Referência', label: 'STATUS' },
+    ],
+  },
 ];
 
 function StatIcon({ type }: { type: Stat['icon'] }) {
