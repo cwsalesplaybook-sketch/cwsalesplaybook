@@ -54,12 +54,24 @@ export default function Login() {
             />
           </div>
 
+          {/* Cardapinho mascot */}
+          <div className="flex justify-center mb-4">
+            <div className="h-24 w-24 rounded-full bg-white shadow-xl shadow-purple-500/30 flex items-center justify-center overflow-hidden">
+              <img
+                src="/cardapinho-rock.png"
+                alt=""
+                className="h-20 w-20 object-contain"
+                style={{ mixBlendMode: 'multiply' }}
+              />
+            </div>
+          </div>
+
           <h1 className="text-2xl font-black text-white tracking-tight">Time Comercial</h1>
           <p
             className="text-[11px] font-bold uppercase tracking-[0.22em] mt-1.5"
             style={{ color: '#7c5aa8' }}
           >
-            Squad Águia
+            Sales Playbook
           </p>
         </div>
 

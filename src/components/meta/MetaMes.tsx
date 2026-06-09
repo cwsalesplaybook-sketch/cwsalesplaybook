@@ -157,9 +157,9 @@ export default function MetaMes() {
       </div>
 
       {/* Card principal — status */}
-      <div className="relative rounded-2xl border border-cw-border bg-white overflow-hidden shadow-sm">
-        {/* Cardapinho viking — atrás do conteúdo */}
-        <img src="/cardapinho-viking.png" alt="" className="absolute right-0 bottom-0 h-52 object-contain pointer-events-none select-none opacity-90" style={{ zIndex: 0 }} />
+      <div className="relative rounded-2xl border border-cw-border bg-white shadow-sm">
+        {/* Cardapinho viking — na frente do conteúdo */}
+        <img src="/cardapinho-viking.png" alt="" className="absolute right-0 bottom-0 h-52 object-contain pointer-events-none select-none" style={{ zIndex: 10 }} />
 
         <div className="relative p-6 space-y-5" style={{ zIndex: 1 }}>
           {/* Topo */}
