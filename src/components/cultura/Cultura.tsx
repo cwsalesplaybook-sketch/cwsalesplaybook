@@ -123,10 +123,6 @@ export default function Cultura() {
         : r.participantes === 'Closer' || r.participantes === 'Ambos'
     ), [papel]);
 
-  const diarias = rituais.filter((r) => r.frequencia.includes('Diária'));
-  const semanais = rituais.filter((r) => r.frequencia.includes('Semanal') || r.frequencia.includes('Quinzenal'));
-  const mensais  = rituais.filter((r) => r.frequencia.includes('Mensal'));
-
   const update = async (next: CulturaCard[]) => {
     try { await saveOverride(STORE_KEY, next); }
     catch (e) { toast({ title: 'Falha ao salvar', description: e instanceof Error ? e.message : '', variant: 'destructive' }); }
@@ -150,9 +146,12 @@ export default function Cultura() {
 
         <GritoDeGuerra />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {cards.map((c, idx) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {cards.map((c, idx) => c.fullWidth ? null : (
             <CulturaCardItem key={c.id} card={c} idx={idx} onRemove={isEditing ? () => remove(idx) : undefined} />
+          ))}
+          {rituais.map((r) => (
+            <RitualCard key={r.id} ritual={r} onClick={() => setSelectedRitual(r)} />
           ))}
         </div>
 
@@ -163,25 +162,6 @@ export default function Cultura() {
             </Button>
           </div>
         )}
-
-        {/* Rotinas do Time */}
-        <div className="space-y-8">
-          <h2 className="text-lg font-black text-cw-text uppercase tracking-widest">Rotinas do Time</h2>
-          {[
-            { titulo: 'Diárias', items: diarias },
-            { titulo: 'Semanais & Quinzenais', items: semanais },
-            { titulo: 'Mensais', items: mensais },
-          ].map((sec) => sec.items.length > 0 && (
-            <div key={sec.titulo}>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-cw-muted mb-4">{sec.titulo}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {sec.items.map((r) => (
-                  <RitualCard key={r.id} ritual={r} onClick={() => setSelectedRitual(r)} />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
       <RitualPanel ritual={selectedRitual} onClose={() => setSelectedRitual(null)} />
     </>
