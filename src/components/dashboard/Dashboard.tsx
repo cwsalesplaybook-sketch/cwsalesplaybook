@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { LayoutDashboard, HelpCircle, Zap, Calculator, Target } from 'lucide-react';
-import { GreetingBanner } from './GreetingBanner';
 import { MonthCountdown } from './MonthCountdown';
 import { QuickLinks } from './QuickLinks';
 import { MuralAvisos } from './MuralAvisos';
@@ -94,7 +93,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <GreetingBanner />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <MonthCountdown />
             <div className="lg:col-span-2">
