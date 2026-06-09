@@ -79,6 +79,28 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
+    id: 'joaopablo', nome: 'João Paulo', foto: '/hall/JoaoPaulo.jpeg',
+    cargo: 'Closer', jornada: ['SDR JR I', 'SDR JR II', 'SDR JR III', 'Closer'],
+    frase: 'Cada "não" que recebi como SDR foi o treino que me fez fechar como Closer.',
+    historia: 'João Paulo entrou na CW como SDR JR I e foi subindo cada degrau com consistência e garra. De JR I para JR II, de JR II para JR III — sem pular etapa, sem reclamar do processo. Quando dominou o jogo da prospecção de cabo a rabo, veio a promoção que todo SDR sonha: Closer. A trajetória do João Paulo é a prova de que não existe atalho — existe preparo. Quem aprende a abrir portas, aprende a fechar negócios.',
+    stats: [
+      { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
+      { icon: 'star',     valor: 'Closer',  label: 'CARGO ATUAL' },
+      { icon: 'crown',    valor: 'SDR → Closer', label: 'JORNADA' },
+    ],
+  },
+  {
+    id: 'gustavo', nome: 'Gustavo', foto: '/hall/Gustavo.jpeg',
+    cargo: 'Closer', jornada: ['SDR JR I', 'Closer'],
+    frase: 'Com 19 anos eu já sabia: a CW não é lugar pra quem quer esperar — é pra quem quer construir.',
+    historia: 'Gustavo entrou na Cardápio Web como SDR JR I com 19 anos e saiu como Closer em menos de 1 ano. Isso não é comum. Isso é divônico labubonico. Durante sua jornada como SDR, fechou exatamente 1.135 clientes — número que a maioria nunca vai atingir em toda a carreira. Gustavo não é só uma referência de performance: é a prova de que idade não define potencial e que, na CW, quem entrega, sobe. Hoje como Closer, ele carrega junto a mentalidade de quem construiu cada resultado do zero e sabe o que custa cada contrato. O mais jovem Closer da história da CW.',
+    stats: [
+      { icon: 'trending', valor: '1.135',      label: 'CLIENTES COMO SDR' },
+      { icon: 'star',     valor: '19 anos',    label: 'PRIMEIRO CLOSER' },
+      { icon: 'crown',    valor: '< 1 ano',    label: 'TEMPO PRA PROMOÇÃO' },
+    ],
+  },
+  {
     id: 'luan', nome: 'Luan Nicolas', foto: '/hall/LuanNicolas.jpeg',
     cargo: 'Closer JR III', jornada: ['SDR', 'SDR Pleno I', 'Closer JR I', 'Closer JR III'],
     frase: 'Não tem atalho. Tem consistência.',
