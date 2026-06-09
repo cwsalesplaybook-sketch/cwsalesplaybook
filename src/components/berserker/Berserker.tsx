@@ -4,7 +4,6 @@ import { Header } from '@/components/layout/Header';
 import { Badge } from '@/components/ui/badge';
 import { useBerserkerStatus } from '@/hooks/useBerserkerStatus';
 import { BerserkerCountdown } from './BerserkerCountdown';
-import { Leaderboard } from './Leaderboard';
 import { HallOfFame } from './HallOfFame';
 import { EditableText } from '@/admin/EditableText';
 
@@ -48,8 +47,6 @@ export default function Berserker() {
               "<EditableText storeKey="berserker.como.frase" defaultValue="O Berserker prova que qualquer um pode dar a volta por cima nos momentos finais." multiline className="italic" />"
             </blockquote>
           </div>
-
-          <Leaderboard />
 
           <HallOfFame />
         </div>

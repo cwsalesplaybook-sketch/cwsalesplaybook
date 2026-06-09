@@ -68,16 +68,20 @@ export function HallOfFame() {
                 <Trash2 className="h-3 w-3" />
               </button>
             )}
-            <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-yellow-500 to-amber-700 flex items-center justify-center text-xl font-black text-white shadow-lg shadow-yellow-500/30">
-              {initials(h.nome)}
+            <div className="mx-auto h-20 w-20 rounded-full overflow-hidden shadow-lg shadow-yellow-500/30 border-2 border-yellow-500/50">
+              {h.foto
+                ? <img src={h.foto} alt={h.nome} className="h-full w-full object-cover object-top" />
+                : <div className="h-full w-full bg-gradient-to-br from-yellow-500 to-amber-700 flex items-center justify-center text-xl font-black text-white">{initials(h.nome)}</div>
+              }
             </div>
             <p className="font-bold mt-3 text-cw-text">
               <EditableText storeKey={`${STORE_KEY}.${idx}.nome`} defaultValue={h.nome} />
             </p>
             <p className="text-xs text-cw-muted">
               <EditableText storeKey={`${STORE_KEY}.${idx}.squad`} defaultValue={h.squad} className="text-xs" />
-              {' · '}
-              <EditableText storeKey={`${STORE_KEY}.${idx}.mes`} defaultValue={h.mes} className="text-xs" />
+            </p>
+            <p className="text-xs text-yellow-300 font-semibold mt-1 italic">
+              "<EditableText storeKey={`${STORE_KEY}.${idx}.destaque`} defaultValue={(h as any).destaque ?? ''} className="text-xs" />"
             </p>
             <p className="text-xs text-yellow-300 font-semibold mt-2">
               <EditableText storeKey={`${STORE_KEY}.${idx}.metrica`} defaultValue={h.metrica} className="text-xs" />

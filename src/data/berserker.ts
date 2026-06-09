@@ -12,13 +12,44 @@ export const LEADERBOARD: BerserkerEntry[] = [
 export interface HallEntry {
   nome: string;
   squad: string;
-  mes: string;
+  /** Frase de destaque exibida no lugar da data */
+  destaque: string;
   metrica: string;
   frase: string;
+  foto?: string;
 }
 
 export const HALL_OF_FAME: HallEntry[] = [
-  { nome: 'Ryan Felipe', squad: 'Squad Águia', mes: 'Mar/2025', metrica: 'Agendamentos', frase: 'De 0 a herói nos últimos 3 dias.' },
-  { nome: 'Thais Giurizatto', squad: 'Squad Lobo', mes: 'Fev/2025', metrica: 'Taxa de conversão', frase: 'Consistência virou título.' },
-  { nome: 'Marcos Vinicius', squad: 'Squad Águia', mes: 'Jan/2025', metrica: 'Clientes fechados', frase: 'O Berserker original.' },
+  {
+    nome: 'Lara Stefanny',
+    squad: 'Squad Águia',
+    destaque: 'A guerreira que não parou até fechar.',
+    metrica: 'Berserker do Mês',
+    frase: 'Pressão é combustível. Eu acelero quando os outros freiam.',
+    foto: '/team/lara-stefanny.jpg',
+  },
+  {
+    nome: 'Luis Lincon',
+    squad: 'Squad Lobo',
+    destaque: 'Virada épica nos últimos 3 dias.',
+    metrica: 'Berserker do Mês',
+    frase: 'Todo mês eu lembro que desistir nunca foi uma opção.',
+    foto: '/team/luis-lincon.jpg',
+  },
+  {
+    nome: 'Marcos Telles',
+    squad: 'Squad Águia',
+    destaque: 'Consistência que virou conquista.',
+    metrica: 'Berserker do Mês',
+    frase: 'Não é sorte, é preparo encontrando a oportunidade.',
+    foto: '/team/marcos-telles.jpg',
+  },
+  {
+    nome: 'Karoline Rodrigues',
+    squad: 'Squad Lobo',
+    destaque: 'Dominando o jogo com estratégia e garra.',
+    metrica: 'Berserker do Mês',
+    frase: 'Quem domina o processo, domina o resultado.',
+    foto: '/team/karoline-rodrigues.jpg',
+  },
 ];
