@@ -57,7 +57,7 @@ export function HallOfFame() {
         {hall.map((h, idx) => (
           <div
             key={`${h.nome}-${idx}`}
-            className="group relative rounded-xl border border-yellow-500/40 bg-gradient-to-br from-[#1a0f2e] via-[#150d26] to-[#0f0819] p-5 text-center shadow-lg shadow-black/30"
+            className="group relative rounded-xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 via-cw-surface to-cw-bg p-5 text-center"
           >
             {isEditing && (
               <button
@@ -74,21 +74,21 @@ export function HallOfFame() {
                 : <div className="h-full w-full bg-gradient-to-br from-yellow-500 to-amber-700 flex items-center justify-center text-xl font-black text-white">{initials(h.nome)}</div>
               }
             </div>
-            <p className="font-black mt-3 text-white text-base">
+            <p className="font-black mt-3 text-cw-text text-base">
               <EditableText storeKey={`${STORE_KEY}.${idx}.nome`} defaultValue={h.nome} />
             </p>
-            <p className="text-xs text-yellow-200/70 mt-0.5">
+            <p className="text-xs text-cw-text/60 mt-0.5 font-medium">
               <EditableText storeKey={`${STORE_KEY}.${idx}.squad`} defaultValue={h.squad} className="text-xs" />
             </p>
-            <p className="text-xs text-yellow-400 font-semibold mt-2 italic leading-snug">
+            <p className="text-xs text-yellow-600 font-semibold mt-2 italic leading-snug">
               "<EditableText storeKey={`${STORE_KEY}.${idx}.destaque`} defaultValue={(h as any).destaque ?? ''} className="text-xs" />"
             </p>
             <div className="mt-2 inline-block bg-yellow-500/20 border border-yellow-500/40 rounded-full px-3 py-0.5">
-              <p className="text-xs text-yellow-300 font-bold">
+              <p className="text-xs text-yellow-600 font-bold">
                 <EditableText storeKey={`${STORE_KEY}.${idx}.metrica`} defaultValue={h.metrica} className="text-xs" />
               </p>
             </div>
-            <p className="text-sm text-white/70 italic mt-3 leading-relaxed">
+            <p className="text-sm text-cw-text/70 italic mt-3 leading-relaxed">
               "<EditableText storeKey={`${STORE_KEY}.${idx}.frase`} defaultValue={h.frase} multiline className="text-sm" />"
             </p>
           </div>
