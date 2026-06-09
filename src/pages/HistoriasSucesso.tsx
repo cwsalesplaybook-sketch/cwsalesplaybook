@@ -54,6 +54,36 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'crown', valor: 'Referência', label: 'STATUS' },
     ],
   },
+  {
+    id: 'hyorranes',
+    nome: 'Hyorranes Souza',
+    foto: '/hall/Hyorranes.jpeg',
+    cargo: 'Liderança de Representantes',
+    jornada: ['Estágio BDR', 'Liderança BDR', 'Liderança Rep.'],
+    frase: 'Estagiário é só o ponto de partida — o destino você escolhe.',
+    historia:
+      'Hyorranes entrou como estagiário de BDR quando muita gente ainda estava aprendendo o que era prospecção. Enquanto outros esperavam a oportunidade chegar, ele foi construindo a própria — com consistência, presença e resultado. Virou liderança de BDR antes do esperado e hoje comanda os Representantes, provando que dentro da CW, quem mostra comprometimento não para de crescer.',
+    stats: [
+      { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
+      { icon: 'star', valor: 'Liderança Rep.', label: 'CARGO' },
+      { icon: 'crown', valor: 'Em ascensão', label: 'STATUS' },
+    ],
+  },
+  {
+    id: 'pedro',
+    nome: 'Pedro Ferreira',
+    foto: '/hall/PedroFerreira.jpeg',
+    cargo: 'Liderança Comercial',
+    jornada: ['SDR', 'Closer', 'Liderança'],
+    frase: 'Vender bem é processo. Escalar é engenharia.',
+    historia:
+      'Pedro entrou como SDR e desde cedo mostrou que enxergava o jogo além do script: enquanto batia meta, já estava pensando em como fazer o time inteiro bater mais fácil. Criou automações que até hoje rodam nos bastidores da operação — economizando tempo, eliminando erro e dando ao time mais energia para o que importa. Hoje lidera comercialmente e segue construindo o processo que ninguém vê, mas todo mundo sente.',
+    stats: [
+      { icon: 'trending', valor: '1', label: 'PROMOÇÕES' },
+      { icon: 'star', valor: 'Liderança', label: 'CARGO' },
+      { icon: 'crown', valor: 'Builder', label: 'STATUS' },
+    ],
+  },
 ];
 
 function StatIcon({ type }: { type: Stat['icon'] }) {
