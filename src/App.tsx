@@ -1,7 +1,7 @@
 /** Roteamento e layout global do CW Sales Playbook. */
 import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
@@ -40,6 +40,15 @@ import PainelControle from '@/pages/PainelControle';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
+
+function OneTimeRedirect({ to, onDone }: { to: string; onDone: () => void }) {
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate(to, { replace: true });
+    onDone();
+  }, []);
+  return null;
+}
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -148,7 +157,7 @@ const App = () => {
           {session ? (
             <>
               <AppLayout />
-              {loginRedirect && <Navigate to={loginRedirect} replace />}
+              {loginRedirect && <OneTimeRedirect to={loginRedirect} onDone={() => setLoginRedirect(null)} />}
               {needsOnboarding && (
                 <OnboardingWizard onComplete={() => setNeedsOnboarding(false)} />
               )}
