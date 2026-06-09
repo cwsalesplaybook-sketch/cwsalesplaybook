@@ -99,9 +99,12 @@ function DetailModal({ membro, onClose }: { membro: MembroHall; onClose: () => v
             </div>
           )}
           {/* Badge de cargo */}
-          <div className="absolute top-3 left-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/50 text-amber-300 text-xs font-black uppercase tracking-wider backdrop-blur-sm">
-              <Trophy className="h-3 w-3" /> Liderança
+          <div className="absolute top-3 left-3 flex items-center gap-1.5">
+            <span className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-amber-400/20 border border-amber-400/50 backdrop-blur-sm">
+              <Trophy className="h-3.5 w-3.5 text-amber-400" />
+            </span>
+            <span className="px-2.5 py-1 rounded-full bg-black/50 border border-amber-400/30 text-amber-300 text-[10px] font-black uppercase tracking-wider backdrop-blur-sm">
+              {membro.cargo}
             </span>
           </div>
         </div>
@@ -199,10 +202,13 @@ function PhotoCard({
       {/* Gradiente de baixo */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
 
-      {/* Badge topo esquerdo: troféu + cargo */}
-      <div className="absolute top-3 left-3">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400 text-[#1e0b4a] text-[10px] font-black uppercase tracking-wide">
-          <Trophy className="h-2.5 w-2.5" /> {membro.cargo}
+      {/* Badge topo esquerdo: troféu separado + cargo */}
+      <div className="absolute top-3 left-3 flex items-center gap-1.5">
+        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-amber-400 shrink-0">
+          <Trophy className="h-3 w-3 text-[#1e0b4a]" />
+        </span>
+        <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm border border-amber-400/40 text-amber-300 text-[10px] font-black uppercase tracking-wide">
+          {membro.cargo}
         </span>
       </div>
 
