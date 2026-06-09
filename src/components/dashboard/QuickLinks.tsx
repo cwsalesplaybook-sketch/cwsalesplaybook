@@ -1,5 +1,5 @@
 /** Links rápidos para ferramentas externas e internas. */
-import { ExternalLink, Clock, MessageSquare, LifeBuoy, Globe, BookOpen, BarChart2 } from 'lucide-react';
+import { ExternalLink, Clock, MessageSquare, LifeBuoy, Globe, BookOpen, BarChart2, CalendarCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const LINKS = [
@@ -42,6 +42,14 @@ const LINKS = [
     external: true,
     cor: 'text-cw-yellow',
     bg: 'bg-cw-yellow/10 border-cw-yellow/20 hover:border-cw-yellow/50',
+  },
+  {
+    label: 'Agendar Reunião',
+    url: 'https://agendar-reunioes-closer.vercel.app/',
+    icon: CalendarCheck,
+    external: true,
+    cor: 'text-teal-400',
+    bg: 'bg-teal-500/10 border-teal-500/20 hover:border-teal-400/50',
   },
   {
     label: 'Pipedrive',
