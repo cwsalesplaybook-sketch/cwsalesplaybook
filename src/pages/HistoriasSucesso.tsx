@@ -92,8 +92,8 @@ const MEMBROS_PADRAO: MembroHall[] = [
   {
     id: 'gustavo', nome: 'Gustavo', foto: '/hall/Gustavo.jpeg',
     cargo: 'Closer', jornada: ['SDR JR I', 'Closer'],
-    frase: 'Com 19 anos eu já sabia: a CW não é lugar pra quem quer esperar — é pra quem quer construir.',
-    historia: 'Gustavo entrou na Cardápio Web como SDR JR I com 19 anos e saiu como Closer em menos de 1 ano. Isso não é comum. Isso é divônico labubonico. Durante sua jornada como SDR, fechou exatamente 1.135 clientes — número que a maioria nunca vai atingir em toda a carreira. Gustavo não é só uma referência de performance: é a prova de que idade não define potencial e que, na CW, quem entrega, sobe. Hoje como Closer, ele carrega junto a mentalidade de quem construiu cada resultado do zero e sabe o que custa cada contrato. O mais jovem Closer da história da CW.',
+    frase: 'Idade não define o que você consegue — define só o quanto tempo você tem pra ir além.',
+    historia: 'Gustavo chegou à Cardápio Web aos 19 anos como SDR JR I e, em menos de 1 ano, cruzou para o time de Closer. Não por sorte. Por volume, consistência e uma mentalidade que a maioria demora anos pra desenvolver. Como SDR, fechou exatamente 1.135 clientes — uma marca que fala por si. Cada contrato foi construído com método, cada ligação foi uma aula que ele mesmo aplicou. Quando chegou a hora da promoção, não havia dúvida: Gustavo já operava como Closer muito antes do cargo. Hoje, é referência dentro da CW — não só pelos números, mas pela postura. A prova viva de que, aqui, quem entrega com seriedade cresce sem prazo de validade.',
     stats: [
       { icon: 'trending', valor: '1.135',      label: 'CLIENTES COMO SDR' },
       { icon: 'star',     valor: '19 anos',    label: 'PRIMEIRO CLOSER' },
