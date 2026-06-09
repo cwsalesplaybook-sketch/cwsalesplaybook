@@ -1,4 +1,4 @@
-/** Hall da Fama CW — branding oficial, grid wide-screen, modal de detalhe. */
+/** Hall da Fama CW, branding oficial, grid wide-screen, modal de detalhe. */
 import { useState } from 'react';
 import { Trophy, TrendingUp, Star, Crown, ArrowRight, Plus, X, Trash2 } from 'lucide-react';
 import { useEditor } from '@/admin/EditorContext';
@@ -27,7 +27,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     id: 'joelma', nome: 'Joelma Vieira', foto: '/hall/Joelma.jpeg',
     cargo: 'Liderança Comercial', jornada: ['SDR', 'Closer', 'Liderança'],
     frase: 'Quem tem canal próprio, bate mais forte.',
-    historia: 'Joelma começou como SDR, mostrou consistência e fome de resultado, foi promovida a Closer e hoje lidera o time comercial. É exemplo vivo de força, foco e cultura — prova de que quem se entrega ao processo, vai longe aqui dentro.',
+    historia: 'Joelma começou como SDR, mostrou consistência e fome de resultado, foi promovida a Closer e hoje lidera o time comercial. É exemplo vivo de força, foco e cultura, prova de que quem se entrega ao processo, vai longe aqui dentro.',
     stats: [
       { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Liderança', label: 'CARGO' },
@@ -37,8 +37,8 @@ const MEMBROS_PADRAO: MembroHall[] = [
   {
     id: 'anaclara', nome: 'Ana Clara', foto: '/hall/AnaClara.jpeg',
     cargo: 'Coordenadora Comercial', jornada: ['SDR', 'Liderança', 'Coordenação'],
-    frase: 'Quem lidera pelo exemplo não precisa pedir silêncio — o resultado fala.',
-    historia: 'Ana Clara entrou como SDR e não parou: assumiu a liderança comercial do time e construiu autoridade tijolo por tijolo. Hoje coordena o comercial inteiro — não porque foi escolhida, mas porque provou, dia após dia, que sabia o caminho. É referência de postura, visão e resultado dentro da CW.',
+    frase: 'Quem lidera pelo exemplo não precisa pedir silêncio, o resultado fala.',
+    historia: 'Ana Clara entrou como SDR e não parou: assumiu a liderança comercial do time e construiu autoridade tijolo por tijolo. Hoje coordena o comercial inteiro, não porque foi escolhida, mas porque provou, dia após dia, que sabia o caminho. É referência de postura, visão e resultado dentro da CW.',
     stats: [
       { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Coordenação', label: 'CARGO' },
@@ -59,7 +59,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
   {
     id: 'hyorranes', nome: 'Hyorranes Souza', foto: '/hall/Hyorranes.jpeg',
     cargo: 'Liderança de Representantes', jornada: ['Estágio BDR', 'Liderança BDR', 'Liderança Rep.'],
-    frase: 'Estagiário é só o ponto de partida — o destino você escolhe.',
+    frase: 'Estagiário é só o ponto de partida, o destino você escolhe.',
     historia: 'Entrou como estagiário de BDR quando muita gente ainda estava aprendendo o que era prospecção. Enquanto outros esperavam a oportunidade chegar, ele foi construindo a própria. Virou liderança de BDR antes do esperado e hoje comanda os Representantes sendo liderança de representantes.',
     stats: [
       { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
@@ -71,7 +71,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     id: 'whenna', nome: 'Whenna Oliveira', foto: '/hall/WhennaOliveira.jpeg',
     cargo: 'Liderança de Closer', jornada: ['Estágio BDR', 'SDR', 'Liderança Pré-Vendas', 'Liderança Closer'],
     frase: 'Cada etapa foi escolha, não sorte.',
-    historia: 'Whenna não pulou etapas — ela as dominou. Entrou como estagiária de BDR, foi SDR, assumiu a liderança de pré-vendas e hoje lidera os Closers. Cada promoção veio porque ela entregava mais do que o esperado no cargo que estava, antes de olhar pro próximo. É a prova viva de que a jornada mais longa costuma ser a mais sólida.',
+    historia: 'Whenna não pulou etapas, ela as dominou. Entrou como estagiária de BDR, foi SDR, assumiu a liderança de pré-vendas e hoje lidera os Closers. Cada promoção veio porque ela entregava mais do que o esperado no cargo que estava, antes de olhar pro próximo. É a prova viva de que a jornada mais longa costuma ser a mais sólida.',
     stats: [
       { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Liderança Closer', label: 'CARGO' },
@@ -82,7 +82,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     id: 'joaopablo', nome: 'João Paulo', foto: '/hall/JoaoPaulo.jpeg',
     cargo: 'Closer', jornada: ['SDR JR I', 'SDR JR II', 'SDR JR III', 'Closer'],
     frase: 'Cada "não" que recebi como SDR foi o treino que me fez fechar como Closer.',
-    historia: 'João Paulo entrou na CW como SDR JR I e foi subindo cada degrau com consistência e garra. De JR I para JR II, de JR II para JR III — sem pular etapa, sem reclamar do processo. Quando dominou o jogo da prospecção de cabo a rabo, veio a promoção que todo SDR sonha: Closer. A trajetória do João Paulo é a prova de que não existe atalho — existe preparo. Quem aprende a abrir portas, aprende a fechar negócios.',
+    historia: 'João Paulo entrou na CW como SDR JR I e foi subindo cada degrau com consistência e garra. De JR I para JR II, de JR II para JR III, sem pular etapa, sem reclamar do processo. Quando dominou o jogo da prospecção de cabo a rabo, veio a promoção que todo SDR sonha: Closer. A trajetória do João Paulo é a prova de que não existe atalho, existe preparo. Quem aprende a abrir portas, aprende a fechar negócios.',
     stats: [
       { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Closer',  label: 'CARGO ATUAL' },
@@ -92,8 +92,8 @@ const MEMBROS_PADRAO: MembroHall[] = [
   {
     id: 'gustavo', nome: 'Gustavo', foto: '/hall/Gustavo.jpeg',
     cargo: 'Closer', jornada: ['SDR JR I', 'Closer'],
-    frase: 'Idade não define o que você consegue — define só o quanto tempo você tem pra ir além.',
-    historia: 'Gustavo chegou à Cardápio Web aos 19 anos como SDR JR I e, em menos de 1 ano, cruzou para o time de Closer. Não por sorte. Por volume, consistência e uma mentalidade que a maioria demora anos pra desenvolver. Como SDR, fechou exatamente 1.135 clientes — uma marca que fala por si. Cada contrato foi construído com método, cada ligação foi uma aula que ele mesmo aplicou. Quando chegou a hora da promoção, não havia dúvida: Gustavo já operava como Closer muito antes do cargo. Hoje, é referência dentro da CW — não só pelos números, mas pela postura. A prova viva de que, aqui, quem entrega com seriedade cresce sem prazo de validade.',
+    frase: 'Idade não define o que você consegue, define só o quanto tempo você tem pra ir além.',
+    historia: 'Gustavo chegou à Cardápio Web aos 19 anos como SDR JR I e, em menos de 1 ano, cruzou para o time de Closer. Não por sorte. Por volume, consistência e uma mentalidade que a maioria demora anos pra desenvolver. Como SDR, fechou exatamente 1.135 clientes, uma marca que fala por si. Cada contrato foi construído com método, cada ligação foi uma aula que ele mesmo aplicou. Quando chegou a hora da promoção, não havia dúvida: Gustavo já operava como Closer muito antes do cargo. Hoje, é referência dentro da CW, não só pelos números, mas pela postura. A prova viva de que, aqui, quem entrega com seriedade cresce sem prazo de validade.',
     stats: [
       { icon: 'trending', valor: '1.135',      label: 'CLIENTES COMO SDR' },
       { icon: 'star',     valor: '19 anos',    label: 'PRIMEIRO CLOSER' },
@@ -104,7 +104,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     id: 'luan', nome: 'Luan Nicolas', foto: '/hall/LuanNicolas.jpeg',
     cargo: 'Closer JR III', jornada: ['SDR', 'SDR Pleno I', 'Closer JR I', 'Closer JR III'],
     frase: 'Não tem atalho. Tem consistência.',
-    historia: 'Luan não entrou pedindo desconto na jornada — ele foi degrau por degrau, promoção por promoção, sem pular fila. Passou por cada nível do SDR até chegar no Pleno, e quando cruzou pro fechamento, não parou: foi de Closer JR I direto ao III. O que chama atenção no Luan não é a velocidade, é a solidez. Cada subida foi construída em cima da anterior. É o tipo de cara que, quando está num cargo, domina aquele cargo antes de querer o próximo. É o cara.',
+    historia: 'Luan não entrou pedindo desconto na jornada, ele foi degrau por degrau, promoção por promoção, sem pular fila. Passou por cada nível do SDR até chegar no Pleno, e quando cruzou pro fechamento, não parou: foi de Closer JR I direto ao III. O que chama atenção no Luan não é a velocidade, é a solidez. Cada subida foi construída em cima da anterior. É o tipo de cara que, quando está num cargo, domina aquele cargo antes de querer o próximo. É o cara.',
     stats: [
       { icon: 'trending', valor: '4+', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Closer JR III', label: 'CARGO' },
@@ -406,7 +406,7 @@ export default function HistoriasSucesso() {
           Aqui a gente eterniza quem subiu o degrau. Clique em um card pra ver a trajetória completa.
         </p>
 
-        {/* Grid — ocupa a tela toda */}
+        {/* Grid, ocupa a tela toda */}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5 mb-10">
           {membros.map((m) => (
             <PhotoCard key={m.id} membro={m}
