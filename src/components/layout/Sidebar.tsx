@@ -13,6 +13,7 @@ import { useEditor } from '@/admin/EditorContext';
 import { useContentStore, useEditableContent } from '@/store/contentStore';
 import { EditableText } from '@/admin/EditableText';
 import { toast } from '@/hooks/use-toast';
+import { NotificationBell } from '@/components/layout/NotificationBell';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -251,6 +252,11 @@ export function Sidebar() {
           <Lock className="h-3 w-3 shrink-0" />
           <span>{isEditing ? 'Sair do Modo Gestor' : 'Modo Gestor'}</span>
         </button>
+
+        {/* Sino de notificações */}
+        <div className="px-1">
+          <NotificationBell />
+        </div>
 
         {/* Perfil do usuário */}
         <button
