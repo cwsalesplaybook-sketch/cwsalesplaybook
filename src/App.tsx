@@ -36,6 +36,7 @@ import ChangelogPage from '@/pages/ChangelogPage';
 import HistoriasSucesso from '@/pages/HistoriasSucesso';
 import Calculadora from '@/pages/Calculadora';
 import GestorAdminPage from '@/pages/GestorAdminPage';
+import PainelControle from '@/pages/PainelControle';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -72,6 +73,7 @@ function AnimatedRoutes() {
           <Route path="/changelog" element={<ChangelogPage />} />
           <Route path="/calculadora" element={<Calculadora />} />
           <Route path="/admin" element={<GestorAdminPage />} />
+          <Route path="/painel" element={<PainelControle />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>

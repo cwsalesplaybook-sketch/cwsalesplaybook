@@ -1,5 +1,4 @@
 /** Sidebar — visual idêntico ao print de referência. */
-import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, Map as MapIcon,
@@ -70,8 +69,6 @@ export function Sidebar() {
     const cur = ICON_KEYS.indexOf(items[idx].icon);
     const next = [...items]; next[idx] = { ...next[idx], icon: ICON_KEYS[(cur + 1) % ICON_KEYS.length] }; update(next);
   };
-
-  const [gestorOpen, setGestorOpen] = useState(false);
 
   const startItem        = items.find(i => i.to === '/start');
   const sectionItems     = (routes: string[]) => items.filter(i => routes.includes(i.to));
@@ -188,6 +185,23 @@ export function Sidebar() {
           <NavItemEl key={item.to} item={item} />
         ))}
 
+        {/* Painel de Controle — aba exclusiva do Modo Gestor */}
+        {isEditing && (
+          <NavLink
+            to="/painel"
+            className={({ isActive }) => cn(
+              'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all border',
+              isActive
+                ? 'bg-amber-400/20 text-amber-300 border-amber-400/30'
+                : 'bg-amber-400/5 text-amber-400/80 hover:bg-amber-400/15 hover:text-amber-300 border-amber-400/15'
+            )}
+          >
+            <ShieldCheck className="h-[18px] w-[18px] shrink-0" />
+            <span className="flex-1">Painel de Controle</span>
+            <ChevronRight className="h-3.5 w-3.5 opacity-50" />
+          </NavLink>
+        )}
+
         {isEditing && (
           <button onClick={add} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#9b6fc4] border border-dashed border-[#9b6fc4]/30 hover:bg-white/5 transition-colors">
             <Plus className="h-3.5 w-3.5" /> Nova aba
@@ -217,57 +231,6 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* Painel de Controle — accordion, só no Modo Gestor */}
-        {isEditing && (
-          <div>
-            <button
-              onClick={() => setGestorOpen(o => !o)}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-semibold bg-amber-400/5 text-amber-400/80 hover:bg-amber-400/10 hover:text-amber-300 border border-amber-400/15 transition-all"
-            >
-              <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-              <span className="flex-1 text-left">Painel de Controle</span>
-              <ChevronDown className={cn('h-3 w-3 opacity-40 transition-transform duration-200', gestorOpen && 'rotate-180')} />
-            </button>
-
-            {gestorOpen && (
-              <div className="mt-1 rounded-xl border border-amber-400/10 overflow-hidden" style={{ background: 'rgba(251,191,36,0.02)' }}>
-                <div className="px-3 pt-2.5 pb-1.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-amber-400/40 mb-1.5">Ativo agora</p>
-                  <div className="space-y-1">
-                    {['Textos e ícones inline', 'Controles de abas', 'Toggle SDR / Closer'].map(label => (
-                      <div key={label} className="flex items-center gap-1.5 text-[11px] text-amber-300/50">
-                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-400/80 shrink-0" />
-                        {label}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="mx-3 h-px bg-amber-400/10 my-1" />
-                <div className="px-2 pb-2">
-                  <p className="px-1 text-[9px] font-black uppercase tracking-widest text-amber-400/40 mb-1.5">Seções editáveis</p>
-                  <div className="space-y-0.5">
-                    {([
-                      { to: '/changelog', icon: Zap,      label: 'Changelog'   },
-                      { to: '/cultura',   icon: Heart,     label: 'Cultura'     },
-                      { to: '/start',     icon: Sparkles,  label: 'Comece Aqui' },
-                      { to: '/meta',      icon: Target,    label: 'Meta do Mês' },
-                    ] as const).map(({ to, icon: Icon, label }) => (
-                      <NavLink key={to} to={to}
-                        className={({ isActive }) => cn(
-                          'flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px] transition-colors',
-                          isActive ? 'bg-amber-400/15 text-amber-300 font-semibold' : 'text-amber-300/60 hover:text-amber-300 hover:bg-amber-400/10'
-                        )}
-                      >
-                        <Icon className="h-3 w-3 shrink-0" />
-                        {label}
-                      </NavLink>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Modo Gestor — minimal */}
         <button
