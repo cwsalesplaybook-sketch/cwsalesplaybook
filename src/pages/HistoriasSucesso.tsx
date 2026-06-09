@@ -68,17 +68,6 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
-    id: 'luan', nome: 'Luan Nicolas', foto: '/hall/LuanNicolas.jpeg',
-    cargo: 'Closer JR III', jornada: ['SDR', 'SDR Pleno I', 'Closer JR I', 'Closer JR III'],
-    frase: 'Não tem atalho. Tem consistência.',
-    historia: 'Luan não entrou pedindo desconto na jornada — ele foi degrau por degrau, promoção por promoção, sem pular fila. Passou por cada nível do SDR até chegar no Pleno, e quando cruzou pro fechamento, não parou: foi de Closer JR I direto ao III. O que chama atenção no Luan não é a velocidade, é a solidez. Cada subida foi construída em cima da anterior. É o tipo de cara que, quando está num cargo, domina aquele cargo antes de querer o próximo. É o cara.',
-    stats: [
-      { icon: 'trending', valor: '4+', label: 'PROMOÇÕES' },
-      { icon: 'star',     valor: 'Closer JR III', label: 'CARGO' },
-      { icon: 'crown',    valor: 'O cara', label: 'STATUS' },
-    ],
-  },
-  {
     id: 'whenna', nome: 'Whenna Oliveira', foto: '/hall/WhennaOliveira.jpeg',
     cargo: 'Liderança de Closer', jornada: ['Estágio BDR', 'SDR', 'Liderança Pré-Vendas', 'Liderança Closer'],
     frase: 'Cada etapa foi escolha, não sorte.',
@@ -87,6 +76,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Liderança Closer', label: 'CARGO' },
       { icon: 'crown',    valor: 'Completa', label: 'PERFIL' },
+    ],
+  },
+  {
+    id: 'luan', nome: 'Luan Nicolas', foto: '/hall/LuanNicolas.jpeg',
+    cargo: 'Closer JR III', jornada: ['SDR', 'SDR Pleno I', 'Closer JR I', 'Closer JR III'],
+    frase: 'Não tem atalho. Tem consistência.',
+    historia: 'Luan não entrou pedindo desconto na jornada — ele foi degrau por degrau, promoção por promoção, sem pular fila. Passou por cada nível do SDR até chegar no Pleno, e quando cruzou pro fechamento, não parou: foi de Closer JR I direto ao III. O que chama atenção no Luan não é a velocidade, é a solidez. Cada subida foi construída em cima da anterior. É o tipo de cara que, quando está num cargo, domina aquele cargo antes de querer o próximo. É o cara.',
+    stats: [
+      { icon: 'trending', valor: '4+', label: 'PROMOÇÕES' },
+      { icon: 'star',     valor: 'Closer JR III', label: 'CARGO' },
+      { icon: 'crown',    valor: 'O cara', label: 'STATUS' },
     ],
   },
 ];
