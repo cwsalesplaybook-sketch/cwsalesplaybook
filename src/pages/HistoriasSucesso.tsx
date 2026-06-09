@@ -199,17 +199,10 @@ function PhotoCard({
       {/* Gradiente de baixo */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
 
-      {/* Badge topo esquerdo */}
+      {/* Badge topo esquerdo: troféu + cargo */}
       <div className="absolute top-3 left-3">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400 text-[#1e0b4a] text-[10px] font-black uppercase tracking-wide">
-          <Trophy className="h-2.5 w-2.5" /> #{String(num).padStart(2, '0')}
-        </span>
-      </div>
-
-      {/* Label cargo topo direito */}
-      <div className="absolute top-3 right-3">
-        <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 text-white text-[10px] font-bold uppercase tracking-wide">
-          {membro.jornada[membro.jornada.length - 1]}
+          <Trophy className="h-2.5 w-2.5" /> {membro.cargo}
         </span>
       </div>
 
