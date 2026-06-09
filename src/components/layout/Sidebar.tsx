@@ -35,7 +35,7 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/cultura',    label: 'Cultura',           icon: 'Heart',       end: false },
   { to: '/historias',  label: 'Histórias de Sucesso', icon: 'Trophy',  end: false },
   { to: '/onboarding', label: 'Onboarding',        icon: 'MapIcon',    end: false },
-  { to: '/carreira',   label: 'Carreira',          icon: 'TrendingUp', end: false },
+  { to: '/carreira',   label: 'Progressão de Carreira', icon: 'TrendingUp', end: false },
   { to: '/gestao',     label: 'Gestão',       icon: 'BarChart3',       end: false },
   { to: '/berserker',  label: 'Berserker',    icon: 'Sword',           end: false },
 ];
