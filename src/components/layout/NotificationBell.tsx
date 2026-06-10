@@ -58,7 +58,7 @@ export function NotificationBell() {
                 <img
                   src="/cardapinho-rock.png"
                   alt=""
-                  style={{ width: 24, height: 24, objectFit: 'contain', objectFit: 'contain' }}
+                  style={{ width: 24, height: 24, objectFit: 'contain' }}
                 />
               </div>
               <span className="text-[12px] font-bold text-white uppercase tracking-wider">Mural de Avisos</span>
@@ -88,7 +88,7 @@ export function NotificationBell() {
                   <img
                     src="/cardapinho-rock.png"
                     alt=""
-                    style={{ width: 64, height: 64, objectFit: 'contain', objectFit: 'contain' }}
+                    style={{ width: 64, height: 64, objectFit: 'contain' }}
                   />
                 </div>
                 <p className="text-[12px] text-[#d4c0ee] font-semibold">Tudo calmo por aqui! 🤘</p>
