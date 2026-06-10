@@ -4,7 +4,7 @@ import {
   BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, Map as MapIcon,
   TrendingUp, BarChart3, Sword, Sparkles, Award, Lock, Plus, Trash2,
   ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trophy, Target,
-  HelpCircle, Zap, ShieldCheck, Calculator,
+  HelpCircle, Zap, ShieldCheck, Calculator, LogOut,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -259,10 +259,7 @@ export function Sidebar() {
         </div>
 
         {/* Perfil do usuário */}
-        <button
-          onClick={() => supabase.auth.signOut()}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[#1e1040] border border-[#ffffff08] hover:bg-[#2d1760] transition-colors group"
-        >
+        <div className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[#1e1040] border border-[#ffffff08]">
           {userProfile.avatarUrl ? (
             <img
               src={userProfile.avatarUrl}
@@ -283,7 +280,15 @@ export function Sidebar() {
               {papel}{squad ? ` · Squad ${squad}` : ''}
             </p>
           </div>
-          <ChevronDown className="h-3.5 w-3.5 text-[#7c5aa8] shrink-0 group-hover:text-white transition-colors" />
+        </div>
+
+        {/* Botão de sair */}
+        <button
+          onClick={() => supabase.auth.signOut()}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-red-400/70 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150"
+        >
+          <LogOut className="h-[16px] w-[16px] shrink-0" />
+          <span>Sair</span>
         </button>
 
       </div>

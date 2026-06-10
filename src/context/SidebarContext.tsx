@@ -33,6 +33,9 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
       setPapelState(saved);
       setLockedPapel(saved);
       localStorage.setItem('cw-papel', saved);
+      setOnboardingActive(false);
+    } else {
+      setOnboardingActive(true);
     }
     setSquad((m?.squad as string) ?? null);
     setApelido((m?.apelido as string) ?? null);
@@ -48,6 +51,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
         setLockedPapel(null);
         setSquad(null);
         setApelido(null);
+        setOnboardingActive(false);
         return;
       }
       applyMeta(session.user.user_metadata ?? {});

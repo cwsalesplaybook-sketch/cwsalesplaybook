@@ -48,7 +48,7 @@ export function NotificationBell() {
       {/* Painel de avisos — abre para CIMA e para a direita */}
       {open && (
         <div
-          className="absolute bottom-full left-full ml-2 mb-0 w-80 rounded-2xl border border-[#ffffff12] shadow-2xl overflow-hidden"
+          className="absolute bottom-full left-full ml-2 mb-0 w-80 rounded-2xl border border-[#ffffff12] shadow-2xl overflow-hidden z-[200]"
           style={{ background: 'linear-gradient(180deg, #1f1040 0%, #150d30 100%)' }}
         >
           {/* Header */}
@@ -58,7 +58,7 @@ export function NotificationBell() {
                 <img
                   src="/cardapinho-rock.png"
                   alt=""
-                  style={{ width: 24, height: 24, objectFit: 'contain', mixBlendMode: 'multiply' }}
+                  style={{ width: 24, height: 24, objectFit: 'contain', objectFit: 'contain' }}
                 />
               </div>
               <span className="text-[12px] font-bold text-white uppercase tracking-wider">Mural de Avisos</span>
@@ -88,7 +88,7 @@ export function NotificationBell() {
                   <img
                     src="/cardapinho-rock.png"
                     alt=""
-                    style={{ width: 64, height: 64, objectFit: 'contain', mixBlendMode: 'multiply' }}
+                    style={{ width: 64, height: 64, objectFit: 'contain', objectFit: 'contain' }}
                   />
                 </div>
                 <p className="text-[12px] text-[#d4c0ee] font-semibold">Tudo calmo por aqui! 🤘</p>
