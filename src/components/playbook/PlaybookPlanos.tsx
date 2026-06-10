@@ -36,9 +36,9 @@ const PLANOS: Plano[] = [
     badge: 'Ideal para restaurantes',
     icon: Utensils,
     accent: {
-      text: 'text-cw-purple-light', border: 'border-cw-purple/40', bg: 'bg-cw-purple/8',
-      chip: 'bg-cw-purple/15 text-cw-purple-light border-cw-purple/40',
-      btn: 'gradient-primary text-white', check: 'text-cw-purple-light', dot: 'bg-cw-purple-light',
+      text: 'text-cw-purple', border: 'border-cw-purple/30', bg: 'bg-cw-purple/5',
+      chip: 'bg-cw-purple text-white border-transparent',
+      btn: 'gradient-primary text-white', check: 'text-cw-purple', dot: 'bg-cw-purple',
     },
     precos: {
       mensal:     { mes: '169,99', total: '169,99' },
@@ -116,9 +116,9 @@ const PLANOS: Plano[] = [
     badge: 'Melhor para delivery',
     icon: Bike,
     accent: {
-      text: 'text-sky-300', border: 'border-sky-400/40', bg: 'bg-sky-400/8',
-      chip: 'bg-sky-400/15 text-sky-300 border-sky-400/40',
-      btn: 'bg-gradient-to-r from-sky-600 to-sky-500 text-white', check: 'text-sky-300', dot: 'bg-sky-300',
+      text: 'text-blue-600', border: 'border-blue-200', bg: 'bg-blue-50',
+      chip: 'bg-blue-600 text-white border-transparent',
+      btn: 'bg-gradient-to-r from-blue-600 to-blue-500 text-white', check: 'text-blue-600', dot: 'bg-blue-600',
     },
     precos: {
       mensal:     { mes: '209,99', total: '209,99' },
@@ -213,9 +213,9 @@ const PLANOS: Plano[] = [
     icon: Crown,
     destaque: true,
     accent: {
-      text: 'text-amber-300', border: 'border-amber-400/50', bg: 'bg-amber-400/8',
-      chip: 'bg-amber-400/15 text-amber-300 border-amber-400/50',
-      btn: 'bg-gradient-to-r from-amber-500 to-amber-400 text-[#1a0020]', check: 'text-amber-300', dot: 'bg-amber-300',
+      text: 'text-amber-600', border: 'border-amber-300', bg: 'bg-amber-50',
+      chip: 'bg-amber-500 text-white border-transparent',
+      btn: 'bg-gradient-to-r from-amber-500 to-amber-400 text-white', check: 'text-amber-600', dot: 'bg-amber-600',
     },
     precos: {
       mensal:     { mes: '269,99', total: '269,99' },
@@ -483,7 +483,7 @@ function PlanoCard({ plano, periodo, aberto, onToggle }: {
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           <span className="text-xs text-cw-muted">{p.totalLabel}: R$ {preco.total}</span>
           {p.desc > 0 && (
-            <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
               ECONOMIZE {p.desc}%
             </span>
           )}
@@ -633,7 +633,7 @@ export function PlaybookPlanos() {
                 {per.desc > 0 && (
                   <span className={cn(
                     'text-[9px] font-black px-1 rounded',
-                    periodo === per.id ? 'bg-white/20 text-white' : 'bg-emerald-500/15 text-emerald-400',
+                    periodo === per.id ? 'bg-white/25 text-white' : 'bg-emerald-100 text-emerald-700',
                   )}>
                     -{per.desc}%
                   </span>
