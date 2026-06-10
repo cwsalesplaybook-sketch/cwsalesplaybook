@@ -120,7 +120,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-[220px] shrink-0 flex flex-col h-screen sticky top-0 border-r border-[#ffffff08]"
+    <aside className="w-[220px] shrink-0 flex flex-col h-screen sticky top-0 z-30 border-r border-[#ffffff08]"
       style={{ background: 'linear-gradient(180deg, #1a0f2e 0%, #130a22 100%)' }}
     >
 

@@ -1,24 +1,26 @@
 /** Sales Enablement — hub operacional do time comercial. */
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { LayoutDashboard, HelpCircle, Zap, Calculator, Target } from 'lucide-react';
+import { LayoutDashboard, HelpCircle, Zap, Calculator, Target, Package } from 'lucide-react';
 import { MonthCountdown } from './MonthCountdown';
 import { QuickLinks } from './QuickLinks';
 import { MuralAvisos } from './MuralAvisos';
+import { PlaybookPlanos } from '@/components/playbook/PlaybookPlanos';
 import FaqPage from '@/pages/Faq';
 import ChangelogPage from '@/pages/ChangelogPage';
 import Calculadora from '@/pages/Calculadora';
 
-type Tab = 'inicio' | 'calculadora' | 'faq' | 'changelog';
+type Tab = 'inicio' | 'planos' | 'calculadora' | 'faq' | 'changelog';
 
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'inicio',      label: 'Início',      icon: LayoutDashboard },
-  { id: 'calculadora', label: 'Calculadora', icon: Calculator      },
-  { id: 'faq',         label: 'FAQ',         icon: HelpCircle      },
-  { id: 'changelog',   label: 'Changelog',   icon: Zap             },
+  { id: 'inicio',      label: 'Início',           icon: LayoutDashboard },
+  { id: 'planos',      label: 'Planos e Módulos', icon: Package         },
+  { id: 'calculadora', label: 'Calculadora',      icon: Calculator      },
+  { id: 'faq',         label: 'FAQ',              icon: HelpCircle      },
+  { id: 'changelog',   label: 'Changelog',        icon: Zap             },
 ];
 
-const VALID_TABS: Tab[] = ['inicio', 'calculadora', 'faq', 'changelog'];
+const VALID_TABS: Tab[] = ['inicio', 'planos', 'calculadora', 'faq', 'changelog'];
 
 export default function Dashboard() {
   const [searchParams] = useSearchParams();
@@ -100,6 +102,12 @@ export default function Dashboard() {
             </div>
           </div>
           <MuralAvisos />
+        </div>
+      )}
+
+      {tab === 'planos' && (
+        <div className="p-8">
+          <PlaybookPlanos />
         </div>
       )}
 
