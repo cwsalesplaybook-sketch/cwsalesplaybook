@@ -76,7 +76,7 @@ export default function Login() {
 
       {/* Mascote centro-direita — beserker */}
       <img
-        src="/cardapinho-beserker.png"
+        src="/cardapinho-beserk.png"
         alt=""
         className="pointer-events-none select-none absolute bottom-0 right-[200px] xl:right-[260px] w-[200px] xl:w-[230px] object-contain object-bottom"
         style={{ zIndex: 1 }}
@@ -95,7 +95,7 @@ export default function Login() {
 
         {/* Logo */}
         <img
-          src="/cardapio-web-logotype-fundo-off-rgb-2800px-w-144ppi.png"
+          src="/cardapio-web-logotype-fundo-off-rgb-2800px-w-144ppi.jpg"
           alt="Cardápio Web"
           className="h-[110px] w-auto mb-5 drop-shadow-lg"
         />
