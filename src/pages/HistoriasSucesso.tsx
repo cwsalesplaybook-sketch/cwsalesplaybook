@@ -24,8 +24,30 @@ const STORE_KEY = 'hall.membros';
 
 const MEMBROS_PADRAO: MembroHall[] = [
   {
+    id: 'fundadores', nome: 'Matheus Lessa, Jhonny Alves & Glauton Santos', foto: '/hall/Fundadores.jpeg',
+    cargo: 'Fundadores', jornada: ['Visão de futuro', 'Cardápio Web'],
+    frase: 'De uma visão de futuro à criação do ecossistema que move milhares de operações food no país.',
+    historia: 'Em um mercado onde o food service mudou drasticamente e o delivery deixou de ser apenas um canal complementar, Matheus Lessa, Jhonny Alves e Glauton Santos enxergaram o futuro antes de todo mundo. Eles entenderam que os restaurantes não podiam mais depender exclusivamente de marketplaces e criaram a Cardápio Web: o e-commerce dos restaurantes. Unindo suas visões, eles tiraram a ideia do papel e construíram a tecnologia que hoje devolve a autonomia, a lucratividade e o controle de dados para milhares de operações food em todo o país.',
+    stats: [
+      { icon: 'trending', valor: 'Milhares', label: 'OPERAÇÕES' },
+      { icon: 'star',     valor: 'Cardápio Web', label: 'CRIAÇÃO' },
+      { icon: 'crown',    valor: 'Founders & Creators', label: 'STATUS' },
+    ],
+  },
+  {
+    id: 'felipe', nome: 'Felipe Alexandrino', foto: '/hall/FelipeAlexandrino.jpeg',
+    cargo: 'Diretor do CW Cast', jornada: ['Todos os setores', 'CW Cast'],
+    frase: 'Passou por todos os setores para ter a autoridade de liderar o maior podcast da América Latina.',
+    historia: 'Um dos pilares da nossa história. O Felipe Alexandrino acompanhou nosso crescimento desde o início e sua trajetória se confunde com a da própria empresa, tendo deixado sua marca em praticamente todos os setores da operação. Hoje, ele usa toda essa bagagem e domínio de mercado para comandar o CW Cast, consolidando o nosso programa como o maior podcast da América Latina.',
+    stats: [
+      { icon: 'trending', valor: 'Todos', label: 'SETORES' },
+      { icon: 'star',     valor: 'Diretor', label: 'CW CAST' },
+      { icon: 'crown',    valor: 'Master', label: 'STATUS' },
+    ],
+  },
+  {
     id: 'joelma', nome: 'Joelma Vieira', foto: '/hall/Joelma.jpeg',
-    cargo: 'Liderança Comercial', jornada: ['SDR', 'Closer', 'Liderança'],
+    cargo: 'Liderança Pré-Vendas', jornada: ['SDR', 'Closer', 'Liderança'],
     frase: 'Quem tem canal próprio, bate mais forte.',
     historia: 'Joelma começou como SDR, mostrou consistência e fome de resultado, foi promovida a Closer e hoje lidera o time comercial. É exemplo vivo de força, foco e cultura, prova de que quem se entrega ao processo, vai longe aqui dentro.',
     stats: [
@@ -47,13 +69,13 @@ const MEMBROS_PADRAO: MembroHall[] = [
   },
   {
     id: 'pedro', nome: 'Pedro Ferreira', foto: '/hall/PedroFerreira.jpeg',
-    cargo: 'Liderança Comercial', jornada: ['SDR', 'Closer', 'Liderança'],
-    frase: 'Vender bem é processo. Escalar é engenharia.',
-    historia: 'Desde SDR já pensava em como ajudar o time. Criou automações que até hoje rodam nos bastidores da operação, economizando tempo, eliminando erro. Hoje lidera e segue construindo o processo que ninguém vê, mas todo mundo sente sendo referência e inspiração.',
+    cargo: 'Liderança Pré-Vendas', jornada: ['SDR', 'Liderança'],
+    frase: 'A evolução de um executor de elite para um líder que automatiza e inspira o time.',
+    historia: 'Como SDR, o Pedro sempre foi sinônimo de meta batida. Mas foi ao assumir a liderança comercial que ele levou a operação para outro nível. Focando em escala e eficiência, ele desenvolveu automações tecnológicas inteligentes que hoje rodam nos bastidores do time, economizando tempo e eliminando erros. Hoje, ele lidera construindo os processos que sustentam nosso crescimento, sendo uma referência e inspiração para todos.',
     stats: [
       { icon: 'trending', valor: '1', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Liderança', label: 'CARGO' },
-      { icon: 'crown',    valor: 'Builder', label: 'STATUS' },
+      { icon: 'crown',    valor: 'Inovador', label: 'STATUS' },
     ],
   },
   {
@@ -102,12 +124,12 @@ const MEMBROS_PADRAO: MembroHall[] = [
   },
   {
     id: 'luan', nome: 'Luan Nicolas', foto: '/hall/LuanNicolas.jpeg',
-    cargo: 'Closer JR III', jornada: ['SDR', 'SDR Pleno I', 'Closer JR I', 'Closer JR III'],
+    cargo: 'Closer', jornada: ['SDR', 'Closer'],
     frase: 'Não tem atalho. Tem consistência.',
     historia: 'Luan não entrou pedindo desconto na jornada, ele foi degrau por degrau, promoção por promoção, sem pular fila. Passou por cada nível do SDR até chegar no Pleno, e quando cruzou pro fechamento, não parou: foi de Closer JR I direto ao III. O que chama atenção no Luan não é a velocidade, é a solidez. Cada subida foi construída em cima da anterior. É o tipo de cara que, quando está num cargo, domina aquele cargo antes de querer o próximo. É o cara.',
     stats: [
       { icon: 'trending', valor: '4+', label: 'PROMOÇÕES' },
-      { icon: 'star',     valor: 'Closer JR III', label: 'CARGO' },
+      { icon: 'star',     valor: 'Closer', label: 'CARGO' },
       { icon: 'crown',    valor: 'O cara', label: 'STATUS' },
     ],
   },
@@ -328,7 +350,7 @@ function ModalAdicionar({ onSave, onClose }: { onSave: (m: MembroHall) => void; 
         {[
           { k: 'nome',    label: 'Nome completo',              placeholder: 'Ex: Joelma Vieira' },
           { k: 'foto',    label: 'Foto (/hall/Nome.jpeg)',     placeholder: '/hall/...' },
-          { k: 'cargo',   label: 'Cargo atual',                placeholder: 'Ex: Liderança Comercial' },
+          { k: 'cargo',   label: 'Cargo atual',                placeholder: 'Ex: Liderança Pré-Vendas' },
           { k: 'jornada', label: 'Jornada (separar por →)',    placeholder: 'SDR → Closer → Liderança' },
           { k: 'frase',   label: 'Frase marcante',             placeholder: '"Quem tem canal próprio..."' },
         ].map(({ k, label, placeholder }) => (
