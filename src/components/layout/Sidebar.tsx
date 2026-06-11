@@ -2,9 +2,9 @@
 import { NavLink } from 'react-router-dom';
 import {
   BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, Map as MapIcon,
-  TrendingUp, BarChart3, Sword, Sparkles, Award, Lock, Plus, Trash2,
+  TrendingUp, BarChart3, Sword, Sparkles, Award, Lock,
   ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trophy, Target,
-  HelpCircle, Zap, ShieldCheck, Calculator, LogOut,
+  HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -45,10 +45,27 @@ const SECTIONS = [
   { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];
 
+/** Mapeamento de papel → rota do playbook */
+const PLAYBOOK_ROUTE: Record<Papel, string> = {
+  'SDR':           '/playbook',
+  'Closer':        '/playbook/closer',
+  'Parcerias':     '/playbook/parcerias',
+  'Representante': '/playbook/representantes',
+  'Liderança':     '/playbook',
+};
+
+/** Opções do seletor de playbooks */
+const PLAYBOOK_OPTIONS: { label: string; to: string; roles: Papel[] | 'all' }[] = [
+  { label: 'Playbook de SDR',             to: '/playbook',                roles: ['SDR', 'Liderança'] },
+  { label: 'Playbook de Closer',          to: '/playbook/closer',         roles: ['Closer', 'Liderança'] },
+  { label: 'Playbook de Parcerias',       to: '/playbook/parcerias',      roles: ['Parcerias', 'Liderança'] },
+  { label: 'Playbook de Representantes',  to: '/playbook/representantes', roles: ['Representante', 'Liderança'] },
+];
+
 const STORE_KEY = 'sidebar.nav';
 
 export function Sidebar() {
-  const { papel, setPapel, lockedPapel, squad, apelido, onboardingActive } = useSidebarContext();
+  const { papel, lockedPapel, squad, apelido, onboardingActive } = useSidebarContext();
   const { isEditing, openPasswordModal, lock } = useEditor();
   const userProfile = useUserProfile();
   const rawItems = useEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
@@ -59,7 +76,6 @@ export function Sidebar() {
     try { await saveOverride(STORE_KEY, next); }
     catch (e) { toast({ title: 'Falha ao salvar', description: e instanceof Error ? e.message : '', variant: 'destructive' }); }
   };
-  const add      = () => update([...items, { to: `/nova-${Date.now()}`, label: 'Nova aba', icon: 'Sparkles', end: false }]);
   const remove   = (idx: number) => update(items.filter((_, i) => i !== idx));
   const move     = (idx: number, dir: -1 | 1) => {
     const t = idx + dir;
@@ -75,16 +91,23 @@ export function Sidebar() {
   const sectionItems     = (routes: string[]) => items.filter(i => routes.includes(i.to));
   const allSectionRoutes = SECTIONS.flatMap(s => s.routes);
 
+  // Playbooks visíveis no seletor: Liderança ou gestor vê todos; demais, só o seu
+  const visiblePlaybooks = (papel === 'Liderança' || isEditing)
+    ? PLAYBOOK_OPTIONS
+    : PLAYBOOK_OPTIONS.filter(opt => (opt.roles as Papel[]).includes(papel));
+
   /* ── Nav item reutilizável ── */
   const NavItemEl = ({ item }: { item: NavItem }) => {
     const idx = items.indexOf(item);
     const Icon = ICON_MAP[item.icon] ?? Sparkles;
-    // Bloqueia todas as abas (exceto /start) durante o onboarding
-    const locked = onboardingActive && item.to !== '/start';
+    // Gestores em modo edição não ficam bloqueados pelo onboarding
+    const locked = onboardingActive && item.to !== '/start' && !isEditing;
+    // Rota dinâmica: item /playbook aponta para o playbook do papel do usuário
+    const resolvedTo = item.to === '/playbook' ? PLAYBOOK_ROUTE[papel] : item.to;
     return (
       <div className="group/nav relative">
         <NavLink
-          to={locked ? '/start' : item.to}
+          to={locked ? '/start' : resolvedTo}
           end={item.end}
 
           className={({ isActive }) => cn(
@@ -120,7 +143,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-[220px] shrink-0 flex flex-col h-screen sticky top-0 z-30 border-r border-[#ffffff08]"
+    <aside className="w-[220px] shrink-0 flex flex-col h-screen sticky top-0 z-30 border-r border-[#ffffff08] overflow-hidden"
       style={{ background: 'linear-gradient(180deg, #1a0f2e 0%, #130a22 100%)' }}
     >
 
@@ -207,36 +230,35 @@ export function Sidebar() {
             <ChevronRight className="h-3.5 w-3.5 opacity-50" />
           </NavLink>
         )}
-
-        {isEditing && (
-          <button onClick={add} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#9b6fc4] border border-dashed border-[#9b6fc4]/30 hover:bg-white/5 transition-colors">
-            <Plus className="h-3.5 w-3.5" /> Nova aba
-          </button>
-        )}
       </nav>
 
       {/* ── Footer ── */}
       <div className="px-3 pb-4 space-y-1.5">
 
-        {/* Visão SDR / Closer */}
-        {(!lockedPapel || isEditing) && (
+        {/* Seletor de Playbooks */}
+        {visiblePlaybooks.length > 0 && (
           <div className="mb-0.5">
-            <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7c5aa8]">Visão</p>
-            <div className="flex gap-1 bg-[#0d0018] p-1 rounded-xl border border-[#ffffff08]">
-              {(['SDR', 'Closer'] as Papel[]).map(p => (
-                <button key={p} onClick={() => setPapel(p)}
-                  className={cn(
-                    'flex-1 py-1.5 rounded-lg text-xs font-bold transition-all duration-150',
-                    papel === p ? 'bg-[#6b21a8] text-white shadow-md' : 'text-[#6a4a80] hover:text-[#b89fd4]'
+            <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7c5aa8]">Playbook</p>
+            <div className="flex flex-col gap-0.5">
+              {visiblePlaybooks.map(opt => (
+                <NavLink
+                  key={opt.to}
+                  to={opt.to}
+                  end
+                  className={({ isActive }) => cn(
+                    'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150',
+                    isActive
+                      ? 'bg-[#6b21a8] text-white shadow-md'
+                      : 'text-[#6a4a80] hover:text-[#b89fd4] hover:bg-white/5'
                   )}
                 >
-                  {p}
-                </button>
+                  <BookOpen className="h-3.5 w-3.5 shrink-0" />
+                  {opt.label}
+                </NavLink>
               ))}
             </div>
           </div>
         )}
-
 
         {/* Modo Gestor — minimal */}
         <button

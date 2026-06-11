@@ -23,6 +23,9 @@ import Onboarding from '@/components/onboarding/Onboarding';
 import Carreira from '@/components/carreira/Carreira';
 import Berserker from '@/components/berserker/Berserker';
 import Playbook from '@/components/playbook/Playbook';
+import PlaybookCloser from '@/components/playbook/PlaybookCloser';
+import PlaybookParcerias from '@/components/playbook/PlaybookParcerias';
+import PlaybookRepresentantes from '@/components/playbook/PlaybookRepresentantes';
 import Pipeline from '@/components/pipeline/Pipeline';
 import Gestao from '@/components/gestao/Gestao';
 import Ranking from '@/components/ranking/Ranking';
@@ -85,6 +88,9 @@ function AnimatedRoutes() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/start" element={<Start />} />
           <Route path="/playbook" element={<Playbook />} />
+          <Route path="/playbook/closer" element={<PlaybookCloser />} />
+          <Route path="/playbook/parcerias" element={<PlaybookParcerias />} />
+          <Route path="/playbook/representantes" element={<PlaybookRepresentantes />} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/pipeline" element={<Pipeline />} />
           <Route path="/cultura" element={<Cultura />} />
