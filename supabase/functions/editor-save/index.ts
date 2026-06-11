@@ -1,19 +1,55 @@
 // Edge function: editor-save
-// Recebe { token, key, value } ou { token, deletes: string[], upserts: {key,value}[] }
-// Valida token (HMAC com service role key) e grava em content_overrides usando service role.
+// Autoriza pela identidade do login Google (JWT da sessão) e grava em
+// content_overrides usando service role.
+//
+// Convenção de setor (PREFIXO na chave — igual ao contentStore do front):
+//   - SDR / Liderança: sem prefixo            (ex: "playbook.tabs")
+//   - Closer:          "closer."              (ex: "closer.playbook.tabs")
+//   - Parcerias:       "parcerias."
+//   - Representante:   "representante."
+//
+// Regras de autorização:
+//   - Mestre (MASTER_EMAILS): grava qualquer chave (qualquer setor).
+//   - Gestor (LIDER_SETOR):   grava apenas chaves do seu setor (pelo prefixo).
+//   - Fallback break-glass:   token HMAC da editor-login (tratado como mestre).
+//
+// ⚠️ Sincronize MASTER_EMAILS / LIDER_SETOR com a lista do front (EditorContext).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.104.0";
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.104.0/cors";
+
+type Setor = "sdr" | "closer" | "representante" | "parcerias";
+
+const MASTER_EMAILS = new Set<string>([
+  "ana.clara@cardapioweb.com",
+  "vanessa.alencar@cardapioweb.com",
+  "gabrielly.oliveira@cardapioweb.com",
+]);
+
+const LIDER_SETOR: Record<string, Setor> = {
+  "pedro.ferreira@cardapioweb.com": "sdr",
+  "joelma.vieira@cardapioweb.com": "sdr",
+  "antonio.anderson@cardapioweb.com": "sdr",
+  "whenna.oliveira@cardapioweb.com": "closer",
+  "hyorranes.souza@cardapioweb.com": "representante",
+  "beatriz.magalhaes@cardapioweb.com": "parcerias",
+};
 
 interface Upsert { key: string; value: unknown }
 interface Body {
   token?: string;
-  // single-key
   key?: string;
   value?: unknown;
-  // batch
   upserts?: Upsert[];
   deletes?: string[];
   resetAll?: boolean;
+}
+
+/** Setor de uma chave a partir do PREFIXO. Sem prefixo conhecido = "sdr". */
+function setorDaChave(key: string): Setor {
+  if (key.startsWith("closer.")) return "closer";
+  if (key.startsWith("parcerias.")) return "parcerias";
+  if (key.startsWith("representante.")) return "representante";
+  return "sdr";
 }
 
 async function verifyToken(token: string, secret: string): Promise<boolean> {
@@ -41,6 +77,12 @@ async function verifyToken(token: string, secret: string): Promise<boolean> {
   }
 }
 
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -50,41 +92,71 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     if (!SUPABASE_URL || !SERVICE_ROLE) {
-      return new Response(JSON.stringify({ error: "Servidor não configurado" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-
-    const body: Body = await req.json().catch(() => ({}));
-    const token = body.token ?? "";
-    if (!(await verifyToken(token, SERVICE_ROLE))) {
-      return new Response(JSON.stringify({ error: "Token inválido ou expirado" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ error: "Servidor não configurado" }, 500);
     }
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE);
+    const body: Body = await req.json().catch(() => ({}));
 
-    // resetAll: apaga tudo
-    if (body.resetAll) {
-      const { error } = await supabase.from("content_overrides").delete().neq("key", "");
-      if (error) throw error;
-      return new Response(JSON.stringify({ ok: true, reset: true }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    // ── Identidade: 1) JWT do login Google; 2) fallback token HMAC ──
+    let isMaster = false;
+    let allowedSetor: Setor | null = null;
+
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const jwt = authHeader.replace(/^Bearer\s+/i, "").trim();
+    let email = "";
+    if (jwt && jwt !== SERVICE_ROLE) {
+      const { data: { user } } = await supabase.auth.getUser(jwt);
+      email = (user?.email ?? "").trim().toLowerCase();
     }
 
-    // batch upserts/deletes
+    if (email && MASTER_EMAILS.has(email)) {
+      isMaster = true;
+    } else if (email && LIDER_SETOR[email]) {
+      allowedSetor = LIDER_SETOR[email];
+    } else if (await verifyToken(body.token ?? "", SERVICE_ROLE)) {
+      isMaster = true; // break-glass por senha mestre
+    } else {
+      return json({ error: "Sem permissão de edição" }, 401);
+    }
+
+    const chaveLiberada = (key: string): boolean => {
+      if (isMaster) return true;
+      if (allowedSetor) return setorDaChave(key) === allowedSetor;
+      return false;
+    };
+
+    // ── resetAll: só mestre ──
+    if (body.resetAll) {
+      if (!isMaster) return json({ error: "Apenas mestre pode resetar tudo" }, 403);
+      const { error } = await supabase.from("content_overrides").delete().neq("key", "");
+      if (error) throw error;
+      return json({ ok: true, reset: true });
+    }
+
+    // ── coleta upserts/deletes ──
     const upserts: Upsert[] = Array.isArray(body.upserts) ? body.upserts : [];
     const deletes: string[] = Array.isArray(body.deletes) ? body.deletes : [];
     if (typeof body.key === "string" && "value" in body) {
       upserts.push({ key: body.key, value: body.value });
     }
-
     if (upserts.length === 0 && deletes.length === 0) {
-      return new Response(JSON.stringify({ error: "Nada para salvar" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ error: "Nada para salvar" }, 400);
+    }
+
+    // ── valida escopo de setor de TODAS as chaves ──
+    const todasChaves = [...upserts.map((u) => u.key), ...deletes];
+    const negada = todasChaves.find((k) => !chaveLiberada(k));
+    if (negada) {
+      return json({ error: `Sem permissão para editar fora do seu setor (${negada})` }, 403);
     }
 
     if (upserts.length > 0) {
-      const rows = upserts.map((u) => ({ key: u.key, value: u.value as never, updated_by: "editor" }));
+      const rows = upserts.map((u) => ({
+        key: u.key,
+        value: u.value as never,
+        updated_by: email || (isMaster ? "master" : "gestor"),
+      }));
       const { error } = await supabase.from("content_overrides").upsert(rows, { onConflict: "key" });
       if (error) throw error;
     }
@@ -93,11 +165,9 @@ Deno.serve(async (req) => {
       if (error) throw error;
     }
 
-    return new Response(JSON.stringify({ ok: true, upserts: upserts.length, deletes: deletes.length }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return json({ ok: true, upserts: upserts.length, deletes: deletes.length });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erro desconhecido";
-    return new Response(JSON.stringify({ error: msg }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return json({ error: msg }, 500);
   }
 });

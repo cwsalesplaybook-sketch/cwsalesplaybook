@@ -5,6 +5,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { useContentStore } from '@/store/contentStore';
 import { supabase } from '@/integrations/supabase/client';
 
+// Quem pode entrar no Modo Gestor. A trava por setor (mestre x gestor) é
+// imposta no servidor (edge function editor-save) pelo e-mail do login.
 const GESTOR_EMAILS = new Set([
   'pedro.ferreira@cardapioweb.com',
   'whenna.oliveira@cardapioweb.com',
@@ -13,6 +15,8 @@ const GESTOR_EMAILS = new Set([
   'ana.clara@cardapioweb.com',
   'joelma.vieira@cardapioweb.com',
   'gabrielly.oliveira@cardapioweb.com',
+  'vanessa.alencar@cardapioweb.com',
+  'beatriz.magalhaes@cardapioweb.com',
 ]);
 
 interface EditorCtx {
