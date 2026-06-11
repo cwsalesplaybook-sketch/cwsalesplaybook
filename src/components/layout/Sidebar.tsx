@@ -1,10 +1,12 @@
 /** Sidebar — visual idêntico ao print de referência. */
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   BookOpen, LayoutDashboard, BarChart2, Heart, Map as MapIcon,
   TrendingUp, BarChart3, Sword, Sparkles, Award, Lock,
   ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
+  Loader2, Users,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -45,11 +47,11 @@ const SECTIONS = [
 ];
 
 /** Seletor de playbooks — cada opção troca o papel inteiro do app */
-const PLAYBOOK_OPTIONS: { label: string; papel: Papel }[] = [
-  { label: 'Playbook de SDR',            papel: 'SDR'          },
-  { label: 'Playbook de Closer',         papel: 'Closer'       },
-  { label: 'Playbook de Parcerias',      papel: 'Parcerias'    },
-  { label: 'Playbook de Representantes', papel: 'Representante'},
+const PLAYBOOK_OPTIONS: { label: string; papel: Papel; icon: LucideIcon; short: string }[] = [
+  { label: 'SDR',            papel: 'SDR',          icon: Zap,     short: 'SDR'   },
+  { label: 'Closer',         papel: 'Closer',       icon: Target,  short: 'Closer'},
+  { label: 'Parcerias',      papel: 'Parcerias',    icon: Users,   short: 'Parc.' },
+  { label: 'Representantes', papel: 'Representante',icon: MapIcon, short: 'Rep.'  },
 ];
 
 const STORE_KEY = 'sidebar.nav';
@@ -82,10 +84,16 @@ export function Sidebar() {
   const sectionItems     = (routes: string[]) => items.filter(i => routes.includes(i.to));
   const allSectionRoutes = SECTIONS.flatMap(s => s.routes);
 
-  // Troca o playbook inteiro: muda papel e vai para /start do novo setor
-  const switchPlaybook = (novoPapel: Papel) => {
+  const [switching, setSwitching] = useState<Papel | null>(null);
+
+  // Troca o playbook inteiro com animação: breve delay visual antes de mudar
+  const switchPlaybook = async (novoPapel: Papel) => {
+    if (novoPapel === papel || switching) return;
+    setSwitching(novoPapel);
+    await new Promise(r => setTimeout(r, 380));
     setPapel(novoPapel);
     navigate('/start');
+    setSwitching(null);
   };
 
   // Seletor visível SOMENTE para Liderança e gestores — demais não veem nada
@@ -230,23 +238,51 @@ export function Sidebar() {
         {/* Seletor de Playbooks — troca o contexto inteiro do app */}
         {visiblePlaybooks.length > 0 && (
           <div className="mb-0.5">
-            <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7c5aa8]">Playbook</p>
-            <div className="flex flex-col gap-0.5">
-              {visiblePlaybooks.map(opt => (
-                <button
-                  key={opt.papel}
-                  onClick={() => switchPlaybook(opt.papel)}
-                  className={cn(
-                    'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 w-full text-left',
-                    papel === opt.papel
-                      ? 'bg-[#6b21a8] text-white shadow-md'
-                      : 'text-[#6a4a80] hover:text-[#b89fd4] hover:bg-white/5'
-                  )}
-                >
-                  <BookOpen className="h-3.5 w-3.5 shrink-0" />
-                  {opt.label}
-                </button>
-              ))}
+            {/* Divider com gradiente */}
+            <div className="h-px mx-1 mb-3 bg-gradient-to-r from-transparent via-[#3a1560] to-transparent" />
+
+            <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#4a3060]">
+              Trocar Playbook
+            </p>
+
+            {/* Grid 2x2 com os 4 setores */}
+            <div className="grid grid-cols-2 gap-1.5 px-1">
+              {visiblePlaybooks.map(opt => {
+                const isActive = papel === opt.papel;
+                const isSwitching = switching === opt.papel;
+                const Icon = opt.icon;
+
+                return (
+                  <button
+                    key={opt.papel}
+                    onClick={() => switchPlaybook(opt.papel)}
+                    disabled={!!switching}
+                    title={`Playbook de ${opt.label}`}
+                    className={cn(
+                      'relative flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl text-[10px] font-bold transition-all duration-300 overflow-hidden',
+                      isActive
+                        ? 'text-white'
+                        : switching
+                          ? 'opacity-30 cursor-not-allowed text-[#4a3060]'
+                          : 'text-[#6a4a80] hover:text-[#c4a0e8] hover:bg-white/5 cursor-pointer'
+                    )}
+                    style={isActive ? {
+                      background: 'linear-gradient(145deg, #4a0080 0%, #7c3aed 100%)',
+                      boxShadow: '0 2px 12px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.12)',
+                    } : {}}
+                  >
+                    {isSwitching ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Icon className="h-4 w-4 shrink-0" />
+                    )}
+                    <span className="leading-tight text-center">{opt.label}</span>
+                    {isActive && !isSwitching && (
+                      <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-white/70" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
