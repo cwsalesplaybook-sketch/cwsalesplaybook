@@ -19,6 +19,10 @@ import { EditableText } from '@/admin/EditableText';
 import { useEditableContent, useContentStore } from '@/store/contentStore';
 import { useEditor } from '@/admin/EditorContext';
 import { toast } from '@/hooks/use-toast';
+import { useSidebarContext } from '@/context/SidebarContext';
+import PlaybookCloser from './PlaybookCloser';
+import PlaybookParcerias from './PlaybookParcerias';
+import PlaybookRepresentantes from './PlaybookRepresentantes';
 
 const SPIN_COLORS: Record<'purple' | 'red' | 'yellow' | 'green', string> = {
   purple: 'border-cw-purple/50 bg-cw-purple/10 text-cw-purple-light',
@@ -90,6 +94,13 @@ const TABS_DEFAULT = [
 ];
 
 export default function Playbook() {
+  const { papel } = useSidebarContext();
+
+  // Redireciona para o playbook do setor ativo
+  if (papel === 'Closer')        return <PlaybookCloser />;
+  if (papel === 'Parcerias')     return <PlaybookParcerias />;
+  if (papel === 'Representante') return <PlaybookRepresentantes />;
+
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') ?? 'cultura';
   const url = useEditableContent<string>('playbook.url', PLAYBOOK_URL);
