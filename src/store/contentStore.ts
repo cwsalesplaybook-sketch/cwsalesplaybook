@@ -1,19 +1,32 @@
 /** Store global de overrides do Modo Gestor — agora usando Lovable Cloud (Supabase).
- *  
+ *
  *  Arquitetura:
  *  - Leitura pública via tabela `content_overrides` (qualquer usuário lê).
  *  - Escrita exclusiva via edge function `editor-save` (valida token de gestor).
  *  - Sincronização ao vivo via Supabase Realtime: quando um gestor salva,
  *    todos os clientes conectados recebem o update em ~1s.
  *  - Cache local em memória (useSyncExternalStore-friendly via Zustand).
- *  
- *  Compatibilidade: a API `useEditableContent(key, defaultValue)` foi mantida.
- *  Mudanças passam a ser globais (não mais individuais por navegador).
+ *
+ *  Prefixo de setor:
+ *  - SDR e Liderança: sem prefixo (compatibilidade com overrides existentes).
+ *  - Closer: prefixo "closer." → ex: "closer.playbook.tabs"
+ *  - Parcerias: prefixo "parcerias."
+ *  - Representante: prefixo "representante."
+ *  - Isso garante 4 dashboards independentes num único app.
  */
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
+import { useSidebarContext } from '@/context/SidebarContext';
 
 export const STORE_VERSION = 2;
+
+/** Prefixo do setor para ações do store (lê localStorage — sem React). */
+function getStoreSectorPrefix(): string {
+  if (typeof window === 'undefined') return '';
+  const papel = localStorage.getItem('cw-papel') ?? 'SDR';
+  if (papel === 'SDR' || papel === 'Liderança') return '';
+  return papel.toLowerCase() + '.';
+}
 
 interface ContentStore {
   version: number;
@@ -26,10 +39,15 @@ interface ContentStore {
   applyRemote: (key: string, value: unknown) => void;
   removeRemote: (key: string) => void;
   applyMany: (rows: Array<{ key: string; value: unknown }>) => void;
-  /** Salva no Cloud via edge function. Lança em caso de erro. */
+  /** Salva com prefixo do setor atual (para conteúdo específico do setor). */
   saveOverride: (key: string, value: unknown) => Promise<void>;
+  /** Salva sem prefixo de setor — para conteúdo global (ex: sidebar.nav). */
+  saveGlobalOverride: (key: string, value: unknown) => Promise<void>;
   saveMany: (upserts: Array<{ key: string; value: unknown }>) => Promise<void>;
+  /** Deleta com prefixo do setor atual. */
   deleteOverride: (key: string) => Promise<void>;
+  /** Deleta sem prefixo — para conteúdo global. */
+  deleteGlobalOverride: (key: string) => Promise<void>;
   resetAll: () => Promise<void>;
   setEditorToken: (token: string | null) => void;
   /** Carrega todos os overrides + assina realtime. Chame uma vez no boot. */
@@ -77,7 +95,20 @@ export const useContentStore = create<ContentStore>()((set, get) => ({
   saveOverride: async (key, value) => {
     const token = get().editorToken;
     if (!token) throw new Error('Sessão de gestor expirada — entre novamente.');
-    // otimista: aplica antes da resposta
+    const prefix = getStoreSectorPrefix();
+    const effectiveKey = prefix + key;
+    get().applyRemote(effectiveKey, value);
+    const { data, error } = await supabase.functions.invoke('editor-save', {
+      body: { token, key: effectiveKey, value },
+    });
+    if (error || (data && (data as { error?: string }).error)) {
+      throw new Error(error?.message || (data as { error?: string })?.error || 'Falha ao salvar');
+    }
+  },
+
+  saveGlobalOverride: async (key, value) => {
+    const token = get().editorToken;
+    if (!token) throw new Error('Sessão de gestor expirada — entre novamente.');
     get().applyRemote(key, value);
     const { data, error } = await supabase.functions.invoke('editor-save', {
       body: { token, key, value },
@@ -100,6 +131,20 @@ export const useContentStore = create<ContentStore>()((set, get) => ({
   },
 
   deleteOverride: async (key) => {
+    const token = get().editorToken;
+    if (!token) throw new Error('Sessão de gestor expirada — entre novamente.');
+    const prefix = getStoreSectorPrefix();
+    const effectiveKey = prefix + key;
+    get().removeRemote(effectiveKey);
+    const { data, error } = await supabase.functions.invoke('editor-save', {
+      body: { token, deletes: [effectiveKey] },
+    });
+    if (error || (data && (data as { error?: string }).error)) {
+      throw new Error(error?.message || (data as { error?: string })?.error || 'Falha ao deletar');
+    }
+  },
+
+  deleteGlobalOverride: async (key) => {
     const token = get().editorToken;
     if (!token) throw new Error('Sessão de gestor expirada — entre novamente.');
     get().removeRemote(key);
@@ -177,8 +222,33 @@ export const useContentStore = create<ContentStore>()((set, get) => ({
   },
 }));
 
-/** Hook utilitário: devolve o conteúdo (override OU padrão). */
+/**
+ * Hook: devolve conteúdo específico do setor atual.
+ * SDR e Liderança usam chaves sem prefixo (compatibilidade com overrides existentes).
+ * Closer/Parcerias/Representante usam "closer.", "parcerias.", "representante." como prefixo.
+ * Setores não-SDR sem override retornam string vazia ou array vazio (dashboard em branco).
+ */
 export function useEditableContent<T>(key: string, defaultValue: T): T {
+  const { papel } = useSidebarContext();
+  const prefix = (papel === 'SDR' || papel === 'Liderança') ? '' : papel.toLowerCase() + '.';
+  const effectiveKey = prefix + key;
+
+  const override = useContentStore((s) => s.overrides[effectiveKey]);
+  if (override !== undefined) return override as T;
+
+  // Setor não-SDR sem override → padrão em branco (gestor preenche depois)
+  if (prefix) {
+    if (typeof defaultValue === 'string') return '' as unknown as T;
+    if (Array.isArray(defaultValue)) return [] as unknown as T;
+  }
+  return defaultValue;
+}
+
+/**
+ * Hook: devolve conteúdo global sem prefixo de setor.
+ * Usar para elementos compartilhados entre todos os setores (ex: sidebar.nav).
+ */
+export function useGlobalEditableContent<T>(key: string, defaultValue: T): T {
   const override = useContentStore((s) => s.overrides[key]);
   return (override as T) ?? defaultValue;
 }

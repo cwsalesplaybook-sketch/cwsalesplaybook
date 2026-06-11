@@ -10,7 +10,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useSidebarContext, type Papel } from '@/context/SidebarContext';
 import { useEditor } from '@/admin/EditorContext';
-import { useContentStore, useEditableContent } from '@/store/contentStore';
+import { useContentStore, useGlobalEditableContent } from '@/store/contentStore';
 import { toast } from '@/hooks/use-toast';
 import { NotificationBell } from '@/components/layout/NotificationBell';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -59,12 +59,12 @@ export function Sidebar() {
   const { isEditing, openPasswordModal, lock } = useEditor();
   const userProfile = useUserProfile();
   const navigate = useNavigate();
-  const rawItems = useEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
+  const rawItems = useGlobalEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
   const items = rawItems.filter(i => i.to !== '/mural');
-  const saveOverride = useContentStore((s) => s.saveOverride);
+  const saveGlobalOverride = useContentStore((s) => s.saveGlobalOverride);
 
   const update = async (next: NavItem[]) => {
-    try { await saveOverride(STORE_KEY, next); }
+    try { await saveGlobalOverride(STORE_KEY, next); }
     catch (e) { toast({ title: 'Falha ao salvar', description: e instanceof Error ? e.message : '', variant: 'destructive' }); }
   };
   const remove   = (idx: number) => update(items.filter((_, i) => i !== idx));
