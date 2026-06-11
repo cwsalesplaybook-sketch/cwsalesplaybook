@@ -58,7 +58,7 @@ const STORE_KEY = 'sidebar.nav';
 
 export function Sidebar() {
   const { papel, setPapel, lockedPapel, squad, apelido, onboardingActive } = useSidebarContext();
-  const { isEditing, openPasswordModal, lock } = useEditor();
+  const { isEditing, openPasswordModal, lock, isMaster } = useEditor();
   const userProfile = useUserProfile();
   const navigate = useNavigate();
   const rawItems = useGlobalEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
@@ -96,8 +96,8 @@ export function Sidebar() {
     setSwitching(null);
   };
 
-  // Seletor visível SOMENTE para Liderança e gestores — demais não veem nada
-  const visiblePlaybooks = (papel === 'Liderança' || isEditing)
+  // Seletor visível para Liderança, mestres e quem está editando — demais não veem nada
+  const visiblePlaybooks = (papel === 'Liderança' || isEditing || isMaster)
     ? PLAYBOOK_OPTIONS
     : [];
 
@@ -241,9 +241,16 @@ export function Sidebar() {
             {/* Divider com gradiente */}
             <div className="h-px mx-1 mb-3 bg-gradient-to-r from-transparent via-[#3a1560] to-transparent" />
 
-            <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#4a3060]">
-              Trocar Playbook
-            </p>
+            <div className="px-2 mb-1.5 flex items-center gap-1.5">
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#4a3060]">
+                Trocar Playbook
+              </p>
+              {isMaster && (
+                <span className="inline-flex items-center gap-0.5 text-[8px] font-black uppercase tracking-wider text-amber-300 bg-amber-400/15 border border-amber-400/30 rounded px-1 py-0.5">
+                  <ShieldCheck className="h-2.5 w-2.5" /> Mestre
+                </span>
+              )}
+            </div>
 
             {/* Grid 2x2 com os 4 setores */}
             <div className="grid grid-cols-2 gap-1.5 px-1">

@@ -19,9 +19,17 @@ const GESTOR_EMAILS = new Set([
   'beatriz.magalhaes@cardapioweb.com',
 ]);
 
+// Mestres: veem e editam TODOS os setores (switcher sempre visível).
+const MASTER_EMAILS = new Set([
+  'ana.clara@cardapioweb.com',
+  'vanessa.alencar@cardapioweb.com',
+  'gabrielly.oliveira@cardapioweb.com',
+]);
+
 interface EditorCtx {
   isEditing: boolean;
   isGestor: boolean;
+  isMaster: boolean;
   passwordModalOpen: boolean;
   openPasswordModal: () => void;
   closePasswordModal: () => void;
@@ -37,20 +45,24 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const initStore = useContentStore((s) => s.init);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [isGestor, setIsGestor] = useState(false);
+  const [isMaster, setIsMaster] = useState(false);
 
   useEffect(() => {
     initStore();
   }, [initStore]);
 
-  // Verifica se o usuário logado é uma liderança com acesso direto
+  // Verifica se o usuário logado é uma liderança (gestor) ou mestre
   useEffect(() => {
+    const apply = (email: string) => {
+      const e = email.trim().toLowerCase();
+      setIsGestor(GESTOR_EMAILS.has(e));
+      setIsMaster(MASTER_EMAILS.has(e));
+    };
     supabase.auth.getSession().then(({ data: { session } }) => {
-      const email = session?.user?.email ?? '';
-      setIsGestor(GESTOR_EMAILS.has(email));
+      apply(session?.user?.email ?? '');
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      const email = session?.user?.email ?? '';
-      setIsGestor(GESTOR_EMAILS.has(email));
+      apply(session?.user?.email ?? '');
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -100,6 +112,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       value={{
         isEditing,
         isGestor,
+        isMaster,
         passwordModalOpen,
         openPasswordModal,
         closePasswordModal: () => setPasswordModalOpen(false),
