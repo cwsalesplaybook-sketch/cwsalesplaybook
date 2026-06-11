@@ -1,9 +1,9 @@
 /** Sidebar — visual idêntico ao print de referência. */
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
-  BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, Map as MapIcon,
+  BookOpen, LayoutDashboard, BarChart2, Heart, Map as MapIcon,
   TrendingUp, BarChart3, Sword, Sparkles, Award, Lock,
-  ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trophy, Target,
+  ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
   type LucideIcon,
 } from 'lucide-react';
@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 import { useSidebarContext, type Papel } from '@/context/SidebarContext';
 import { useEditor } from '@/admin/EditorContext';
 import { useContentStore, useEditableContent } from '@/store/contentStore';
-import { EditableText } from '@/admin/EditableText';
 import { toast } from '@/hooks/use-toast';
 import { NotificationBell } from '@/components/layout/NotificationBell';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -20,23 +19,23 @@ import { supabase } from '@/integrations/supabase/client';
 interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?: boolean; }
 
 const ICON_MAP = {
-  Sparkles, BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, MapIcon,
+  Sparkles, BookOpen, LayoutDashboard, BarChart2, Heart, MapIcon,
   Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
 const NAV_PADRAO: NavItem[] = [
-  { to: '/start',      label: 'Comece Aqui',  icon: 'Sparkles',        end: false },
-  { to: '/meta',       label: 'Meta do Mês',  icon: 'Target',          end: false },
-  { to: '/playbook',   label: 'Playbook',     icon: 'BookOpen',        end: false },
-  { to: '/',         label: 'Sales Enablement', icon: 'LayoutDashboard', end: true  },
-  { to: '/pipeline', label: 'Pipeline',          icon: 'BarChart2',       end: false },
-  { to: '/cultura',    label: 'Cultura',           icon: 'Heart',       end: false },
-  { to: '/historias',  label: 'Histórias de Sucesso', icon: 'Trophy',  end: false },
-  { to: '/onboarding', label: 'Onboarding',        icon: 'MapIcon',    end: false },
-  { to: '/carreira',   label: 'Progressão de Carreira', icon: 'TrendingUp', end: false },
-  { to: '/gestao',     label: 'Gestão',       icon: 'BarChart3',       end: false },
-  { to: '/berserker',  label: 'Berserker',    icon: 'Sword',           end: false },
+  { to: '/start',      label: 'Comece Aqui',             icon: 'Sparkles',       end: false },
+  { to: '/meta',       label: 'Meta do Mês',             icon: 'Target',         end: false },
+  { to: '/playbook',   label: 'Playbook',                icon: 'BookOpen',       end: false },
+  { to: '/',           label: 'Sales Enablement',        icon: 'LayoutDashboard',end: true  },
+  { to: '/pipeline',   label: 'Pipeline',                icon: 'BarChart2',      end: false },
+  { to: '/cultura',    label: 'Cultura',                 icon: 'Heart',          end: false },
+  { to: '/historias',  label: 'Histórias de Sucesso',    icon: 'Trophy',         end: false },
+  { to: '/onboarding', label: 'Onboarding',              icon: 'MapIcon',        end: false },
+  { to: '/carreira',   label: 'Progressão de Carreira',  icon: 'TrendingUp',     end: false },
+  { to: '/gestao',     label: 'Gestão',                  icon: 'BarChart3',      end: false },
+  { to: '/berserker',  label: 'Berserker',               icon: 'Sword',          end: false },
 ];
 
 const SECTIONS = [
@@ -45,33 +44,25 @@ const SECTIONS = [
   { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];
 
-/** Mapeamento de papel → rota do playbook */
-const PLAYBOOK_ROUTE: Record<Papel, string> = {
-  'SDR':           '/playbook',
-  'Closer':        '/playbook/closer',
-  'Parcerias':     '/playbook/parcerias',
-  'Representante': '/playbook/representantes',
-  'Liderança':     '/playbook',
-};
-
-/** Opções do seletor de playbooks */
-const PLAYBOOK_OPTIONS: { label: string; to: string; roles: Papel[] | 'all' }[] = [
-  { label: 'Playbook de SDR',             to: '/playbook',                roles: ['SDR', 'Liderança'] },
-  { label: 'Playbook de Closer',          to: '/playbook/closer',         roles: ['Closer', 'Liderança'] },
-  { label: 'Playbook de Parcerias',       to: '/playbook/parcerias',      roles: ['Parcerias', 'Liderança'] },
-  { label: 'Playbook de Representantes',  to: '/playbook/representantes', roles: ['Representante', 'Liderança'] },
+/** Seletor de playbooks — cada opção troca o papel inteiro do app */
+const PLAYBOOK_OPTIONS: { label: string; papel: Papel }[] = [
+  { label: 'Playbook de SDR',            papel: 'SDR'          },
+  { label: 'Playbook de Closer',         papel: 'Closer'       },
+  { label: 'Playbook de Parcerias',      papel: 'Parcerias'    },
+  { label: 'Playbook de Representantes', papel: 'Representante'},
 ];
 
 const STORE_KEY = 'sidebar.nav';
 
 export function Sidebar() {
-  const { papel, lockedPapel, squad, apelido, onboardingActive } = useSidebarContext();
+  const { papel, setPapel, lockedPapel, squad, apelido, onboardingActive } = useSidebarContext();
   const { isEditing, openPasswordModal, lock } = useEditor();
   const userProfile = useUserProfile();
+  const navigate = useNavigate();
   const rawItems = useEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
-  // Remove /mural do sidebar — o sino de avisos fica no canto superior direito
   const items = rawItems.filter(i => i.to !== '/mural');
   const saveOverride = useContentStore((s) => s.saveOverride);
+
   const update = async (next: NavItem[]) => {
     try { await saveOverride(STORE_KEY, next); }
     catch (e) { toast({ title: 'Falha ao salvar', description: e instanceof Error ? e.message : '', variant: 'destructive' }); }
@@ -91,10 +82,16 @@ export function Sidebar() {
   const sectionItems     = (routes: string[]) => items.filter(i => routes.includes(i.to));
   const allSectionRoutes = SECTIONS.flatMap(s => s.routes);
 
-  // Playbooks visíveis no seletor: Liderança ou gestor vê todos; demais, só o seu
+  // Troca o playbook inteiro: muda papel e vai para /start do novo setor
+  const switchPlaybook = (novoPapel: Papel) => {
+    setPapel(novoPapel);
+    navigate('/start');
+  };
+
+  // Liderança ou gestor em edição vê todos; outros veem só o seu
   const visiblePlaybooks = (papel === 'Liderança' || isEditing)
     ? PLAYBOOK_OPTIONS
-    : PLAYBOOK_OPTIONS.filter(opt => (opt.roles as Papel[]).includes(papel));
+    : PLAYBOOK_OPTIONS.filter(opt => opt.papel === papel);
 
   /* ── Nav item reutilizável ── */
   const NavItemEl = ({ item }: { item: NavItem }) => {
@@ -102,14 +99,12 @@ export function Sidebar() {
     const Icon = ICON_MAP[item.icon] ?? Sparkles;
     // Gestores em modo edição não ficam bloqueados pelo onboarding
     const locked = onboardingActive && item.to !== '/start' && !isEditing;
-    // Rota dinâmica: item /playbook aponta para o playbook do papel do usuário
-    const resolvedTo = item.to === '/playbook' ? PLAYBOOK_ROUTE[papel] : item.to;
+
     return (
       <div className="group/nav relative">
         <NavLink
-          to={locked ? '/start' : resolvedTo}
+          to={locked ? '/start' : item.to}
           end={item.end}
-
           className={({ isActive }) => cn(
             'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
             locked
@@ -119,18 +114,17 @@ export function Sidebar() {
                 : 'text-[#b89fd4] hover:text-white hover:bg-white/5'
           )}
         >
-          <button type="button"
+          <button
+            type="button"
             onClick={isEditing ? e => { e.preventDefault(); e.stopPropagation(); cycleIcon(idx); } : undefined}
             disabled={!isEditing}
-            className={cn('shrink-0 relative', isEditing && 'cursor-pointer hover:scale-110')}
+            className={cn('shrink-0', isEditing && 'cursor-pointer hover:scale-110')}
           >
             <Icon className="h-[18px] w-[18px]" />
           </button>
-          {isEditing
-            ? <EditableText storeKey={`${STORE_KEY}.${idx}.label`} defaultValue={item.label} className="text-[13px] font-medium flex-1" />
-            : <span className="flex-1">{item.label}</span>
-          }
+          <span className="flex-1">{item.label}</span>
         </NavLink>
+
         {isEditing && (
           <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover/nav:opacity-100 transition-opacity duration-150">
             <button onClick={() => move(idx, -1)} disabled={idx === 0} className="h-4 w-4 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowUp className="h-2.5 w-2.5" /></button>
@@ -143,10 +137,10 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-[220px] shrink-0 flex flex-col h-screen sticky top-0 z-30 border-r border-[#ffffff08] overflow-hidden"
+    <aside
+      className="w-[220px] shrink-0 flex flex-col h-screen sticky top-0 z-30 border-r border-[#ffffff08] overflow-hidden"
       style={{ background: 'linear-gradient(180deg, #1a0f2e 0%, #130a22 100%)' }}
     >
-
       {/* ── Logo ── */}
       <div className="px-4 pt-5 pb-2">
         <div className="bg-white rounded-2xl px-3 py-2.5 flex items-center justify-center mb-3">
@@ -157,7 +151,7 @@ export function Sidebar() {
           />
         </div>
         <p className="text-center text-[10px] text-[#7c5aa8] uppercase tracking-[0.2em] font-bold">
-          <EditableText storeKey="sidebar.subtitle" defaultValue="Time e Comercial" className="text-[10px] uppercase tracking-[0.2em]" />
+          Time e Comercial
         </p>
       </div>
 
@@ -176,17 +170,15 @@ export function Sidebar() {
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl font-bold text-[13px] text-[#1a0020] transition-all duration-150 hover:brightness-110 shadow-lg"
                 style={{ background: 'linear-gradient(135deg, #f5a623 0%, #f7b440 100%)', boxShadow: '0 4px 14px rgba(245,166,35,0.30)' }}
               >
-                <button type="button"
+                <button
+                  type="button"
                   onClick={isEditing ? e => { e.preventDefault(); e.stopPropagation(); cycleIcon(idx); } : undefined}
                   disabled={!isEditing}
                   className={cn('shrink-0', isEditing && 'cursor-pointer hover:scale-110')}
                 >
                   <Icon className="h-[18px] w-[18px]" />
                 </button>
-                {isEditing
-                  ? <EditableText storeKey={`${STORE_KEY}.${idx}.label`} defaultValue={startItem.label} className="text-[13px] font-bold flex-1" />
-                  : <span className="flex-1">{startItem.label}</span>
-                }
+                <span className="flex-1">{startItem.label}</span>
                 <ChevronRight className="h-4 w-4 opacity-60" />
               </NavLink>
             </div>
@@ -214,7 +206,7 @@ export function Sidebar() {
           <NavItemEl key={item.to} item={item} />
         ))}
 
-        {/* Painel de Controle — aba exclusiva do Modo Gestor */}
+        {/* Painel de Controle — exclusivo do Modo Gestor */}
         {isEditing && (
           <NavLink
             to="/painel"
@@ -235,32 +227,31 @@ export function Sidebar() {
       {/* ── Footer ── */}
       <div className="px-3 pb-4 space-y-1.5">
 
-        {/* Seletor de Playbooks */}
+        {/* Seletor de Playbooks — troca o contexto inteiro do app */}
         {visiblePlaybooks.length > 0 && (
           <div className="mb-0.5">
             <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7c5aa8]">Playbook</p>
             <div className="flex flex-col gap-0.5">
               {visiblePlaybooks.map(opt => (
-                <NavLink
-                  key={opt.to}
-                  to={opt.to}
-                  end
-                  className={({ isActive }) => cn(
-                    'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150',
-                    isActive
+                <button
+                  key={opt.papel}
+                  onClick={() => switchPlaybook(opt.papel)}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 w-full text-left',
+                    papel === opt.papel
                       ? 'bg-[#6b21a8] text-white shadow-md'
                       : 'text-[#6a4a80] hover:text-[#b89fd4] hover:bg-white/5'
                   )}
                 >
                   <BookOpen className="h-3.5 w-3.5 shrink-0" />
                   {opt.label}
-                </NavLink>
+                </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Modo Gestor — minimal */}
+        {/* Modo Gestor */}
         <button
           onClick={() => (isEditing ? lock() : openPasswordModal())}
           title="Ctrl+Shift+E"
@@ -312,7 +303,6 @@ export function Sidebar() {
           <LogOut className="h-[16px] w-[16px] shrink-0" />
           <span>Sair</span>
         </button>
-
       </div>
     </aside>
   );
