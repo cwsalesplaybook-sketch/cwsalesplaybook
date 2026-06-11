@@ -35,17 +35,6 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
-    id: 'felipe', nome: 'Felipe Alexandrino', foto: '/hall/FelipeAlexandrino.jpeg',
-    cargo: 'Diretor do CW Cast', jornada: ['Todos os setores', 'CW Cast'],
-    frase: 'Passou por todos os setores para ter a autoridade de liderar o maior podcast da América Latina.',
-    historia: 'Um dos pilares da nossa história. O Felipe Alexandrino acompanhou nosso crescimento desde o início e sua trajetória se confunde com a da própria empresa, tendo deixado sua marca em praticamente todos os setores da operação. Hoje, ele usa toda essa bagagem e domínio de mercado para comandar o CW Cast, consolidando o nosso programa como o maior podcast da América Latina.',
-    stats: [
-      { icon: 'trending', valor: 'Todos', label: 'SETORES' },
-      { icon: 'star',     valor: 'Diretor', label: 'CW CAST' },
-      { icon: 'crown',    valor: 'Master', label: 'STATUS' },
-    ],
-  },
-  {
     id: 'joelma', nome: 'Joelma Vieira', foto: '/hall/Joelma.jpeg',
     cargo: 'Liderança Pré-Vendas', jornada: ['SDR', 'Closer', 'Liderança'],
     frase: 'Quem tem canal próprio, bate mais forte.',
@@ -120,6 +109,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'trending', valor: '1.135',      label: 'CLIENTES COMO SDR' },
       { icon: 'star',     valor: '19 anos',    label: 'PRIMEIRO CLOSER' },
       { icon: 'crown',    valor: '< 1 ano',    label: 'TEMPO PRA PROMOÇÃO' },
+    ],
+  },
+  {
+    id: 'felipe', nome: 'Felipe Alexandrino', foto: '/hall/FelipeAlexandrino.jpeg',
+    cargo: 'Diretor do CW Cast', jornada: ['Todos os setores', 'CW Cast'],
+    frase: 'Passou por todos os setores para ter a autoridade de liderar o maior podcast da América Latina.',
+    historia: 'Um dos pilares da nossa história. O Felipe Alexandrino acompanhou nosso crescimento desde o início e sua trajetória se confunde com a da própria empresa, tendo deixado sua marca em praticamente todos os setores da operação. Hoje, ele usa toda essa bagagem e domínio de mercado para comandar o CW Cast, consolidando o nosso programa como o maior podcast da América Latina.',
+    stats: [
+      { icon: 'trending', valor: 'Todos', label: 'SETORES' },
+      { icon: 'star',     valor: 'Diretor', label: 'CW CAST' },
+      { icon: 'crown',    valor: 'Master', label: 'STATUS' },
     ],
   },
   {
