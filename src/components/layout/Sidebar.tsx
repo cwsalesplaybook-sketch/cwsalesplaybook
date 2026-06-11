@@ -88,10 +88,10 @@ export function Sidebar() {
     navigate('/start');
   };
 
-  // Liderança ou gestor em edição vê todos; outros veem só o seu
+  // Seletor visível SOMENTE para Liderança e gestores — demais não veem nada
   const visiblePlaybooks = (papel === 'Liderança' || isEditing)
     ? PLAYBOOK_OPTIONS
-    : PLAYBOOK_OPTIONS.filter(opt => opt.papel === papel);
+    : [];
 
   /* ── Nav item reutilizável ── */
   const NavItemEl = ({ item }: { item: NavItem }) => {
