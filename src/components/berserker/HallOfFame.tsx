@@ -70,7 +70,7 @@ export function HallOfFame() {
             )}
             <div className="mx-auto h-24 w-24 rounded-full overflow-hidden shadow-xl shadow-yellow-500/20 border-[3px] border-yellow-400/70">
               {h.foto
-                ? <img src={h.foto} alt={h.nome} className="h-full w-full object-cover object-top" />
+                ? <img src={h.foto} alt={h.nome} loading="lazy" decoding="async" className="h-full w-full object-cover object-top" />
                 : <div className="h-full w-full bg-gradient-to-br from-yellow-500 to-amber-700 flex items-center justify-center text-xl font-black text-white">{initials(h.nome)}</div>
               }
             </div>
