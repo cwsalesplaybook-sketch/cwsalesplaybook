@@ -156,7 +156,7 @@ const DESTINOS_SHARED: Destino[] = [
 const DESTINOS_CLOSER: Destino[] = [
   {
     tags: ['plano', 'planos', 'preço', 'preco', 'valor', 'mensalidade', 'mesas', 'delivery', 'premium', 'módulo', 'modulo', 'desconto', 'cupom', 'cupons', 'franquia', 'franquias', 'reopen'],
-    label: 'Planos e Preços',
+    label: 'Planos, Preços e Cupons',
     descricao: 'Planos, módulos, cupons e franquias',
     path: '/closer/planos',
     cor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
