@@ -16,6 +16,8 @@ interface Destino {
   tab?: string;
   /** Se presente, navega com ?q= (ex: abrir uma objeção específica). */
   query?: string;
+  /** Se true, repassa o texto digitado como ?q= (ex: destacar o cupom buscado). */
+  passQuery?: boolean;
   cor: string;
 }
 
@@ -155,11 +157,19 @@ const DESTINOS_SHARED: Destino[] = [
 /** Destinos do dashboard de Closer (seções próprias + compartilhadas). */
 const DESTINOS_CLOSER: Destino[] = [
   {
-    tags: ['plano', 'planos', 'preço', 'preco', 'valor', 'mensalidade', 'mesas', 'delivery', 'premium', 'módulo', 'modulo', 'desconto', 'cupom', 'cupons', 'franquia', 'franquias', 'reopen'],
-    label: 'Planos, Preços e Cupons',
-    descricao: 'Planos, módulos, cupons e franquias',
+    tags: ['plano', 'planos', 'preço', 'preco', 'valor', 'mensalidade', 'mesas', 'delivery', 'premium', 'módulo', 'modulo', 'franquia', 'franquias'],
+    label: 'Planos e Preços',
+    descricao: 'Planos, módulos e franquias',
     path: '/closer/planos',
     cor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  },
+  {
+    tags: ['cupom', 'cupons', 'parcerias', 'parceria', 'desconto', 'código', 'codigo', 'reopen', 'negociação', 'negociacao'],
+    label: 'Cupons',
+    descricao: 'Códigos de desconto (parcerias, negociação, reopen)',
+    path: '/closer/cupons',
+    passQuery: true,
+    cor: 'bg-cw-yellow/15 text-cw-yellow border-cw-yellow/30',
   },
   {
     tags: ['objeção', 'objeções', 'objecao', 'objecoes', 'contorno', 'caro', 'resistência', 'sócio', 'socio', 'esposa', 'pensar', 'financeiro'],
@@ -267,7 +277,7 @@ export function FloatingSearch() {
   const nav = useNavigate();
 
   const quickReplies = papel === 'Closer'
-    ? ['Planos', 'Objeções', 'Processo', 'Concorrentes', 'Rotina']
+    ? ['Planos', 'Cupons', 'Objeções', 'Processo', 'Concorrentes']
     : ['Calculadora', 'Totem', 'FAQ', 'Objeções', 'Cold Call'];
 
   useEffect(() => {
@@ -302,7 +312,8 @@ export function FloatingSearch() {
 
   function ir(d: Destino) {
     let url = d.path;
-    if (d.query) url = `${d.path}?q=${encodeURIComponent(d.query)}`;
+    if (d.passQuery && query.trim()) url = `${d.path}?q=${encodeURIComponent(query.trim())}`;
+    else if (d.query) url = `${d.path}?q=${encodeURIComponent(d.query)}`;
     else if (d.tab) url = `${d.path}?tab=${d.tab}`;
     nav(url);
     setAberto(false);

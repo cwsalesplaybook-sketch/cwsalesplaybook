@@ -16,23 +16,8 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
   return <p className="text-[10px] font-black text-cw-purple uppercase tracking-widest mb-3">{children}</p>;
 }
 
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => {
-        navigator.clipboard?.writeText(value).then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        });
-      }}
-      className="inline-flex items-center gap-1 text-[10px] font-mono font-semibold text-cw-purple-light hover:text-cw-yellow transition-colors"
-      title="Copiar código"
-    >
-      {value}
-      {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-    </button>
-  );
+function normTxt(s: string) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
 
 /* ---------------------------- PLANOS ----------------------------- */
@@ -121,36 +106,62 @@ function ModuloCard({ m }: { m: ModuloCloser }) {
   );
 }
 
-function CupomGrupoCard({ g }: { g: CupomGrupo }) {
+function cupomSlug(titulo: string) {
+  return titulo.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+/** Chip grande do código do cupom — clique para copiar. */
+function CodeChip({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
   return (
-    <div className="cw-card p-4">
+    <button
+      onClick={() => {
+        navigator.clipboard?.writeText(value).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        });
+      }}
+      title="Copiar código"
+      className={cn(
+        'inline-flex items-center gap-2 rounded-lg border px-3 py-2 font-mono text-xs font-bold transition-colors shrink-0',
+        copied
+          ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+          : 'bg-cw-purple/15 border-cw-purple/30 text-cw-purple-light hover:bg-cw-purple/25',
+      )}
+    >
+      {value}
+      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+    </button>
+  );
+}
+
+function CupomGrupoCard({ g, highlight }: { g: CupomGrupo; highlight?: boolean }) {
+  return (
+    <div
+      id={cupomSlug(g.titulo)}
+      className={cn(
+        'cw-card p-4 scroll-mt-8 transition-all',
+        highlight && 'ring-2 ring-cw-yellow/70',
+      )}
+    >
       <p className="font-bold text-sm text-cw-text">{g.titulo}</p>
       <p className="text-xs text-cw-muted mt-0.5 mb-3 leading-relaxed">{g.descricao}</p>
-      <div className="overflow-x-auto scrollbar-cw">
-        <table className="w-full text-xs whitespace-nowrap">
-          <thead>
-            <tr className="text-cw-muted text-left">
-              <th className="py-1.5 pr-3 font-semibold">{g.colunaRotulo}</th>
-              <th className="py-1.5 pr-3 font-semibold">Desconto</th>
-              <th className="py-1.5 pr-3 font-semibold">Valor desc.</th>
-              <th className="py-1.5 pr-3 font-semibold">Total c/ desc.</th>
-              <th className="py-1.5 pr-3 font-semibold">Mensal c/ desc.</th>
-              <th className="py-1.5 font-semibold">Código</th>
-            </tr>
-          </thead>
-          <tbody>
-            {g.linhas.map(l => (
-              <tr key={l.rotulo} className="border-t border-cw-border">
-                <td className="py-1.5 pr-3 text-cw-text">{l.rotulo}</td>
-                <td className="py-1.5 pr-3 text-cw-text font-semibold">{l.desconto}</td>
-                <td className="py-1.5 pr-3 text-cw-muted">{l.valorDesc}</td>
-                <td className="py-1.5 pr-3 text-cw-muted">{l.totalDesc}</td>
-                <td className="py-1.5 pr-3 text-cw-text font-semibold">{l.mensalDesc}</td>
-                <td className="py-1.5"><CopyButton value={l.codigo} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="space-y-2">
+        {g.linhas.map(l => (
+          <div
+            key={l.rotulo}
+            className="flex items-center justify-between gap-3 bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5"
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-cw-text truncate">{l.rotulo}</p>
+              <p className="text-[11px] text-cw-muted">
+                <span className="text-emerald-400 font-semibold">{l.desconto} OFF</span>
+                {' · '}{l.mensalDesc}/mês · total {l.totalDesc}
+              </p>
+            </div>
+            <CodeChip value={l.codigo} />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -171,12 +182,35 @@ export function PlanosSection() {
           {CLOSER_MODULOS.map(m => <ModuloCard key={m.nome} m={m} />)}
         </div>
       </div>
-      <div>
+    </div>
+  );
+}
+
+/* ---------------------------- CUPONS ----------------------------- */
+
+export function CuponsSection() {
+  const [params] = useSearchParams();
+  const q = normTxt(params.get('q') ?? '');
+  const matched = q ? CLOSER_CUPONS.find(g => normTxt(g.titulo).includes(q)) : undefined;
+  const highlightSlug = matched ? cupomSlug(matched.titulo) : undefined;
+
+  useEffect(() => {
+    if (highlightSlug) {
+      document.getElementById(highlightSlug)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [highlightSlug]);
+
+  return (
+    <div className="space-y-4">
+      <div className="cw-card p-5">
         <SectionTitle>Cupons de desconto</SectionTitle>
-        <p className="text-[11px] text-cw-muted mb-3">{CLOSER_CUPONS_OBS}</p>
-        <div className="space-y-3">
-          {CLOSER_CUPONS.map(g => <CupomGrupoCard key={g.titulo} g={g} />)}
-        </div>
+        <p className="text-sm text-cw-muted leading-relaxed">{CLOSER_CUPONS_OBS}</p>
+        <p className="text-[11px] text-cw-muted mt-1">Toque no código para copiar.</p>
+      </div>
+      <div className="space-y-3">
+        {CLOSER_CUPONS.map(g => (
+          <CupomGrupoCard key={g.titulo} g={g} highlight={cupomSlug(g.titulo) === highlightSlug} />
+        ))}
       </div>
     </div>
   );
