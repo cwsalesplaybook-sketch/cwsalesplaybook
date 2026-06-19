@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { SidebarProvider } from '@/context/SidebarContext';
+import { SidebarProvider, ForcePapel } from '@/context/SidebarContext';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { FloatingSearch } from '@/components/FloatingSearch';
 import { EditorProvider } from '@/admin/EditorContext';
@@ -39,6 +39,11 @@ import HistoriasSucesso from '@/pages/HistoriasSucesso';
 import Calculadora from '@/pages/Calculadora';
 import GestorAdminPage from '@/pages/GestorAdminPage';
 import PainelControle from '@/pages/PainelControle';
+import CloserPlanos from '@/pages/closer/Planos';
+import CloserObjecoes from '@/pages/closer/Objecoes';
+import CloserProcesso from '@/pages/closer/Processo';
+import CloserRotina from '@/pages/closer/Rotina';
+import CloserConcorrentes from '@/pages/closer/Concorrentes';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -86,15 +91,23 @@ function AnimatedRoutes() {
       >
         <Routes location={location}>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/start" element={<Start />} />
+          {/* Comece Aqui, Cultura, Histórias e Pipeline são idênticos em todos os
+              dashboards: ForcePapel="SDR" faz lerem o conteúdo global (sem prefixo). */}
+          <Route path="/start" element={<ForcePapel papel="SDR"><Start /></ForcePapel>} />
           <Route path="/playbook" element={<Playbook />} />
           <Route path="/playbook/closer" element={<PlaybookCloser />} />
           <Route path="/playbook/parcerias" element={<PlaybookParcerias />} />
           <Route path="/playbook/representantes" element={<PlaybookRepresentantes />} />
+          {/* Seções do dashboard de Closer */}
+          <Route path="/closer/planos" element={<CloserPlanos />} />
+          <Route path="/closer/objecoes" element={<CloserObjecoes />} />
+          <Route path="/closer/processo" element={<CloserProcesso />} />
+          <Route path="/closer/rotina" element={<CloserRotina />} />
+          <Route path="/closer/concorrentes" element={<CloserConcorrentes />} />
           <Route path="/agenda" element={<Agenda />} />
-          <Route path="/pipeline" element={<Pipeline />} />
-          <Route path="/cultura" element={<Cultura />} />
-          <Route path="/historias" element={<HistoriasSucesso />} />
+          <Route path="/pipeline" element={<ForcePapel papel="SDR"><Pipeline /></ForcePapel>} />
+          <Route path="/cultura" element={<ForcePapel papel="SDR"><Cultura /></ForcePapel>} />
+          <Route path="/historias" element={<ForcePapel papel="SDR"><HistoriasSucesso /></ForcePapel>} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/badges" element={<BadgesPage />} />
           <Route path="/carreira" element={<Carreira />} />

@@ -77,3 +77,20 @@ export function useSidebarContext() {
   if (!ctx) throw new Error('useSidebarContext deve ser usado dentro de SidebarProvider');
   return ctx;
 }
+
+/**
+ * Re-provê o contexto com um `papel` fixo, sobrescrevendo o real apenas para a
+ * subárvore (ex: uma página de rota). Usado para páginas que devem ser idênticas
+ * em todos os dashboards (Comece Aqui, Cultura, Histórias, Pipeline): forçando
+ * `papel="SDR"`, o conteúdo lido por useEditableContent usa as chaves sem prefixo
+ * de setor — ou seja, o mesmo conteúdo do SDR para qualquer usuário.
+ * A Sidebar fica fora dessa subárvore, então mantém o papel real.
+ */
+export function ForcePapel({ papel, children }: { papel: Papel; children: ReactNode }) {
+  const ctx = useSidebarContext();
+  return (
+    <SidebarContext.Provider value={{ ...ctx, papel }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+}

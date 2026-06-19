@@ -46,6 +46,26 @@ const SECTIONS = [
   { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];
 
+/** Dashboard de Closer: navegação própria (hardcoded, não editável).
+ *  'Comece Aqui', Pipeline, Cultura e Histórias são compartilhados (idênticos ao SDR). */
+const NAV_CLOSER: NavItem[] = [
+  { to: '/start',               label: 'Comece Aqui',          icon: 'Sparkles',  end: false },
+  { to: '/closer/planos',       label: 'Planos e Preços',      icon: 'Calculator',end: false },
+  { to: '/closer/objecoes',     label: 'Objeções',             icon: 'ShieldCheck',end: false },
+  { to: '/closer/processo',     label: 'Processo de Venda',    icon: 'Target',    end: false },
+  { to: '/closer/concorrentes', label: 'Concorrentes',         icon: 'Sword',     end: false },
+  { to: '/pipeline',            label: 'Pipeline',             icon: 'BarChart2', end: false },
+  { to: '/closer/rotina',       label: 'Rotina & Progressão',  icon: 'TrendingUp',end: false },
+  { to: '/cultura',             label: 'Cultura',              icon: 'Heart',     end: false },
+  { to: '/historias',           label: 'Histórias de Sucesso', icon: 'Trophy',    end: false },
+];
+
+const CLOSER_SECTIONS = [
+  { label: 'Comercial',         routes: ['/closer/planos', '/closer/objecoes', '/closer/processo', '/closer/concorrentes', '/pipeline'] },
+  { label: 'Carreira & Rotina', routes: ['/closer/rotina'] },
+  { label: 'Cultura e Time',    routes: ['/cultura', '/historias'] },
+];
+
 /** Seletor de playbooks — cada opção troca o papel inteiro do app */
 const PLAYBOOK_OPTIONS: { label: string; papel: Papel; icon: LucideIcon; short: string }[] = [
   { label: 'SDR',            papel: 'SDR',          icon: Zap,     short: 'SDR'   },
@@ -61,8 +81,13 @@ export function Sidebar() {
   const { isEditing, openPasswordModal, lock, isMaster } = useEditor();
   const userProfile = useUserProfile();
   const navigate = useNavigate();
+  const isCloser = papel === 'Closer';
   const rawItems = useGlobalEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
-  const items = rawItems.filter(i => i.to !== '/mural');
+  // Closer tem navegação própria, hardcoded (não passa pelo override global).
+  const items = isCloser ? NAV_CLOSER : rawItems.filter(i => i.to !== '/mural');
+  const sections = isCloser ? CLOSER_SECTIONS : SECTIONS;
+  // Edição de nav só vale para o nav global (SDR/Liderança), não para o do Closer.
+  const navEditable = isEditing && !isCloser;
   const saveGlobalOverride = useContentStore((s) => s.saveGlobalOverride);
 
   const update = async (next: NavItem[]) => {
@@ -82,7 +107,7 @@ export function Sidebar() {
 
   const startItem        = items.find(i => i.to === '/start');
   const sectionItems     = (routes: string[]) => items.filter(i => routes.includes(i.to));
-  const allSectionRoutes = SECTIONS.flatMap(s => s.routes);
+  const allSectionRoutes = sections.flatMap(s => s.routes);
 
   const [switching, setSwitching] = useState<Papel | null>(null);
 
@@ -124,16 +149,16 @@ export function Sidebar() {
         >
           <button
             type="button"
-            onClick={isEditing ? e => { e.preventDefault(); e.stopPropagation(); cycleIcon(idx); } : undefined}
-            disabled={!isEditing}
-            className={cn('shrink-0', isEditing && 'cursor-pointer hover:scale-110')}
+            onClick={navEditable ? e => { e.preventDefault(); e.stopPropagation(); cycleIcon(idx); } : undefined}
+            disabled={!navEditable}
+            className={cn('shrink-0', navEditable && 'cursor-pointer hover:scale-110')}
           >
             <Icon className="h-[18px] w-[18px]" />
           </button>
           <span className="flex-1">{item.label}</span>
         </NavLink>
 
-        {isEditing && (
+        {navEditable && (
           <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover/nav:opacity-100 transition-opacity duration-150">
             <button onClick={() => move(idx, -1)} disabled={idx === 0} className="h-4 w-4 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowUp className="h-2.5 w-2.5" /></button>
             <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="h-4 w-4 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowDown className="h-2.5 w-2.5" /></button>
@@ -194,7 +219,7 @@ export function Sidebar() {
         })()}
 
         {/* Seções */}
-        {SECTIONS.map(section => {
+        {sections.map(section => {
           const sItems = sectionItems(section.routes);
           if (sItems.length === 0) return null;
           return (
