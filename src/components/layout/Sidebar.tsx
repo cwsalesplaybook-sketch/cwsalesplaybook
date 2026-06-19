@@ -50,7 +50,7 @@ const SECTIONS = [
  *  'Comece Aqui', Pipeline, Cultura e Histórias são compartilhados (idênticos ao SDR). */
 const NAV_CLOSER: NavItem[] = [
   { to: '/start',               label: 'Comece Aqui',          icon: 'Sparkles',  end: false },
-  { to: '/closer/planos',       label: 'Planos e Preços',      icon: 'Calculator',end: false },
+  { to: '/closer/planos',       label: 'Planos, Preços e Cupons', icon: 'Calculator',end: false },
   { to: '/closer/objecoes',     label: 'Objeções',             icon: 'ShieldCheck',end: false },
   { to: '/closer/processo',     label: 'Processo de Venda',    icon: 'Target',    end: false },
   { to: '/closer/concorrentes', label: 'Concorrentes',         icon: 'Sword',     end: false },
