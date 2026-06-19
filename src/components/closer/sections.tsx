@@ -1,6 +1,7 @@
 /** Seções de conteúdo do dashboard de Closer (render reutilizável).
  *  Dados em '@/data/playbookCloser'. Conteúdo estático (hardcoded). */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ChevronDown, Search, Copy, Check, Star, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -242,8 +243,9 @@ const FASE_COR: Record<string, string> = {
   'Fase de follow-up':    'bg-amber-50 text-amber-600 border-amber-200',
 };
 
-function ObjecaoCard({ o }: { o: ObjecaoCloser }) {
-  const [open, setOpen] = useState(false);
+function ObjecaoCard({ o, defaultOpen = false }: { o: ObjecaoCloser; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  useEffect(() => { setOpen(defaultOpen); }, [defaultOpen]);
   return (
     <div className="cw-card overflow-hidden">
       <button onClick={() => setOpen(v => !v)} className="w-full flex items-start gap-3 p-4 text-left hover:bg-cw-elevated transition-colors">
@@ -267,8 +269,13 @@ function ObjecaoCard({ o }: { o: ObjecaoCloser }) {
 }
 
 export function ObjecoesSection() {
-  const [busca, setBusca] = useState('');
+  const [params] = useSearchParams();
+  const qParam = params.get('q') ?? '';
+  const [busca, setBusca] = useState(qParam);
   const [cat, setCat] = useState<string>('Todas');
+
+  // Quando chega de fora com ?q= (ex: assistente flutuante), pré-preenche a busca.
+  useEffect(() => { if (qParam) setBusca(qParam); }, [qParam]);
 
   const termo = busca.trim().toLowerCase();
   const filtradas = CLOSER_OBJECOES.filter(o => {
@@ -312,7 +319,13 @@ export function ObjecoesSection() {
       <p className="text-[11px] text-cw-muted">{filtradas.length} de {CLOSER_OBJECOES.length} objeções</p>
 
       <div className="space-y-2">
-        {filtradas.map(o => <ObjecaoCard key={o.titulo} o={o} />)}
+        {filtradas.map(o => (
+          <ObjecaoCard
+            key={o.titulo}
+            o={o}
+            defaultOpen={termo.length > 2 && o.titulo.toLowerCase().includes(termo)}
+          />
+        ))}
         {filtradas.length === 0 && (
           <p className="text-sm text-cw-muted text-center py-12">Nenhuma objeção encontrada para esse filtro.</p>
         )}

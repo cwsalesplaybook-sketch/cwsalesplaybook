@@ -1,8 +1,12 @@
-/** Assistente flutuante CW — chat com navegação por palavras-chave. */
+/** Assistente flutuante CW — chat com navegação por palavras-chave.
+ *  Os destinos são por papel: no dashboard de Closer aponta para /closer/* e
+ *  indexa as objeções (digite a frase do lead e ele leva à objeção certa). */
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, ArrowRight, Send, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSidebarContext } from '@/context/SidebarContext';
+import { CLOSER_OBJECOES } from '@/data/playbookCloser';
 
 interface Destino {
   tags: string[];
@@ -10,10 +14,12 @@ interface Destino {
   descricao: string;
   path: string;
   tab?: string;
+  /** Se presente, navega com ?q= (ex: abrir uma objeção específica). */
+  query?: string;
   cor: string;
 }
 
-const DESTINOS: Destino[] = [
+const DESTINOS_SDR: Destino[] = [
   {
     tags: ['calculadora', 'calcular', 'calcula', 'proposta', 'simular', 'simulação'],
     label: 'Calculadora',
@@ -114,16 +120,94 @@ const DESTINOS: Destino[] = [
   },
 ];
 
-const QUICK_REPLIES = ['Calculadora', 'Totem', 'FAQ', 'Objeções', 'Cold Call'];
+/** Seções compartilhadas (idênticas em todos os dashboards). */
+const DESTINOS_SHARED: Destino[] = [
+  {
+    tags: ['comece', 'comece aqui', 'início', 'inicio', 'onboarding', 'boas vindas', 'glossário', 'glossario'],
+    label: 'Comece Aqui',
+    descricao: 'Boas-vindas, onboarding e glossário',
+    path: '/start',
+    cor: 'bg-cw-yellow/20 text-cw-yellow border-cw-yellow/30',
+  },
+  {
+    tags: ['cultura', 'missão', 'visão', 'valores'],
+    label: 'Cultura',
+    descricao: 'Cultura e valores da CW',
+    path: '/cultura',
+    cor: 'bg-cw-yellow/15 text-cw-yellow border-cw-yellow/30',
+  },
+  {
+    tags: ['história', 'historias', 'histórias', 'hall', 'sucesso', 'fama'],
+    label: 'Histórias de Sucesso',
+    descricao: 'Hall da fama do time',
+    path: '/historias',
+    cor: 'bg-cw-purple/15 text-cw-purple-light border-cw-purple/30',
+  },
+  {
+    tags: ['pipeline', 'funil de vendas'],
+    label: 'Pipeline',
+    descricao: 'Visão do pipeline de vendas',
+    path: '/pipeline',
+    cor: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+  },
+];
+
+/** Destinos do dashboard de Closer (seções próprias + compartilhadas). */
+const DESTINOS_CLOSER: Destino[] = [
+  {
+    tags: ['plano', 'planos', 'preço', 'preco', 'valor', 'mensalidade', 'mesas', 'delivery', 'premium', 'módulo', 'modulo', 'desconto', 'cupom', 'cupons', 'franquia', 'franquias', 'reopen'],
+    label: 'Planos e Preços',
+    descricao: 'Planos, módulos, cupons e franquias',
+    path: '/closer/planos',
+    cor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  },
+  {
+    tags: ['objeção', 'objeções', 'objecao', 'objecoes', 'contorno', 'caro', 'resistência', 'sócio', 'socio', 'esposa', 'pensar', 'financeiro'],
+    label: 'Objeções',
+    descricao: 'Contorno de objeções com discurso de solução',
+    path: '/closer/objecoes',
+    cor: 'bg-cw-red/15 text-cw-red border-cw-red/30',
+  },
+  {
+    tags: ['processo', 'funil', 'funis', 'spin', 'etapa', 'etapas', 'reunião', 'reuniao', 'checklist', 'checklists', 'critério', 'criterios', 'critérios', 'avaliação', 'avaliacao', 'follow', 'followup', 'follow up', 'no-show', 'no show'],
+    label: 'Processo de Venda',
+    descricao: 'Funis, SPIN, etapas, checklists, critérios e follow-up',
+    path: '/closer/processo',
+    cor: 'bg-cw-purple/15 text-cw-purple-light border-cw-purple/30',
+  },
+  {
+    tags: ['rotina', 'hora ouro', 'hora de ouro', 'produtividade', 'crm', 'progressão', 'progressao', 'carreira', 'nível', 'niveis', 'níveis', 'promoção', 'promocao'],
+    label: 'Rotina & Progressão',
+    descricao: 'Hora Ouro, CRM e níveis de carreira',
+    path: '/closer/rotina',
+    cor: 'bg-cw-yellow/15 text-cw-yellow border-cw-yellow/30',
+  },
+  {
+    tags: ['concorrente', 'concorrentes', 'anota', 'anota ai', 'goomer', 'saipos', 'whatsmenu', 'consumer', 'comparativo', 'comparação'],
+    label: 'Concorrentes',
+    descricao: 'Comparativo com os principais concorrentes',
+    path: '/closer/concorrentes',
+    cor: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
+  },
+  ...DESTINOS_SHARED,
+];
 
 function norm(s: string) {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
 
-function buscar(query: string): Destino[] {
+function destinosDoPapel(papel: string): Destino[] {
+  if (papel === 'Closer') return DESTINOS_CLOSER;
+  if (papel === 'SDR' || papel === 'Liderança') return DESTINOS_SDR;
+  return DESTINOS_SHARED;
+}
+
+function buscar(query: string, papel: string): Destino[] {
   if (!query.trim()) return [];
   const q = norm(query);
-  const scored = DESTINOS.map(d => {
+  const base = destinosDoPapel(papel);
+
+  const scored = base.map(d => {
     const score = d.tags.reduce((acc, tag) => {
       const t = norm(tag);
       if (t === q) return acc + 4;
@@ -132,8 +216,35 @@ function buscar(query: string): Destino[] {
       return acc;
     }, 0);
     return { d, score };
-  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score);
-  return scored.slice(0, 4).map(x => x.d);
+  }).filter(x => x.score > 0);
+
+  // No dashboard de Closer, indexa as objeções por frase do lead.
+  if (papel === 'Closer' && q.length >= 3) {
+    for (const o of CLOSER_OBJECOES) {
+      const titulo = norm(o.titulo);
+      const contorno = norm(o.contorno);
+      let score = 0;
+      if (titulo === q) score += 7;
+      else if (titulo.includes(q)) score += 5;
+      else if (q.includes(titulo)) score += 4;
+      else if (contorno.includes(q)) score += 2;
+      if (score > 0) {
+        scored.push({
+          score,
+          d: {
+            tags: [],
+            label: 'Objeção',
+            descricao: o.titulo,
+            path: '/closer/objecoes',
+            query: o.titulo,
+            cor: 'bg-cw-red/15 text-cw-red border-cw-red/30',
+          },
+        });
+      }
+    }
+  }
+
+  return scored.sort((a, b) => b.score - a.score).slice(0, 5).map(x => x.d);
 }
 
 function BotAvatar({ size = 28 }: { size?: number }) {
@@ -148,11 +259,16 @@ function BotAvatar({ size = 28 }: { size?: number }) {
 }
 
 export function FloatingSearch() {
+  const { papel } = useSidebarContext();
   const [aberto, setAberto] = useState(false);
   const [query, setQuery]   = useState('');
   const [novo, setNovo]     = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const nav = useNavigate();
+
+  const quickReplies = papel === 'Closer'
+    ? ['Planos', 'Objeções', 'Processo', 'Concorrentes', 'Rotina']
+    : ['Calculadora', 'Totem', 'FAQ', 'Objeções', 'Cold Call'];
 
   useEffect(() => {
     const jaAbriu = sessionStorage.getItem('cw.assistant.opened');
@@ -185,19 +301,21 @@ export function FloatingSearch() {
   }, []);
 
   function ir(d: Destino) {
-    const url = d.tab ? `${d.path}?tab=${d.tab}` : d.path;
+    let url = d.path;
+    if (d.query) url = `${d.path}?q=${encodeURIComponent(d.query)}`;
+    else if (d.tab) url = `${d.path}?tab=${d.tab}`;
     nav(url);
     setAberto(false);
   }
 
   function handleEnter(e: React.KeyboardEvent) {
     if (e.key === 'Enter') {
-      const res = buscar(query);
+      const res = buscar(query, papel);
       if (res.length >= 1) ir(res[0]);
     }
   }
 
-  const resultados = buscar(query);
+  const resultados = buscar(query, papel);
 
   return (
     <>
@@ -217,7 +335,7 @@ export function FloatingSearch() {
               <BotAvatar size={32} />
               <div className="flex-1">
                 <p className="text-[13px] font-bold text-white leading-tight">Assistente CW</p>
-                <p className="text-[10px] text-[#9b6fc4]">Sales Enablement</p>
+                <p className="text-[10px] text-[#9b6fc4]">{papel === 'Closer' ? 'Dashboard de Closer' : 'Sales Enablement'}</p>
               </div>
               <button onClick={() => setAberto(false)} className="text-[#7c5aa8] hover:text-white transition-colors">
                 <X className="h-4 w-4" />
@@ -234,9 +352,15 @@ export function FloatingSearch() {
                     <p className="text-[13px] text-white leading-snug">Posso ajudar? 👋</p>
                   </div>
                   <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2">
-                    <p className="text-[12px] text-[#d4c0ee] leading-snug">
-                      Digite uma palavra-chave — tipo <span className="text-cw-yellow font-semibold">"totem"</span> ou <span className="text-cw-yellow font-semibold">"calculadora"</span> — e te levo direto pra seção certa.
-                    </p>
+                    {papel === 'Closer' ? (
+                      <p className="text-[12px] text-[#d4c0ee] leading-snug">
+                        Digite uma seção (<span className="text-cw-yellow font-semibold">"planos"</span>) ou a frase do lead (<span className="text-cw-yellow font-semibold">"me manda no whatsapp"</span>) e te levo direto à objeção certa.
+                      </p>
+                    ) : (
+                      <p className="text-[12px] text-[#d4c0ee] leading-snug">
+                        Digite uma palavra-chave — tipo <span className="text-cw-yellow font-semibold">"totem"</span> ou <span className="text-cw-yellow font-semibold">"calculadora"</span> — e te levo direto pra seção certa.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -244,7 +368,7 @@ export function FloatingSearch() {
               {/* Quick replies */}
               {!query && (
                 <div className="ml-8 flex flex-wrap gap-1.5">
-                  {QUICK_REPLIES.map(r => (
+                  {quickReplies.map(r => (
                     <button
                       key={r}
                       onClick={() => setQuery(r.toLowerCase())}
@@ -289,7 +413,9 @@ export function FloatingSearch() {
                   <BotAvatar size={24} />
                   <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2 max-w-[85%]">
                     <p className="text-[12px] text-[#d4c0ee]">Hmm, não encontrei nada para <span className="text-white font-semibold">"{query}"</span>.</p>
-                    <p className="text-[11px] text-[#7c5aa8] mt-1">Tente: totem, calculadora, objeção, spin...</p>
+                    <p className="text-[11px] text-[#7c5aa8] mt-1">
+                      {papel === 'Closer' ? 'Tente: planos, objeção, processo, concorrentes...' : 'Tente: totem, calculadora, objeção, spin...'}
+                    </p>
                   </div>
                 </div>
               )}
@@ -303,12 +429,12 @@ export function FloatingSearch() {
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   onKeyDown={handleEnter}
-                  placeholder="Ex: calculadora, totem, objeção..."
+                  placeholder={papel === 'Closer' ? 'Ex: planos, "me manda no whatsapp"...' : 'Ex: calculadora, totem, objeção...'}
                   className="flex-1 bg-transparent text-[13px] text-white placeholder:text-[#7c5aa8] outline-none"
                 />
                 {query ? (
                   <button
-                    onClick={() => { const res = buscar(query); if (res.length > 0) ir(res[0]); }}
+                    onClick={() => { const res = buscar(query, papel); if (res.length > 0) ir(res[0]); }}
                     className="h-6 w-6 rounded-lg gradient-primary flex items-center justify-center shrink-0"
                   >
                     <Send className="h-3 w-3 text-white" />
