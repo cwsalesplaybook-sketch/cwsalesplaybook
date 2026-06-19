@@ -40,6 +40,7 @@ import Calculadora from '@/pages/Calculadora';
 import GestorAdminPage from '@/pages/GestorAdminPage';
 import PainelControle from '@/pages/PainelControle';
 import CloserPlanos from '@/pages/closer/Planos';
+import CloserCupons from '@/pages/closer/Cupons';
 import CloserObjecoes from '@/pages/closer/Objecoes';
 import CloserProcesso from '@/pages/closer/Processo';
 import CloserRotina from '@/pages/closer/Rotina';
@@ -100,6 +101,7 @@ function AnimatedRoutes() {
           <Route path="/playbook/representantes" element={<PlaybookRepresentantes />} />
           {/* Seções do dashboard de Closer */}
           <Route path="/closer/planos" element={<CloserPlanos />} />
+          <Route path="/closer/cupons" element={<CloserCupons />} />
           <Route path="/closer/objecoes" element={<CloserObjecoes />} />
           <Route path="/closer/processo" element={<CloserProcesso />} />
           <Route path="/closer/rotina" element={<CloserRotina />} />
