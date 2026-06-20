@@ -1,8 +1,7 @@
 /** Dados do Playbook de Closer.
  *  Conteúdo extraído do guia de closers da Cardápio Web.
  *  Bloco 1: Planos & Preços, Franquias, Objeções.
- *  (Demais blocos — Checklists, Etapas da reunião, Critérios, Follow-up,
- *   Funis, SPIN, Progressão, Hora Ouro, Concorrentes — em construção.)
+ *  Bloco 2: Etapas da reunião, Critérios, Follow-up, Funis, SPIN, Progressão, Hora Ouro, Concorrentes.
  */
 
 /* ------------------------------------------------------------------ */
@@ -715,5 +714,757 @@ export const CLOSER_OBJECOES: ObjecaoCloser[] = [
     titulo: 'Vou verificar com meu sócio',
     contorno:
       'Closer: Eu entendo, Fernando, faz sentido consultar ele. O que acontece é que muitas pessoas não conseguem passar 100% dos benefícios da ferramenta. Afinal, aqui eu consegui te apresentar o sistema, mas você não vai ter o sistema em mãos para apresentar. Concorda?\n\nFernando: Sim\n\nCloser: O que quero te propor: vamos fechar negócio, você ganha 10 dias de garantia no plano mensal. Teu sócio vai ver na prática de como funciona, e você tem uma garantia. Podemos seguir?\n\nFernando: Vamos seguir',
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* ETAPAS DA REUNIÃO                                                    */
+/* ------------------------------------------------------------------ */
+
+export interface EtapaReuniao {
+  topico: string;
+  tempo: string;
+  detalhes: string;
+  avaliacao: string;
+  exemplo: string;
+  criterios: string;
+}
+
+export const CLOSER_ETAPAS_REUNIAO: EtapaReuniao[] = [
+  {
+    topico: 'Abertura',
+    tempo: '2 minutos',
+    detalhes: 'Fazer uma abertura se apresentando, trazendo autoridade e rapport.',
+    avaliacao:
+      'Fez uma abertura se apresentando como especialista;\nGerou rapport encontrando algum ponto em comum ou algum ponto que faça o lead se conectar para além de fechar negócio. Além disso, alinhou as expectativas com relação ao tempo da reunião.',
+    exemplo:
+      'Closer: Olá, Fernando, como vai? Eu sou o Closer da Cardápio Web, já atendi milhares de deliveries e restaurantes em todo o Brasil. Pelo que vi aqui no seu DDD você é de Fortaleza né? Já vou conhecer teu restaurante esse final de semana, você fica em qual bairro?',
+    criterios: 'Autoridade, alinhamento de expectativa e rapport',
+  },
+  {
+    topico: 'Passagem de bastão + S',
+    tempo: '3 minutos',
+    detalhes: 'Traz contexto com base no que o SDR falou, já entendendo a situação do lead, a fim de ir para o próximo passo.',
+    avaliacao:
+      'Deve ser falado o que o SDR anotou e finalizar com uma pergunta de situação. Muitas vezes a pergunta de situação não é necessária, por exemplo, quando o SDR já traz um contexto bom. Levar esse contexto pode fazer o Lead concordar e você pode seguir para as perguntas de problema.',
+    exemplo:
+      'Closer: Fernando, o SDR falou com você anteriormente me passou que hoje você busca uma solução para atender toda a parte do delivery e mesas, e que hoje utiliza um sistema que não te atende, correto?\n\nLead: Isso mesmo, hoje estou com o anota aí\n\nCloser: Entendi, Fernando, me fala mais um pouco da tua operação, além desse ponto do anota aí, você tem garçons, atende de que modo?',
+    criterios: 'Passagem de bastão, situação e domínio de mercado',
+  },
+  {
+    topico: 'PI',
+    tempo: '4 minutos',
+    detalhes: 'Faz uma ou duas perguntas de problema, indo para a pergunta de implicação logo em seguida.',
+    avaliacao:
+      'Nesta etapa são feitas duas perguntas: uma de problema e uma de implicação.\nNa pergunta de problema deve iniciar a encontrar a dor do lead, e na pergunta de implicação deve-se metrificar o impacto dessa dor.',
+    exemplo:
+      'Closer: Hoje, Fernando, utilizar um sistema que mais te atrapalha que ajuda pode te gerar algumas perdas. Você sente que o sistema atrapalha o fluxo das operações?\n\nLead: Sim, com certeza!\n\nCloser: E esses problemas já te fizeram perder vendas ou até mesmo dados de vendas? Pensa comigo, se você perde R$ 100,00 na semana com esse tipo de situação, no mês daria já R$ 400,00.\n\nLead: Sim, eu nunca tinha pensado por este lado...',
+    criterios: 'Problema, implicação e domínio de mercado',
+  },
+  {
+    topico: 'N + Demonstração',
+    tempo: '7 minutos',
+    detalhes:
+      'As perguntas de necessidade serão validações feitas na apresentação do sistema, com foco na principal dor do lead. E apresentando de forma superficial os módulos extras e validando a necessidade.',
+    avaliacao:
+      'A demonstração deve ter por foco a dor do lead. Por exemplo: se o problema é aumentar as vendas, deve ser mostradas ferramentas que possuem por objetivo melhorar as vendas, tais como o disparador de mensagens, cupom de desconto e programa de fidelidade.\n\nA cada ciclo de três funcionalidades apresentadas, faça as perguntas de curva de engajamento:\nPergunta N° 1: Resolve seu problema?\nPergunta N° 2: Qual o impacto?\nPergunta N° 3: Como você se imagina usando?',
+    exemplo:
+      'Closer: Validando contigo, você me falou que seu maior problema é atendimento tanto mesas quanto delivery e o que vai te ajudar a resolver isso realmente vai ser toda a parte de automação. (comece a mostrar o cardápio) Este é o cardápio do delivery bem similar ao de mesas... aqui o lead faz todo o fluxo de pedidos. Dessa forma que estou mostrando, você acredita que resolve seu problema?\n\nLead: Sim, eu acho que sim.\n\nCloser: Qual seria o impacto de ter esse sistema aqui no seu negócio? Daria pra economizar quanto no atendimento?\n\nLead: Cara, com certeza daria pra economizar bastante, precisaria de menos atendentes.',
+    criterios: 'Necessidade, demonstração e engajamento do lead',
+  },
+  {
+    topico: 'Tira dúvidas',
+    tempo: '4 minutos',
+    detalhes: 'Momento de validar alguma dúvida do lead.',
+    avaliacao: 'Deve ser feita uma checagem de tira dúvidas com o lead.',
+    exemplo: 'Closer: Agora apenas checando contigo, ficou alguma dúvida?',
+    criterios: '',
+  },
+  {
+    topico: 'Negociação',
+    tempo: '10 minutos',
+    detalhes: 'Parte mais importante para a apresentação. Serão apresentados planos e módulos, com objetivo de fazer o lead levar um plano maior e com mais módulos.',
+    avaliacao:
+      'Deve ser apresentado planos e módulos, bem como calculadora de planos. O objetivo é fazer o lead levar um plano maior (em tempo de contratação) e com mais módulos.',
+    exemplo:
+      'Closer: Fernando, pelo que entendi, o plano que mais faz sentido para você é o plano delivery anual com o módulo de ifood, estoque avançado e fiscal.',
+    criterios: 'Contorno de objeção, fechamento de portas, fechamento e next step',
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* CRITÉRIOS DE AVALIAÇÃO                                              */
+/* ------------------------------------------------------------------ */
+
+export interface CriterioAvaliacao {
+  criterio: string;
+  descricao: string;
+  peso: number;
+  isBonus?: boolean;
+}
+
+export const CLOSER_CRITERIOS_PRINCIPAIS: CriterioAvaliacao[] = [
+  { criterio: 'Autoridade', peso: 6, descricao: 'Como o closer se apresenta e passa uma sensação de segurança. Envolvendo a apresentação de cases de sucesso, parceiros e do próprio Closer como especialista.' },
+  { criterio: 'Alinhamento de expectativa', peso: 6, descricao: 'Forma como o Closer apresenta a agenda da reunião e alinha o objetivo principal desse momento, perguntando para o lead se existe algo a mais que ele gostaria de acrescentar.' },
+  { criterio: 'Passagem de bastão', peso: 7, descricao: 'Como o closer contextualiza o que foi coletado pelo pré-vendedor e apresenta isso para o lead.' },
+  { criterio: 'Rapport', peso: 9, descricao: 'Como o closer cria conexão e deixa o lead a vontade durante a reunião.' },
+  { criterio: 'Domínio de mercado', peso: 8, descricao: 'Conhecimento do mercado de delivery e restaurante. Quando o lead citar algo com relação ao mercado, o closer interage apresentando um case ou um dado interessante.' },
+  { criterio: 'Situação (S)', peso: 7, descricao: 'O closer entende a situação do cliente, a partir da passagem de bastão bem feita. Uma boa pergunta de situação faz o lead falar bastante do seu negócio e abre brecha para uma pergunta de problema.' },
+  { criterio: 'Problema (P)', peso: 8, descricao: 'Uma boa pergunta de problema deve ser feita de modo a identificar o que incomoda o lead, feita de forma estratégica para identificar uma dor que faça o lead querer mudar sua situação.' },
+  { criterio: 'Implicação (I)', peso: 9, descricao: 'A pergunta de implicação intensifica o problema. Uma boa implicação ocorre com: quantificação de perda ou ganho; lead fala por pelo menos 30 segundos sobre uma situação ocorrida; ou declaração explícita de querer mudar a situação atual.' },
+  { criterio: 'Necessidade (N)', peso: 9, descricao: 'A necessidade é obtida com a demonstração da ferramenta e verificações se resolve o problema citado. O closer deve verificar principalmente nas ferramentas de acordo com o que foi abordado.' },
+  { criterio: 'Demonstração do cronograma', peso: 6, descricao: 'Como o cronograma é explicado para o lead, de forma clara e concisa, para que entenda o que acontece depois que ele vira cliente.' },
+  { criterio: 'Contorno de objeção', peso: 9, descricao: 'Bons contornos de objeção se baseiam na matriz de objeções e como o closer consegue aplicar as estratégias da matriz durante a reunião.' },
+  { criterio: 'Formato de apresentação', peso: 4, descricao: 'O jeito que a tela está sendo apresentada, sem mostrar guias e deixando o lead fixado apenas naquilo que o closer busca apresentar.' },
+  { criterio: 'Foco no cliente', peso: 8, descricao: 'Direcionamento da apresentação para focar nas necessidades do cliente: demonstração focada no que foi conversado com o lead e fechamento referenciando informações da negociação.' },
+  { criterio: 'Domínio da ferramenta', peso: 10, descricao: 'O quão familiarizado o closer está com a ferramenta e consegue transparecer isso para o lead, além de não repassar informações incorretas.' },
+  { criterio: 'Demonstração de produto', peso: 10, descricao: 'Como o closer apresenta a solução com base nas informações coletadas e como engaja o lead durante a apresentação, fazendo as perguntas de curva de engajamento e perguntas de necessidade (verificação).' },
+  { criterio: 'Perguntas de fechamento', peso: 8, descricao: 'Ao demonstrar a ferramenta, o closer pergunta ao lead se a solução atende ao que ele precisa e se está disposto a contratar. Em caso negativo, tenta entender e contornar a objeção trazida.' },
+  { criterio: 'Cross Sell', peso: 8, descricao: 'Como o Closer cria valor para que o lead tenha interesse em contratar os módulos extras, recomendando ativamente os módulos com argumentação clara.' },
+  { criterio: 'Engajamento do lead', peso: 10, descricao: 'Como o closer apresenta a solução com base nas informações coletadas, engajando o lead durante toda a apresentação da solução.' },
+  { criterio: 'Comunicação do Closer', peso: 8, descricao: 'Uma boa comunicação é composta por clareza, dicção, didática, expressões, simpatia, oratória, tom de voz, calma e comunicação corporal.' },
+  { criterio: 'Fechamento de portas', peso: 9, descricao: 'Como o closer prepara o terreno para realizar o fechamento, sem deixar brechas para o lead jogar objeções.' },
+  { criterio: 'Fechamento', peso: 10, descricao: 'Como o Closer apresenta os planos e preços da ferramenta. Um bom fechamento envolve explicações claras dos planos, uso de calculadoras para comparar os valores e planilhas de simulação.' },
+  { criterio: 'Next step', peso: 8, descricao: 'Como o closer combina o próximo passo após a reunião com o lead, normalmente através de um retorno sobre a proposta enviada.' },
+];
+
+export const CLOSER_CRITERIOS_BONUS: CriterioAvaliacao[] = [
+  { criterio: 'Influência na venda de módulos', peso: 7, isBonus: true, descricao: 'O closer contornou uma objeção relacionada ao módulo, ou fez uma oferta sobre o módulo que foi aceita. Teve influência direta na venda do módulo.' },
+  { criterio: 'Influência na venda de planos maiores', peso: 7, isBonus: true, descricao: 'O closer contornou uma objeção ou argumentou de modo a convencer o lead a contratar um plano trimestral, semestral ou anual.' },
+  { criterio: 'Pagamento na reunião', peso: 7, isBonus: true, descricao: 'Quando o Closer é capaz de fazer o lead pagar durante a própria reunião.' },
+  { criterio: 'Comprometimento emocional', peso: 7, isBonus: true, descricao: 'Quando o Closer consegue fazer o lead focar em algo além do negócio: histórias sobre sua vida, cidade, experiências, ou qualquer coisa que crie conexão além da venda.' },
+  { criterio: 'Domínio sobre o concorrente', peso: 7, isBonus: true, descricao: 'Domínio sobre o principal concorrente do lead, entendendo os diferenciais e sabendo argumentar de forma precisa.' },
+];
+
+/* ------------------------------------------------------------------ */
+/* SPIN                                                                 */
+/* ------------------------------------------------------------------ */
+
+export interface SpinDialogue {
+  speaker: 'closer' | 'lead' | 'intro';
+  text: string;
+}
+
+export interface SpinExemplo {
+  id: number;
+  categoria: string;
+  dialogues: SpinDialogue[];
+}
+
+export const CLOSER_SPIN: SpinExemplo[] = [
+  {
+    id: 1,
+    categoria: 'Automação do atendimento',
+    dialogues: [
+      { speaker: 'intro', text: 'O (cite o nome do SDR) me informou que hoje você busca um sistema para (cite o que o SDR trouxe que pode instigar o lead a falar mais a respeito do seu negócio) e a partir disso, entenda a situação para gerar as demais perguntas do SPIN.' },
+      { speaker: 'closer', text: 'Como funciona o atendimento do seu estabelecimento hoje?' },
+      { speaker: 'lead', text: 'Hoje trabalhamos com duas atendentes, mas o volume de pedidos pelo WhatsApp é grande e elas não conseguem dar conta.' },
+      { speaker: 'closer', text: 'Entendi. E quando elas não conseguem responder todos os pedidos, o que costuma acontecer?' },
+      { speaker: 'lead', text: 'A gente perde pedido. Já aconteceu de cliente mandar mensagem e a gente não ver, aí o cliente vai pedir em outro lugar.' },
+      { speaker: 'closer', text: 'E você consegue calcular quanto você perde por mês com isso? Pensando em pedido médio, por exemplo...' },
+      { speaker: 'lead', text: 'É difícil saber ao certo, mas deve ser uns R$ 2.000 a R$ 3.000 por mês facilmente.' },
+      { speaker: 'closer', text: 'Então, se você tivesse uma solução que atendesse automaticamente pelo WhatsApp 24h, sem perder nenhum pedido, qual seria o impacto disso no seu faturamento?' },
+      { speaker: 'lead', text: 'Seria enorme. Daria pra recuperar bastante desse valor perdido.' },
+    ],
+  },
+  {
+    id: 2,
+    categoria: 'Aumento de vendas',
+    dialogues: [
+      { speaker: 'closer', text: 'Então Fernando, hoje você está com um gestor de tráfego que indicou a gente. Me conta uma coisa, como atualmente vocês andam captando clientes?' },
+      { speaker: 'lead', text: 'Hoje utilizamos um Cardápio do anota aí. Mas meu gestor comentou que para os dados não é tão interessante.' },
+      { speaker: 'closer', text: 'Entendi, Fernando! Seu gestor sabe do que tá falando. Cara, hoje você investe no cardápio e no gestor de tráfego, correto?' },
+      { speaker: 'lead', text: 'Correto, faço esses dois investimentos.' },
+      { speaker: 'closer', text: 'E seu gestor te apontou que você não tem tantos dados de vendas e clientes. Como vocês conseguem saber se as campanhas estão valendo a pena?' },
+      { speaker: 'lead', text: 'É, hoje não temos essa noção.' },
+      { speaker: 'closer', text: 'Você entende que pode estar deixando dinheiro na mesa?' },
+      { speaker: 'lead', text: 'Como assim?' },
+      { speaker: 'closer', text: 'Se você calcular quanto gasta com sistema + gestor de tráfego e não consegue medir o retorno, às vezes você tem cliente que compraria mais, produtos que poderiam vender mais… mas como você não enxerga isso, acaba não aproveitando essas oportunidades. Se você fosse chutar hoje, acha que tá perdendo pouco ou uma grana relevante com isso?' },
+      { speaker: 'lead', text: 'Acho que uma grana relevante…' },
+      { speaker: 'closer', text: 'Pois é. Agora imagina ter um sistema que te mostra exatamente isso: quem compra, quanto compra e o que mais dá resultado… Que diferença faria pra você conseguir tomar decisão com base nisso?' },
+      { speaker: 'lead', text: 'Acho que melhoraria meu resultado… e eu teria mais controle.' },
+    ],
+  },
+  {
+    id: 3,
+    categoria: 'Gestão',
+    dialogues: [
+      { speaker: 'closer', text: 'Fernando, deixa eu te entender melhor… hoje como você controla suas vendas e seus clientes?' },
+      { speaker: 'lead', text: 'Hoje a gente usa o cardápio do Anota Aí.' },
+      { speaker: 'closer', text: 'Boa. E com ele você consegue ver, por exemplo, quem são seus melhores clientes, quanto cada um compra ou o que mais sai no seu negócio?' },
+      { speaker: 'lead', text: 'Não muito…' },
+      { speaker: 'closer', text: 'Entendi. Então hoje você vende, mas não tem muita clareza do que tá funcionando melhor no seu negócio, certo?' },
+      { speaker: 'lead', text: 'É, basicamente isso.' },
+      { speaker: 'closer', text: 'E me diz uma coisa — sem essa visão, como você decide o que manter, o que melhorar ou até o que parar de fazer?' },
+      { speaker: 'lead', text: 'É… meio no feeling.' },
+      { speaker: 'closer', text: 'Justo. Só que aí mora um risco… Se você não tem esses dados, pode estar deixando dinheiro na mesa sem nem perceber.' },
+      { speaker: 'lead', text: 'Como assim?' },
+      { speaker: 'closer', text: 'Às vezes você tem cliente que compraria mais, produtos que poderiam vender mais… mas como você não enxerga isso, acaba não aproveitando essas oportunidades. Que diferença faria ter essa visão completa do seu negócio?' },
+      { speaker: 'lead', text: 'Acho que melhoraria meu resultado… e eu teria mais controle.' },
+    ],
+  },
+  {
+    id: 4,
+    categoria: 'Automação do atendimento',
+    dialogues: [
+      { speaker: 'closer', text: 'Hoje você tem quantos cardápios para cada mesa no presencial?' },
+      { speaker: 'lead', text: 'Tenho uns 15 cardápios físicos distribuídos nas mesas.' },
+      { speaker: 'closer', text: 'E você sente alguma dificuldade em trabalhar com cardápios físicos? Atualização de preço, ficar rotacionando cardápio nas mesas...' },
+      { speaker: 'lead', text: 'Sim, toda vez que mudo um preço tenho que reimprimir tudo.' },
+      { speaker: 'closer', text: 'Você concorda que isso gera um custo e uma demora que poderiam ser evitados?' },
+      { speaker: 'lead', text: 'Com certeza, é bem trabalhoso.' },
+      { speaker: 'closer', text: 'E além disso, com o nosso programa de fidelidade, você ainda consegue aumentar a retenção do seu cliente dentro da sua empresa, quanto mais tempo seu cliente fica com você, mais longevidade tem o seu negócio e, obviamente, mais dinheiro no seu bolso! Você concorda comigo?' },
+      { speaker: 'lead', text: 'Com certeza, faz muito sentido!' },
+    ],
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* PROGRESSÃO DE CARREIRA                                              */
+/* ------------------------------------------------------------------ */
+
+export interface NivelCarreira {
+  nome: string;
+  tempo: string;
+  cor: string;
+}
+
+export const CLOSER_PROGRESSAO: NivelCarreira[] = [
+  { nome: 'Júnior 1', tempo: '—', cor: 'bg-cw-surface text-cw-muted' },
+  { nome: 'Júnior 2', tempo: '4 meses', cor: 'bg-cw-surface text-cw-muted' },
+  { nome: 'Júnior 3', tempo: '7 meses', cor: 'bg-cw-surface text-cw-muted' },
+  { nome: 'Pleno 1', tempo: '10 meses', cor: 'bg-cw-purple/10 text-cw-purple' },
+  { nome: 'Pleno 2', tempo: '13 meses', cor: 'bg-cw-purple/10 text-cw-purple' },
+  { nome: 'Pleno 3', tempo: '16 meses', cor: 'bg-cw-purple/10 text-cw-purple' },
+  { nome: 'Sênior 1', tempo: '19 meses', cor: 'bg-cw-yellow/15 text-cw-yellow' },
+  { nome: 'Sênior 2', tempo: '22 meses', cor: 'bg-cw-yellow/15 text-cw-yellow' },
+  { nome: 'Sênior 3', tempo: '25 meses', cor: 'bg-cw-yellow/15 text-cw-yellow' },
+];
+
+/* ------------------------------------------------------------------ */
+/* FOLLOW-UP                                                            */
+/* ------------------------------------------------------------------ */
+
+export interface FollowUpVersion {
+  label: string;
+  kommoTag: string;
+  template: string;
+}
+
+export interface FollowUpStep {
+  step: number;
+  titulo: string;
+  descricao: string;
+  etapa?: string;
+  versions: FollowUpVersion[];
+}
+
+export const CLOSER_FOLLOWUP_VIDEO: FollowUpStep[] = [
+  {
+    step: 1,
+    titulo: 'Champion Letter',
+    descricao: 'Alinhamento de expectativas (depois da reunião). Envie esse prompt para o ChatGPT, atualize com as informações coletadas na reunião e envie no WhatsApp.',
+    versions: [
+      {
+        label: 'Sem envio da proposta junto',
+        kommoTag: '',
+        template:
+          'Pilar mais importante: automação de atendimento\n\nProblema: Atendimento no whatsapp travado\n\nImplicação: Perda de vendas por causa do whatsapp lotado\n\nPrazo para retorno sobre a proposta apresentada: [DATA]\n\nNecessidades do lead: cardápio digital, chatbot, ferramentas de cupons no sistema, disparador de whatsapp\n\nSuponha que você é um Closer de uma empresa chamada Cardápio Web e você precisa criar um texto bem feito e de fácil compreensão com base nos tópicos acima para ser enviado após uma reunião com um lead. O texto deve ter um caráter de resumo do que foi conversado nessa reunião e deve incluir um próximo passo que deixe claro para o lead que o Closer vai acompanhá-lo até ele tomar uma decisão, esse acompanhamento vai acontecer por WhatsApp, ligação e email até que o lead esteja seguro sobre sua decisão. Também precisamos ressaltar no email o prazo determinado alinhado com o lead para um retorno sobre a proposta que foi apresentada durante a reunião.',
+      },
+      {
+        label: 'Com envio da proposta junto',
+        kommoTag: '',
+        template:
+          'Pilar mais importante: automação de atendimento\n\nProblema: Atendimento no whatsapp travado\n\nImplicação: Perda de vendas por causa do whatsapp lotado\n\nPrazo para retorno sobre a proposta apresentada: [DATA]\n\nNecessidades do lead: cardápio digital, chatbot, ferramentas de cupons no sistema, disparador de whatsapp\n\nSuponha que você é um Closer de uma empresa chamada Cardápio Web e você precisa criar um texto bem feito e de fácil compreensão com base nos tópicos acima para ser enviado após uma reunião com um lead. O texto deve ter um caráter de resumo do que foi conversado nessa reunião, com a proposta em anexo, e deve incluir um próximo passo claro.',
+      },
+    ],
+  },
+  {
+    step: 2,
+    titulo: 'Data anterior à data prometida do retorno',
+    descricao: 'Lead ficou de dar um retorno sobre a proposta depois da reunião ou ficou responsável por passar os detalhes para construir a proposta, você já enviou a champion letter. Envie um dia antes da data combinada de retorno.',
+    versions: [
+      {
+        label: 'Exemplo 1',
+        kommoTag: '[CLO][FUP 2] Mensagem de lembrete',
+        template: 'Olá, Fernando! Como vai?\n\nAqui é o CLOSER da Cardápio Web. Combinamos de falar amanhã sobre a contratação, que horas posso falar com você?',
+      },
+      {
+        label: 'Exemplo 2 (data distante)',
+        kommoTag: '[CLO][FUP 2] Mensagem de lembrete',
+        template: 'Olá, Fernando! Como vai? Aqui é o CLOSER da Cardápio Web. Tudo certo com a data que combinamos para o retorno?',
+      },
+    ],
+  },
+  {
+    step: 3,
+    titulo: 'Data combinada de retorno',
+    descricao: 'Ligue e mande uma mensagem no dia combinado com o lead.',
+    versions: [
+      {
+        label: 'Generalista',
+        kommoTag: '[CLO][FUP 3] Dia do retorno',
+        template: 'Fala, Fernando! Sou o CLOSER da Cardápio Web. Combinamos de nos falar hoje, você tá podendo agora?',
+      },
+    ],
+  },
+  {
+    step: 4,
+    titulo: 'Prova Social + Consistência',
+    descricao: 'Caso o lead não tenha dado retorno na data combinada. Mande uma mensagem de educação para o lead com foco no nicho que ele demonstrou interesse.',
+    versions: [
+      {
+        label: 'Automação de atendimento',
+        kommoTag: '[CLO] Prova Social / Automação',
+        template:
+          'Oi, [nome]! Tudo bem?\n\nTava pensando na conversa que a gente teve e lembrei que eu não te mandei um exemplo de alguém que usou nosso sistema focado na parte de automação de atendimento.\n\nA Renata, por exemplo, encontrou na Cardápio Web uma solução para melhorar a gestão da operação dela. Vou deixar o depoimento aqui embaixo para você dar uma olhada:\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nPela minha experiência, a gente consegue fazer algo parecido para o seu negócio! Você conseguiu dar uma olhada na proposta que enviei?',
+      },
+      {
+        label: 'Aumento de vendas',
+        kommoTag: '[CLO] prova social - aumento de vendas',
+        template: 'Oi, [nome]! Tudo bem?\n\nTava pensando na nossa conversa e lembrei de um cliente que também estava buscando aumentar as vendas com um sistema integrado. O resultado foi incrível!\n\nVou deixar o depoimento aqui embaixo:\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nVocê conseguiu dar uma olhada na proposta?',
+      },
+      {
+        label: 'Gestão',
+        kommoTag: '[CLO] Prova social / gestão',
+        template: 'Oi, [nome]! Tudo bem?\n\nTava pensando na nossa conversa e lembrei de um case de gestão que acho que vai fazer sentido pra você. Deixa eu te mostrar o que a Cardápio Web fez por esse cliente:\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nVocê conseguiu dar uma olhada na proposta?',
+      },
+    ],
+  },
+  {
+    step: 5,
+    titulo: 'Prova Social + Consistência',
+    descricao:
+      '1 — Vídeo do Youtube (ou artigo) para alimentar o desejo do lead (prova social focada no nicho do lead)\n2 — Lembrar o lead sobre o momento que deixou claro para o retorno sobre a parceria/próximo passo.\n3 — Para casos que o lead não te deu o retorno como prometido.',
+    versions: [
+      {
+        label: 'Automação de atendimento',
+        kommoTag: '[CLO] Prova Social / Automação',
+        template:
+          'Oi, [nome]! Tudo bem?\n\nTava pensando na conversa que a gente teve e lembrei que eu não te mandei um exemplo de alguém que usou nosso sistema focado na parte de automação de atendimento.\n\nA Renata, por exemplo, encontrou na Cardápio Web uma solução para melhorar a gestão da operação dela. Vou deixar o depoimento aqui embaixo para você dar uma olhada:\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nPela minha experiência, a gente consegue fazer algo parecido para o seu negócio! Você conseguiu dar uma olhada na proposta que enviei?',
+      },
+      {
+        label: 'Aumento de vendas',
+        kommoTag: '[CLO] prova social - aumento de vendas',
+        template: 'Oi, [nome]! Tudo bem?\n\nTava pensando na nossa conversa e lembrei de um cliente que também estava buscando aumentar as vendas com um sistema integrado. O resultado foi incrível!\n\nVou deixar o depoimento aqui embaixo:\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nVocê conseguiu dar uma olhada na proposta?',
+      },
+      {
+        label: 'Gestão',
+        kommoTag: '[CLO] Prova social / gestão',
+        template: 'Oi, [nome]! Tudo bem?\n\nTava pensando na nossa conversa e lembrei de um case de gestão que acho que vai fazer sentido pra você:\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nVocê conseguiu dar uma olhada na proposta?',
+      },
+    ],
+  },
+  {
+    step: 6,
+    titulo: 'Chamado para ação',
+    descricao:
+      '1 — Você dá a liberdade para o lead dizer não para você naquele momento, e está tudo bem.\n2 — Use um gatilho de escassez para trazer aquele lead de volta à vida.',
+    versions: [
+      {
+        label: 'Retomada',
+        kommoTag: '[CLO][FUP 5] Mensagem de retomada',
+        template:
+          'Olá, Fernando! Aqui é o CLOSER, da Cardápio Web.\n\nAinda não tive um retorno nos últimos dias. Gostaria de saber se conseguiremos seguir com a contratação, ou se deseja me passar uma data que fica melhor para você?',
+      },
+      {
+        label: 'Financeiro',
+        kommoTag: '[CLO][FUP 5.1] Financeiro',
+        template:
+          'Oi, Fernando! Tudo bem? Sou eu, o CLOSER, da Cardápio Web.\nEm nosso último contato, você comentou que precisava organizar algumas questões financeiras antes de avançarmos. Gostaria de saber se já conseguiu resolver e se faz sentido a gente seguir com o próximo passo?',
+      },
+      {
+        label: 'Sócio',
+        kommoTag: '[CLO][FUP 5.2] Sócio',
+        template:
+          'Oi, Fernando! Tudo bem? Sou eu, o CLOSER, da Cardápio Web.\nNa nossa última conversa você comentou que precisava falar com seu sócio antes de avançar. Ele já teve a chance de ver? O que ele achou?',
+      },
+      {
+        label: 'Cartão',
+        kommoTag: '[CLO][FUP 5.3] Cartão',
+        template:
+          'Oi, Fernando! Tudo bem? Sou eu, o CLOSER, da Cardápio Web.\nNa nossa última conversa você comentou que estava organizando o cartão para finalizar. Conseguiu resolver? Posso te ajudar a concluir agora?',
+      },
+    ],
+  },
+  {
+    step: 7,
+    titulo: 'Perdemos você? (pré break-up)',
+    descricao: 'Caso o lead não responda as mensagens anteriores, enviar uma mensagem para saber se é o momento certo para a nossa solução.',
+    versions: [
+      {
+        label: 'Generalista',
+        kommoTag: '[CLO][FUP 6] Pré break-up',
+        template:
+          'Olá, Fernando! Aqui é o CLOSER da Cardápio Web.\n\nTentei te contatar algumas vezes nos últimos dias e não consegui retorno. Quero entender se esse é o momento certo pra gente avançar, ou se prefere deixar para um outro momento. Pode me dar um retorno?',
+      },
+    ],
+  },
+  {
+    step: 8,
+    titulo: 'Break up',
+    descricao: 'Faça a última ligação e mande a mensagem para o lead, não dê perdido imediatamente, há um próximo passo antes de perder o lead.',
+    versions: [
+      {
+        label: 'Generalista',
+        kommoTag: '[CLO][FUP 7] Break-up',
+        template:
+          'Olá, Fernando! Aqui é o CLOSER da Cardápio Web.\n\nComo não consegui retorno, vou encerrar o acompanhamento por enquanto. Se em algum momento fizer sentido retomar, pode me chamar! Estarei disponível.',
+      },
+    ],
+  },
+  {
+    step: 9,
+    titulo: 'Consistência + Educação',
+    descricao: 'Caso o lead não tenha respondido o break up, enviar uma mensagem mostrando ao lead que ele não cumpriu o que prometeu, com algum conteúdo que possa fazer ele retomar.',
+    versions: [
+      {
+        label: 'Automação de atendimento',
+        kommoTag: '[CLO] Consistência + Educação / Automação do atendimento',
+        template:
+          'Olá, Fernando! Passando para deixar um conteúdo que pode ser útil para o seu negócio, mesmo que a gente não esteja mais em contato ativo no momento.\n\nEsse vídeo mostra como restaurantes estão usando automação de atendimento para não perder pedidos:\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nQualquer coisa, pode me chamar!',
+      },
+      {
+        label: 'Aumento de vendas',
+        kommoTag: '[CLO] Consistência + Educação / Aumento de vendas',
+        template:
+          'Olá, Fernando! Passando para deixar um conteúdo sobre estratégias de aumento de vendas para restaurantes. Mesmo que não seja o momento agora, espero que ajude!\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nQualquer coisa, pode me chamar!',
+      },
+      {
+        label: 'Gestão',
+        kommoTag: '[CLO] Consistência + Educação / Gestão',
+        template:
+          'Olá, Fernando! Passando para deixar um conteúdo sobre gestão de restaurantes. Mesmo que não seja o momento agora, espero que ajude!\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nQualquer coisa, pode me chamar!',
+      },
+    ],
+  },
+];
+
+export const CLOSER_FOLLOWUP_EXCLUSIVOS: FollowUpStep[] = [
+  {
+    step: 1,
+    titulo: 'Recepção do lead',
+    descricao: 'Alinhamento de planos e módulos extras, confirme todas as informações necessárias.',
+    etapa: 'Conexão',
+    versions: [
+      {
+        label: 'Planos',
+        kommoTag: '[CLO][CONFIRMAÇÃO] Planos',
+        template:
+          'Olá, Fernando! Tudo bem? Sou CLOSER.\n\nFico feliz que você deseja contratar a Cardápio Web.\nPara agilizar o processo, vou te enviar abaixo os planos disponíveis\n\n📌 Plano Mesas (destinado para quem atende apenas em salão)\n• Mensal: R$ 169,99\n• Trimestral: R$ 479,97 (R$ 159,99/mês)\n• Semestral: R$ 899,94 (R$ 149,99/mês)\n• Anual: R$ 1.679,88 (R$ 139,99/mês)\n\n📌 Plano Delivery (destinado para quem atende em delivery e balcão)\n• Mensal: R$ 209,99\n• Trimestral: R$ 599,97 (R$ 199,99/mês)\n• Semestral: R$ 1.139,94 (R$ 189,99/mês)\n• Anual: R$ 2.159,88 (R$ 179,99/mês)\n\n📌 Plano Premium (destinado para quem atende em delivery, salão e balcão)\n• Mensal: R$ 269,99\n• Trimestral: R$ 779,97 (R$ 259,99/mês)\n• Semestral: R$ 1.499,94 (R$ 249,99/mês)\n• Anual: R$ 2.879,88 (R$ 239,99/mês)\n\nTemos também alguns módulos extras, ficou alguma dúvida?',
+      },
+      {
+        label: 'Módulos',
+        kommoTag: '[CLO][CONFIRMAÇÃO] Módulos',
+        template:
+          'Abaixo seguem os módulos extras disponíveis:\n\n📌 Módulo iFood\n• Mensal: R$ 49,99/mês\n• Trimestral: R$ 149,97 (R$ 49,99/mês)\n• Semestral: R$ 299,94 (R$ 49,99/mês)\n• Anual: R$ 599,88 (R$ 49,99/mês)\n\n📌 Módulo Estoque Avançado\n• Mensal: R$ 29,99/mês\n• Anual: R$ 359,88 (R$ 29,99/mês)\n\n📌 Módulo Cupom Fiscal\n• Mensal: R$ 69,99/mês\n• Anual: R$ 839,88 (R$ 69,99/mês)\n\n📌 Módulo Entregadores\n• Mensal: R$ 54,99/mês\n• Anual: R$ 659,88 (R$ 54,99/mês)\n\n📌 Módulo Financeiro\n• Mensal: R$ 69,99/mês\n• Anual: R$ 839,88 (R$ 69,99/mês)\n\nFicou alguma dúvida sobre os planos e módulos?',
+      },
+      {
+        label: 'Confirmação Delivery',
+        kommoTag: '[CLO] Confirmação / delivery',
+        template:
+          'Olha, Fernando, abaixo vou te explicar o que vem no plano delivery:\nVocê tem um cardápio web que funciona tanto para delivery, balcão e visualização, adição manual de pedidos, sistema de caixa, controle de estoque, gestão de clientes, histórico de pedidos e relatórios. Além disso, já inclui Chatbot de WhatsApp, WhatsFácil e integrações com Google Analytics.',
+      },
+      {
+        label: 'Confirmação Mesas',
+        kommoTag: '[CLO] Confirmação / mesas',
+        template:
+          'Olha, Fernando, abaixo vou te explicar o que vem no plano mesas:\nVocê tem um cardápio web para visualização e balcão, cardápio para mesas com possibilidade de pedidos, controle de mesas e garçons, sistema de caixa, gestão de clientes e histórico de pedidos.',
+      },
+      {
+        label: 'Confirmação Premium',
+        kommoTag: '[CLO] Confirmação / premium',
+        template:
+          'Olha, Fernando, abaixo vou te explicar o que vem no plano premium:\nEle une delivery, balcão e mesas em um único sistema. Você tem cardápio web para delivery e balcão, cardápio para mesas com pedidos, controle de mesas, garçons e caixa, tudo integrado. O plano já inclui chatbot de WhatsApp e WhatsFácil, gestão de clientes, cupons e programa de fidelidade.',
+      },
+    ],
+  },
+  {
+    step: 2,
+    titulo: 'Chamada de atenção',
+    descricao: 'Envie essa mensagem caso o lead tenha sumido.',
+    etapa: 'Negociação, Pré-finalização ou Finalização',
+    versions: [
+      {
+        label: 'Generalista',
+        kommoTag: '[CLO][FUP 2][DIR] Você ainda está aí?',
+        template: 'Oi, Fernando! Tudo bem? Sou o CLOSER da Cardápio Web.\n\nPassando para verificar se você ainda tem interesse em avançar com a nossa solução. Pode me dar um retorno?',
+      },
+    ],
+  },
+  {
+    step: 3,
+    titulo: 'Combinando um próximo passo',
+    descricao: 'Caso o lead tenha sumido, faça uma oferta de vídeo chamada.',
+    versions: [
+      {
+        label: 'Generalista',
+        kommoTag: '[CLO][FUP 3][DIR] Vamos agendar uma reunião?',
+        template:
+          'Oi, Fernando! Sou o CLOSER da Cardápio Web.\n\nQue tal a gente marcar uma reunião rápida de 15 minutos para eu te mostrar o sistema na prática e tirar todas as suas dúvidas? Posso te passar o link agora mesmo!',
+      },
+    ],
+  },
+  {
+    step: 4,
+    titulo: 'Prova Social + Consistência',
+    descricao: 'Mande uma mensagem de educação para o lead. Decida o envio de acordo com as necessidades que ele demonstrou durante o contato.',
+    versions: [
+      {
+        label: 'Automação de atendimento',
+        kommoTag: '[CLO] Prova Social / Automação',
+        template:
+          'Oi, [nome]! Tudo bem?\n\nTava pensando na conversa que a gente teve e lembrei de um exemplo de alguém que usou nosso sistema focado em automação de atendimento.\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nPela minha experiência, conseguimos fazer algo parecido para o seu negócio! Você conseguiu olhar nossa proposta?',
+      },
+      {
+        label: 'Aumento de vendas',
+        kommoTag: '[CLO] prova social - aumento de vendas',
+        template:
+          'Oi, [nome]! Tudo bem?\n\nTava pensando na nossa conversa e lembrei de um cliente que também queria aumentar as vendas. O resultado foi incrível!\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nVocê conseguiu olhar nossa proposta?',
+      },
+      {
+        label: 'Gestão',
+        kommoTag: '[CLO] Prova social / gestão',
+        template:
+          'Oi, [nome]! Tudo bem?\n\nTava pensando na nossa conversa e lembrei de um case de gestão que acho que vai fazer sentido pra você:\n\nhttps://www.youtube.com/watch?v=Nx3E2S8UHBE\n\nVocê conseguiu olhar nossa proposta?',
+      },
+    ],
+  },
+  {
+    step: 5,
+    titulo: 'Chamado para ação',
+    descricao:
+      '1 — Você dá a liberdade para o lead dizer não.\n2 — Use um gatilho de escassez para trazer aquele lead de volta à vida.',
+    etapa: 'Negociação, Pré-finalização, Finalização ou Negócio Fechado',
+    versions: [
+      {
+        label: 'Retomada',
+        kommoTag: '[CLO][FUP 5] Mensagem de retomada',
+        template:
+          'Olá, Fernando! Aqui é o CLOSER, da Cardápio Web.\n\nAinda não tive um retorno nos últimos dias. Gostaria de saber se conseguiremos seguir com a contratação, ou se deseja me passar uma data que fica melhor para você?',
+      },
+      {
+        label: 'Financeiro',
+        kommoTag: '[CLO][FUP 5.1] Financeiro',
+        template:
+          'Oi, Fernando! Tudo bem? Sou eu, o CLOSER, da Cardápio Web.\nVocê comentou que precisava organizar questões financeiras antes de avançar. Conseguiu resolver?',
+      },
+      {
+        label: 'Sócio',
+        kommoTag: '[CLO][FUP 5.2] Sócio',
+        template:
+          'Oi, Fernando! Tudo bem? Sou eu, o CLOSER, da Cardápio Web.\nVocê comentou que precisava falar com seu sócio. Ele já teve a chance de ver? O que ele achou?',
+      },
+      {
+        label: 'Cartão',
+        kommoTag: '[CLO][FUP 5.3] Cartão',
+        template:
+          'Oi, Fernando! Tudo bem? Sou eu, o CLOSER, da Cardápio Web.\nVocê estava organizando o cartão para finalizar. Conseguiu resolver?',
+      },
+    ],
+  },
+  {
+    step: 6,
+    titulo: 'Perdemos você? (break up)',
+    descricao: 'Caso o lead não responda as mensagens anteriores, enviar uma mensagem para saber se é o momento certo.',
+    etapa: 'Negociação, Pré-finalização, Finalização ou Negócio Fechado',
+    versions: [
+      {
+        label: 'Generalista',
+        kommoTag: '[CLO][FUP 6] Pré break-up',
+        template:
+          'Olá, Fernando! Aqui é o CLOSER da Cardápio Web.\n\nTentei te contatar algumas vezes e não consegui retorno. Quero entender se esse é o momento certo pra gente avançar. Pode me dar um retorno?',
+      },
+    ],
+  },
+  {
+    step: 7,
+    titulo: 'Break up',
+    descricao: 'Faça a última ligação e mande a mensagem para o lead.',
+    etapa: 'Negociação, Pré-finalização, Finalização ou Negócio Fechado',
+    versions: [
+      {
+        label: 'Generalista',
+        kommoTag: '[CLO][FUP 7] Break-up',
+        template:
+          'Olá, Fernando! Aqui é o CLOSER da Cardápio Web.\n\nComo não consegui retorno, vou encerrar o acompanhamento por enquanto. Se em algum momento fizer sentido retomar, pode me chamar!',
+      },
+    ],
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* FUNIS DE VENDAS                                                      */
+/* ------------------------------------------------------------------ */
+
+export interface FunilEtapa {
+  id: number;
+  nome: string;
+  descricao: string;
+  importante: string;
+  acoes: string;
+}
+
+export const CLOSER_FUNIS: FunilEtapa[] = [
+  {
+    id: 1,
+    nome: 'Reunião marcada',
+    descricao: 'Nesta etapa, o lead já teve sua reunião agendada pelo SDR/BDR. Ao realizar o agendamento pelo Meetime, o card é criado automaticamente nesta etapa do funil.',
+    importante: 'O lead deve vir com a atividade de reunião.',
+    acoes: 'Conferir os horários das reuniões e se há algum erro na agenda. Se for lead de whatsapp, mover para conexão e criar uma atividade de feedback até ter um contato com o lead para responder a esse feedback.',
+  },
+  {
+    id: 2,
+    nome: 'Conexão',
+    descricao: 'Etapa destinada aos leads que já confirmaram a reunião com o closer e estão no momento de conexão inicial, antes da realização da reunião.',
+    importante: 'Confirmar que o lead recebeu o link da reunião e verificar se vai comparecer. Para leads de WhatsApp, garantir o contato inicial e criar atividade de follow-up.',
+    acoes: 'Conferir se o lead vai participar da reunião ou seguir com a contratação para os casos de whatsapp.',
+  },
+  {
+    id: 3,
+    nome: 'Negociação',
+    descricao: 'Nesta terceira etapa ficam os leads que estão em reunião com o closer ou cuja reunião ainda não foi totalmente encerrada, sem definição de plano ou prazo.',
+    importante: 'Verificar se o feedback de oportunidade foi respondido após a reunião e mover o lead para a etapa correta de acordo com o resultado da reunião.',
+    acoes: 'Verificar se o feedback foi respondido e seguir com o follow-up.',
+  },
+  {
+    id: 4,
+    nome: 'Pré-finalização',
+    descricao: 'Na etapa de Pré-Finalização ficam os leads que já passaram por todas as etapas da reunião, possuem o plano definido, mas ainda não estabeleceram um prazo para decisão. A proposta ainda não foi enviada, pois é encaminhada apenas quando o lead tem certeza da contratação.',
+    importante: 'Definir e registrar o plano e módulos combinados durante a reunião. Criar proposta apenas quando o lead confirmar interesse, evitando envio precipitado.',
+    acoes: 'Seguir a frequência de feedback.',
+  },
+  {
+    id: 5,
+    nome: 'Finalização',
+    descricao: 'Lead recebeu a proposta do plano escolhido e enviou os dados para a conta ser criada. Ou apenas está com a proposta e data para criação da conta agendada.',
+    importante: 'O lead deve estar com a proposta em mãos, e deve haver um valor atribuído ao seu card como consequência.',
+    acoes: 'Criar a proposta e fazer uma segunda verificação de feedback de oportunidade.',
+  },
+  {
+    id: 6,
+    nome: 'Negócio Fechado',
+    descricao: 'Conta foi criada e lead está com o link de pagamento.',
+    importante: 'Verificar todos os dados pois o lead vai para o time de implementação.',
+    acoes: 'Dar ganho no lead.',
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* HORA OURO                                                            */
+/* ------------------------------------------------------------------ */
+
+export interface HoraOuroGrupo {
+  grupo: string;
+  items: string[];
+}
+
+export const CLOSER_HORA_OURO_DEF =
+  'A "Hora de Ouro" (Golden Hour), conceito do livro Prospecção Fanática de Jeb Blount, refere-se ao período comercial de maior produtividade, dedicado exclusivamente a atividades de alto impacto — especialmente follow-ups — com foco total e sem distrações.\n\nDentro do time de closers, a hora ouro pode variar a depender do objetivo: foco em ligações ou mensagens. O time é dividido em grupos que fazem reuniões por diferentes durações, o que exige adaptar a hora ouro para cada perfil.';
+
+export const CLOSER_HORA_OURO_ROTINA: HoraOuroGrupo[] = [
+  {
+    grupo: 'Closers com reunião de 30 minutos',
+    items: [
+      '9:00 - 9:30 — Preencher planilha e responder às mensagens de leads do dia anterior',
+      '9:30 - 11:00 — Rotina geral de reuniões/treinamento',
+      '11:00 - 11:30 — Hora ouro de ligações',
+      '11:30 - 12:00 — Rotina geral de reuniões/treinamento',
+      '13:00 - 13:30 — Roleplay/cumbuca/call review',
+      '13:30 - 15:00 — Rotina geral de reuniões/treinamento',
+      '15:00 - 15:45 — Hora ouro geral',
+      '15:45 - 16:45 — Rotina geral de reuniões/treinamento',
+      '16:45 - 17:15 — Hora ouro geral e foco em responder feedbacks não respondidos',
+      '17:15 - 18:45 — Rotina geral de reuniões/treinamento',
+    ],
+  },
+  {
+    grupo: 'Closers com reunião de 45 minutos',
+    items: [
+      '9:00 - 9:15 — Preencher planilha',
+      '9:15 - 12:00 — Rotina geral de reuniões/treinamento',
+      '13:00 - 13:30 — Roleplay/cumbuca/call review',
+      '13:30 - 15:00 — Rotina geral de reuniões/treinamento',
+      '15:00 - 15:45 — Hora ouro geral (foco em ligações)',
+      '15:45 - 18:45 — Rotina geral de reuniões/treinamento',
+    ],
+  },
+];
+
+export const CLOSER_HORA_OURO_PRATICAS: string[] = [
+  'Todos os leads da etapa de negócio fechado devem receber contato todos os dias. Os leads em pré-finalização devem receber contato, no máximo, a cada dois dias.',
+  'A hora ouro de ligação deve ser focada em realizar essas ligações.',
+  'Você pode editar ou reagendar atividades de mensagem quando necessário, mas não deve substituir uma atividade de ligação por uma mensagem.',
+  'Caso finalize o dia sem concluir todas as atividades planejadas, elas deverão ser realizadas no dia seguinte, priorizando que não fiquem atrasadas.',
+  'O relatório de ligações está disponível no Pipedrive — acompanhe e preencha a planilha diariamente.',
+  'Realize pelo menos 2 ligações para o lead; caso não atenda, envie uma mensagem.',
+  'Revisar o histórico do lead antes de ligar.',
+  'Registrar imediatamente o resultado da ligação.',
+];
+
+export const CLOSER_HORA_OURO_CRM: string[] = [
+  'Abrir Pipedrive para iniciar atualização.',
+  'Inicie pelos funis onde ficam os leads mais quentes: da esquerda (a partir do negócio fechado) para a direita.',
+  'Passe o mouse pelo ícone "ver próxima atividade".',
+  'Faça a atividade indicada.',
+  'Clique no ícone "ver próxima atividade" e marque como feita.',
+  'Crie a próxima atividade de acordo com o que foi realizado.',
+  'Caso o lead dê um retorno, faça a atualização.',
+];
+
+export const CLOSER_HORA_OURO_CRM_OBS =
+  'Essa atualização é importante e definitiva para os próximos passos do próprio closer ou de outro closer que venha atender o lead.';
+
+/* ------------------------------------------------------------------ */
+/* CONCORRENTES                                                         */
+/* ------------------------------------------------------------------ */
+
+export type ConcorrenteValor = 'yes' | 'no' | 'partial';
+
+export interface ConcorrenteFeature {
+  nome: string;
+  valores: ConcorrenteValor[];
+}
+
+export interface ConcorrenteCategoria {
+  categoria: string;
+  features: ConcorrenteFeature[];
+}
+
+export const CLOSER_CONCORRENTES_HEADERS: string[] = [
+  'Cardápio Web', 'Anota ai', 'Brendi', 'Saipos', 'Instadelivery', 'Consumer (Menu Dino)',
+  'Goomer', 'Yooga', 'OlaClick', 'WhatsMenu', 'Multipedidos', 'Delivery Direto',
+  'Linx', 'Neemo', 'Alloy', 'Accon', 'Takeat', 'EasyAssist', 'BigDim', 'Ecta',
+  'Suitable', 'BeeFood', 'Cardápio Ai', 'Omie', 'GrandChef', 'Jotajá', 'Sischef', 'Deli',
+];
+
+export const CLOSER_CONCORRENTES: ConcorrenteCategoria[] = [
+  {
+    categoria: 'Automação de Atendimento',
+    features: [
+      { nome: 'Cardápio digital para delivery', valores: ['yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','no','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','partial','yes'] },
+      { nome: 'Cardápio digital para mesas', valores: ['yes','yes','no','yes','yes','yes','yes','partial','yes','yes','partial','yes','no','yes','yes','no','yes','yes','yes','yes','yes','yes','yes','yes','yes','no','partial','partial'] },
+      { nome: 'ChatBot de WhatsApp', valores: ['yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','partial','partial','no','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','no','partial','yes','no','yes'] },
+      { nome: 'Pagamento Online', valores: ['yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','no','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes','yes'] },
+    ],
+  },
+  {
+    categoria: 'Aumento de Vendas',
+    features: [
+      { nome: 'Disparador de WhatsApp', valores: ['yes','yes','yes','no','yes','no','no','yes','no','no','no','no','no','no','no','no','yes','no','no','no','no','yes','yes','no','no','no','no','no'] },
+      { nome: 'Programa de fidelidade', valores: ['yes','yes','no','yes','yes','yes','yes','yes','yes','yes','partial','yes','no','no','yes','no','yes','yes','no','no','yes','yes','yes','no','yes','no','no','yes'] },
+    ],
+  },
+  {
+    categoria: 'Gestão do Negócio',
+    features: [
+      { nome: 'Fluxo de caixa', valores: ['yes','partial','no','yes','yes','yes','no','partial','yes','no','no','no','yes','no','no','no','partial','no','no','no','yes','yes','no','yes','yes','no','yes','yes'] },
+      { nome: 'Módulo Fiscal', valores: ['yes','partial','no','yes','yes','yes','no','partial','yes','no','partial','no','yes','no','yes','no','partial','yes','no','no','yes','yes','no','yes','yes','no','yes','partial'] },
+      { nome: 'Gestão de estoque de produtos', valores: ['yes','partial','no','yes','yes','yes','no','partial','yes','yes','partial','no','yes','no','yes','yes','partial','yes','yes','no','yes','yes','no','yes','yes','no','yes','yes'] },
+      { nome: 'Gestão de estoque de insumos', valores: ['yes','no','no','yes','no','yes','no','partial','partial','partial','no','no','yes','no','yes','no','partial','yes','no','no','no','yes','no','yes','yes','no','partial','partial'] },
+      { nome: 'Gestão financeira', valores: ['yes','partial','no','yes','yes','yes','no','partial','yes','no','no','no','yes','no','no','no','partial','no','no','no','yes','yes','no','yes','yes','no','yes','yes'] },
+      { nome: 'Gestão de rotas de entrega', valores: ['yes','no','no','yes','yes','yes','no','no','yes','partial','no','partial','no','no','yes','no','partial','yes','no','no','no','no','no','no','no','no','no','no'] },
+      { nome: 'Integração com totem', valores: ['yes','yes','no','yes','yes','yes','no','yes','no','no','no','no','no','no','no','no','yes','no','no','no','no','no','no','no','partial','no','no','no'] },
+    ],
   },
 ];
