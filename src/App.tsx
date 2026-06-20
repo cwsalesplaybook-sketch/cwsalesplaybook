@@ -45,6 +45,10 @@ import CloserObjecoes from '@/pages/closer/Objecoes';
 import CloserProcesso from '@/pages/closer/Processo';
 import CloserRotina from '@/pages/closer/Rotina';
 import CloserConcorrentes from '@/pages/closer/Concorrentes';
+import Automacoes from '@/pages/Automacoes';
+import Biblioteca from '@/pages/Biblioteca';
+import RegrasConduta from '@/pages/RegrasConduta';
+import TreinamentoTiers from '@/pages/TreinamentoTiers';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -123,6 +127,10 @@ function AnimatedRoutes() {
           <Route path="/calculadora" element={<Calculadora />} />
           <Route path="/admin" element={<GestorAdminPage />} />
           <Route path="/painel" element={<PainelControle />} />
+          <Route path="/automacoes" element={<Automacoes />} />
+          <Route path="/biblioteca" element={<Biblioteca />} />
+          <Route path="/regras" element={<RegrasConduta />} />
+          <Route path="/treinamento" element={<TreinamentoTiers />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>

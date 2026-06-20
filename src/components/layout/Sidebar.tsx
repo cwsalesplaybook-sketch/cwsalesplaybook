@@ -6,7 +6,7 @@ import {
   TrendingUp, BarChart3, Sword, Sparkles, Award, Lock,
   ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
-  Loader2, Users,
+  Loader2, Users, Library, GraduationCap,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -22,7 +22,7 @@ interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator,
+  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
@@ -31,18 +31,22 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/meta',       label: 'Meta do Mês',             icon: 'Target',         end: false },
   { to: '/playbook',   label: 'Playbook',                icon: 'BookOpen',       end: false },
   { to: '/',           label: 'Sales Enablement',        icon: 'LayoutDashboard',end: true  },
-  { to: '/pipeline',   label: 'Pipeline',                icon: 'BarChart2',      end: false },
-  { to: '/cultura',    label: 'Cultura',                 icon: 'Heart',          end: false },
-  { to: '/historias',  label: 'Histórias de Sucesso',    icon: 'Trophy',         end: false },
-  { to: '/onboarding', label: 'Onboarding',              icon: 'MapIcon',        end: false },
-  { to: '/carreira',   label: 'Progressão de Carreira',  icon: 'TrendingUp',     end: false },
-  { to: '/gestao',     label: 'Gestão',                  icon: 'BarChart3',      end: false },
-  { to: '/berserker',  label: 'Berserker',               icon: 'Sword',          end: false },
+  { to: '/pipeline',    label: 'Pipeline',                icon: 'BarChart2',       end: false },
+  { to: '/automacoes',  label: 'Automações',             icon: 'Zap',             end: false },
+  { to: '/cultura',     label: 'Cultura',                icon: 'Heart',           end: false },
+  { to: '/historias',   label: 'Histórias de Sucesso',   icon: 'Trophy',          end: false },
+  { to: '/biblioteca',  label: 'Biblioteca',             icon: 'Library',         end: false },
+  { to: '/regras',      label: 'Regras de Conduta',      icon: 'ShieldCheck',     end: false },
+  { to: '/onboarding',  label: 'Onboarding',             icon: 'MapIcon',         end: false },
+  { to: '/carreira',    label: 'Progressão de Carreira', icon: 'TrendingUp',      end: false },
+  { to: '/treinamento', label: 'Treinamento',            icon: 'GraduationCap',   end: false },
+  { to: '/gestao',      label: 'Gestão',                 icon: 'BarChart3',       end: false },
+  { to: '/berserker',   label: 'Berserker',              icon: 'Sword',           end: false },
 ];
 
 const SECTIONS = [
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline'] },
-  { label: 'Cultura e Time', routes: ['/cultura', '/historias', '/onboarding', '/carreira'] },
+  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline', '/automacoes'] },
+  { label: 'Cultura e Time', routes: ['/cultura', '/historias', '/biblioteca', '/regras', '/onboarding', '/carreira', '/treinamento'] },
   { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];
 
