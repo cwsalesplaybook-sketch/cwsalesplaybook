@@ -54,15 +54,20 @@ export default function Automacoes() {
   return (
     <>
       <Header titulo="Automações" subtitulo="Erros comuns na Kommo e como agir" />
-      <div className="p-8 space-y-8 max-w-5xl">
+      <div className="p-8 space-y-8">
 
         {/* Intro */}
         <div className="cw-card p-6 flex gap-4">
           <div className="h-10 w-10 rounded-lg bg-cw-purple/20 flex items-center justify-center shrink-0">
             <Zap className="h-5 w-5 text-cw-purple-light" />
           </div>
-          <div>
-            <h2 className="font-semibold text-cw-text mb-1">Sobre as automações</h2>
+          <div className="flex-1">
+            <div className="flex items-center justify-between gap-3 mb-1">
+              <h2 className="font-semibold text-cw-text">Sobre as automações</h2>
+              <span className="text-[10px] text-cw-muted bg-cw-elevated px-2 py-0.5 rounded-full border border-cw-border shrink-0">
+                por Pedro Ferreira
+              </span>
+            </div>
             <p className="text-sm text-cw-muted leading-relaxed">
               As automações da CW rodam via Kommo integrada ao WhatsApp Business. Quando um lead atinge determinado estágio no funil, a automação dispara um template de mensagem automaticamente. Falhas nesse processo precisam de ação rápida do SDR para não perder o timing de contato.
             </p>

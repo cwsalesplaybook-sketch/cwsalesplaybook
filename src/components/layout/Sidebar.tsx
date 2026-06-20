@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   BookOpen, LayoutDashboard, BarChart2, Heart, Map as MapIcon,
-  TrendingUp, BarChart3, Sword, Sparkles, Award, Lock,
+  TrendingUp, BarChart3, Sword, Sparkles, Award, Crown,
   ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
   Loader2, Users, Library, GraduationCap,
   type LucideIcon,
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSidebarContext, type Papel } from '@/context/SidebarContext';
 import { useEditor } from '@/admin/EditorContext';
@@ -39,14 +41,13 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/regras',      label: 'Regras de Conduta',      icon: 'ShieldCheck',     end: false },
   { to: '/onboarding',  label: 'Onboarding',             icon: 'MapIcon',         end: false },
   { to: '/carreira',    label: 'Progressão de Carreira', icon: 'TrendingUp',      end: false },
-  { to: '/treinamento', label: 'Treinamento',            icon: 'GraduationCap',   end: false },
   { to: '/gestao',      label: 'Gestão',                 icon: 'BarChart3',       end: false },
   { to: '/berserker',   label: 'Berserker',              icon: 'Sword',           end: false },
 ];
 
 const SECTIONS = [
   { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline', '/automacoes'] },
-  { label: 'Cultura e Time', routes: ['/cultura', '/historias', '/biblioteca', '/regras', '/onboarding', '/carreira', '/treinamento'] },
+  { label: 'Cultura e Time', routes: ['/cultura', '/historias', '/biblioteca', '/regras', '/onboarding', '/carreira'] },
   { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];
 
@@ -115,6 +116,7 @@ export function Sidebar() {
   const allSectionRoutes = sections.flatMap(s => s.routes);
 
   const [switching, setSwitching] = useState<Papel | null>(null);
+  const [gestorModalOpen, setGestorModalOpen] = useState(false);
 
   // Troca o playbook inteiro com animação: breve delay visual antes de mudar
   const switchPlaybook = async (novoPapel: Papel) => {
@@ -326,18 +328,41 @@ export function Sidebar() {
 
         {/* Modo Gestor */}
         <button
-          onClick={() => (isEditing ? lock() : openPasswordModal())}
-          title="Ctrl+Shift+E"
-          className={cn(
-            'w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all',
-            isEditing
-              ? 'text-amber-400/50 hover:text-amber-300/80 hover:bg-amber-400/5'
-              : 'text-[#5a3e70] hover:text-[#9b6fc4] hover:bg-white/5'
-          )}
+          onClick={() => setGestorModalOpen(true)}
+          className="w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all text-amber-400/60 hover:text-amber-300 hover:bg-amber-400/5"
         >
-          <Lock className="h-3 w-3 shrink-0" />
-          <span>{isEditing ? 'Sair do Modo Gestor' : 'Modo Gestor'}</span>
+          <Crown className="h-3 w-3 shrink-0" />
+          <span>Modo Gestor</span>
         </button>
+
+        <Dialog open={gestorModalOpen} onOpenChange={setGestorModalOpen}>
+          <DialogContent className="max-w-sm bg-cw-surface border-cw-border text-cw-text">
+            <DialogHeader className="items-center text-center pt-2">
+              <div className="h-14 w-14 rounded-full bg-cw-yellow/10 border border-cw-yellow/20 flex items-center justify-center mb-2 mx-auto">
+                <Crown className="h-7 w-7 text-cw-yellow" />
+              </div>
+              <DialogTitle className="text-lg font-bold">Entrar no Modo Gestor</DialogTitle>
+              <DialogDescription className="text-cw-muted text-sm">
+                Você terá acesso às ferramentas de gestão e visão completa do time.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex-col gap-2 sm:flex-col pt-2">
+              <Button
+                onClick={() => { window.open('/gestor', '_blank'); setGestorModalOpen(false); }}
+                className="w-full bg-cw-yellow text-[#1a0020] font-bold hover:bg-cw-yellow/90"
+              >
+                Entrar no Modo Gestor
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setGestorModalOpen(false)}
+                className="w-full border-cw-border text-cw-muted hover:text-cw-text hover:bg-cw-elevated"
+              >
+                Cancelar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Sino de notificações */}
         <div className="px-1">

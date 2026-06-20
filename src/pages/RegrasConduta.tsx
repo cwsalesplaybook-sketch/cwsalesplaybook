@@ -95,7 +95,7 @@ export default function RegrasConduta() {
   return (
     <>
       <Header titulo="Regras de Conduta" subtitulo="Normas que sustentam a cultura de alta performance do time" />
-      <div className="p-8 space-y-6 max-w-4xl">
+      <div className="p-8 space-y-6">
 
         <div className="cw-card p-5 flex gap-4 border-cw-purple/30">
           <div className="h-10 w-10 rounded-lg bg-cw-purple/20 flex items-center justify-center shrink-0">

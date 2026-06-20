@@ -97,7 +97,7 @@ export default function Biblioteca() {
   return (
     <>
       <Header titulo="Biblioteca de Estudos" subtitulo="Recursos para acelerar seu desenvolvimento no comercial" />
-      <div className="p-8 space-y-6 max-w-5xl">
+      <div className="p-8 space-y-6">
 
         {/* Tabs */}
         <div className="flex gap-1 border-b border-cw-border overflow-x-auto">

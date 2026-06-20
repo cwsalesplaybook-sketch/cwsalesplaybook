@@ -23,6 +23,7 @@ import { useSidebarContext } from '@/context/SidebarContext';
 import PlaybookCloser from './PlaybookCloser';
 import PlaybookParcerias from './PlaybookParcerias';
 import PlaybookRepresentantes from './PlaybookRepresentantes';
+import TreinamentoConteudo from './TreinamentoConteudo';
 
 const SPIN_COLORS: Record<'purple' | 'red' | 'yellow' | 'green', string> = {
   purple: 'border-cw-purple/50 bg-cw-purple/10 text-cw-purple-light',
@@ -91,6 +92,7 @@ const TABS_DEFAULT = [
   { id: 'objecoes',     label: '⚡ Objeções' },
   { id: 'passagem',     label: '🤝 Passagem' },
   { id: 'perda',        label: '❌ Motivos de Perda' },
+  { id: 'treinamento',  label: '🎓 Treinamento' },
 ];
 
 export default function Playbook() {
@@ -586,7 +588,11 @@ export default function Playbook() {
             </div>
           </TabsContent>
 
-          {/* PLANOS — renderizado pelo componente dedicado */}
+          {/* TREINAMENTO POR TIERS */}
+          <TabsContent value="treinamento" className="mt-6">
+            <TreinamentoConteudo />
+          </TabsContent>
+
         </Tabs>
       </div>
     </>
