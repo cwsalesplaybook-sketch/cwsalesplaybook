@@ -6,6 +6,7 @@ import { TimeGrid } from '@/components/start/TimeGrid';
 import { Glossario } from '@/components/start/Glossario';
 import { TimelineEmpresa } from '@/components/start/TimelineEmpresa';
 import { FaqNovato } from '@/components/start/FaqNovato';
+import { CulturaComercial } from '@/components/start/CulturaComercial';
 
 export default function Start() {
   return (
@@ -20,6 +21,7 @@ export default function Start() {
         </div>
 
         <TimeGrid />
+        <CulturaComercial />
         <Glossario />
         <FaqNovato />
       </div>
