@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, ArrowRight, Send, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
-import { CLOSER_OBJECOES } from '@/data/playbookCloser';
+import { CLOSER_OBJECOES, CLOSER_CONCORRENTES, CLOSER_CONCORRENTES_HEADERS } from '@/data/playbookCloser';
 
 interface Destino {
   tags: string[];
@@ -254,6 +254,41 @@ function buscar(query: string, papel: string): Destino[] {
     }
   }
 
+  // Busca por concorrente no dashboard de Closer
+  if (papel === 'Closer' && q.length >= 2) {
+    for (let i = 1; i < CLOSER_CONCORRENTES_HEADERS.length; i++) {
+      const nome = CLOSER_CONCORRENTES_HEADERS[i];
+      const nomeNorm = norm(nome);
+      const words = nomeNorm.split(' ');
+      let score = 0;
+      if (nomeNorm === q) score = 8;
+      else if (q.length >= 3 && nomeNorm.startsWith(q)) score = 6;
+      else if (q.length >= 3 && nomeNorm.includes(q)) score = 5;
+      else if (q.length >= 3 && words.some(w => w.length > 3 && w.startsWith(q))) score = 4;
+      if (score > 0) {
+        let nao = 0;
+        for (const cat of CLOSER_CONCORRENTES) {
+          for (const f of cat.features) {
+            if (f.valores[i] === 'no') nao++;
+          }
+        }
+        scored.push({
+          score,
+          d: {
+            tags: [],
+            label: 'Concorrente',
+            descricao: nao > 0
+              ? `${nome} — ${nao} diferencial${nao > 1 ? 'is' : ''} exclusivo${nao > 1 ? 's' : ''} da CW`
+              : `${nome} — funcionalidades similares à CW`,
+            path: '/closer/concorrentes',
+            query: nome,
+            cor: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
+          },
+        });
+      }
+    }
+  }
+
   return scored.sort((a, b) => b.score - a.score).slice(0, 5).map(x => x.d);
 }
 
@@ -277,7 +312,7 @@ export function FloatingSearch() {
   const nav = useNavigate();
 
   const quickReplies = papel === 'Closer'
-    ? ['Planos', 'Cupons', 'Objeções', 'Processo', 'Concorrentes']
+    ? ['Planos', 'Objeções', 'Consumer', 'Anota ai', 'Processo']
     : ['Calculadora', 'Totem', 'FAQ', 'Objeções', 'Cold Call'];
 
   useEffect(() => {
@@ -365,7 +400,7 @@ export function FloatingSearch() {
                   <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2">
                     {papel === 'Closer' ? (
                       <p className="text-[12px] text-[#d4c0ee] leading-snug">
-                        Digite uma seção (<span className="text-cw-yellow font-semibold">"planos"</span>) ou a frase do lead (<span className="text-cw-yellow font-semibold">"me manda no whatsapp"</span>) e te levo direto à objeção certa.
+                        Digite uma seção (<span className="text-cw-yellow font-semibold">"planos"</span>), a frase do lead (<span className="text-cw-yellow font-semibold">"me manda no whatsapp"</span>) ou um concorrente (<span className="text-cw-yellow font-semibold">"consumer"</span>) para ver os diferenciais da CW.
                       </p>
                     ) : (
                       <p className="text-[12px] text-[#d4c0ee] leading-snug">
@@ -440,7 +475,7 @@ export function FloatingSearch() {
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   onKeyDown={handleEnter}
-                  placeholder={papel === 'Closer' ? 'Ex: planos, "me manda no whatsapp"...' : 'Ex: calculadora, totem, objeção...'}
+                  placeholder={papel === 'Closer' ? 'Ex: "me manda no whatsapp", consumer, planos...' : 'Ex: calculadora, totem, objeção...'}
                   className="flex-1 bg-transparent text-[13px] text-white placeholder:text-[#7c5aa8] outline-none"
                 />
                 {query ? (
