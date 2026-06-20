@@ -49,6 +49,7 @@ import Automacoes from '@/pages/Automacoes';
 import Biblioteca from '@/pages/Biblioteca';
 import RegrasConduta from '@/pages/RegrasConduta';
 import TreinamentoTiers from '@/pages/TreinamentoTiers';
+import ModoGestor from '@/pages/ModoGestor';
 import NotFound from './pages/NotFound';
 import { UserProvider } from '@/context/UserContext';
 import { GestorLayout } from '@/pages/gestor/GestorLayout';
@@ -137,6 +138,7 @@ function AnimatedRoutes() {
           <Route path="/biblioteca" element={<Biblioteca />} />
           <Route path="/regras" element={<RegrasConduta />} />
           <Route path="/treinamento" element={<TreinamentoTiers />} />
+          <Route path="/modo-gestor" element={<ModoGestor />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>

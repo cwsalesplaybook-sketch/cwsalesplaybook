@@ -9,7 +9,6 @@ import {
   Loader2, Users, Library, GraduationCap,
   type LucideIcon,
 } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useSidebarContext, type Papel } from '@/context/SidebarContext';
 import { useEditor } from '@/admin/EditorContext';
@@ -67,12 +66,6 @@ const CLOSER_SECTIONS = [
 ];
 
 /** Seletor de playbooks — cada opção troca o papel inteiro do app */
-const PLAYBOOK_OPTIONS: { label: string; papel: Papel; icon: LucideIcon; short: string }[] = [
-  { label: 'SDR',            papel: 'SDR',          icon: Zap,     short: 'SDR'   },
-  { label: 'Closer',         papel: 'Closer',       icon: Target,  short: 'Closer'},
-  { label: 'Parcerias',      papel: 'Parcerias',    icon: Users,   short: 'Parc.' },
-  { label: 'Representantes', papel: 'Representante',icon: MapIcon, short: 'Rep.'  },
-];
 
 const STORE_KEY = 'sidebar.nav';
 
@@ -109,23 +102,6 @@ export function Sidebar() {
   const sectionItems     = (routes: string[]) => items.filter(i => routes.includes(i.to));
   const allSectionRoutes = sections.flatMap(s => s.routes);
 
-  const [switching, setSwitching] = useState<Papel | null>(null);
-  const [gestorModalOpen, setGestorModalOpen] = useState(false);
-
-  // Troca o playbook inteiro com animação: breve delay visual antes de mudar
-  const switchPlaybook = async (novoPapel: Papel) => {
-    if (novoPapel === papel || switching) return;
-    setSwitching(novoPapel);
-    await new Promise(r => setTimeout(r, 380));
-    setPapel(novoPapel);
-    navigate('/start');
-    setSwitching(null);
-  };
-
-  // Seletor visível para Liderança, mestres e quem está editando — demais não veem nada
-  const visiblePlaybooks = (papel === 'Liderança' || isEditing || isMaster)
-    ? PLAYBOOK_OPTIONS
-    : [];
 
   /* ── Nav item reutilizável ── */
   const NavItemEl = ({ item }: { item: NavItem }) => {
@@ -261,163 +237,20 @@ export function Sidebar() {
       {/* ── Footer ── */}
       <div className="px-3 pb-4 space-y-1.5">
 
-        {/* Seletor de Playbooks — troca o contexto inteiro do app */}
-        {visiblePlaybooks.length > 0 && (
-          <div className="mb-0.5">
-            {/* Divider com gradiente */}
-            <div className="h-px mx-1 mb-3 bg-gradient-to-r from-transparent via-[#3a1560] to-transparent" />
-
-            <div className="px-2 mb-1.5 flex items-center gap-1.5">
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#4a3060]">
-                Trocar Playbook
-              </p>
-              {isMaster && (
-                <span className="inline-flex items-center gap-0.5 text-[8px] font-black uppercase tracking-wider text-amber-300 bg-amber-400/15 border border-amber-400/30 rounded px-1 py-0.5">
-                  <ShieldCheck className="h-2.5 w-2.5" /> Mestre
-                </span>
-              )}
-            </div>
-
-            {/* Grid 2x2 com os 4 setores */}
-            <div className="grid grid-cols-2 gap-1.5 px-1">
-              {visiblePlaybooks.map(opt => {
-                const isActive = papel === opt.papel;
-                const isSwitching = switching === opt.papel;
-                const Icon = opt.icon;
-
-                return (
-                  <button
-                    key={opt.papel}
-                    onClick={() => switchPlaybook(opt.papel)}
-                    disabled={!!switching}
-                    title={`Playbook de ${opt.label}`}
-                    className={cn(
-                      'relative flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl text-[10px] font-bold transition-all duration-300 overflow-hidden',
-                      isActive
-                        ? 'text-white'
-                        : switching
-                          ? 'opacity-30 cursor-not-allowed text-[#4a3060]'
-                          : 'text-[#6a4a80] hover:text-[#c4a0e8] hover:bg-white/5 cursor-pointer'
-                    )}
-                    style={isActive ? {
-                      background: 'linear-gradient(145deg, #4a0080 0%, #7c3aed 100%)',
-                      boxShadow: '0 2px 12px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.12)',
-                    } : {}}
-                  >
-                    {isSwitching ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Icon className="h-4 w-4 shrink-0" />
-                    )}
-                    <span className="leading-tight text-center">{opt.label}</span>
-                    {isActive && !isSwitching && (
-                      <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-white/70" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
         {/* Modo Gestor — visível só para gestores */}
         {isGestor && (
-          <>
-            <button
-              onClick={() => setGestorModalOpen(true)}
-              className="w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all text-amber-400/60 hover:text-amber-300 hover:bg-amber-400/5"
-            >
-              <Crown className="h-3 w-3 shrink-0" />
-              <span>Modo Gestor</span>
-            </button>
-
-            <Sheet open={gestorModalOpen} onOpenChange={setGestorModalOpen}>
-              <SheetContent
-                side="right"
-                className="w-[420px] sm:w-[480px] bg-[#130a22] border-[#ffffff10] text-white overflow-y-auto p-0"
-              >
-                {/* Header */}
-                <SheetHeader className="px-6 pt-6 pb-4 border-b border-[#ffffff08]">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center justify-center shrink-0">
-                      <Crown className="h-5 w-5 text-amber-400" />
-                    </div>
-                    <div>
-                      <SheetTitle className="text-white text-base font-bold leading-tight">Modo Gestor</SheetTitle>
-                      <SheetDescription className="text-[#7c5aa8] text-xs mt-0.5">
-                        Ferramentas, dashboards e lideranças do comercial
-                      </SheetDescription>
-                    </div>
-                  </div>
-                </SheetHeader>
-
-                <div className="px-6 py-5 space-y-7">
-
-                  {/* O que o gestor pode fazer */}
-                  <section className="space-y-3">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8]">
-                      O que o gestor pode fazer
-                    </p>
-                    <div className="space-y-2">
-                      {[
-                        { icon: ShieldCheck, label: 'Editor de Conteúdo', desc: 'Editar textos, avisos e links do playbook em tempo real.', hint: 'Ctrl+Shift+E' },
-                        { icon: BookOpen,    label: 'Visualizar todos os Playbooks', desc: 'Acessar o playbook de SDR, Closer, Parcerias e Representantes.' },
-                        { icon: Target,      label: 'Meta do Mês', desc: 'Acompanhar progresso e metas individuais e do time.' },
-                        { icon: BarChart2,   label: 'Pipeline', desc: 'Visualizar o funil de vendas em tempo real.' },
-                        { icon: LayoutDashboard, label: 'Sales Enablement', desc: 'Dashboard geral com indicadores de performance.' },
-                        { icon: Zap,         label: 'Automações', desc: 'Gerenciar fluxos e regras de automação na Kommo.' },
-                      ].map(({ icon: Icon, label, desc, hint }) => (
-                        <div key={label} className="flex gap-3 p-3 rounded-xl bg-[#1e1040] border border-[#ffffff08]">
-                          <div className="h-8 w-8 rounded-lg bg-[#2d1760] flex items-center justify-center shrink-0">
-                            <Icon className="h-4 w-4 text-[#c4a0e8]" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-[13px] font-semibold text-white leading-tight">{label}</p>
-                              {hint && (
-                                <span className="text-[9px] font-mono bg-[#2d1760] text-[#c4a0e8] px-1.5 py-0.5 rounded border border-[#4a2080]">{hint}</span>
-                              )}
-                            </div>
-                            <p className="text-[11px] text-[#7c5aa8] mt-0.5 leading-snug">{desc}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-
-                  {/* Lideranças e Coordenações */}
-                  <section className="space-y-3">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8]">
-                      Lideranças e Coordenações
-                    </p>
-                    <div className="space-y-2">
-                      {[
-                        { nome: 'Ana Clara',          cargo: 'Coordenadora Comercial' },
-                        { nome: 'Vanessa Alencar',    cargo: 'Gestora de SDR' },
-                        { nome: 'Gabrielly Oliveira', cargo: 'Gestora de Closer' },
-                        { nome: 'Pedro Ferreira',     cargo: 'Automações & Processos' },
-                        { nome: 'Whenna Oliveira',    cargo: 'Liderança de Time' },
-                        { nome: 'Antonio Anderson',   cargo: 'Liderança de Time' },
-                        { nome: 'Joelma Vieira',      cargo: 'Liderança de Time' },
-                        { nome: 'Beatriz Magalhães',  cargo: 'Liderança de Time' },
-                      ].map(({ nome, cargo }) => (
-                        <div key={nome} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#1e1040] border border-[#ffffff08]">
-                          <div className="h-7 w-7 rounded-full bg-[#4a0080] flex items-center justify-center text-[10px] font-black text-white shrink-0">
-                            {nome.split(' ').map(n => n[0]).slice(0, 2).join('')}
-                          </div>
-                          <div>
-                            <p className="text-[12px] font-semibold text-white leading-tight">{nome}</p>
-                            <p className="text-[10px] text-[#7c5aa8]">{cargo}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-
-                </div>
-              </SheetContent>
-            </Sheet>
-          </>
+          <NavLink
+            to="/modo-gestor"
+            className={({ isActive }) => cn(
+              'w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all',
+              isActive
+                ? 'text-amber-300 bg-amber-400/10'
+                : 'text-amber-400/60 hover:text-amber-300 hover:bg-amber-400/5'
+            )}
+          >
+            <Crown className="h-3 w-3 shrink-0" />
+            <span>Modo Gestor</span>
+          </NavLink>
         )}
 
         {/* Sino de notificações */}
