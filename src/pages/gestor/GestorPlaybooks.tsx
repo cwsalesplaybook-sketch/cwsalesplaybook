@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { BookOpen, Users, Handshake, UserCheck, TrendingUp, Plus, Star } from 'lucide-react';
+import { BookOpen, Users, Handshake, UserCheck, TrendingUp, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUser } from '@/context/UserContext';
 
 interface Playbook {
   id: string;
@@ -24,22 +23,13 @@ type Aba = 'meus' | 'todos';
 
 export default function GestorPlaybooks() {
   const [aba, setAba] = useState<Aba>('todos');
-  const { isMaster } = useUser();
 
   return (
     <div className="p-8 space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-cw-text">Playbooks</h1>
-          <p className="text-sm text-cw-muted mt-1">Gerencie e visualize todos os playbooks disponíveis</p>
-        </div>
-        {isMaster && (
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cw-yellow/15 text-cw-yellow text-sm font-semibold border border-cw-yellow/30 hover:bg-cw-yellow/25 transition-colors">
-            <Star className="h-4 w-4 fill-cw-yellow" />
-            Acesso: Master
-          </button>
-        )}
+      <div>
+        <h1 className="text-2xl font-bold text-cw-text">Playbooks</h1>
+        <p className="text-sm text-cw-muted mt-1">Gerencie e visualize todos os playbooks disponíveis</p>
       </div>
 
       {/* Tabs */}
