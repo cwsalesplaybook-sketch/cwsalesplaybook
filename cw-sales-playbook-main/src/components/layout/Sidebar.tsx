@@ -1,8 +1,10 @@
 /** Sidebar fixa com navegação editável (CRUD via Modo Gestor) + toggle SDR/Closer + gatilho do Modo Gestor. */
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, Map as MapIcon,
-  TrendingUp, BarChart3, Sword, Sparkles, Award, Lock, Plus, Trash2, ArrowUp, ArrowDown,
+  TrendingUp, BarChart3, Sword, Sparkles, Award, Crown, Plus, Trash2, ArrowUp, ArrowDown,
+  Zap, Library, Shield, GraduationCap,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -11,6 +13,10 @@ import { useEditor } from '@/admin/EditorContext';
 import { useContentStore, useEditableContent } from '@/store/contentStore';
 import { EditableText } from '@/admin/EditableText';
 import { toast } from '@/hooks/use-toast';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface NavItem {
   to: string;
@@ -21,31 +27,41 @@ interface NavItem {
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, Calendar, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword,
+  Award, TrendingUp, BarChart3, Sword, Zap, Library, Shield, GraduationCap,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
 const NAV_PADRAO: NavItem[] = [
-  { to: '/start',      label: 'Comece Aqui', icon: 'Sparkles',        end: false },
-  { to: '/playbook',   label: 'Playbook',    icon: 'BookOpen',        end: false },
-  { to: '/',           label: 'Dashboard',   icon: 'LayoutDashboard', end: true  },
-  { to: '/agenda',     label: 'Agenda',      icon: 'Calendar',        end: false },
-  { to: '/pipeline',   label: 'Pipeline',    icon: 'BarChart2',       end: false },
-  { to: '/cultura',    label: 'Cultura',     icon: 'Heart',           end: false },
-  { to: '/onboarding', label: 'Onboarding',  icon: 'MapIcon',         end: false },
-  { to: '/badges',     label: 'Badges',      icon: 'Award',           end: false },
-  { to: '/carreira',   label: 'Carreira',    icon: 'TrendingUp',      end: false },
-  { to: '/gestao',     label: 'Gestão',      icon: 'BarChart3',       end: false },
-  { to: '/berserker',  label: 'Berserker',   icon: 'Sword',           end: false },
+  { to: '/start',        label: 'Comece Aqui',      icon: 'Sparkles',        end: false },
+  { to: '/playbook',     label: 'Playbook',          icon: 'BookOpen',        end: false },
+  { to: '/',             label: 'Dashboard',         icon: 'LayoutDashboard', end: true  },
+  { to: '/agenda',       label: 'Agenda',            icon: 'Calendar',        end: false },
+  { to: '/pipeline',     label: 'Pipeline',          icon: 'BarChart2',       end: false },
+  { to: '/automacoes',   label: 'Automações',        icon: 'Zap',             end: false },
+  { to: '/cultura',      label: 'Cultura',           icon: 'Heart',           end: false },
+  { to: '/biblioteca',   label: 'Biblioteca',        icon: 'Library',         end: false },
+  { to: '/regras',       label: 'Regras de Conduta', icon: 'Shield',          end: false },
+  { to: '/onboarding',   label: 'Onboarding',        icon: 'MapIcon',         end: false },
+  { to: '/badges',       label: 'Badges',            icon: 'Award',           end: false },
+  { to: '/carreira',     label: 'Carreira',          icon: 'TrendingUp',      end: false },
+  { to: '/treinamento',  label: 'Treinamento',       icon: 'GraduationCap',   end: false },
+  { to: '/gestao',       label: 'Gestão',            icon: 'BarChart3',       end: false },
+  { to: '/berserker',    label: 'Berserker',         icon: 'Sword',           end: false },
 ];
 
 const STORE_KEY = 'sidebar.nav';
 
 export function Sidebar() {
+  const [gestorModal, setGestorModal] = useState(false);
   const { papel, setPapel } = useSidebarContext();
   const { isEditing, openPasswordModal, lock } = useEditor();
   const items = useEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
   const saveOverride = useContentStore((s) => s.saveOverride);
+
+  const abrirGestor = () => {
+    window.open('/gestor', '_blank');
+    setGestorModal(false);
+  };
 
   const update = async (next: NavItem[]) => {
     try { await saveOverride(STORE_KEY, next); }
@@ -149,18 +165,34 @@ export function Sidebar() {
 
       <div className="border-t border-cw-border p-4 space-y-3">
         <button
-          onClick={() => (isEditing ? lock() : openPasswordModal())}
-          className={cn(
-            'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors',
-            isEditing
-              ? 'bg-cw-yellow/15 text-cw-yellow hover:bg-cw-yellow/25'
-              : 'text-cw-muted hover:text-cw-text hover:bg-cw-elevated'
-          )}
-          title="Ctrl+Shift+E"
+          onClick={() => setGestorModal(true)}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors text-cw-muted hover:text-cw-yellow hover:bg-cw-yellow/10"
         >
-          <Lock className="h-3.5 w-3.5" />
-          {isEditing ? 'Sair do Modo Gestor' : 'Modo Gestor'}
+          <Crown className="h-3.5 w-3.5" />
+          Modo Gestor
         </button>
+
+        <Dialog open={gestorModal} onOpenChange={setGestorModal}>
+          <DialogContent className="bg-cw-surface border-cw-border max-w-sm">
+            <DialogHeader>
+              <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center mb-3 mx-auto">
+                <Crown className="h-6 w-6 text-white" />
+              </div>
+              <DialogTitle className="text-xl text-center">Entrar no Modo Gestor</DialogTitle>
+              <DialogDescription className="text-cw-muted text-center">
+                Você terá acesso às ferramentas de gestão e visão completa do time.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2 pt-2">
+              <Button onClick={abrirGestor} className="w-full bg-cw-yellow text-cw-bg hover:bg-cw-yellow/90 font-semibold">
+                Entrar no Modo Gestor
+              </Button>
+              <Button variant="ghost" onClick={() => setGestorModal(false)} className="w-full text-cw-muted hover:text-cw-text">
+                Cancelar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <div>
           <p className="text-[10px] text-cw-muted uppercase tracking-wider font-semibold mb-2">
