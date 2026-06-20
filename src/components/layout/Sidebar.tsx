@@ -9,8 +9,7 @@ import {
   Loader2, Users, Library, GraduationCap,
   type LucideIcon,
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useSidebarContext, type Papel } from '@/context/SidebarContext';
 import { useEditor } from '@/admin/EditorContext';
@@ -40,14 +39,11 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/regras',      label: 'Regras de Conduta',      icon: 'ShieldCheck',     end: false },
   { to: '/onboarding',  label: 'Onboarding',             icon: 'MapIcon',         end: false },
   { to: '/carreira',    label: 'Progressão de Carreira', icon: 'TrendingUp',      end: false },
-  { to: '/gestao',      label: 'Gestão',                 icon: 'BarChart3',       end: false },
-  { to: '/berserker',   label: 'Berserker',              icon: 'Sword',           end: false },
 ];
 
 const SECTIONS = [
   { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline', '/automacoes'] },
   { label: 'Cultura e Time', routes: ['/historias', '/biblioteca', '/regras', '/onboarding', '/carreira'] },
-  { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
 ];
 
 /** Dashboard de Closer: navegação própria (hardcoded, não editável).
@@ -82,7 +78,7 @@ const STORE_KEY = 'sidebar.nav';
 
 export function Sidebar() {
   const { papel, setPapel, lockedPapel, squad, apelido, onboardingActive } = useSidebarContext();
-  const { isEditing, openPasswordModal, lock, isMaster } = useEditor();
+  const { isEditing, openPasswordModal, lock, isMaster, isGestor } = useEditor();
   const userProfile = useUserProfile();
   const navigate = useNavigate();
   const isCloser = papel === 'Closer';
@@ -324,43 +320,105 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* Modo Gestor */}
-        <button
-          onClick={() => setGestorModalOpen(true)}
-          className="w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all text-amber-400/60 hover:text-amber-300 hover:bg-amber-400/5"
-        >
-          <Crown className="h-3 w-3 shrink-0" />
-          <span>Modo Gestor</span>
-        </button>
+        {/* Modo Gestor — visível só para gestores */}
+        {isGestor && (
+          <>
+            <button
+              onClick={() => setGestorModalOpen(true)}
+              className="w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all text-amber-400/60 hover:text-amber-300 hover:bg-amber-400/5"
+            >
+              <Crown className="h-3 w-3 shrink-0" />
+              <span>Modo Gestor</span>
+            </button>
 
-        <Dialog open={gestorModalOpen} onOpenChange={setGestorModalOpen}>
-          <DialogContent className="max-w-sm bg-cw-surface border-cw-border text-cw-text">
-            <DialogHeader className="items-center text-center pt-2">
-              <div className="h-14 w-14 rounded-full bg-cw-yellow/10 border border-cw-yellow/20 flex items-center justify-center mb-2 mx-auto">
-                <Crown className="h-7 w-7 text-cw-yellow" />
-              </div>
-              <DialogTitle className="text-lg font-bold">Entrar no Modo Gestor</DialogTitle>
-              <DialogDescription className="text-cw-muted text-sm">
-                Você terá acesso às ferramentas de gestão e visão completa do time.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex-col gap-2 sm:flex-col pt-2">
-              <Button
-                onClick={() => { window.open('/gestor', '_blank'); setGestorModalOpen(false); }}
-                className="w-full bg-cw-yellow text-[#1a0020] font-bold hover:bg-cw-yellow/90"
+            <Sheet open={gestorModalOpen} onOpenChange={setGestorModalOpen}>
+              <SheetContent
+                side="right"
+                className="w-[420px] sm:w-[480px] bg-[#130a22] border-[#ffffff10] text-white overflow-y-auto p-0"
               >
-                Entrar no Modo Gestor
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setGestorModalOpen(false)}
-                className="w-full border-cw-border text-cw-muted hover:text-cw-text hover:bg-cw-elevated"
-              >
-                Cancelar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                {/* Header */}
+                <SheetHeader className="px-6 pt-6 pb-4 border-b border-[#ffffff08]">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center justify-center shrink-0">
+                      <Crown className="h-5 w-5 text-amber-400" />
+                    </div>
+                    <div>
+                      <SheetTitle className="text-white text-base font-bold leading-tight">Modo Gestor</SheetTitle>
+                      <SheetDescription className="text-[#7c5aa8] text-xs mt-0.5">
+                        Ferramentas, dashboards e lideranças do comercial
+                      </SheetDescription>
+                    </div>
+                  </div>
+                </SheetHeader>
+
+                <div className="px-6 py-5 space-y-7">
+
+                  {/* O que o gestor pode fazer */}
+                  <section className="space-y-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8]">
+                      O que o gestor pode fazer
+                    </p>
+                    <div className="space-y-2">
+                      {[
+                        { icon: ShieldCheck, label: 'Editor de Conteúdo', desc: 'Editar textos, avisos e links do playbook em tempo real.', hint: 'Ctrl+Shift+E' },
+                        { icon: BookOpen,    label: 'Visualizar todos os Playbooks', desc: 'Acessar o playbook de SDR, Closer, Parcerias e Representantes.' },
+                        { icon: Target,      label: 'Meta do Mês', desc: 'Acompanhar progresso e metas individuais e do time.' },
+                        { icon: BarChart2,   label: 'Pipeline', desc: 'Visualizar o funil de vendas em tempo real.' },
+                        { icon: LayoutDashboard, label: 'Sales Enablement', desc: 'Dashboard geral com indicadores de performance.' },
+                        { icon: Zap,         label: 'Automações', desc: 'Gerenciar fluxos e regras de automação na Kommo.' },
+                      ].map(({ icon: Icon, label, desc, hint }) => (
+                        <div key={label} className="flex gap-3 p-3 rounded-xl bg-[#1e1040] border border-[#ffffff08]">
+                          <div className="h-8 w-8 rounded-lg bg-[#2d1760] flex items-center justify-center shrink-0">
+                            <Icon className="h-4 w-4 text-[#c4a0e8]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-[13px] font-semibold text-white leading-tight">{label}</p>
+                              {hint && (
+                                <span className="text-[9px] font-mono bg-[#2d1760] text-[#c4a0e8] px-1.5 py-0.5 rounded border border-[#4a2080]">{hint}</span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-[#7c5aa8] mt-0.5 leading-snug">{desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  {/* Lideranças e Coordenações */}
+                  <section className="space-y-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8]">
+                      Lideranças e Coordenações
+                    </p>
+                    <div className="space-y-2">
+                      {[
+                        { nome: 'Ana Clara',          cargo: 'Coordenadora Comercial' },
+                        { nome: 'Vanessa Alencar',    cargo: 'Gestora de SDR' },
+                        { nome: 'Gabrielly Oliveira', cargo: 'Gestora de Closer' },
+                        { nome: 'Pedro Ferreira',     cargo: 'Automações & Processos' },
+                        { nome: 'Whenna Oliveira',    cargo: 'Liderança de Time' },
+                        { nome: 'Antonio Anderson',   cargo: 'Liderança de Time' },
+                        { nome: 'Joelma Vieira',      cargo: 'Liderança de Time' },
+                        { nome: 'Beatriz Magalhães',  cargo: 'Liderança de Time' },
+                      ].map(({ nome, cargo }) => (
+                        <div key={nome} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#1e1040] border border-[#ffffff08]">
+                          <div className="h-7 w-7 rounded-full bg-[#4a0080] flex items-center justify-center text-[10px] font-black text-white shrink-0">
+                            {nome.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                          </div>
+                          <div>
+                            <p className="text-[12px] font-semibold text-white leading-tight">{nome}</p>
+                            <p className="text-[10px] text-[#7c5aa8]">{cargo}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                </div>
+              </SheetContent>
+            </Sheet>
+          </>
+        )}
 
         {/* Sino de notificações */}
         <div className="px-1">
