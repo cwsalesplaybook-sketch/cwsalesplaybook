@@ -23,14 +23,14 @@ const FERRAMENTAS = [
 ];
 
 const LIDERANCAS = [
-  { nome: 'Ana Clara',          cargo: 'Coordenadora Comercial'  },
-  { nome: 'Vanessa Alencar',    cargo: 'Gestora de SDR'          },
-  { nome: 'Gabrielly Oliveira', cargo: 'Gestora de Closer'       },
-  { nome: 'Pedro Ferreira',     cargo: 'Automações & Processos'  },
-  { nome: 'Whenna Oliveira',    cargo: 'Liderança de Time'       },
-  { nome: 'Antonio Anderson',   cargo: 'Liderança de Time'       },
-  { nome: 'Joelma Vieira',      cargo: 'Liderança de Time'       },
-  { nome: 'Beatriz Magalhães',  cargo: 'Liderança de Time'       },
+  { nome: 'Ana Clara',          cargo: 'Coordenadora Comercial'    },
+  { nome: 'Vanessa Alencar',    cargo: 'Coordenadora de Parcerias' },
+  { nome: 'Gabrielly Oliveira', cargo: 'Criadora do Playbook'      },
+  { nome: 'Pedro Ferreira',     cargo: 'Liderança de Pré-Vendas'  },
+  { nome: 'Whenna Oliveira',    cargo: 'Liderança de Closer'       },
+  { nome: 'Antonio Anderson',   cargo: 'Liderança de Pré-Vendas'  },
+  { nome: 'Joelma Vieira',      cargo: 'Liderança de Pré-Vendas'  },
+  { nome: 'Beatriz Magalhães',  cargo: 'Liderança de Parcerias'    },
 ];
 
 export default function ModoGestor() {
