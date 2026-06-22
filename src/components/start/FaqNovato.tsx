@@ -10,12 +10,11 @@ import { toast } from '@/hooks/use-toast';
 interface FaqItem { q: string; a: string }
 
 const FAQ_PADRAO: FaqItem[] = [
-  { q: 'Posso errar no roleplay?', a: 'Pode e vai. Roleplay existe pra isso — se errar agora, não erra com cliente real. Quanto mais você expor onde tá com dúvida, mais rápido evolui.' },
+  { q: 'Posso errar no roleplay?', a: 'Pode e vai. Roleplay existe pra isso, se errar agora, não erra com cliente real. Quanto mais você expor onde tá com dúvida, mais rápido evolui.' },
   { q: 'Quanto tempo até bater meta cheia?', a: 'O ramp-up oficial é de ~3 meses. Esperamos crescimento gradual, sem cobrança de meta cheia no primeiro mês. Você terá 1:1s quinzenais para acompanhar evolução.' },
-  { q: 'O que acontece se eu não ler a Cumbuca?', a: 'Nada formal — mas você fica de fora da conversa que vai pautar a próxima estratégia do time. Cumbuca é pacto coletivo: todo mundo ganha quando todo mundo lê.' },
-  { q: 'Posso pedir ajuda mesmo se for óbvio?', a: 'Sim. Pergunta boba é a que ficou na sua cabeça. Slack do padrinho, do líder, da Joelma ou Pedro — tudo aberto.' },
-  { q: 'Como funciona o Berserker?', a: 'Toda virada de mês a liderança define UMA métrica (ex: agendamentos). Quem performar mais nessa métrica vira o Berserker do mês — entra no Hall of Fame.' },
-  { q: 'Preciso ir presencial todo dia?', a: 'Combine com seu líder direto. O modelo padrão tem alguns dias presenciais para rituais críticos (Cumbuca, Reunião de Sexta).' },
+  { q: 'O que acontece se eu não ler a Cumbuca?', a: 'A cumbuca é cancelada e a gente pula o capítulo, por conta que é um compromisso.' },
+  { q: 'Posso pedir ajuda mesmo se for óbvio?', a: 'Sim. Pergunta boba é a que ficou na sua cabeça. Slack do seu líder, da Joelma ou Pedro, tudo aberto.' },
+  { q: 'Como funciona o Berserker?', a: 'Toda virada de mês a liderança define UMA métrica (ex: agendamentos). Quem performar mais nessa métrica vira o Berserker do mês, entra no Hall of Fame.' },
 ];
 
 const STORE_KEY = 'start.faq';

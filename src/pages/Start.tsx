@@ -9,6 +9,7 @@ import { Glossario } from '@/components/start/Glossario';
 import { TimelineEmpresa } from '@/components/start/TimelineEmpresa';
 import { FaqNovato } from '@/components/start/FaqNovato';
 import { Valores } from '@/components/start/Valores';
+import { CulturaComercial } from '@/components/start/CulturaComercial';
 import { useSidebarContext } from '@/context/SidebarContext';
 
 export default function Start() {
@@ -53,6 +54,7 @@ export default function Start() {
       </div>
       <Valores />
       <TimeGrid />
+      <CulturaComercial />
       <Glossario />
       <FaqNovato />
     </div>

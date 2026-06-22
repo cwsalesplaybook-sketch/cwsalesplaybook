@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   BookOpen, LayoutDashboard, BarChart2, Heart, Map as MapIcon,
-  TrendingUp, BarChart3, Sword, Sparkles, Award, Lock,
+  TrendingUp, BarChart3, Sword, Sparkles, Award, Crown,
   ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
-  Loader2, Users,
+  Loader2, Users, Library, GraduationCap,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -22,7 +22,7 @@ interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator,
+  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
@@ -31,19 +31,18 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/meta',       label: 'Meta do Mês',             icon: 'Target',         end: false },
   { to: '/playbook',   label: 'Playbook',                icon: 'BookOpen',       end: false },
   { to: '/',           label: 'Sales Enablement',        icon: 'LayoutDashboard',end: true  },
-  { to: '/pipeline',   label: 'Pipeline',                icon: 'BarChart2',      end: false },
-  { to: '/cultura',    label: 'Cultura',                 icon: 'Heart',          end: false },
-  { to: '/historias',  label: 'Histórias de Sucesso',    icon: 'Trophy',         end: false },
-  { to: '/onboarding', label: 'Onboarding',              icon: 'MapIcon',        end: false },
-  { to: '/carreira',   label: 'Progressão de Carreira',  icon: 'TrendingUp',     end: false },
-  { to: '/gestao',     label: 'Gestão',                  icon: 'BarChart3',      end: false },
-  { to: '/berserker',  label: 'Berserker',               icon: 'Sword',          end: false },
+  { to: '/pipeline',    label: 'Pipeline',                icon: 'BarChart2',       end: false },
+  { to: '/automacoes',  label: 'Automações',             icon: 'Zap',             end: false },
+  { to: '/historias',   label: 'Histórias de Sucesso',   icon: 'Trophy',          end: false },
+  { to: '/biblioteca',  label: 'Biblioteca',             icon: 'Library',         end: false },
+  { to: '/regras',      label: 'Regras de Conduta',      icon: 'ShieldCheck',     end: false },
+  { to: '/onboarding',  label: 'Onboarding',             icon: 'MapIcon',         end: false },
+  { to: '/carreira',    label: 'Progressão de Carreira', icon: 'TrendingUp',      end: false },
 ];
 
 const SECTIONS = [
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline'] },
-  { label: 'Cultura e Time', routes: ['/cultura', '/historias', '/onboarding', '/carreira'] },
-  { label: 'Gestão',         routes: ['/gestao', '/berserker'] },
+  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline', '/automacoes'] },
+  { label: 'Cultura e Time', routes: ['/historias', '/biblioteca', '/regras', '/onboarding', '/carreira'] },
 ];
 
 /** Dashboard de Closer: navegação própria (hardcoded, não editável).
@@ -57,14 +56,13 @@ const NAV_CLOSER: NavItem[] = [
   { to: '/closer/concorrentes', label: 'Concorrentes',         icon: 'Sword',     end: false },
   { to: '/pipeline',            label: 'Pipeline',             icon: 'BarChart2', end: false },
   { to: '/closer/rotina',       label: 'Rotina & Progressão',  icon: 'TrendingUp',end: false },
-  { to: '/cultura',             label: 'Cultura',              icon: 'Heart',     end: false },
   { to: '/historias',           label: 'Histórias de Sucesso', icon: 'Trophy',    end: false },
 ];
 
 const CLOSER_SECTIONS = [
   { label: 'Comercial',         routes: ['/closer/planos', '/closer/cupons', '/closer/objecoes', '/closer/processo', '/closer/concorrentes', '/pipeline'] },
   { label: 'Carreira & Rotina', routes: ['/closer/rotina'] },
-  { label: 'Cultura e Time',    routes: ['/cultura', '/historias'] },
+  { label: 'Cultura e Time',    routes: ['/historias'] },
 ];
 
 /** Seletor de playbooks — cada opção troca o papel inteiro do app */
@@ -79,7 +77,7 @@ const STORE_KEY = 'sidebar.nav';
 
 export function Sidebar() {
   const { papel, setPapel, lockedPapel, squad, apelido, onboardingActive } = useSidebarContext();
-  const { isEditing, openPasswordModal, lock, isMaster } = useEditor();
+  const { isEditing, openPasswordModal, lock, isMaster, isGestor } = useEditor();
   const userProfile = useUserProfile();
   const navigate = useNavigate();
   const isCloser = papel === 'Closer';
@@ -112,7 +110,6 @@ export function Sidebar() {
 
   const [switching, setSwitching] = useState<Papel | null>(null);
 
-  // Troca o playbook inteiro com animação: delay para exibir o overlay
   const switchPlaybook = async (novoPapel: Papel) => {
     if (novoPapel === papel || switching) return;
     setSwitching(novoPapel);
@@ -122,7 +119,6 @@ export function Sidebar() {
     setSwitching(null);
   };
 
-  // Seletor visível para Liderança, mestres e quem está editando — demais não veem nada
   const visiblePlaybooks = (papel === 'Liderança' || isEditing || isMaster)
     ? PLAYBOOK_OPTIONS
     : [];
@@ -263,6 +259,59 @@ export function Sidebar() {
           <NavItemEl key={item.to} item={item} />
         ))}
 
+        {/* Seletor de playbook — só para Liderança/mestres */}
+        {visiblePlaybooks.length > 0 && (
+          <div>
+            <div className="px-2 mb-1.5 flex items-center gap-1.5">
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#4a3060]">
+                Trocar Playbook
+              </p>
+              {isMaster && (
+                <span className="inline-flex items-center gap-0.5 text-[8px] font-black uppercase tracking-wider text-amber-300 bg-amber-400/15 border border-amber-400/30 rounded px-1 py-0.5">
+                  <ShieldCheck className="h-2.5 w-2.5" /> Mestre
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 px-1">
+              {visiblePlaybooks.map(opt => {
+                const isActive = papel === opt.papel;
+                const isSwitchingThis = switching === opt.papel;
+                const Icon = opt.icon;
+                return (
+                  <button
+                    key={opt.papel}
+                    onClick={() => switchPlaybook(opt.papel)}
+                    disabled={!!switching}
+                    title={`Playbook de ${opt.label}`}
+                    className={cn(
+                      'relative flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl text-[10px] font-bold transition-all duration-300 overflow-hidden',
+                      isActive
+                        ? 'text-white'
+                        : switching
+                          ? 'opacity-30 cursor-not-allowed text-[#4a3060]'
+                          : 'text-[#6a4a80] hover:text-[#c4a0e8] hover:bg-white/5 cursor-pointer'
+                    )}
+                    style={isActive ? {
+                      background: 'linear-gradient(145deg, #4a0080 0%, #7c3aed 100%)',
+                      boxShadow: '0 2px 12px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.12)',
+                    } : {}}
+                  >
+                    {isSwitchingThis ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Icon className="h-4 w-4 shrink-0" />
+                    )}
+                    <span className="leading-tight text-center">{opt.label}</span>
+                    {isActive && !isSwitchingThis && (
+                      <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-white/70" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Painel de Controle — exclusivo do Modo Gestor */}
         {isEditing && (
           <NavLink
@@ -284,79 +333,21 @@ export function Sidebar() {
       {/* ── Footer ── */}
       <div className="px-3 pb-4 space-y-1.5">
 
-        {/* Seletor de Playbooks — troca o contexto inteiro do app */}
-        {visiblePlaybooks.length > 0 && (
-          <div className="mb-0.5">
-            {/* Divider com gradiente */}
-            <div className="h-px mx-1 mb-3 bg-gradient-to-r from-transparent via-[#3a1560] to-transparent" />
-
-            <div className="px-2 mb-1.5 flex items-center gap-1.5">
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#4a3060]">
-                Trocar Playbook
-              </p>
-              {isMaster && (
-                <span className="inline-flex items-center gap-0.5 text-[8px] font-black uppercase tracking-wider text-amber-300 bg-amber-400/15 border border-amber-400/30 rounded px-1 py-0.5">
-                  <ShieldCheck className="h-2.5 w-2.5" /> Mestre
-                </span>
-              )}
-            </div>
-
-            {/* Grid 2x2 com os 4 setores */}
-            <div className="grid grid-cols-2 gap-1.5 px-1">
-              {visiblePlaybooks.map(opt => {
-                const isActive = papel === opt.papel;
-                const isSwitching = switching === opt.papel;
-                const Icon = opt.icon;
-
-                return (
-                  <button
-                    key={opt.papel}
-                    onClick={() => switchPlaybook(opt.papel)}
-                    disabled={!!switching}
-                    title={`Playbook de ${opt.label}`}
-                    className={cn(
-                      'relative flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl text-[10px] font-bold transition-all duration-300 overflow-hidden',
-                      isActive
-                        ? 'text-white'
-                        : switching
-                          ? 'opacity-30 cursor-not-allowed text-[#4a3060]'
-                          : 'text-[#6a4a80] hover:text-[#c4a0e8] hover:bg-white/5 cursor-pointer'
-                    )}
-                    style={isActive ? {
-                      background: 'linear-gradient(145deg, #4a0080 0%, #7c3aed 100%)',
-                      boxShadow: '0 2px 12px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.12)',
-                    } : {}}
-                  >
-                    {isSwitching ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Icon className="h-4 w-4 shrink-0" />
-                    )}
-                    <span className="leading-tight text-center">{opt.label}</span>
-                    {isActive && !isSwitching && (
-                      <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-white/70" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+        {/* Modo Gestor — visível só para gestores */}
+        {isGestor && (
+          <NavLink
+            to="/modo-gestor"
+            className={({ isActive }) => cn(
+              'w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all',
+              isActive
+                ? 'text-amber-300 bg-amber-400/10'
+                : 'text-amber-400/60 hover:text-amber-300 hover:bg-amber-400/5'
+            )}
+          >
+            <Crown className="h-3 w-3 shrink-0" />
+            <span>Modo Gestor</span>
+          </NavLink>
         )}
-
-        {/* Modo Gestor */}
-        <button
-          onClick={() => (isEditing ? lock() : openPasswordModal())}
-          title="Ctrl+Shift+E"
-          className={cn(
-            'w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all',
-            isEditing
-              ? 'text-amber-400/50 hover:text-amber-300/80 hover:bg-amber-400/5'
-              : 'text-[#5a3e70] hover:text-[#9b6fc4] hover:bg-white/5'
-          )}
-        >
-          <Lock className="h-3 w-3 shrink-0" />
-          <span>{isEditing ? 'Sair do Modo Gestor' : 'Modo Gestor'}</span>
-        </button>
 
         {/* Sino de notificações */}
         <div className="px-1">
