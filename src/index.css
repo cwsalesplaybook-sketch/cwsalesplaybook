@@ -14,12 +14,17 @@
 }
 /* Rafael & Agatha como bonequinhos andando (perninhas + leve sobe-desce) */
 @keyframes agentStep {
-  0%, 100% { transform: rotate(26deg); }
-  50%      { transform: rotate(-26deg); }
+  0%, 100% { transform: rotate(20deg); }
+  50%      { transform: rotate(-20deg); }
 }
 @keyframes agentBob {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-2px); }
+}
+/* Silhuetas (homem/mulher) andando: leve sobe-desce + gingado */
+@keyframes agentWalk {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50%      { transform: translateY(-2px) rotate(4deg); }
 }
 
 /* CW Sales Playbook — Design System

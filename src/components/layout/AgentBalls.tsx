@@ -234,8 +234,8 @@ function AgathaPanel({
   );
 }
 
-/* ── Boneco humano (estilo emoji de pessoa) que anda pela tela ── */
-const FW = 26; // largura aprox. do boneco
+/* ── Silhueta estilo placa de banheiro (homem azul / mulher rosa) andando ── */
+const FW = 24; // largura aprox. da silhueta
 const FH = 46; // altura aprox.
 
 function Figure({
@@ -248,16 +248,11 @@ function Figure({
   onClick: () => void;
   title: string;
 }) {
-  const main = color === 'blue' ? '#3b82f6' : '#f472b6';
-  const head = color === 'blue' ? '#60a5fa' : '#f9a8d4';
-  const leg = (delay: string): React.CSSProperties => ({
-    position: 'absolute', top: 0, left: 5.5, width: 4, height: 13,
-    borderRadius: 2, background: main, transformOrigin: 'top center',
-    animation: 'agentStep .42s ease-in-out infinite', animationDelay: delay,
-  });
-  const eye = (side: 'left' | 'right'): React.CSSProperties => ({
-    position: 'absolute', top: 6, width: 3, height: 3, borderRadius: '50%', background: '#fff',
-    ...(side === 'left' ? { left: 4 } : { right: 4 }),
+  const fill = color === 'blue' ? '#3b82f6' : '#f472b6';
+  const isMan = color === 'blue';
+  const legStyle = (delay: string): React.CSSProperties => ({
+    transformBox: 'fill-box', transformOrigin: '50% 0%',
+    animation: 'agentStep .4s ease-in-out infinite', animationDelay: delay,
   });
 
   return (
@@ -271,16 +266,26 @@ function Figure({
         filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.3))',
       }}
     >
-      <div style={{ animation: 'agentBob .42s ease-in-out infinite' }}>
-        <div style={{ position: 'relative', width: 18, height: 18, borderRadius: '50%', margin: '0 auto', background: head }}>
-          <span style={eye('left')} />
-          <span style={eye('right')} />
-        </div>
-        <div style={{ width: 15, height: 17, borderRadius: 7, margin: '1px auto 0', background: main }} />
-        <div style={{ position: 'relative', width: 15, height: 13, margin: '-1px auto 0' }}>
-          <span style={leg('0s')} />
-          <span style={leg('.21s')} />
-        </div>
+      <div style={{ animation: 'agentBob .4s ease-in-out infinite' }}>
+        <svg width={FW} height={FH} viewBox="0 0 24 46" fill={fill} aria-hidden="true">
+          {isMan ? (
+            <>
+              <circle cx="12" cy="6" r="5" />
+              <rect x="8" y="11" width="8" height="15" rx="2" />
+              <rect x="5" y="12" width="2.6" height="13" rx="1.3" />
+              <rect x="16.4" y="12" width="2.6" height="13" rx="1.3" />
+              <rect x="8.7" y="24.5" width="3" height="17.5" rx="1.4" style={legStyle('0s')} />
+              <rect x="12.3" y="24.5" width="3" height="17.5" rx="1.4" style={legStyle('.2s')} />
+            </>
+          ) : (
+            <>
+              <circle cx="12" cy="6" r="5" />
+              <polygon points="9.2,11 14.8,11 20,30 4,30" />
+              <rect x="9.4" y="29" width="2.6" height="13.5" rx="1.2" style={legStyle('0s')} />
+              <rect x="12" y="29" width="2.6" height="13.5" rx="1.2" style={legStyle('.2s')} />
+            </>
+          )}
+        </svg>
       </div>
       {busy ? (
         <span style={{
@@ -349,11 +354,12 @@ export function AgentBalls() {
     const pg = playgroundRef.current;
     if (!pg) return;
 
-    const R = { x: 30, y: 24 };   // Rafael
-    const A = { x: 160, y: 90 };  // Agatha
-    let it: 'R' | 'A' = 'A';      // quem está "pegando"
-    let alvo = { x: 80, y: 40 };  // ponto de passeio do fugitivo
+    const R = { x: 30, y: 30 };    // Rafael
+    const A = { x: 230, y: 150 };  // Agatha (começam longe um do outro)
+    let it: 'R' | 'A' = 'A';       // quem está "pegando"
+    let alvo = { x: 120, y: 60 };  // ponto de passeio do fugitivo
     let retargetAt = 0;
+    let cooldownUntil = 0;         // logo após pegar, ninguém pega de novo (deixa separar)
     let raf = 0;
 
     const dims = () => ({ w: Math.max(FW + 8, pg.clientWidth), h: Math.max(FH + 8, pg.clientHeight) });
@@ -366,27 +372,35 @@ export function AgentBalls() {
       raf = requestAnimationFrame(passo);
       if (pausedRef.current) return;
       const { w, h } = dims();
-      const SPEED = 1.05;
+      const SPEED = 1.0;
 
       const cacador = it === 'R' ? R : A;
       const fujao = it === 'R' ? A : R;
 
-      // cacador vai na direção do fujão (um tiquinho mais rápido)
       const cdx = fujao.x - cacador.x, cdy = fujao.y - cacador.y;
       const cd = Math.hypot(cdx, cdy) || 1;
-      cacador.x += (cdx / cd) * SPEED * 1.18;
-      cacador.y += (cdy / cd) * SPEED * 1.18;
 
-      // fujão passeia até um alvo e foge se o cacador chega perto
-      if (t > retargetAt || Math.hypot(alvo.x - fujao.x, alvo.y - fujao.y) < 14) {
-        alvo = sorteiaAlvo();
-        retargetAt = t + 1400 + Math.random() * 1400;
+      // cacador sempre persegue
+      cacador.x += (cdx / cd) * SPEED * 1.15;
+      cacador.y += (cdy / cd) * SPEED * 1.15;
+
+      if (t < cooldownUntil) {
+        // acabou de pegar: o fujão dispara pra longe (separa o casal)
+        fujao.x += (-cdx / cd) * SPEED * 2.0;
+        fujao.y += (-cdy / cd) * SPEED * 2.0;
+      } else {
+        // passeia até um alvo; foge mais rápido quando o cacador chega perto
+        if (t > retargetAt || Math.hypot(alvo.x - fujao.x, alvo.y - fujao.y) < 16) {
+          alvo = sorteiaAlvo();
+          retargetAt = t + 1200 + Math.random() * 1400;
+        }
+        const adx = alvo.x - fujao.x, ady = alvo.y - fujao.y;
+        const ad = Math.hypot(adx, ady) || 1;
+        const fleeW = cd < 120 ? (120 - cd) / 120 : 0;
+        const sp = SPEED * (1 + fleeW * 0.45);
+        fujao.x += ((adx / ad) * (1 - fleeW) + (-cdx / cd) * fleeW) * sp;
+        fujao.y += ((ady / ad) * (1 - fleeW) + (-cdy / cd) * fleeW) * sp;
       }
-      const adx = alvo.x - fujao.x, ady = alvo.y - fujao.y;
-      const ad = Math.hypot(adx, ady) || 1;
-      const fleeW = cd < 95 ? (95 - cd) / 95 : 0;
-      fujao.x += ((adx / ad) * (1 - fleeW) + (-cdx / cd) * fleeW) * SPEED;
-      fujao.y += ((ady / ad) * (1 - fleeW) + (-cdy / cd) * fleeW) * SPEED;
 
       // limites da tela
       for (const o of [R, A]) {
@@ -394,11 +408,12 @@ export function AgentBalls() {
         o.y = Math.max(2, Math.min(h - FH, o.y));
       }
 
-      // pegou! troca quem corre atrás
-      if (cd < 20) {
+      // pegou! (só fora do cooldown) → troca quem corre atrás e deixa separar
+      if (t > cooldownUntil && cd < 22) {
         it = it === 'R' ? 'A' : 'R';
+        cooldownUntil = t + 850;
         alvo = sorteiaAlvo();
-        retargetAt = t + 700;
+        retargetAt = t + 900;
       }
 
       if (rafaelRef.current) rafaelRef.current.style.transform = `translate(${R.x}px, ${R.y}px)`;
