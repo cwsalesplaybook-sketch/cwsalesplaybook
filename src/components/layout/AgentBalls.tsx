@@ -120,6 +120,14 @@ function AgentPanel({
   );
 }
 
+/* Transforma um finding na "fala" da Agatha, conversando com a Gabi. */
+function falaAgatha(f: ReviewFinding): string {
+  if (f.type === 'erro') {
+    return `Gabi, troca “${f.trecho}” por “${f.sugestao}”.`;
+  }
+  return `Gabi, que tal melhorar “${f.trecho}” pra “${f.sugestao}”?`;
+}
+
 /* ──────────── Painel da Agatha (revisora de conteúdo / Gemini) ──────────── */
 function AgathaPanel({
   data, progress, onReview, onClose,
@@ -190,8 +198,11 @@ function AgathaPanel({
       {/* Findings agrupados por aba */}
       <div className="max-h-80 overflow-y-auto">
         {!data ? (
-          <div className="flex items-center justify-center gap-2 py-8 text-[#7c5aa8]">
-            <span className="text-[12px]">Nenhuma revisão ainda.</span>
+          <div className="px-4 py-6 text-center">
+            <p className="text-[13px] text-white font-semibold">Oi, Gabi! 👋</p>
+            <p className="text-[12px] text-[#b79be0] mt-1 leading-snug">
+              Ainda não passeei pelas abas. Clica em “Revisar agora” que eu dou uma olhada na escrita.
+            </p>
           </div>
         ) : tabsComFindings.length === 0 && !running ? (
           <div className="text-center py-8 px-4">
@@ -200,28 +211,33 @@ function AgathaPanel({
             <p className="text-[11px] text-[#7c5aa8] mt-0.5">Nenhum erro ou sugestão nas abas.</p>
           </div>
         ) : (
-          tabsComFindings.map(tab => (
-            <div key={`${tab.papel}-${tab.route}`} className="border-b border-[#ffffff06]">
-              <p className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-pink-300/80">
-                {tab.label}
-              </p>
-              {tab.findings.map((f, i) => (
-                <div key={i} className="flex items-start gap-2.5 px-4 py-2">
-                  <span className="shrink-0 mt-0.5">
-                    {f.type === 'erro'
-                      ? <Pencil className="h-3.5 w-3.5 text-red-400" />
-                      : <Lightbulb className="h-3.5 w-3.5 text-amber-300" />}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] text-[#e6d6ff] leading-snug">
-                      <span className="text-[#9c7fc4]">“{f.trecho}”</span>
-                    </p>
-                    <p className="text-[11px] text-[#b79be0] leading-snug mt-0.5">→ {f.sugestao}</p>
+          <>
+            <p className="px-4 pt-3 pb-1 text-[12px] text-[#d4c0ee]">
+              Oi, Gabi! Passeei pelas abas e separei umas coisinhas:
+            </p>
+            {tabsComFindings.map(tab => (
+              <div key={`${tab.papel}-${tab.route}`} className="border-b border-[#ffffff06] pb-1.5">
+                <p className="px-4 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-pink-300/80">
+                  {tab.label}
+                </p>
+                {tab.findings.map((f, i) => (
+                  <div key={i} className="flex items-start gap-2 px-4 py-1.5">
+                    <span
+                      className="shrink-0 mt-0.5 h-5 w-5 rounded-full flex items-center justify-center"
+                      style={{ background: 'radial-gradient(circle at 35% 30%, #f9a8d4, #f472b6)' }}
+                    >
+                      {f.type === 'erro'
+                        ? <Pencil className="h-3 w-3 text-white" />
+                        : <Lightbulb className="h-3 w-3 text-white" />}
+                    </span>
+                    <div className="flex-1 min-w-0 rounded-xl rounded-tl-sm bg-pink-500/10 border border-pink-400/20 px-3 py-1.5">
+                      <p className="text-[12px] text-[#f0e2ff] leading-snug">{falaAgatha(f)}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ))
+                ))}
+              </div>
+            ))}
+          </>
         )}
       </div>
 
