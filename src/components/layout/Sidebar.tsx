@@ -171,6 +171,7 @@ export function Sidebar() {
   };
 
   const switchingLabel = PLAYBOOK_OPTIONS.find(o => o.papel === switching)?.label ?? switching;
+  const currentLabel = PLAYBOOK_OPTIONS.find(o => o.papel === papel)?.label ?? papel;
 
   return (
     <>
@@ -188,6 +189,7 @@ export function Sidebar() {
           />
         </div>
         <div className="h-10 w-10 rounded-full border-[3px] border-white/20 border-t-white animate-spin mb-8" />
+        <p className="text-white/40 text-xs font-medium tracking-widest uppercase mb-1">Saindo do {currentLabel}</p>
         <p className="text-white/50 text-sm font-medium tracking-wide">Indo para o</p>
         <p className="text-white text-2xl font-black mt-1">Dashboard de {switchingLabel}</p>
       </div>
