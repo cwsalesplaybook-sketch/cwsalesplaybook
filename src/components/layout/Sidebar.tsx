@@ -259,58 +259,6 @@ export function Sidebar() {
           <NavItemEl key={item.to} item={item} />
         ))}
 
-        {/* Seletor de playbook — só para Liderança/mestres */}
-        {visiblePlaybooks.length > 0 && (
-          <div>
-            <div className="px-2 mb-1.5 flex items-center gap-1.5">
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#4a3060]">
-                Trocar Playbook
-              </p>
-              {isMaster && (
-                <span className="inline-flex items-center gap-0.5 text-[8px] font-black uppercase tracking-wider text-amber-300 bg-amber-400/15 border border-amber-400/30 rounded px-1 py-0.5">
-                  <ShieldCheck className="h-2.5 w-2.5" /> Mestre
-                </span>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-1.5 px-1">
-              {visiblePlaybooks.map(opt => {
-                const isActive = papel === opt.papel;
-                const isSwitchingThis = switching === opt.papel;
-                const Icon = opt.icon;
-                return (
-                  <button
-                    key={opt.papel}
-                    onClick={() => switchPlaybook(opt.papel)}
-                    disabled={!!switching}
-                    title={`Playbook de ${opt.label}`}
-                    className={cn(
-                      'relative flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl text-[10px] font-bold transition-all duration-300 overflow-hidden',
-                      isActive
-                        ? 'text-white'
-                        : switching
-                          ? 'opacity-30 cursor-not-allowed text-[#4a3060]'
-                          : 'text-[#6a4a80] hover:text-[#c4a0e8] hover:bg-white/5 cursor-pointer'
-                    )}
-                    style={isActive ? {
-                      background: 'linear-gradient(145deg, #4a0080 0%, #7c3aed 100%)',
-                      boxShadow: '0 2px 12px rgba(124,58,237,0.5), inset 0 1px 0 rgba(255,255,255,0.12)',
-                    } : {}}
-                  >
-                    {isSwitchingThis ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Icon className="h-4 w-4 shrink-0" />
-                    )}
-                    <span className="leading-tight text-center">{opt.label}</span>
-                    {isActive && !isSwitchingThis && (
-                      <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-white/70" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         {/* Painel de Controle — exclusivo do Modo Gestor */}
         {isEditing && (
