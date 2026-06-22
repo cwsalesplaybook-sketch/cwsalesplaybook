@@ -1,4 +1,4 @@
-const TOKEN     = 'd31c60a2f05d7f0f83254f264bbe9f0d1ab81f26';
+const TOKEN     = process.env.PIPEDRIVE_API_TOKEN;
 const SDR_FIELD = 'ce39d035fad6c74095053ffe04bdb9bbc9ae2a53';
 
 // IDs de usuários que NÃO são SDRs (gestores, ops, etc.)
@@ -42,6 +42,8 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
 
   try {
+    if (!TOKEN) return res.status(500).json({ ok: false, erro: 'PIPEDRIVE_API_TOKEN não configurado' });
+
     const agora    = new Date();
     const ano      = agora.getUTCFullYear();
     const mesNum   = agora.getUTCMonth();
