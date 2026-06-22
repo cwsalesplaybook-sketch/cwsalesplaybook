@@ -6,7 +6,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { SidebarProvider, ForcePapel } from '@/context/SidebarContext';
+import { SidebarProvider, ForcePapel, type Papel } from '@/context/SidebarContext';
+import { useContentStore } from '@/store/contentStore';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AgentBalls } from '@/components/layout/AgentBalls';
 import { FloatingSearch } from '@/components/FloatingSearch';
@@ -62,6 +63,46 @@ import { Users, Trophy, Map as GestorMap, BarChart3, Settings } from 'lucide-rea
 const queryClient = new QueryClient();
 
 const SESSION_KEY = 'cw-login-redirected';
+
+/* ── Modo "scrape" da Agatha ───────────────────────────────────────────────
+   A engine de revisão (src/lib/agathaReview.ts) abre cada aba num <iframe>
+   oculto com `?agatha=scrape&papel=X`. Nesse modo o app renderiza só o <main>
+   da rota, sob o papel pedido (ForcePapel), SEM sidebar/agents/overlay — pra
+   não poluir nem cair em recursão (o iframe não pode abrir sua própria engine).
+   Avaliado uma vez por documento; no iframe é fresh, então funciona. */
+const SCRAPE_PARAMS = new URLSearchParams(window.location.search);
+const IS_SCRAPE = SCRAPE_PARAMS.get('agatha') === 'scrape';
+const SCRAPE_PAPEL = ((SCRAPE_PARAMS.get('papel') as Papel) ?? 'SDR');
+
+/** Sinaliza ao iframe-pai que o conteúdo já carregou e pode ser raspado. */
+function ScrapeReady() {
+  const loaded = useContentStore((s) => s.loaded);
+  useEffect(() => {
+    if (!loaded) return;
+    // settle pra render/animações assentarem antes do pai ler o texto
+    const t = setTimeout(() => {
+      (window as unknown as { __agathaReady?: boolean }).__agathaReady = true;
+    }, 400);
+    return () => clearTimeout(t);
+  }, [loaded]);
+  return null;
+}
+
+/** Layout mínimo usado dentro dos iframes de scrape: só conteúdo, sem chrome. */
+function ScrapeLayout() {
+  return (
+    <EditorProvider>
+      <SidebarProvider>
+        <ForcePapel papel={SCRAPE_PAPEL}>
+          <main className="flex-1 overflow-y-auto scrollbar-cw">
+            <AnimatedRoutes />
+          </main>
+        </ForcePapel>
+        <ScrapeReady />
+      </SidebarProvider>
+    </EditorProvider>
+  );
+}
 
 /**
  * Roda dentro do BrowserRouter para ter acesso ao useNavigate.
@@ -176,7 +217,7 @@ const App = () => {
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s ?? null);
-      if (event === 'SIGNED_IN' && s?.user?.email) {
+      if (!IS_SCRAPE && event === 'SIGNED_IN' && s?.user?.email) {
         supabase.functions.invoke('login-notify', {
           body: {
             email: s.user.email,
@@ -214,7 +255,9 @@ const App = () => {
             </Route>
             <Route path="/*" element={
               session ? (
-                <><AppLayout /><LoginRedirectHandler /></>
+                IS_SCRAPE
+                  ? <ScrapeLayout />
+                  : <><AppLayout /><LoginRedirectHandler /></>
               ) : (
                 <Login />
               )
