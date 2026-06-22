@@ -57,10 +57,10 @@ function AgentPanel({
             <RefreshCw className="h-4 w-4 animate-spin" />
             <span className="text-[12px]">Aguardando verificação...</span>
           </div>
-        ) : data.findings.length === 0 ? (
+        ) : data.findings.filter(f => f.severity !== 'ok').length === 0 ? (
           <div className="text-center py-8 px-4">
             <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
-            <p className="text-[12px] text-[#d4c0ee] font-semibold">Tudo certo!</p>
+            <p className="text-[13px] text-white font-bold">Tudo certo por aqui, Gabi!</p>
             <p className="text-[11px] text-[#7c5aa8] mt-0.5">Nenhum problema encontrado.</p>
           </div>
         ) : (
