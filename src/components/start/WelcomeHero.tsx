@@ -11,8 +11,8 @@ export function WelcomeHero() {
         <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/5" />
       </div>
 
-      {/* Rafael & Agatha girando juntos no cantinho do banner (só donos) */}
-      <div className="absolute -top-4 -left-4 z-20">
+      {/* Rafael & Agatha brincando de pega-pega pelo banner (só donos) */}
+      <div className="absolute inset-0 z-20 overflow-hidden rounded-2xl pointer-events-none">
         <AgentBalls />
       </div>
 <div className="relative grid md:grid-cols-2 gap-7 items-center">

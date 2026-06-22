@@ -234,65 +234,72 @@ function AgathaPanel({
   );
 }
 
-function Ball({
-  color, delay, errors, busy, onClick, title,
+/* ── Boneco humano (estilo emoji de pessoa) que anda pela tela ── */
+const FW = 26; // largura aprox. do boneco
+const FH = 46; // altura aprox.
+
+function Figure({
+  color, figRef, errors, busy, onClick, title,
 }: {
   color: 'blue' | 'pink';
-  delay: string;
+  figRef: React.RefObject<HTMLDivElement>;
   errors: number;
   busy?: boolean;
   onClick: () => void;
   title: string;
 }) {
-  const bg = color === 'blue'
-    ? 'radial-gradient(circle at 35% 35%, #93c5fd, #3b82f6)'
-    : 'radial-gradient(circle at 35% 35%, #fbcfe8, #f472b6)';
-  const shadow = color === 'blue'
-    ? '0 0 10px 4px rgba(59,130,246,0.65), 0 0 22px 8px rgba(59,130,246,0.25)'
-    : '0 0 10px 4px rgba(244,114,182,0.65), 0 0 22px 8px rgba(244,114,182,0.25)';
+  const main = color === 'blue' ? '#3b82f6' : '#f472b6';
+  const head = color === 'blue' ? '#60a5fa' : '#f9a8d4';
+  const leg = (delay: string): React.CSSProperties => ({
+    position: 'absolute', top: 0, left: 5.5, width: 4, height: 13,
+    borderRadius: 2, background: main, transformOrigin: 'top center',
+    animation: 'agentStep .42s ease-in-out infinite', animationDelay: delay,
+  });
+  const eye = (side: 'left' | 'right'): React.CSSProperties => ({
+    position: 'absolute', top: 6, width: 3, height: 3, borderRadius: '50%', background: '#fff',
+    ...(side === 'left' ? { left: 4 } : { right: 4 }),
+  });
 
   return (
-    <button
+    <div
+      ref={figRef}
       onClick={onClick}
       title={title}
       style={{
-        position: 'absolute',
-        top: '50%', left: '50%',
-        width: 24, height: 24,
-        marginLeft: -12, marginTop: -12,
-        border: 'none', background: 'none', padding: 0,
-        cursor: 'pointer',
-        animation: `agentOrbit 4s linear infinite`,
-        animationDelay: delay,
+        position: 'absolute', top: 0, left: 0, width: FW, height: FH,
+        cursor: 'pointer', pointerEvents: 'auto', willChange: 'transform',
+        filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.3))',
       }}
     >
-      <div style={{
-        width: 24, height: 24,
-        borderRadius: '50%',
-        background: bg,
-        boxShadow: shadow,
-        animation: `agentGlow 2s ease-in-out infinite`,
-        animationDelay: color === 'pink' ? '1s' : '0s',
-      }} />
+      <div style={{ animation: 'agentBob .42s ease-in-out infinite' }}>
+        <div style={{ position: 'relative', width: 18, height: 18, borderRadius: '50%', margin: '0 auto', background: head }}>
+          <span style={eye('left')} />
+          <span style={eye('right')} />
+        </div>
+        <div style={{ width: 15, height: 17, borderRadius: 7, margin: '1px auto 0', background: main }} />
+        <div style={{ position: 'relative', width: 15, height: 13, margin: '-1px auto 0' }}>
+          <span style={leg('0s')} />
+          <span style={leg('.21s')} />
+        </div>
+      </div>
       {busy ? (
         <span style={{
-          position: 'absolute', top: -5, right: -5,
+          position: 'absolute', top: -7, left: '50%', marginLeft: -6,
           width: 12, height: 12, borderRadius: '50%',
           border: '2px solid #fff', borderTopColor: 'transparent',
           animation: 'spin 0.7s linear infinite',
         }} />
       ) : errors > 0 ? (
         <span style={{
-          position: 'absolute', top: -4, right: -4,
-          background: '#ef4444', color: '#fff',
-          fontSize: 8, fontWeight: 900, lineHeight: 1,
+          position: 'absolute', top: -7, left: '50%', marginLeft: -6,
+          background: '#ef4444', color: '#fff', fontSize: 8, fontWeight: 900, lineHeight: 1,
           borderRadius: '50%', width: 12, height: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           {errors > 9 ? '9+' : errors}
         </span>
       ) : null}
-    </button>
+    </div>
   );
 }
 
@@ -305,11 +312,19 @@ export function AgentBalls() {
   const loaded = useContentStore(s => s.loaded);
   const autoFired = useRef(false);
 
+  const playgroundRef = useRef<HTMLDivElement>(null);
+  const rafaelRef = useRef<HTMLDivElement>(null);
+  const agathaRef = useRef<HTMLDivElement>(null);
+  const pausedRef = useRef(false);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setUserEmail(data.session?.user?.email ?? null);
     });
   }, []);
+
+  // Pausa a brincadeira enquanto um painel está aberto (pra dar pra clicar com calma).
+  useEffect(() => { pausedRef.current = rafaelOpen || agathaOpen; }, [rafaelOpen, agathaOpen]);
 
   const iniciarRevisao = useCallback(() => {
     runAgathaReview(setProgress);
@@ -327,6 +342,72 @@ export function AgentBalls() {
       runAgathaReview(setProgress);
     }
   }, [userEmail, loaded, reviewData]);
+
+  // Pega-pega: um persegue o outro; ao "pegar", trocam os papéis.
+  useEffect(() => {
+    if (IS_SCRAPE_VIEW || !AGENT_OWNERS.has(userEmail ?? '')) return;
+    const pg = playgroundRef.current;
+    if (!pg) return;
+
+    const R = { x: 30, y: 24 };   // Rafael
+    const A = { x: 160, y: 90 };  // Agatha
+    let it: 'R' | 'A' = 'A';      // quem está "pegando"
+    let alvo = { x: 80, y: 40 };  // ponto de passeio do fugitivo
+    let retargetAt = 0;
+    let raf = 0;
+
+    const dims = () => ({ w: Math.max(FW + 8, pg.clientWidth), h: Math.max(FH + 8, pg.clientHeight) });
+    const sorteiaAlvo = () => {
+      const { w, h } = dims();
+      return { x: 6 + Math.random() * (w - FW - 12), y: 6 + Math.random() * (h - FH - 12) };
+    };
+
+    const passo = (t: number) => {
+      raf = requestAnimationFrame(passo);
+      if (pausedRef.current) return;
+      const { w, h } = dims();
+      const SPEED = 1.05;
+
+      const cacador = it === 'R' ? R : A;
+      const fujao = it === 'R' ? A : R;
+
+      // cacador vai na direção do fujão (um tiquinho mais rápido)
+      const cdx = fujao.x - cacador.x, cdy = fujao.y - cacador.y;
+      const cd = Math.hypot(cdx, cdy) || 1;
+      cacador.x += (cdx / cd) * SPEED * 1.18;
+      cacador.y += (cdy / cd) * SPEED * 1.18;
+
+      // fujão passeia até um alvo e foge se o cacador chega perto
+      if (t > retargetAt || Math.hypot(alvo.x - fujao.x, alvo.y - fujao.y) < 14) {
+        alvo = sorteiaAlvo();
+        retargetAt = t + 1400 + Math.random() * 1400;
+      }
+      const adx = alvo.x - fujao.x, ady = alvo.y - fujao.y;
+      const ad = Math.hypot(adx, ady) || 1;
+      const fleeW = cd < 95 ? (95 - cd) / 95 : 0;
+      fujao.x += ((adx / ad) * (1 - fleeW) + (-cdx / cd) * fleeW) * SPEED;
+      fujao.y += ((ady / ad) * (1 - fleeW) + (-cdy / cd) * fleeW) * SPEED;
+
+      // limites da tela
+      for (const o of [R, A]) {
+        o.x = Math.max(2, Math.min(w - FW, o.x));
+        o.y = Math.max(2, Math.min(h - FH, o.y));
+      }
+
+      // pegou! troca quem corre atrás
+      if (cd < 20) {
+        it = it === 'R' ? 'A' : 'R';
+        alvo = sorteiaAlvo();
+        retargetAt = t + 700;
+      }
+
+      if (rafaelRef.current) rafaelRef.current.style.transform = `translate(${R.x}px, ${R.y}px)`;
+      if (agathaRef.current) agathaRef.current.style.transform = `translate(${A.x}px, ${A.y}px)`;
+    };
+
+    raf = requestAnimationFrame(passo);
+    return () => cancelAnimationFrame(raf);
+  }, [userEmail]);
 
   if (IS_SCRAPE_VIEW || !AGENT_OWNERS.has(userEmail ?? '')) return null;
 
@@ -358,21 +439,18 @@ export function AgentBalls() {
         />
       )}
 
-      {/* Gatilho: círculo branco com Rafael e Agatha girando juntos (embutido no banner) */}
-      <div
-        className="relative rounded-full bg-white border border-cw-border shadow-lg"
-        style={{ width: 72, height: 72 }}
-      >
-        <Ball
+      {/* Playground: Rafael e Agatha brincando de pega-pega pela tela */}
+      <div ref={playgroundRef} className="absolute inset-0" style={{ pointerEvents: 'none', zIndex: 20 }}>
+        <Figure
           color="blue"
-          delay="0s"
+          figRef={rafaelRef}
           errors={rafaelErrors}
           title="Rafael — monitora dashboards"
           onClick={() => { setRafaelOpen(o => !o); setAgathaOpen(false); }}
         />
-        <Ball
+        <Figure
           color="pink"
-          delay="-2s"
+          figRef={agathaRef}
           errors={agathaErrors}
           busy={agathaBusy}
           title="Agatha — revisa a escrita das abas"
