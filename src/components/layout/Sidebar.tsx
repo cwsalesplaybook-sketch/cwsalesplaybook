@@ -112,11 +112,11 @@ export function Sidebar() {
 
   const [switching, setSwitching] = useState<Papel | null>(null);
 
-  // Troca o playbook inteiro com animação: breve delay visual antes de mudar
+  // Troca o playbook inteiro com animação: delay para exibir o overlay
   const switchPlaybook = async (novoPapel: Papel) => {
     if (novoPapel === papel || switching) return;
     setSwitching(novoPapel);
-    await new Promise(r => setTimeout(r, 380));
+    await new Promise(r => setTimeout(r, 900));
     setPapel(novoPapel);
     navigate('/start');
     setSwitching(null);
@@ -170,7 +170,28 @@ export function Sidebar() {
     );
   };
 
+  const switchingLabel = PLAYBOOK_OPTIONS.find(o => o.papel === switching)?.label ?? switching;
+
   return (
+    <>
+    {/* Overlay de troca de dashboard */}
+    {switching && (
+      <div
+        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
+        style={{ background: 'linear-gradient(135deg, #1a0f2e 0%, #2d1760 60%, #130a22 100%)' }}
+      >
+        <div className="bg-white rounded-2xl px-5 py-3 mb-10 shadow-2xl">
+          <img
+            src="https://cardapioweb.com/wp-content/uploads/2024/01/Logo-Cardapio-Web.png"
+            alt="Cardápio Web"
+            className="h-8 w-auto object-contain"
+          />
+        </div>
+        <div className="h-10 w-10 rounded-full border-[3px] border-white/20 border-t-white animate-spin mb-8" />
+        <p className="text-white/50 text-sm font-medium tracking-wide">Indo para o</p>
+        <p className="text-white text-2xl font-black mt-1">Dashboard de {switchingLabel}</p>
+      </div>
+    )}
     <aside
       className="w-[220px] shrink-0 flex flex-col h-screen sticky top-0 z-30 border-r border-[#ffffff08] overflow-hidden"
       style={{ background: 'linear-gradient(180deg, #1a0f2e 0%, #130a22 100%)' }}
@@ -374,5 +395,6 @@ export function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }
