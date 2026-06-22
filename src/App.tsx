@@ -46,7 +46,18 @@ import CloserObjecoes from '@/pages/closer/Objecoes';
 import CloserProcesso from '@/pages/closer/Processo';
 import CloserRotina from '@/pages/closer/Rotina';
 import CloserConcorrentes from '@/pages/closer/Concorrentes';
+import Automacoes from '@/pages/Automacoes';
+import Biblioteca from '@/pages/Biblioteca';
+import RegrasConduta from '@/pages/RegrasConduta';
+import TreinamentoTiers from '@/pages/TreinamentoTiers';
+import ModoGestor from '@/pages/ModoGestor';
 import NotFound from './pages/NotFound';
+import { UserProvider } from '@/context/UserContext';
+import { GestorLayout } from '@/pages/gestor/GestorLayout';
+import GestorDashboard from '@/pages/gestor/GestorDashboard';
+import GestorPlaybooks from '@/pages/gestor/GestorPlaybooks';
+import GestorPlaceholder from '@/pages/gestor/GestorPlaceholder';
+import { Users, Trophy, Map as GestorMap, BarChart3, Settings } from 'lucide-react';
 
 const queryClient = new QueryClient();
 
@@ -124,6 +135,11 @@ function AnimatedRoutes() {
           <Route path="/calculadora" element={<Calculadora />} />
           <Route path="/admin" element={<GestorAdminPage />} />
           <Route path="/painel" element={<PainelControle />} />
+          <Route path="/automacoes" element={<Automacoes />} />
+          <Route path="/biblioteca" element={<Biblioteca />} />
+          <Route path="/regras" element={<RegrasConduta />} />
+          <Route path="/treinamento" element={<TreinamentoTiers />} />
+          <Route path="/modo-gestor" element={<ModoGestor />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>
@@ -186,14 +202,24 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          {session ? (
-            <>
-              <AppLayout />
-              <LoginRedirectHandler />
-            </>
-          ) : (
-            <Login />
-          )}
+          <Routes>
+            <Route path="/gestor" element={<UserProvider><GestorLayout /></UserProvider>}>
+              <Route index element={<GestorDashboard />} />
+              <Route path="times" element={<GestorPlaceholder titulo="Times" subtitulo="Gerencie os times do comercial" Icon={Users} />} />
+              <Route path="ranking" element={<GestorPlaceholder titulo="Ranking" subtitulo="Performance individual e por squad" Icon={Trophy} />} />
+              <Route path="playbooks" element={<GestorPlaybooks />} />
+              <Route path="trilhas" element={<GestorPlaceholder titulo="Trilhas" subtitulo="Trilhas de desenvolvimento por role" Icon={GestorMap} />} />
+              <Route path="relatorios" element={<GestorPlaceholder titulo="Relatórios" subtitulo="Análises e dados do time" Icon={BarChart3} />} />
+              <Route path="configuracoes" element={<GestorPlaceholder titulo="Configurações" subtitulo="Configurações do sistema" Icon={Settings} />} />
+            </Route>
+            <Route path="/*" element={
+              session ? (
+                <><AppLayout /><LoginRedirectHandler /></>
+              ) : (
+                <Login />
+              )
+            } />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
