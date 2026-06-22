@@ -348,73 +348,64 @@ export function AgentBalls() {
     }
   }, [userEmail, loaded, reviewData]);
 
-  // Pega-pega: um persegue o outro; ao "pegar", trocam os papéis.
+  // Caminham pelo banner como se estivessem se procurando (sem nunca grudar).
   useEffect(() => {
     if (IS_SCRAPE_VIEW || !AGENT_OWNERS.has(userEmail ?? '')) return;
     const pg = playgroundRef.current;
     if (!pg) return;
 
-    const R = { x: 30, y: 30 };    // Rafael
-    const A = { x: 230, y: 150 };  // Agatha (começam longe um do outro)
-    let it: 'R' | 'A' = 'A';       // quem está "pegando"
-    let alvo = { x: 120, y: 60 };  // ponto de passeio do fugitivo
-    let retargetAt = 0;
-    let cooldownUntil = 0;         // logo após pegar, ninguém pega de novo (deixa separar)
+    type Boneco = { x: number; y: number; tx: number; ty: number; next: number };
+    const R: Boneco = { x: 30, y: 30, tx: 30, ty: 30, next: 0 };
+    const A: Boneco = { x: 230, y: 150, tx: 230, ty: 150, next: 0 };
     let raf = 0;
+    const SPEED = 0.9;
+    const SEP = 46; // distância mínima entre os dois
 
     const dims = () => ({ w: Math.max(FW + 8, pg.clientWidth), h: Math.max(FH + 8, pg.clientHeight) });
-    const sorteiaAlvo = () => {
-      const { w, h } = dims();
-      return { x: 6 + Math.random() * (w - FW - 12), y: 6 + Math.random() * (h - FH - 12) };
+    const clampX = (x: number) => Math.max(2, Math.min(dims().w - FW, x));
+    const clampY = (y: number) => Math.max(2, Math.min(dims().h - FH, y));
+
+    const novoAlvo = (self: Boneco, other: Boneco, t: number) => {
+      if (Math.random() < 0.5) {
+        // vai "procurar" o outro: alvo perto de onde ele está
+        self.tx = clampX(other.x + (Math.random() * 90 - 45));
+        self.ty = clampY(other.y + (Math.random() * 90 - 45));
+      } else {
+        const { w, h } = dims();
+        self.tx = 6 + Math.random() * (w - FW - 12);
+        self.ty = 6 + Math.random() * (h - FH - 12);
+      }
+      self.next = t + 1600 + Math.random() * 2200;
+    };
+
+    const mover = (self: Boneco, other: Boneco, t: number) => {
+      if (t > self.next || Math.hypot(self.tx - self.x, self.ty - self.y) < 14) {
+        novoAlvo(self, other, t);
+      }
+      const dx = self.tx - self.x, dy = self.ty - self.y;
+      const d = Math.hypot(dx, dy) || 1;
+      self.x += (dx / d) * SPEED;
+      self.y += (dy / d) * SPEED;
     };
 
     const passo = (t: number) => {
       raf = requestAnimationFrame(passo);
       if (pausedRef.current) return;
-      const { w, h } = dims();
-      const SPEED = 1.0;
 
-      const cacador = it === 'R' ? R : A;
-      const fujao = it === 'R' ? A : R;
+      mover(R, A, t);
+      mover(A, R, t);
 
-      const cdx = fujao.x - cacador.x, cdy = fujao.y - cacador.y;
-      const cd = Math.hypot(cdx, cdy) || 1;
-
-      // cacador sempre persegue
-      cacador.x += (cdx / cd) * SPEED * 1.15;
-      cacador.y += (cdy / cd) * SPEED * 1.15;
-
-      if (t < cooldownUntil) {
-        // acabou de pegar: o fujão dispara pra longe (separa o casal)
-        fujao.x += (-cdx / cd) * SPEED * 2.0;
-        fujao.y += (-cdy / cd) * SPEED * 2.0;
-      } else {
-        // passeia até um alvo; foge mais rápido quando o cacador chega perto
-        if (t > retargetAt || Math.hypot(alvo.x - fujao.x, alvo.y - fujao.y) < 16) {
-          alvo = sorteiaAlvo();
-          retargetAt = t + 1200 + Math.random() * 1400;
-        }
-        const adx = alvo.x - fujao.x, ady = alvo.y - fujao.y;
-        const ad = Math.hypot(adx, ady) || 1;
-        const fleeW = cd < 120 ? (120 - cd) / 120 : 0;
-        const sp = SPEED * (1 + fleeW * 0.45);
-        fujao.x += ((adx / ad) * (1 - fleeW) + (-cdx / cd) * fleeW) * sp;
-        fujao.y += ((ady / ad) * (1 - fleeW) + (-cdy / cd) * fleeW) * sp;
+      // separação: se encostam, empurra de leve — nunca grudam
+      const sx = A.x - R.x, sy = A.y - R.y;
+      const sd = Math.hypot(sx, sy) || 1;
+      if (sd < SEP) {
+        const push = (1 - sd / SEP) * 0.9;
+        R.x -= (sx / sd) * push; R.y -= (sy / sd) * push;
+        A.x += (sx / sd) * push; A.y += (sy / sd) * push;
       }
 
-      // limites da tela
-      for (const o of [R, A]) {
-        o.x = Math.max(2, Math.min(w - FW, o.x));
-        o.y = Math.max(2, Math.min(h - FH, o.y));
-      }
-
-      // pegou! (só fora do cooldown) → troca quem corre atrás e deixa separar
-      if (t > cooldownUntil && cd < 22) {
-        it = it === 'R' ? 'A' : 'R';
-        cooldownUntil = t + 850;
-        alvo = sorteiaAlvo();
-        retargetAt = t + 900;
-      }
+      R.x = clampX(R.x); R.y = clampY(R.y);
+      A.x = clampX(A.x); A.y = clampY(A.y);
 
       if (rafaelRef.current) rafaelRef.current.style.transform = `translate(${R.x}px, ${R.y}px)`;
       if (agathaRef.current) agathaRef.current.style.transform = `translate(${A.x}px, ${A.y}px)`;
@@ -454,7 +445,7 @@ export function AgentBalls() {
         />
       )}
 
-      {/* Playground: Rafael e Agatha brincando de pega-pega pela tela */}
+      {/* Rafael e Agatha caminhando pelo banner, como se estivessem se procurando */}
       <div ref={playgroundRef} className="absolute inset-0" style={{ pointerEvents: 'none', zIndex: 20 }}>
         <Figure
           color="blue"
