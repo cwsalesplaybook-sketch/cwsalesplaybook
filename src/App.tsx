@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { SidebarProvider, ForcePapel } from '@/context/SidebarContext';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { AgentBalls } from '@/components/layout/AgentBalls';
 import { FloatingSearch } from '@/components/FloatingSearch';
 import { EditorProvider } from '@/admin/EditorContext';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
@@ -143,6 +144,7 @@ function AppLayout() {
           </main>
           <PasswordGate />
           <FloatingSearch />
+          <AgentBalls />
         </div>
       </SidebarProvider>
     </EditorProvider>
@@ -156,8 +158,16 @@ const App = () => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s ?? null);
+      if (event === 'SIGNED_IN' && s?.user?.email) {
+        supabase.functions.invoke('login-notify', {
+          body: {
+            email: s.user.email,
+            name: s.user.user_metadata?.full_name ?? s.user.email,
+          },
+        }).catch(() => { /* fire-and-forget */ });
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
