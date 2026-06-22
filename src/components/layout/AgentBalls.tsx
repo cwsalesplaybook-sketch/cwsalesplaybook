@@ -4,8 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useContentStore } from '@/store/contentStore';
 import { runAgathaReview, type ReviewProgress } from '@/lib/agathaReview';
 
-const AGENT_OWNER_EMAIL = 'gabrielly.oliveira@cardapioweb.com';
+const AGENT_OWNERS = new Set([
+  'gabrielly.oliveira@cardapioweb.com',
+  'pedro.ferreira@cardapioweb.com',
+]);
 const DIA_MS = 24 * 60 * 60 * 1000;
+/** Não renderiza/roda dentro dos iframes de scrape (anti-recursão). */
+const IS_SCRAPE_VIEW = new URLSearchParams(window.location.search).get('agatha') === 'scrape';
 
 interface AgentFinding {
   id: string;
@@ -56,7 +61,7 @@ function AgentPanel({
 
   return (
     <div
-      className={`fixed bottom-28 right-8 w-80 rounded-2xl border ${border} shadow-2xl overflow-hidden`}
+      className={`fixed top-24 right-8 w-80 rounded-2xl border ${border} shadow-2xl overflow-hidden`}
       style={{ background: 'linear-gradient(180deg, #1f1040 0%, #150d30 100%)', zIndex: 250 }}
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#ffffff0a]">
@@ -136,7 +141,7 @@ function AgathaPanel({
 
   return (
     <div
-      className="fixed bottom-28 right-8 w-[360px] rounded-2xl border border-pink-400/30 shadow-2xl overflow-hidden"
+      className="fixed top-24 right-8 w-[360px] rounded-2xl border border-pink-400/30 shadow-2xl overflow-hidden"
       style={{ background: 'linear-gradient(180deg, #1f1040 0%, #150d30 100%)', zIndex: 250 }}
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#ffffff0a]">
@@ -314,7 +319,7 @@ export function AgentBalls() {
 
   // Auto 1×/dia: ao abrir o dashboard, se a última revisão foi há mais de 24h.
   useEffect(() => {
-    if (userEmail !== AGENT_OWNER_EMAIL || !loaded || autoFired.current) return;
+    if (IS_SCRAPE_VIEW || !AGENT_OWNERS.has(userEmail ?? '') || !loaded || autoFired.current) return;
     const last = reviewData?.lastRun ? new Date(reviewData.lastRun).getTime() : 0;
     const stale = Date.now() - last > DIA_MS;
     if (!reviewData?.running && stale) {
@@ -323,7 +328,7 @@ export function AgentBalls() {
     }
   }, [userEmail, loaded, reviewData]);
 
-  if (userEmail !== AGENT_OWNER_EMAIL) return null;
+  if (IS_SCRAPE_VIEW || !AGENT_OWNERS.has(userEmail ?? '')) return null;
 
   const rafaelData = overrides['rafael.status'] as AgentData | undefined;
 
@@ -353,31 +358,26 @@ export function AgentBalls() {
         />
       )}
 
-      <div className="fixed bottom-8 right-8 flex flex-col items-center gap-1.5" style={{ zIndex: 150 }}>
-        <div
-          className="relative rounded-full bg-white border border-cw-border shadow-xl"
-          style={{ width: 84, height: 84 }}
-        >
-          <Ball
-            color="blue"
-            delay="0s"
-            errors={rafaelErrors}
-            title="Rafael — monitora dashboards"
-            onClick={() => { setRafaelOpen(o => !o); setAgathaOpen(false); }}
-          />
-          <Ball
-            color="pink"
-            delay="-2s"
-            errors={agathaErrors}
-            busy={agathaBusy}
-            title="Agatha — revisa a escrita das abas"
-            onClick={() => { setAgathaOpen(o => !o); setRafaelOpen(false); }}
-          />
-        </div>
-        <div className="flex gap-3">
-          <span className="text-[9px] font-bold text-blue-500">Rafael</span>
-          <span className="text-[9px] font-bold text-pink-500">Agatha</span>
-        </div>
+      {/* Gatilho: círculo branco com Rafael e Agatha girando juntos (embutido no banner) */}
+      <div
+        className="relative rounded-full bg-white border border-cw-border shadow-lg"
+        style={{ width: 72, height: 72 }}
+      >
+        <Ball
+          color="blue"
+          delay="0s"
+          errors={rafaelErrors}
+          title="Rafael — monitora dashboards"
+          onClick={() => { setRafaelOpen(o => !o); setAgathaOpen(false); }}
+        />
+        <Ball
+          color="pink"
+          delay="-2s"
+          errors={agathaErrors}
+          busy={agathaBusy}
+          title="Agatha — revisa a escrita das abas"
+          onClick={() => { setAgathaOpen(o => !o); setRafaelOpen(false); }}
+        />
       </div>
     </>
   );
