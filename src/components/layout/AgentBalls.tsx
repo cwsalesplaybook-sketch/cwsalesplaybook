@@ -230,10 +230,9 @@ function AgathaPanel({
 }
 
 function Ball({
-  color, delay, errors, busy, onClick, title,
+  color, errors, busy, onClick, title,
 }: {
   color: 'blue' | 'pink';
-  delay: string;
   errors: number;
   busy?: boolean;
   onClick: () => void;
@@ -251,18 +250,15 @@ function Ball({
       onClick={onClick}
       title={title}
       style={{
-        position: 'absolute',
-        top: '50%', left: '50%',
-        width: 20, height: 20,
-        marginLeft: -10, marginTop: -10,
+        position: 'relative',
+        width: 26, height: 26,
         border: 'none', background: 'none', padding: 0,
         cursor: 'pointer',
-        animation: `agentOrbit 4s linear infinite`,
-        animationDelay: delay,
+        display: 'inline-flex',
       }}
     >
       <div style={{
-        width: 20, height: 20,
+        width: 26, height: 26,
         borderRadius: '50%',
         background: bg,
         boxShadow: shadow,
@@ -354,30 +350,30 @@ export function AgentBalls() {
       )}
 
       <div
-        style={{ position: 'fixed', bottom: 40, right: 40, zIndex: 150, width: 64, height: 64 }}
+        className="fixed bottom-8 right-8 flex items-center gap-5 rounded-2xl bg-white border border-cw-border shadow-xl px-5 py-3"
+        style={{ zIndex: 150 }}
       >
-        <Ball
-          color="blue"
-          delay="0s"
-          errors={rafaelErrors}
-          title="Rafael — monitora dashboards"
-          onClick={() => { setRafaelOpen(o => !o); setAgathaOpen(false); }}
-        />
-        <Ball
-          color="pink"
-          delay="-2s"
-          errors={agathaErrors}
-          busy={agathaBusy}
-          title="Agatha — revisa a escrita das abas"
-          onClick={() => { setAgathaOpen(o => !o); setRafaelOpen(false); }}
-        />
+        <div className="flex flex-col items-center gap-1.5">
+          <Ball
+            color="blue"
+            errors={rafaelErrors}
+            title="Rafael — monitora dashboards"
+            onClick={() => { setRafaelOpen(o => !o); setAgathaOpen(false); }}
+          />
+          <span className="text-[10px] font-bold text-blue-500">Rafael</span>
+        </div>
 
-        <div style={{
-          position: 'absolute', bottom: -18, left: 0, right: 0,
-          display: 'flex', justifyContent: 'space-between', padding: '0 2px',
-        }}>
-          <span style={{ fontSize: 8, color: 'rgba(147,197,253,0.55)', fontWeight: 700 }}>Rafael</span>
-          <span style={{ fontSize: 8, color: 'rgba(249,168,212,0.55)', fontWeight: 700 }}>Agatha</span>
+        <div className="w-px h-8 bg-cw-border/70" />
+
+        <div className="flex flex-col items-center gap-1.5">
+          <Ball
+            color="pink"
+            errors={agathaErrors}
+            busy={agathaBusy}
+            title="Agatha — revisa a escrita das abas"
+            onClick={() => { setAgathaOpen(o => !o); setRafaelOpen(false); }}
+          />
+          <span className="text-[10px] font-bold text-pink-500">Agatha</span>
         </div>
       </div>
     </>
