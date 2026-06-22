@@ -13,6 +13,8 @@ const ICON_MAP = { BookOpen, Swords, Target, Megaphone, Calendar, Sparkles, Trop
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ bottom: number; left: number } | null>(null);
   const avisos = useEditableContent<Aviso[]>('dashboard.avisos', AVISOS_PADRAO);
   const { unreadCount, markOneRead, markAllRead, isRead } = useMuralNotifications();
 
@@ -24,11 +26,20 @@ export function NotificationBell() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
+  function handleToggle() {
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({ bottom: window.innerHeight - r.top, left: r.right + 8 });
+    }
+    setOpen(o => !o);
+  }
+
   return (
     <div ref={ref} className="relative">
       {/* Botão estilo item de sidebar */}
       <button
-        onClick={() => setOpen(o => !o)}
+        ref={btnRef}
+        onClick={handleToggle}
         className={cn(
           'relative w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
           open
@@ -45,11 +56,17 @@ export function NotificationBell() {
         )}
       </button>
 
-      {/* Painel de avisos — abre para CIMA e para a direita */}
-      {open && (
+      {/* Painel de avisos — fixed para escapar do overflow-hidden da sidebar */}
+      {open && pos && (
         <div
-          className="absolute bottom-full left-full ml-2 mb-0 w-80 rounded-2xl border border-[#ffffff12] shadow-2xl overflow-hidden z-[200]"
-          style={{ background: 'linear-gradient(180deg, #1f1040 0%, #150d30 100%)' }}
+          className="w-80 rounded-2xl border border-[#ffffff12] shadow-2xl overflow-hidden"
+          style={{
+            position: 'fixed',
+            bottom: pos.bottom,
+            left: pos.left,
+            zIndex: 200,
+            background: 'linear-gradient(180deg, #1f1040 0%, #150d30 100%)',
+          }}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#ffffff0a]">
