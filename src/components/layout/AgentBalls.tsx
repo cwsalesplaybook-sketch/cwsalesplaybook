@@ -234,9 +234,9 @@ function AgathaPanel({
   );
 }
 
-/* ── Silhueta estilo placa de banheiro (homem azul / mulher rosa) andando ── */
-const FW = 24; // largura aprox. da silhueta
-const FH = 46; // altura aprox.
+/* ── Bolinha pulsando (azul Rafael / rosa Agatha) que passeia pela tela ── */
+const FW = 22;
+const FH = 22;
 
 function Figure({
   color, figRef, errors, busy, onClick, title,
@@ -248,12 +248,12 @@ function Figure({
   onClick: () => void;
   title: string;
 }) {
-  const fill = color === 'blue' ? '#3b82f6' : '#f472b6';
-  const isMan = color === 'blue';
-  const legStyle = (delay: string): React.CSSProperties => ({
-    transformBox: 'fill-box', transformOrigin: '50% 0%',
-    animation: 'agentStep .4s ease-in-out infinite', animationDelay: delay,
-  });
+  const bg = color === 'blue'
+    ? 'radial-gradient(circle at 35% 30%, #93c5fd, #3b82f6)'
+    : 'radial-gradient(circle at 35% 30%, #f9a8d4, #f472b6)';
+  const glow = color === 'blue'
+    ? '0 0 8px 2px rgba(59,130,246,0.6)'
+    : '0 0 8px 2px rgba(244,114,182,0.6)';
 
   return (
     <div
@@ -263,40 +263,23 @@ function Figure({
       style={{
         position: 'absolute', top: 0, left: 0, width: FW, height: FH,
         cursor: 'pointer', pointerEvents: 'auto', willChange: 'transform',
-        filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.3))',
       }}
     >
-      <div style={{ animation: 'agentBob .4s ease-in-out infinite' }}>
-        <svg width={FW} height={FH} viewBox="0 0 24 46" fill={fill} aria-hidden="true">
-          {isMan ? (
-            <>
-              <circle cx="12" cy="6" r="5" />
-              <rect x="8" y="11" width="8" height="15" rx="2" />
-              <rect x="5" y="12" width="2.6" height="13" rx="1.3" />
-              <rect x="16.4" y="12" width="2.6" height="13" rx="1.3" />
-              <rect x="8.7" y="24.5" width="3" height="17.5" rx="1.4" style={legStyle('0s')} />
-              <rect x="12.3" y="24.5" width="3" height="17.5" rx="1.4" style={legStyle('.2s')} />
-            </>
-          ) : (
-            <>
-              <circle cx="12" cy="6" r="5" />
-              <polygon points="9.2,11 14.8,11 20,30 4,30" />
-              <rect x="9.4" y="29" width="2.6" height="13.5" rx="1.2" style={legStyle('0s')} />
-              <rect x="12" y="29" width="2.6" height="13.5" rx="1.2" style={legStyle('.2s')} />
-            </>
-          )}
-        </svg>
-      </div>
+      <div style={{
+        width: FW, height: FH, borderRadius: '50%',
+        background: bg, boxShadow: glow,
+        animation: 'agentPulse 1.8s ease-in-out infinite',
+      }} />
       {busy ? (
         <span style={{
-          position: 'absolute', top: -7, left: '50%', marginLeft: -6,
+          position: 'absolute', top: -6, right: -6,
           width: 12, height: 12, borderRadius: '50%',
           border: '2px solid #fff', borderTopColor: 'transparent',
           animation: 'spin 0.7s linear infinite',
         }} />
       ) : errors > 0 ? (
         <span style={{
-          position: 'absolute', top: -7, left: '50%', marginLeft: -6,
+          position: 'absolute', top: -5, right: -5,
           background: '#ef4444', color: '#fff', fontSize: 8, fontWeight: 900, lineHeight: 1,
           borderRadius: '50%', width: 12, height: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -445,8 +428,8 @@ export function AgentBalls() {
         />
       )}
 
-      {/* Rafael e Agatha caminhando pelo banner, como se estivessem se procurando */}
-      <div ref={playgroundRef} className="absolute inset-0" style={{ pointerEvents: 'none', zIndex: 20 }}>
+      {/* Rafael e Agatha passeando pela tela toda (overlay global), como se se procurando */}
+      <div ref={playgroundRef} className="fixed inset-0" style={{ pointerEvents: 'none', zIndex: 40 }}>
         <Figure
           color="blue"
           figRef={rafaelRef}

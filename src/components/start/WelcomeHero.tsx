@@ -1,7 +1,6 @@
 /** Hero da página Comece por Aqui — boas-vindas com vídeo placeholder. */
 import { Sparkles } from 'lucide-react';
 import { EditableText } from '@/admin/EditableText';
-import { AgentBalls } from '@/components/layout/AgentBalls';
 
 export function WelcomeHero() {
   return (
@@ -9,11 +8,6 @@ export function WelcomeHero() {
       <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
         <div className="absolute inset-0 gradient-glow" />
         <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/5" />
-      </div>
-
-      {/* Rafael & Agatha brincando de pega-pega pelo banner (só donos) */}
-      <div className="absolute inset-0 z-20 overflow-hidden rounded-2xl pointer-events-none">
-        <AgentBalls />
       </div>
 <div className="relative grid md:grid-cols-2 gap-7 items-center">
         {/* Coluna esquerda — texto */}
