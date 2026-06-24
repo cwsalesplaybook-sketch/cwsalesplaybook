@@ -44,8 +44,11 @@ export const REVIEW_TARGETS: ReviewTarget[] = [
   { papel: 'SDR', route: '/mural', label: 'SDR · Mural' },
 
   // Closer
+  { papel: 'Closer', route: '/closer/dashboard', label: 'Closer · Dashboard' },
   { papel: 'Closer', route: '/closer/planos', label: 'Closer · Planos e Preços' },
-  { papel: 'Closer', route: '/closer/cupons', label: 'Closer · Cupons' },
+  { papel: 'Closer', route: '/closer/templates', label: 'Closer · Templates' },
+  { papel: 'Closer', route: '/closer/descontos', label: 'Closer · Descontos' },
+  { papel: 'Closer', route: '/closer/metas', label: 'Closer · Metas' },
   { papel: 'Closer', route: '/closer/objecoes', label: 'Closer · Objeções' },
   { papel: 'Closer', route: '/closer/processo', label: 'Closer · Processo de Venda' },
   { papel: 'Closer', route: '/closer/rotina', label: 'Closer · Rotina & Progressão' },

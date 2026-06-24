@@ -1,7 +1,7 @@
 /** Roteamento e layout global do CW Sales Playbook. */
 import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
@@ -42,8 +42,11 @@ import Calculadora from '@/pages/Calculadora';
 import GestorAdminPage from '@/pages/GestorAdminPage';
 import PainelControle from '@/pages/PainelControle';
 import CloserPlanos from '@/pages/closer/Planos';
-import CloserCupons from '@/pages/closer/Cupons';
 import CloserObjecoes from '@/pages/closer/Objecoes';
+import CloserDashboard from '@/pages/closer/Dashboard';
+import CloserTemplates from '@/pages/closer/Templates';
+import CloserDescontos from '@/pages/closer/Descontos';
+import CloserMetas from '@/pages/closer/Metas';
 import CloserProcesso from '@/pages/closer/Processo';
 import CloserRotina from '@/pages/closer/Rotina';
 import CloserConcorrentes from '@/pages/closer/Concorrentes';
@@ -153,8 +156,13 @@ function AnimatedRoutes() {
           <Route path="/playbook/parcerias" element={<PlaybookParcerias />} />
           <Route path="/playbook/representantes" element={<PlaybookRepresentantes />} />
           {/* Seções do dashboard de Closer */}
+          <Route path="/closer/dashboard" element={<CloserDashboard />} />
           <Route path="/closer/planos" element={<CloserPlanos />} />
-          <Route path="/closer/cupons" element={<CloserCupons />} />
+          <Route path="/closer/templates" element={<CloserTemplates />} />
+          <Route path="/closer/descontos" element={<CloserDescontos />} />
+          <Route path="/closer/metas" element={<CloserMetas />} />
+          {/* Cupons migrou para Descontos — redireciona links antigos. */}
+          <Route path="/closer/cupons" element={<Navigate to="/closer/descontos" replace />} />
           <Route path="/closer/objecoes" element={<CloserObjecoes />} />
           <Route path="/closer/processo" element={<CloserProcesso />} />
           <Route path="/closer/rotina" element={<CloserRotina />} />
