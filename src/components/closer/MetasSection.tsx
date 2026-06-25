@@ -1,6 +1,6 @@
 /** Metas — tracker pessoal de metas do mês (localStorage por closer). */
 import { useState } from 'react';
-import { Target, Calendar, TrendingUp, Plus, Trash2, Package, Settings2, Check, Rocket } from 'lucide-react';
+import { Target, Calendar, TrendingUp, Plus, Trash2, Package, Settings2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCloserMetas, type MetaModulo } from '@/hooks/useCloserMetas';
 
@@ -199,32 +199,6 @@ export function MetasSection() {
               <span className="text-[10px] text-cw-muted">Deixe vazio para cálculo automático</span>
             </label>
           </div>
-
-          <div className="border-t border-cw-border pt-4">
-            <div className="flex items-center gap-1.5 mb-3">
-              <Rocket className="h-3.5 w-3.5 text-cw-yellow" />
-              <p className="text-[10px] font-black text-cw-yellow uppercase tracking-widest">Mega Metas (objetivo stretch)</p>
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-              {([
-                ['Mega Meta 1 (R$)', state.mega1, (v: number) => update({ mega1: v }), '30000'],
-                ['Mega Meta 2 (R$)', state.mega2, (v: number) => update({ mega2: v }), '40000'],
-                ['Mega Meta 3 (R$)', state.mega3, (v: number) => update({ mega3: v }), '50000'],
-              ] as const).map(([label, val, setter, ph]) => (
-                <label key={label} className="block">
-                  <span className="text-xs font-medium text-cw-muted">{label}</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    defaultValue={val || ''}
-                    placeholder={ph}
-                    onChange={e => setter(num(e.target.value))}
-                    className="mt-1 w-full bg-cw-surface border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text placeholder:text-cw-muted focus:outline-none focus:border-cw-yellow/50"
-                  />
-                </label>
-              ))}
-            </div>
-          </div>
         </div>
       )}
 
@@ -262,22 +236,6 @@ export function MetasSection() {
             <ProgressoCard key={i} idx={i} alvo={m.valor} progresso={m.progresso} falta={m.falta} porDia={m.porDia} batida={m.batida} />
           ))}
         </div>
-      </div>
-
-      {/* Progresso das Mega Metas */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Rocket className="h-4 w-4 text-cw-yellow" />
-          <p className="text-[10px] font-black text-cw-yellow uppercase tracking-widest">Progresso das Mega Metas</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {computed.megaMetas.map((m, i) => (
-            <ProgressoCard key={i} idx={i} alvo={m.valor} progresso={m.progresso} falta={m.falta} porDia={m.porDia} batida={m.batida} label={`Mega Meta ${i + 1}`} />
-          ))}
-        </div>
-        {computed.megaMetas.every(m => m.valor === 0) && (
-          <p className="text-[11px] text-cw-muted mt-2">Defina suas mega metas em "Definir Metas" acima.</p>
-        )}
       </div>
 
       {/* Módulos */}
