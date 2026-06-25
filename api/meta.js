@@ -18,6 +18,10 @@ export default async function handler(req, res) {
   const prefixo = `${ano}-${mes}`;
   const iniciaMes = `${ano}-${mes}-01`;
 
+  // Modo diagnóstico temporário: ?debug=cwdiag lista os deals contados.
+  const debug = req.query.debug === 'cwdiag';
+  const dealsDebug = [];
+
   let ganhos = 0;
   const porDia = {}; // { 'YYYY-MM-DD': count }
   let start = 0;
@@ -43,6 +47,22 @@ export default async function handler(req, res) {
           ganhos++;
           const dia = ct.slice(0, 10); // 'YYYY-MM-DD'
           porDia[dia] = (porDia[dia] || 0) + 1;
+          if (debug) {
+            dealsDebug.push({
+              id: deal.id,
+              title: deal.title,
+              value: deal.value,
+              currency: deal.currency,
+              status: deal.status,
+              stage_id: deal.stage_id,
+              pipeline_id: deal.pipeline_id,
+              add_time: deal.add_time,
+              close_time: ct,
+              won_time: wt,
+              owner: ownerId,
+              sdr_field: deal[SDR_FIELD],
+            });
+          }
         }
       }
       if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
@@ -92,6 +112,7 @@ export default async function handler(req, res) {
       ok: true, ganhos, mes: prefixo,
       diasUteisTotal, diasPassados, diasRestantes, diasUteisSemanais,
       evolucao,
+      ...(debug ? { deals: dealsDebug } : {}),
       ts: new Date().toISOString(),
     });
   } catch (e) {
