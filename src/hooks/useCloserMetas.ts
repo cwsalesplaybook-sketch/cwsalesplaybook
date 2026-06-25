@@ -14,6 +14,10 @@ export interface MetasState {
   meta1: number;
   meta2: number;
   meta3: number;
+  /** Mega metas — objetivos "stretch" acima das metas regulares. */
+  mega1: number;
+  mega2: number;
+  mega3: number;
   jaFechado: number;
   /** null = cálculo automático (dias úteis restantes no mês). */
   diasUteis: number | null;
@@ -26,6 +30,9 @@ const EMPTY: MetasState = {
   meta1: 0,
   meta2: 0,
   meta3: 0,
+  mega1: 0,
+  mega2: 0,
+  mega3: 0,
   jaFechado: 0,
   diasUteis: null,
   modulos: [],
@@ -61,6 +68,7 @@ export interface MetasComputed extends MetasState {
   mesLabel: string;
   diasRestantes: number;
   metas: MetaCalculo[];      // [meta1, meta2, meta3]
+  megaMetas: MetaCalculo[];  // [mega1, mega2, mega3]
   projecao: number;          // projeção de fechamento no mês
   performance: number;       // % sobre a maior meta (meta 3)
 }
@@ -131,6 +139,9 @@ export function useCloserMetas() {
   const metas = [state.meta1, state.meta2, state.meta3].map((alvo) =>
     calcMeta(alvo, state.jaFechado, dias),
   );
+  const megaMetas = [state.mega1, state.mega2, state.mega3].map((alvo) =>
+    calcMeta(alvo, state.jaFechado, dias),
+  );
   const maiorMeta = Math.max(state.meta1, state.meta2, state.meta3);
   // Projeção: ritmo diário atual × dias úteis totais do mês (estimativa simples).
   const diasTotais = diasUteisRestantes(new Date(now.getFullYear(), now.getMonth(), 1));
@@ -145,6 +156,7 @@ export function useCloserMetas() {
     mesLabel: MESES[now.getMonth()],
     diasRestantes: dias,
     metas,
+    megaMetas,
     projecao,
     performance,
   };

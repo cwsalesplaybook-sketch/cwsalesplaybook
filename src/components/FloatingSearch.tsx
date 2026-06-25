@@ -182,7 +182,7 @@ const DESTINOS_CLOSER: Destino[] = [
     tags: ['meta', 'metas', 'objetivo', 'progresso', 'fechamento', 'mês', 'mes', 'módulos', 'modulos'],
     label: 'Metas',
     descricao: 'Acompanhe sua meta do mês e módulos',
-    path: '/closer/metas',
+    path: '/metas',
     cor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   },
   {

@@ -160,7 +160,9 @@ function AnimatedRoutes() {
           <Route path="/closer/planos" element={<CloserPlanos />} />
           <Route path="/closer/templates" element={<CloserTemplates />} />
           <Route path="/closer/descontos" element={<CloserDescontos />} />
-          <Route path="/closer/metas" element={<CloserMetas />} />
+          {/* Metas é pessoal (localStorage) e compartilhada por todos os papéis. */}
+          <Route path="/metas" element={<CloserMetas />} />
+          <Route path="/closer/metas" element={<Navigate to="/metas" replace />} />
           {/* Cupons migrou para Descontos — redireciona links antigos. */}
           <Route path="/closer/cupons" element={<Navigate to="/closer/descontos" replace />} />
           <Route path="/closer/objecoes" element={<CloserObjecoes />} />

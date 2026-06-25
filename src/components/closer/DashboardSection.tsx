@@ -50,7 +50,7 @@ export function DashboardSection() {
   const acoes = [
     { to: '/closer/descontos', label: 'Pegar Cupom', icon: Percent },
     { to: '/closer/templates', label: 'Copiar Template', icon: FileText },
-    { to: '/closer/metas', label: 'Atualizar Meta', icon: Target },
+    { to: '/metas', label: 'Atualizar Meta', icon: Target },
   ];
 
   return (

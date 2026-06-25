@@ -29,6 +29,7 @@ const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 const NAV_PADRAO: NavItem[] = [
   { to: '/start',      label: 'Comece Aqui',             icon: 'Sparkles',       end: false },
   { to: '/meta',       label: 'Meta do Mês',             icon: 'Target',         end: false },
+  { to: '/metas',      label: 'Metas',                   icon: 'Award',          end: false },
   { to: '/playbook',   label: 'Playbook',                icon: 'BookOpen',       end: false },
   { to: '/',           label: 'Sales Enablement',        icon: 'LayoutDashboard',end: true  },
   { to: '/pipeline',    label: 'Pipeline',                icon: 'BarChart2',       end: false },
@@ -41,7 +42,7 @@ const NAV_PADRAO: NavItem[] = [
 ];
 
 const SECTIONS = [
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline', '/automacoes'] },
+  { label: 'Comercial',      routes: ['/meta', '/metas', '/playbook', '/', '/pipeline', '/automacoes'] },
   { label: 'Cultura e Time', routes: ['/historias', '/biblioteca', '/regras', '/onboarding', '/carreira'] },
 ];
 
@@ -57,7 +58,7 @@ const NAV_CLOSER: NavItem[] = [
   { to: '/closer/processo',     label: 'Processo de Venda',    icon: 'Target',         end: false },
   { to: '/closer/concorrentes', label: 'Concorrentes',         icon: 'Sword',          end: false },
   { to: '/pipeline',            label: 'Pipeline',             icon: 'BarChart2',      end: false },
-  { to: '/closer/metas',        label: 'Metas',                icon: 'Award',          end: false },
+  { to: '/metas',               label: 'Metas',                icon: 'Award',          end: false },
   { to: '/closer/rotina',       label: 'Rotina & Progressão',  icon: 'TrendingUp',     end: false },
   { to: '/historias',           label: 'Histórias de Sucesso', icon: 'Trophy',         end: false },
 ];
@@ -65,7 +66,7 @@ const NAV_CLOSER: NavItem[] = [
 const CLOSER_SECTIONS = [
   { label: 'Operação',          routes: ['/closer/dashboard'] },
   { label: 'Comercial',         routes: ['/closer/planos', '/closer/templates', '/closer/descontos', '/closer/objecoes', '/closer/processo', '/closer/concorrentes', '/pipeline'] },
-  { label: 'Carreira & Rotina', routes: ['/closer/metas', '/closer/rotina'] },
+  { label: 'Carreira & Rotina', routes: ['/metas', '/closer/rotina'] },
   { label: 'Cultura e Time',    routes: ['/historias'] },
 ];
 
