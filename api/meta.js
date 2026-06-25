@@ -108,11 +108,32 @@ export default async function handler(req, res) {
       });
     }
 
+    let meta;
+    if (debug) {
+      try {
+        const [pRes, fRes] = await Promise.all([
+          fetch(`https://api.pipedrive.com/v1/pipelines?api_token=${TOKEN}`),
+          fetch(`https://api.pipedrive.com/v1/dealFields?api_token=${TOKEN}&start=0&limit=500`),
+        ]);
+        const pJson = await pRes.json();
+        const fJson = await fRes.json();
+        meta = {
+          pipelines: (pJson.data || []).map(p => ({ id: p.id, name: p.name })),
+          camposSdrBdr: (fJson.data || [])
+            .filter(f => /sdr|bdr/i.test(f.name || ''))
+            .map(f => ({ key: f.key, name: f.name, type: f.field_type })),
+          campoAtual: (fJson.data || [])
+            .filter(f => f.key === SDR_FIELD)
+            .map(f => ({ key: f.key, name: f.name, type: f.field_type })),
+        };
+      } catch (e) { meta = { erro: String(e) }; }
+    }
+
     res.status(200).json({
       ok: true, ganhos, mes: prefixo,
       diasUteisTotal, diasPassados, diasRestantes, diasUteisSemanais,
       evolucao,
-      ...(debug ? { deals: dealsDebug } : {}),
+      ...(debug ? { deals: dealsDebug, meta } : {}),
       ts: new Date().toISOString(),
     });
   } catch (e) {
