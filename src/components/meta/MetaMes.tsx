@@ -1,6 +1,6 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useState, useCallback } from 'react';
-import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, AlertTriangle, Star } from 'lucide-react';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, AlertTriangle, Star, Rocket } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -14,7 +14,7 @@ const SDRS_ATIVOS: Record<string, string> = {
   '1738': 'Clara Rodrigues', '1706': 'Raissa Fonseca', '1335': 'João Paulo',
 };
 
-interface MetaData { meta1: number; meta2: number; meta3: number; ajuste: number; sdrId: string; }
+interface MetaData { meta1: number; meta2: number; meta3: number; mega1: number; mega2: number; mega3: number; ajuste: number; sdrId: string; }
 interface EvolucaoPonto { dia: string; noDia: number; acumulado: number; }
 interface ApiData  { ganhos: number; mes: string; diasUteisTotal: number; diasPassados: number; diasRestantes: number; diasUteisSemanais: number; evolucao?: EvolucaoPonto[]; }
 
@@ -23,8 +23,11 @@ function getStatus(ganhos: number, meta1: number, diasPassados: number, diasUtei
   return (ganhos / diasPassados) >= (meta1 / diasUteisTotal) * 0.9 ? 'no-ritmo' : 'atrasado';
 }
 
-function getMensagemForecast(ganhos: number, m1: number, m2: number, m3: number) {
-  if (m3 > 0 && ganhos >= m3) return { texto: 'Você bateu a Meta 3! 🏆', nivel: 3 };
+function getMensagemForecast(ganhos: number, m1: number, m2: number, m3: number, mg1: number, mg2: number, mg3: number) {
+  if (mg3 > 0 && ganhos >= mg3) return { texto: 'Você bateu a Mega Meta 3! 🚀🏆', nivel: 6 };
+  if (mg2 > 0 && ganhos >= mg2) return { texto: 'Você está no forecast da Mega Meta 3 🚀', nivel: 5 };
+  if (mg1 > 0 && ganhos >= mg1) return { texto: 'Você está no forecast da Mega Meta 2 🚀', nivel: 4 };
+  if (m3 > 0 && ganhos >= m3) return { texto: mg1 > 0 ? 'Você está no forecast da Mega Meta 1 🚀' : 'Você bateu a Meta 3! 🏆', nivel: 3 };
   if (m2 > 0 && ganhos >= m2) return { texto: 'Você está no forecast da Meta 3', nivel: 2 };
   if (m1 > 0 && ganhos >= m1) return { texto: 'Você está no forecast da Meta 2', nivel: 1 };
   return { texto: 'Você está no forecast da Meta 1', nivel: 0 };
@@ -56,6 +59,20 @@ function ConfigModal({ metaData, onSave, onClose }: { metaData: MetaData; onSave
                 className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
             </div>
           ))}
+
+          <div className="border-t border-cw-border pt-4 space-y-4">
+            <p className="flex items-center gap-1.5 text-xs font-bold text-amber-500 uppercase tracking-wider">
+              <Rocket className="h-3.5 w-3.5" /> Mega Metas (stretch)
+            </p>
+            {[1, 2, 3].map(n => (
+              <div key={`mega${n}`}>
+                <label className="text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5 block">Mega Meta {n}</label>
+                <input type="number" min={0} value={(form as any)[`mega${n}`]}
+                  onChange={e => setForm(f => ({ ...f, [`mega${n}`]: Number(e.target.value) }))}
+                  className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-amber-400" placeholder="0" />
+              </div>
+            ))}
+          </div>
         </div>
         <button onClick={() => onSave(form)} className="w-full mt-6 py-3 rounded-xl font-bold text-sm text-white gradient-primary transition-opacity hover:opacity-90">
           Salvar configurações
@@ -66,7 +83,7 @@ function ConfigModal({ metaData, onSave, onClose }: { metaData: MetaData; onSave
 }
 
 export default function MetaMes() {
-  const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, ajuste: 0, sdrId: '' });
+  const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, sdrId: '' });
   const [apiData, setApiData]     = useState<ApiData | null>(null);
   const [loading, setLoading]     = useState(false);
   const [config, setConfig]       = useState(false);
@@ -81,7 +98,7 @@ export default function MetaMes() {
     const mesAtual = new Date().toISOString().slice(0, 7);
     setMes(mesAtual);
     const { data } = await supabase.from('user_metas').select('*').eq('user_id', session.user.id).eq('mes', mesAtual).single();
-    if (data) setMetaData({ meta1: data.meta1, meta2: data.meta2, meta3: data.meta3, ajuste: data.ajuste, sdrId: data.sdr_id });
+    if (data) setMetaData({ meta1: data.meta1, meta2: data.meta2, meta3: data.meta3, mega1: data.mega1 ?? 0, mega2: data.mega2 ?? 0, mega3: data.mega3 ?? 0, ajuste: data.ajuste, sdrId: data.sdr_id });
     else setConfig(true);
   }, []);
 
@@ -103,7 +120,7 @@ export default function MetaMes() {
   }, [metaData.sdrId, buscarGanhos]);
 
   const salvarConfig = async (novosDados: MetaData) => {
-    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: novosDados.sdrId, meta1: novosDados.meta1, meta2: novosDados.meta2, meta3: novosDados.meta3, ajuste: novosDados.ajuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
+    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: novosDados.sdrId, meta1: novosDados.meta1, meta2: novosDados.meta2, meta3: novosDados.meta3, mega1: novosDados.mega1, mega2: novosDados.mega2, mega3: novosDados.mega3, ajuste: novosDados.ajuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
     setMetaData(novosDados);
     setConfig(false);
     if (novosDados.sdrId) buscarGanhos(novosDados.sdrId);
@@ -112,17 +129,18 @@ export default function MetaMes() {
   const alterarAjuste = async (delta: number) => {
     const novoAjuste = metaData.ajuste + delta;
     setMetaData(m => ({ ...m, ajuste: novoAjuste }));
-    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: metaData.sdrId, meta1: metaData.meta1, meta2: metaData.meta2, meta3: metaData.meta3, ajuste: novoAjuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
+    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: metaData.sdrId, meta1: metaData.meta1, meta2: metaData.meta2, meta3: metaData.meta3, mega1: metaData.mega1, mega2: metaData.mega2, mega3: metaData.mega3, ajuste: novoAjuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
   };
 
   const totalGanhos   = (apiData?.ganhos ?? 0) + metaData.ajuste;
-  const { meta1, meta2, meta3 } = metaData;
+  const { meta1, meta2, meta3, mega1, mega2, mega3 } = metaData;
+  const temMega = mega1 > 0 || mega2 > 0 || mega3 > 0;
   const diasRestantes  = apiData?.diasRestantes  ?? 20;
   const diasPassados   = apiData?.diasPassados   ?? 1;
   const diasUteisTotal = apiData?.diasUteisTotal ?? 22;
   const metaReferencia = meta3 || meta2 || meta1;
   const status   = getStatus(totalGanhos, meta1, diasPassados, diasUteisTotal);
-  const forecast = getMensagemForecast(totalGanhos, meta1, meta2, meta3);
+  const forecast = getMensagemForecast(totalGanhos, meta1, meta2, meta3, mega1, mega2, mega3);
   const projecao = diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * diasUteisTotal) : 0;
   const porDia   = (m: number) => diasRestantes > 0 ? Math.ceil(Math.max(0, m - totalGanhos) / diasRestantes) : 0;
   const falta    = (m: number) => Math.max(0, m - totalGanhos);
@@ -225,6 +243,38 @@ export default function MetaMes() {
             })}
           </div>
 
+          {/* Cards Mega Meta 1/2/3 */}
+          {temMega && (
+            <div>
+              <p className="flex items-center gap-1.5 text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2">
+                <Rocket className="h-3.5 w-3.5" /> Mega Metas (stretch)
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                {[{ label: 'MEGA META 1', value: mega1 }, { label: 'MEGA META 2', value: mega2 }, { label: 'MEGA META 3', value: mega3 }].map(({ label, value }, i) => {
+                  const batida = value > 0 && totalGanhos >= value;
+                  return (
+                    <div key={i} className={cn('rounded-xl border p-3',
+                      batida ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50/60'
+                    )}>
+                      <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">{label}</p>
+                      <p className="text-xs text-cw-muted mt-0.5">{value > 0 ? `${value} fechamentos` : 'Não definida'}</p>
+                      {batida ? (
+                        <div className="flex items-center gap-1 mt-1.5 text-green-600 text-xs font-semibold">
+                          <Check className="h-3.5 w-3.5" /> Mega meta atingida!
+                        </div>
+                      ) : value > 0 ? (
+                        <div className="mt-1.5">
+                          <p className="text-base font-black text-cw-text">{porDia(value)}<span className="text-xs text-cw-muted ml-1">/dia</span></p>
+                          <p className="text-[10px] text-cw-muted">Falta <span className="text-cw-text font-semibold">{falta(value)}</span> pra mega</p>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Projeção + dias */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-cw-elevated rounded-xl border border-cw-border px-4 py-3 flex items-center gap-3">
@@ -290,10 +340,13 @@ export default function MetaMes() {
 
           <div className="space-y-2">
             {[
-              { label: 'Meta 1', value: meta1, star: false },
-              { label: 'Meta 2', value: meta2, star: false },
-              { label: 'Meta 3', value: meta3, star: true },
-            ].map(({ label, value, star }) => {
+              { label: 'Meta 1', value: meta1, star: false, mega: false },
+              { label: 'Meta 2', value: meta2, star: false, mega: false },
+              { label: 'Meta 3', value: meta3, star: true, mega: false },
+              { label: 'Mega Meta 1', value: mega1, star: false, mega: true },
+              { label: 'Mega Meta 2', value: mega2, star: false, mega: true },
+              { label: 'Mega Meta 3', value: mega3, star: false, mega: true },
+            ].map(({ label, value, star, mega }) => {
               if (!value) return null;
               const fechDia = diasRestantes > 0 ? Math.ceil(Math.max(0, value - totalGanhos) / diasRestantes) : 0;
               const agendDia = conversao > 0 ? Math.ceil(fechDia / (conversao / 100)) : 0;
@@ -301,11 +354,11 @@ export default function MetaMes() {
               return (
                 <div key={label} className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-xl border',
-                  batida ? 'border-green-200 bg-green-50' : 'border-cw-border bg-cw-elevated'
+                  batida ? 'border-green-200 bg-green-50' : mega ? 'border-amber-200 bg-amber-50/60' : 'border-cw-border bg-cw-elevated'
                 )}>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-cw-purple uppercase tracking-wider">
-                      {label}{star && ' ★'}
+                    <p className={cn('text-xs font-bold uppercase tracking-wider', mega ? 'text-amber-600' : 'text-cw-purple')}>
+                      {label}{star && ' ★'}{mega && ' 🚀'}
                     </p>
                     <p className="text-[11px] text-cw-muted">{value} fechamentos</p>
                   </div>
