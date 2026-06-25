@@ -6,7 +6,7 @@ import {
   TrendingUp, BarChart3, Sword, Sparkles, Award, Crown,
   ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
-  Loader2, Users, Library, GraduationCap, FileText, Percent,
+  Loader2, Users, Library, GraduationCap, FileText, Percent, Star,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,7 @@ import { useContentStore, useGlobalEditableContent } from '@/store/contentStore'
 import { toast } from '@/hooks/use-toast';
 import { NotificationBell } from '@/components/layout/NotificationBell';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useNavFavorites } from '@/hooks/useNavFavorites';
 import { supabase } from '@/integrations/supabase/client';
 
 interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?: boolean; }
@@ -83,6 +84,7 @@ export function Sidebar() {
   const { papel, setPapel, lockedPapel, squad, apelido, onboardingActive } = useSidebarContext();
   const { isEditing, openPasswordModal, lock, isMaster, isGestor } = useEditor();
   const userProfile = useUserProfile();
+  const { isFav, toggle: toggleFav } = useNavFavorites(userProfile.email ?? '');
   const navigate = useNavigate();
   const isCloser = papel === 'Closer';
   const rawItems = useGlobalEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
@@ -111,6 +113,8 @@ export function Sidebar() {
   const startItem        = items.find(i => i.to === '/start');
   const sectionItems     = (routes: string[]) => items.filter(i => routes.includes(i.to));
   const allSectionRoutes = sections.flatMap(s => s.routes);
+  // Favoritos do colaborador — só itens que existem na nav atual.
+  const favItems         = items.filter(i => i.to !== '/start' && isFav(i.to));
 
   const [switching, setSwitching] = useState<Papel | null>(null);
 
@@ -165,6 +169,23 @@ export function Sidebar() {
             <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="h-4 w-4 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowDown className="h-2.5 w-2.5" /></button>
             <button onClick={() => remove(idx)} className="h-4 w-4 rounded bg-red-900/30 border border-red-500/30 text-red-400 flex items-center justify-center hover:bg-red-900/50"><Trash2 className="h-2.5 w-2.5" /></button>
           </div>
+        )}
+
+        {/* Estrela de favorito — todo colaborador pode favoritar (some no modo edição de nav) */}
+        {!navEditable && !locked && (
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFav(item.to); }}
+            title={isFav(item.to) ? 'Remover dos favoritos' : 'Favoritar'}
+            className={cn(
+              'absolute right-2 top-1/2 -translate-y-1/2 transition-opacity duration-150',
+              isFav(item.to)
+                ? 'opacity-100 text-cw-yellow'
+                : 'opacity-0 group-hover/nav:opacity-100 text-[#b89fd4] hover:text-cw-yellow',
+            )}
+          >
+            <Star className={cn('h-3.5 w-3.5', isFav(item.to) && 'fill-current')} />
+          </button>
         )}
       </div>
     );
@@ -241,6 +262,18 @@ export function Sidebar() {
             </div>
           );
         })()}
+
+        {/* Favoritos do colaborador */}
+        {favItems.length > 0 && (
+          <div>
+            <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8] flex items-center gap-1">
+              <Star className="h-3 w-3 fill-current text-cw-yellow" /> Favoritos
+            </p>
+            <div className="space-y-0.5">
+              {favItems.map(item => <NavItemEl key={`fav-${item.to}`} item={item} />)}
+            </div>
+          </div>
+        )}
 
         {/* Seções */}
         {sections.map(section => {
