@@ -18,10 +18,6 @@ export default async function handler(req, res) {
   const prefixo = `${ano}-${mes}`;
   const iniciaMes = `${ano}-${mes}-01`;
 
-  // Modo diagnóstico temporário: ?debug=cwdiag lista os deals contados.
-  const debug = req.query.debug === 'cwdiag';
-  const dealsDebug = [];
-
   let ganhos = 0;
   const porDia = {}; // { 'YYYY-MM-DD': count }
   let start = 0;
@@ -36,34 +32,16 @@ export default async function handler(req, res) {
       if (!json.success || !Array.isArray(json.data) || json.data.length === 0) break;
       let parar = false;
       for (const deal of json.data) {
-        const ct = deal.close_time || '';
         const wt = deal.won_time || '';
         if (!wt) continue;
         if (wt < iniciaMes) { parar = true; break; } // ordenado por won_time DESC → para no mês anterior
         if (!wt.startsWith(prefixo)) continue;
         if (Number(deal.pipeline_id) !== PIPELINE_VENDAS) continue; // só Funil de Vendas
-        const ownerId = Number(deal.user_id?.id ?? deal.user_id);
         const id = (deal[SDR_FIELD] != null && deal[SDR_FIELD] !== '') ? String(deal[SDR_FIELD]) : null;
         if (id === String(sdrId)) {
           ganhos++;
           const dia = wt.slice(0, 10); // 'YYYY-MM-DD' (data do ganho)
           porDia[dia] = (porDia[dia] || 0) + 1;
-          if (debug) {
-            dealsDebug.push({
-              id: deal.id,
-              title: deal.title,
-              value: deal.value,
-              currency: deal.currency,
-              status: deal.status,
-              stage_id: deal.stage_id,
-              pipeline_id: deal.pipeline_id,
-              add_time: deal.add_time,
-              close_time: ct,
-              won_time: wt,
-              owner: ownerId,
-              sdr_field: deal[SDR_FIELD],
-            });
-          }
         }
       }
       if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
@@ -109,32 +87,10 @@ export default async function handler(req, res) {
       });
     }
 
-    let meta;
-    if (debug) {
-      try {
-        const [pRes, fRes] = await Promise.all([
-          fetch(`https://api.pipedrive.com/v1/pipelines?api_token=${TOKEN}`),
-          fetch(`https://api.pipedrive.com/v1/dealFields?api_token=${TOKEN}&start=0&limit=500`),
-        ]);
-        const pJson = await pRes.json();
-        const fJson = await fRes.json();
-        meta = {
-          pipelines: (pJson.data || []).map(p => ({ id: p.id, name: p.name })),
-          camposSdrBdr: (fJson.data || [])
-            .filter(f => /sdr|bdr/i.test(f.name || ''))
-            .map(f => ({ key: f.key, name: f.name, type: f.field_type })),
-          campoAtual: (fJson.data || [])
-            .filter(f => f.key === SDR_FIELD)
-            .map(f => ({ key: f.key, name: f.name, type: f.field_type })),
-        };
-      } catch (e) { meta = { erro: String(e) }; }
-    }
-
     res.status(200).json({
       ok: true, ganhos, mes: prefixo,
       diasUteisTotal, diasPassados, diasRestantes, diasUteisSemanais,
       evolucao,
-      ...(debug ? { deals: dealsDebug, meta } : {}),
       ts: new Date().toISOString(),
     });
   } catch (e) {
