@@ -1,6 +1,6 @@
 const TOKEN = process.env.PIPEDRIVE_API_TOKEN;
-const SDR_FIELD = 'ce39d035fad6c74095053ffe04bdb9bbc9ae2a53';
-const MANAGERS = new Set([22291180, 11726977, 22991209, 22122891, 12994693, 11871118]);
+const SDR_FIELD = 'ce39d035fad6c74095053ffe04bdb9bbc9ae2a53'; // campo "[QUAL] SDR/BDR"
+const PIPELINE_VENDAS = 2; // "Funil de Vendas" — única pipeline que conta como fechamento
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -28,7 +28,9 @@ export default async function handler(req, res) {
 
   try {
     while (true) {
-      const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=200&start=${start}&sort=close_time%20DESC`;
+      // Replica o relatório "Nº de neg ganhos dos SDRs": Funil de Vendas (pipeline 2),
+      // status Ganho, "Ganho em" (won_time) no mês, agrupado por [QUAL] SDR/BDR.
+      const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&limit=200&start=${start}&sort=won_time%20DESC`;
       const r = await fetch(url);
       const json = await r.json();
       if (!json.success || !Array.isArray(json.data) || json.data.length === 0) break;
@@ -36,16 +38,15 @@ export default async function handler(req, res) {
       for (const deal of json.data) {
         const ct = deal.close_time || '';
         const wt = deal.won_time || '';
-        if (!ct) continue;
-        if (ct < iniciaMes) { parar = true; break; }
-        if (!ct.startsWith(prefixo)) continue;
+        if (!wt) continue;
+        if (wt < iniciaMes) { parar = true; break; } // ordenado por won_time DESC → para no mês anterior
         if (!wt.startsWith(prefixo)) continue;
+        if (Number(deal.pipeline_id) !== PIPELINE_VENDAS) continue; // só Funil de Vendas
         const ownerId = Number(deal.user_id?.id ?? deal.user_id);
-        if (MANAGERS.has(ownerId)) continue;
-        const id = deal[SDR_FIELD] ? String(deal[SDR_FIELD]) : null;
+        const id = (deal[SDR_FIELD] != null && deal[SDR_FIELD] !== '') ? String(deal[SDR_FIELD]) : null;
         if (id === String(sdrId)) {
           ganhos++;
-          const dia = ct.slice(0, 10); // 'YYYY-MM-DD'
+          const dia = wt.slice(0, 10); // 'YYYY-MM-DD' (data do ganho)
           porDia[dia] = (porDia[dia] || 0) + 1;
           if (debug) {
             dealsDebug.push({
