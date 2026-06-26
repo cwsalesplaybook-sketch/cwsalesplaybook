@@ -39,6 +39,7 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/regras',      label: 'Regras de Conduta',      icon: 'ShieldCheck',     end: false },
   { to: '/onboarding',  label: 'Onboarding',             icon: 'MapIcon',         end: false },
   { to: '/carreira',    label: 'Progressão de Carreira', icon: 'TrendingUp',      end: false },
+  { to: '/ajuda',       label: 'Central de Ajuda',        icon: 'HelpCircle',     end: false },
 ];
 
 const SECTIONS = [
@@ -61,6 +62,7 @@ const NAV_CLOSER: NavItem[] = [
   { to: '/closer/metas',        label: 'Metas',                icon: 'Award',          end: false },
   { to: '/closer/rotina',       label: 'Rotina & Progressão',  icon: 'TrendingUp',     end: false },
   { to: '/historias',           label: 'Histórias de Sucesso', icon: 'Trophy',         end: false },
+  { to: '/ajuda',               label: 'Central de Ajuda',     icon: 'HelpCircle',     end: false },
 ];
 
 const CLOSER_SECTIONS = [
