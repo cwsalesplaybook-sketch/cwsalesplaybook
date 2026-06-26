@@ -51,7 +51,6 @@ interface StoreConfig {
   period: Period;
   modules: Record<string, boolean>;
   selfModules: Record<string, number>;
-  applyPartnerDiscount: boolean;
   customDiscount: number;
 }
 
@@ -63,7 +62,6 @@ function newStore(name: string): StoreConfig {
     period: 'Mensal',
     modules: Object.fromEntries(MODULES.map(m => [m.id, false])),
     selfModules: Object.fromEntries(SELF_MODULES.map(m => [m.id, 0])),
-    applyPartnerDiscount: false,
     customDiscount: 0,
   };
 }
@@ -75,9 +73,8 @@ function calcStore(s: StoreConfig) {
   const selfMonthly = SELF_MODULES.reduce((a, m) => a + m.val * (s.selfModules[m.id] || 0), 0);
   const addonsMonthly = modulesMonthly + selfMonthly;
   const addonsTotal = addonsMonthly * mult;
-  const partner = s.applyPartnerDiscount ? PARTNER_DISCOUNT[s.period] : 0;
   const custom = s.customDiscount || 0;
-  const factor = 1 - (partner + custom) / 100;
+  const factor = 1 - custom / 100;
   const planTotal = base.t * factor;
   const planMonthlyEffective = s.period === 'Mensal' ? base.m * factor : planTotal / mult;
   // Economia vs. pagar o valor mensal cheio pelo mesmo nº de meses (só o plano).
@@ -87,7 +84,7 @@ function calcStore(s: StoreConfig) {
     planTotal, planMonthlyEffective,
     total: planTotal + addonsTotal,
     monthly: planMonthlyEffective + addonsMonthly,
-    partner, custom, economiaVsMensal,
+    custom, economiaVsMensal,
   };
 }
 
@@ -99,7 +96,7 @@ function buildProposta(calcs: { s: StoreConfig; c: Calc }[], consolidated: { tot
   for (const { s, c } of calcs) {
     if (multi) out.push(`🏪 *${s.name}* — Plano ${s.planType} · ${s.period}`);
     else out.push(`*Plano ${s.planType} · ${s.period}*`);
-    const desc = c.partner + c.custom;
+    const desc = c.custom;
     out.push(`• Plano: ${BRL(c.planTotal)}${desc > 0 ? ` (−${desc.toFixed(0)}% de desconto)` : ''}`);
     MODULES.filter(m => s.modules[m.id]).forEach(m => out.push(`• ${m.name}: ${BRL(m.val)}/mês`));
     SELF_MODULES.forEach(m => {
@@ -166,7 +163,7 @@ export default function Calculadora() {
     { total: 0, monthly: 0 },
   );
   const ac = calcStore(active);
-  const temDesconto = active.applyPartnerDiscount || active.customDiscount > 0;
+  const temDesconto = active.customDiscount > 0;
 
   const copiarProposta = () => {
     const texto = buildProposta(calcs, consolidated);
@@ -225,27 +222,19 @@ export default function Calculadora() {
 
       {/* Painel de desconto */}
       {showDiscounts && (
-        <div className="cw-card p-4 space-y-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-cw-purple">Desconto — aplicado somente no plano</p>
-          <label className="flex items-center justify-between gap-3 cursor-pointer">
-            <span className="flex items-center gap-2.5 text-sm font-semibold text-cw-text">
-              <input
-                type="checkbox"
-                checked={active.applyPartnerDiscount}
-                onChange={e => update({ applyPartnerDiscount: e.target.checked })}
-                className="h-4 w-4 accent-[#A543FA] cursor-pointer"
-              />
-              Desconto de parceria <strong className="text-emerald-600">−{PARTNER_DISCOUNT[active.period]}%</strong>
-              <span className="text-cw-muted font-normal">({active.period})</span>
-            </span>
-          </label>
+        <div className="cw-card p-4 space-y-2">
+          <p className="text-[10px] font-black uppercase tracking-widest text-cw-purple">Desconto — aplicado sobre o valor do plano</p>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-semibold text-cw-text">Desconto adicional (%)</span>
-            <input
-              type="number" min={0} max={100} value={active.customDiscount}
-              onChange={e => update({ customDiscount: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) })}
-              className="w-20 bg-cw-bg border border-cw-border rounded-lg px-2.5 py-1.5 text-sm text-center text-cw-text focus:outline-none focus:border-cw-purple"
-            />
+            <span className="text-sm font-semibold text-cw-text">Desconto no plano (%)</span>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number" min={0} max={100} value={active.customDiscount || ''}
+                placeholder="0"
+                onChange={e => update({ customDiscount: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) })}
+                className="w-24 bg-cw-bg border border-cw-border rounded-lg px-2.5 py-2 text-sm text-center font-bold text-cw-text focus:outline-none focus:border-cw-purple"
+              />
+              <span className="text-sm font-bold text-cw-muted">%</span>
+            </div>
           </div>
         </div>
       )}
@@ -365,7 +354,7 @@ export default function Calculadora() {
               {temDesconto ? (
                 <>
                   <div className="flex justify-between"><span className="text-cw-muted">Valor do plano</span><span className="font-semibold text-cw-muted line-through">{BRL(ac.base.t)}</span></div>
-                  <div className="flex justify-between text-emerald-600"><span>Desconto −{(ac.partner + ac.custom).toFixed(0)}% (só no plano)</span><span className="font-bold">−{BRL(ac.base.t - ac.planTotal)}</span></div>
+                  <div className="flex justify-between text-emerald-600"><span>Desconto −{ac.custom}% (sobre o plano)</span><span className="font-bold">−{BRL(ac.base.t - ac.planTotal)}</span></div>
                   <div className="flex justify-between"><span className="text-cw-muted">Plano com desconto</span><span className="font-bold text-cw-text">{BRL(ac.planTotal)}</span></div>
                 </>
               ) : (
@@ -398,7 +387,7 @@ export default function Calculadora() {
                   <div>
                     <p className="font-bold text-sm text-cw-text">{s.name}</p>
                     <p className="text-[11px] text-cw-muted">
-                      {s.planType.toUpperCase()} · {s.period.toUpperCase()}{c.partner > 0 && ` · parceria −${c.partner}%`}
+                      {s.planType.toUpperCase()} · {s.period.toUpperCase()}{c.custom > 0 && ` · −${c.custom}% desc`}
                     </p>
                   </div>
                   <div className="text-right">
