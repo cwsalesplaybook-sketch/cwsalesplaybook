@@ -164,17 +164,36 @@ export default function MetaMes() {
           const users = json.users as { id: string; name: string; email: string }[];
           setPipedriveUsers(users.map(u => ({ id: u.id, name: u.name })));
           if (session.user.email) {
-            // 1º: tenta pelo e-mail
+            // 1º: e-mail exato
             const byEmail = users.find(u => u.email?.toLowerCase() === session.user.email!.toLowerCase());
             if (byEmail) { autoSdrId = byEmail.id; autoSdrNome = byEmail.name; }
             else {
-              // 2º: tenta pelo nome do Google
-              const fullName = (session.user.user_metadata?.full_name ?? '').toLowerCase();
+              const fullName = (session.user.user_metadata?.full_name ?? '').toLowerCase().trim();
               if (fullName) {
-                const byName = users.find(u =>
-                  u.name.toLowerCase().includes(fullName) || fullName.includes(u.name.toLowerCase())
-                );
-                if (byName) { autoSdrId = byName.id; autoSdrNome = byName.name; }
+                // 2º: nome completo contém ou é contido pelo nome do Pipedrive
+                let match = users.find(u => {
+                  const pn = u.name.toLowerCase();
+                  return pn.includes(fullName) || fullName.includes(pn);
+                });
+                // 3º: 2+ partes do nome (≥3 chars) aparecem no nome do Pipedrive
+                if (!match) {
+                  const parts = fullName.split(' ').filter(p => p.length >= 3);
+                  if (parts.length >= 2) {
+                    match = users.find(u => {
+                      const pn = u.name.toLowerCase();
+                      return parts.filter(p => pn.includes(p)).length >= 2;
+                    });
+                  }
+                }
+                // 4º: primeiro nome único (≥4 chars) — só usa se não há ambiguidade
+                if (!match) {
+                  const first = fullName.split(' ')[0];
+                  if (first.length >= 4) {
+                    const candidates = users.filter(u => u.name.toLowerCase().startsWith(first));
+                    if (candidates.length === 1) match = candidates[0];
+                  }
+                }
+                if (match) { autoSdrId = match.id; autoSdrNome = match.name; }
               }
             }
           }
