@@ -265,26 +265,6 @@ export default function MetaMes() {
     <div className="p-6  space-y-4">
       {config && <ConfigModal metaData={metaData} nomeDetectado={autoNome} pipedriveUsers={pipedriveUsers} onSave={salvarConfig} onClose={() => setConfig(false)} />}
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-cw-purple/10 border border-cw-purple/20 flex items-center justify-center">
-            <Target className="h-5 w-5 text-cw-purple" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-cw-text">Meta do Mês</h1>
-            <p className="text-sm text-cw-muted">
-              {nomeMes}{nomeSDR && ` • ${nomeSDR}`}{!metaData.sdrId && ' • Configure seu perfil'}
-            </p>
-          </div>
-        </div>
-        <button onClick={() => setConfig(true)}
-          title="Configurar metas"
-          className="h-9 w-9 rounded-xl bg-cw-elevated border border-cw-border text-cw-muted hover:text-cw-text hover:bg-cw-bg flex items-center justify-center transition-all">
-          <Settings className="h-[18px] w-[18px]" />
-        </button>
-      </div>
-
       {/* Card principal — status */}
       <div className="relative rounded-2xl border border-cw-border bg-white shadow-sm">
         {/* Cardapinho viking — na frente do conteúdo */}
@@ -300,13 +280,19 @@ export default function MetaMes() {
                 <RefreshCw className={cn('h-3.5 w-3.5 text-cw-muted hover:text-cw-purple', loading && 'animate-spin')} />
               </button>
             </div>
-            <span className={cn('text-xs font-black px-4 py-1.5 rounded-full border',
-              status === 'no-ritmo'
-                ? 'bg-green-50 text-green-600 border-green-200'
-                : 'bg-red-50 text-red-500 border-red-200'
-            )}>
-              {status === 'no-ritmo' ? '↗ No Ritmo' : '↘ Atrasado'}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className={cn('text-xs font-black px-4 py-1.5 rounded-full border',
+                status === 'no-ritmo'
+                  ? 'bg-green-50 text-green-600 border-green-200'
+                  : 'bg-red-50 text-red-500 border-red-200'
+              )}>
+                {status === 'no-ritmo' ? '↗ No Ritmo' : '↘ Atrasado'}
+              </span>
+              <button onClick={() => setConfig(true)} title="Configurar metas"
+                className="h-7 w-7 rounded-lg bg-white/60 border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-all">
+                <Settings className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
 
           {/* Número + forecast */}
