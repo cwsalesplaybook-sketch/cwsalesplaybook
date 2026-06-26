@@ -1,6 +1,6 @@
 /** Página FAQ — cards por categoria, accordion de perguntas. */
 import { useState } from 'react';
-import { Monitor, DollarSign, Package, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
+import { Monitor, DollarSign, Package, ChevronLeft, ChevronRight, HelpCircle, MessageCircle, Store } from 'lucide-react';
 import { FAQ } from '@/data/playbook';
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
@@ -47,6 +47,26 @@ const CATEGORIAS: Categoria[] = [
     bg: 'bg-blue-500/8',
     borda: 'border-blue-500/30',
   },
+  {
+    id: 'Integração WhatsApp (Meta)',
+    label: 'Integração WhatsApp (Meta)',
+    icon: MessageCircle,
+    descricao: 'API oficial da Meta: ChatBot, notificações, coexistência e janelas de conversa.',
+    cor: 'text-green-400',
+    bg: 'bg-green-500/8',
+    borda: 'border-green-500/30',
+    badge: 'Novo',
+  },
+  {
+    id: 'CW App Store',
+    label: 'CW App Store',
+    icon: Store,
+    descricao: 'Marketplace de apps: instalar, permissões (OAuth), categorias e avaliações.',
+    cor: 'text-orange-400',
+    bg: 'bg-orange-500/8',
+    borda: 'border-orange-500/30',
+    badge: 'Novo',
+  },
 ];
 
 export default function Faq() {
@@ -81,6 +101,8 @@ export default function Faq() {
                 isActive && cat.id === 'Totem de Autoatendimento' && 'ring-cw-purple',
                 isActive && cat.id === 'Planos & Preços' && 'ring-emerald-500',
                 isActive && cat.id === 'Produto' && 'ring-blue-500',
+                isActive && cat.id === 'Integração WhatsApp (Meta)' && 'ring-green-500',
+                isActive && cat.id === 'CW App Store' && 'ring-orange-500',
               )}
             >
               {cat.badge && (

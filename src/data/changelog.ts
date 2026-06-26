@@ -11,6 +11,42 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG_PADRAO: ChangelogEntry[] = [
+  // ── 24/06/2026 ──────────────────────────────────────────────────────────────
+  {
+    id: 'cw-240626-a',
+    version: '—',
+    date: '24/06/2026',
+    title: 'CW App Store — marketplace de aplicativos',
+    description: `Novo marketplace de integrações dentro do portal: a tela "CW Apps" (no menu lateral) reúne, em um catálogo único, aplicativos da própria Cardápio Web e de parceiros — gestão, marketing, delivery, chatbot e mais.
+
+O lojista vê primeiro os apps já instalados, depois os recomendados e a lista completa, com filtro por categoria: Marketing, Vendas, Gestão e Logística. Na página de cada app há capturas de tela, descrição, nota média e avaliações de outros restaurantes.
+
+Instalar = autorizar o app a acessar os dados do estabelecimento pela API da CW. A autorização é por estabelecimento (cliente com várias lojas instala em cada uma) e usa o novo modelo OAuth 2.0 com PKCE: cada app pede permissões específicas (catálogo, pedidos, loja, cupons, avaliações, clientes) e o acesso pode ser revisado ou revogado individualmente, sem desconectar as outras integrações.
+
+Apps instalados ganham um atalho no canto superior direito (botões Acessar e Desinstalar). Com o app instalado, o lojista pode avaliar: nota de 1 a 5 estrelas + comentário de até 300 caracteres.
+
+A autenticação antiga por token continua funcionando, mas está sendo desencorajada (pode ser descontinuada) e não aparece no marketplace — novas integrações devem usar o novo modelo.`,
+    postedBy: 'Cardápio Web',
+    type: 'feature',
+  },
+  // ── 19/06/2026 ──────────────────────────────────────────────────────────────
+  {
+    id: 'cw-190626-a',
+    version: '—',
+    date: '19/06/2026',
+    title: 'Integração Oficial com a Meta (WhatsApp)',
+    description: `O ChatBot e as notificações de pedido do WhatsApp passam a funcionar pela API oficial da Meta. Acaba a dependência da extensão: as mensagens saem pela infraestrutura da Meta, sem precisar de um computador ligado com o navegador aberto — mais estabilidade e independência.
+
+Nova área "Gerenciar WhatsApp" centraliza tudo: conectar e gerenciar números (WhatsApp Business via API oficial), modelos de mensagem, configuração das notificações de pedido e personalização do ChatBot. A conexão é feita direto pela Meta, no botão "Conectar via Meta".
+
+Coexistência: o mesmo número continua sendo usado normalmente pelos atendentes no WhatsApp Business/Web ao mesmo tempo que roda as automações. Nesta 1ª versão, 1 número conectado por estabelecimento.
+
+Janelas de conversa: dentro de 24h após o cliente escrever (janela aberta), o ChatBot responde livre, sem template. Fora das 24h (janela fechada), a Meta exige um modelo aprovado. Por isso cada notificação tem 2 mensagens — janela aberta (sem custo) e janela fechada (template aprovado, pode ter cobrança da Meta) — e o sistema escolhe automaticamente.
+
+Os modelos de mensagem são criados no portal e aprovados pela própria Meta (não podem ser editados depois — para mudar, cria-se um novo). O envio de campanhas pela API oficial ainda não está disponível: é a próxima etapa.`,
+    postedBy: 'Cardápio Web',
+    type: 'feature',
+  },
   // ── 22/05/2026 ──────────────────────────────────────────────────────────────
   {
     id: 'cw-220526-a',
