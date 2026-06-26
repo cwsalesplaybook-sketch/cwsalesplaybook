@@ -659,16 +659,26 @@ export default function MetaMes() {
               <p className="text-sm font-semibold text-cw-text">Nenhuma perda registrada este mês!</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {perdas.motivos.map(({ motivo, count, pct }) => (
+            <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+              {perdas.motivos.map(({ motivo, count, pct }) => {
+                const isNoShow = motivo.toLowerCase().includes('no-show') || motivo.toLowerCase().includes('no show');
+                const preocupante = isNoShow && pct >= 30;
+                return (
                 <div key={motivo} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-cw-text font-medium truncate pr-2">{motivo}</span>
+                    <span className="flex items-center gap-1.5 text-cw-text font-medium truncate pr-2">
+                      {motivo}
+                      {preocupante && (
+                        <span className="shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded-full bg-red-100 text-red-500 border border-red-200 uppercase tracking-wide">
+                          Preocupante
+                        </span>
+                      )}
+                    </span>
                     <span className="text-cw-muted shrink-0">{count} - {pct}%</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-cw-elevated overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-red-400/70 transition-all duration-500"
+                      className={cn('h-full rounded-full transition-all duration-500', preocupante ? 'bg-red-500' : 'bg-red-400/70')}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
