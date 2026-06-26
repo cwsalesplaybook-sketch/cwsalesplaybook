@@ -89,7 +89,7 @@ export default function ChangelogPage() {
         href="https://cardpioweb.featurebase.app/en"
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-3 max-w-4xl px-5 py-3.5 rounded-xl border border-cw-purple/30 bg-cw-purple/5 hover:bg-cw-purple/10 transition-colors group"
+        className="flex items-center gap-3 px-5 py-3.5 rounded-xl border border-cw-purple/30 bg-cw-purple/5 hover:bg-cw-purple/10 transition-colors group"
       >
         <Zap className="h-4 w-4 text-cw-purple shrink-0" />
         <p className="text-[13px] text-cw-muted flex-1">
@@ -99,7 +99,7 @@ export default function ChangelogPage() {
       </a>
 
       {/* Cards grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 max-w-4xl">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
         {entries.map((entry, i) => {
           const cfg = TYPE_CONFIG[entry.type];
           return (
@@ -179,7 +179,7 @@ export default function ChangelogPage() {
         })}
 
         {entries.length === 0 && (
-          <div className="cw-card p-10 text-center col-span-2">
+          <div className="cw-card p-10 text-center col-span-full">
             <Zap className="h-10 w-10 text-cw-border mx-auto mb-3" />
             <p className="text-cw-muted text-sm">Nenhuma entrada ainda.</p>
             {isEditing && <p className="text-xs text-cw-muted mt-1">Clique em "Nova entrada" para começar.</p>}
@@ -188,7 +188,7 @@ export default function ChangelogPage() {
       </div>
 
       {isEditing && entries.length > 0 && (
-        <p className="text-xs text-cw-muted italic max-w-4xl">
+        <p className="text-xs text-cw-muted italic">
           💡 Clique nos textos para editar · Clique no tipo para alternar · Use as setas para reordenar
         </p>
       )}
