@@ -451,51 +451,6 @@ export default function MetaMes() {
         </button>
       </div>
 
-      {/* Motivos de Perda */}
-      {metaData.sdrId && (
-        <div className="cw-card p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
-              <XCircle className="h-4 w-4 text-red-400" />
-            </div>
-            <div>
-              <h3 className="text-base font-black text-cw-text">Motivos de Perda</h3>
-              <p className="text-xs text-cw-muted">
-                {perdas ? `${perdas.total} negócio${perdas.total !== 1 ? 's' : ''} perdido${perdas.total !== 1 ? 's' : ''} este mês` : 'Carregando...'}
-              </p>
-            </div>
-          </div>
-
-          {!perdas ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map(i => <div key={i} className="h-10 rounded-xl cw-shimmer" />)}
-            </div>
-          ) : perdas.total === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-6 text-center">
-              <Check className="h-8 w-8 text-emerald-400" />
-              <p className="text-sm font-semibold text-cw-text">Nenhuma perda registrada este mês!</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {perdas.motivos.map(({ motivo, count, pct }) => (
-                <div key={motivo} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-cw-text font-medium truncate pr-2">{motivo}</span>
-                    <span className="text-cw-muted shrink-0">{count}× · {pct}%</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-cw-elevated overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-red-400/70 transition-all duration-500"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Seção inferior — Ritmo Diário + Insights */}
       <div className="grid grid-cols-2 gap-4">
 
@@ -676,6 +631,51 @@ export default function MetaMes() {
         </div>
 
       </div>
+
+      {/* Motivos de Perda */}
+      {metaData.sdrId && (
+        <div className="cw-card p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+              <XCircle className="h-4 w-4 text-red-400" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-cw-text">Motivos de Perda</h3>
+              <p className="text-xs text-cw-muted">
+                {perdas ? `${perdas.total} negócio${perdas.total !== 1 ? 's' : ''} perdido${perdas.total !== 1 ? 's' : ''} este mês` : 'Carregando...'}
+              </p>
+            </div>
+          </div>
+
+          {!perdas ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map(i => <div key={i} className="h-10 rounded-xl cw-shimmer" />)}
+            </div>
+          ) : perdas.total === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-6 text-center">
+              <Check className="h-8 w-8 text-emerald-400" />
+              <p className="text-sm font-semibold text-cw-text">Nenhuma perda registrada este mês!</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {perdas.motivos.map(({ motivo, count, pct }) => (
+                <div key={motivo} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-cw-text font-medium truncate pr-2">{motivo}</span>
+                    <span className="text-cw-muted shrink-0">{count}× · {pct}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-cw-elevated overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-red-400/70 transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
