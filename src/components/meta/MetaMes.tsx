@@ -139,6 +139,9 @@ export default function MetaMes() {
   const [conversao, setConversao] = useState(50);
   const [autoNome, setAutoNome]   = useState('');
   const [pipedriveUsers, setPipedriveUsers] = useState<{ id: string; name: string }[]>([]);
+  const [ajusteModal, setAjusteModal] = useState<'add' | 'sub' | null>(null);
+  const [ajusteQtd, setAjusteQtd]   = useState('1');
+  const [ajusteMot, setAjusteMot]   = useState('');
 
   const carregarPerfil = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -381,24 +384,65 @@ export default function MetaMes() {
         </div>
       </div>
 
-      {/* Botões +1 / Salvar / -1 */}
+      {/* Modal de ajuste manual */}
+      {ajusteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-xs mx-4 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-cw-text">
+                {ajusteModal === 'add' ? '+ Adicionar ganhos' : '− Remover ganhos'}
+              </h3>
+              <button onClick={() => setAjusteModal(null)} className="text-cw-muted hover:text-cw-text"><X className="h-4 w-4" /></button>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Quantos fechamentos?</label>
+              <input
+                type="number" min={1} value={ajusteQtd}
+                onChange={e => setAjusteQtd(e.target.value)}
+                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple"
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Motivo <span className="font-normal text-cw-muted normal-case">(opcional)</span></label>
+              <input
+                type="text" value={ajusteMot} placeholder="Ex: fechamento registrado fora do Pipedrive"
+                onChange={e => setAjusteMot(e.target.value)}
+                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text placeholder:text-cw-muted focus:outline-none focus:border-cw-purple"
+              />
+            </div>
+            <button
+              onClick={() => {
+                const qtd = Math.max(1, Number(ajusteQtd) || 1);
+                alterarAjuste(ajusteModal === 'add' ? qtd : -qtd);
+                setAjusteModal(null); setAjusteQtd('1'); setAjusteMot('');
+              }}
+              className="w-full py-3 rounded-xl font-bold text-sm text-white gradient-primary hover:opacity-90 transition-opacity"
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Botões ajuste manual / Atualizar */}
       <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
-        <button onClick={() => alterarAjuste(-1)}
+        <button onClick={() => { setAjusteQtd('1'); setAjusteMot(''); setAjusteModal('sub'); }}
           className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-white border border-cw-red/30 text-cw-red font-bold text-base hover:bg-red-50 transition-colors shadow-sm">
-          — 1 ganho
+          — Remover
         </button>
         <div className="flex flex-col items-center gap-1">
           <button onClick={() => buscarGanhos(metaData.sdrId)} disabled={loading || !metaData.sdrId}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-cw-border bg-white text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 font-semibold text-sm transition-colors disabled:opacity-40 shadow-sm whitespace-nowrap">
-            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} /> Salvar ganhos
+            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} /> Atualizar
           </button>
           <p className="text-[10px] text-cw-muted whitespace-nowrap">
             Pipedrive: {apiData?.ganhos ?? '...'} · Manual: {metaData.ajuste >= 0 ? '+' : ''}{metaData.ajuste}
           </p>
         </div>
-        <button onClick={() => alterarAjuste(1)}
+        <button onClick={() => { setAjusteQtd('1'); setAjusteMot(''); setAjusteModal('add'); }}
           className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base text-white gradient-primary shadow-md transition-opacity hover:opacity-90">
-          + 1 ganho
+          + Adicionar
         </button>
       </div>
 
