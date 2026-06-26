@@ -33,8 +33,10 @@ function getMensagemForecast(ganhos: number, m1: number, m2: number, m3: number,
   return { texto: 'Você está no forecast da Meta 1', nivel: 0 };
 }
 
-function ConfigModal({ metaData, onSave, onClose }: { metaData: MetaData; onSave: (d: MetaData) => void; onClose: () => void }) {
+function ConfigModal({ metaData, nomeDetectado, onSave, onClose }: { metaData: MetaData; nomeDetectado?: string; onSave: (d: MetaData) => void; onClose: () => void }) {
   const [form, setForm] = useState(metaData);
+  const [trocarNome, setTrocarNome] = useState(false);
+  const nomeExibido = nomeDetectado || SDRS_ATIVOS[form.sdrId] || '';
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
@@ -45,11 +47,23 @@ function ConfigModal({ metaData, onSave, onClose }: { metaData: MetaData; onSave
         <div className="space-y-4">
           <div>
             <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Seu nome (SDR)</label>
-            <select value={form.sdrId} onChange={e => setForm(f => ({ ...f, sdrId: e.target.value }))}
-              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple">
-              <option value="">Selecione seu nome</option>
-              {Object.entries(SDRS_ATIVOS).map(([id, nome]) => <option key={id} value={id}>{nome}</option>)}
-            </select>
+            {nomeExibido && !trocarNome ? (
+              <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600 shrink-0" />
+                  <span className="text-sm font-semibold text-green-700">{nomeExibido}</span>
+                </div>
+                <button onClick={() => setTrocarNome(true)} className="text-[11px] text-cw-muted hover:text-cw-purple underline">
+                  Não sou eu
+                </button>
+              </div>
+            ) : (
+              <select value={form.sdrId} onChange={e => setForm(f => ({ ...f, sdrId: e.target.value }))}
+                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple">
+                <option value="">Selecione seu nome</option>
+                {Object.entries(SDRS_ATIVOS).map(([id, nome]) => <option key={id} value={id}>{nome}</option>)}
+              </select>
+            )}
           </div>
           {[1, 2, 3].map(n => (
             <div key={n}>
@@ -90,6 +104,7 @@ export default function MetaMes() {
   const [userId, setUserId]       = useState('');
   const [mes, setMes]             = useState('');
   const [conversao, setConversao] = useState(50);
+  const [autoNome, setAutoNome]   = useState('');
 
   const carregarPerfil = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -103,17 +118,19 @@ export default function MetaMes() {
     } else {
       // Auto-detecta o SDR pelo e-mail do login — sem precisar selecionar manualmente
       let autoSdrId = '';
+      let autoSdrNome = '';
       try {
         const r = await fetch('/api/pipedrive-users');
         const json = await r.json();
         if (json.ok && session.user.email) {
-          const match = (json.users as { id: string; email: string }[]).find(
+          const match = (json.users as { id: string; name: string; email: string }[]).find(
             u => u.email?.toLowerCase() === session.user.email!.toLowerCase()
           );
-          if (match) autoSdrId = match.id;
+          if (match) { autoSdrId = match.id; autoSdrNome = match.name; }
         }
       } catch { /* ignora falha na detecção — o usuário seleciona manualmente */ }
 
+      setAutoNome(autoSdrNome);
       setMetaData(m => ({ ...m, sdrId: autoSdrId }));
       setConfig(true);
     }
@@ -169,7 +186,7 @@ export default function MetaMes() {
 
   return (
     <div className="p-6  space-y-4">
-      {config && <ConfigModal metaData={metaData} onSave={salvarConfig} onClose={() => setConfig(false)} />}
+      {config && <ConfigModal metaData={metaData} nomeDetectado={autoNome} onSave={salvarConfig} onClose={() => setConfig(false)} />}
 
       {/* Header */}
       <div className="flex items-center justify-between">
