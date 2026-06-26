@@ -40,7 +40,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     frase: 'Quem tem canal próprio, bate mais forte.',
     historia: 'Joelma começou como SDR, mostrou consistência e fome de resultado, foi promovida a Closer e hoje lidera o time comercial. É exemplo vivo de força, foco e cultura, prova de que quem se entrega ao processo, vai longe aqui dentro.',
     stats: [
-      { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
+      { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Liderança', label: 'CARGO' },
       { icon: 'crown',    valor: 'Top performer', label: 'STATUS' },
     ],
@@ -51,7 +51,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     frase: 'Quem lidera pelo exemplo não precisa pedir silêncio, o resultado fala.',
     historia: 'Ana Clara entrou como SDR e não parou: assumiu a liderança comercial do time e construiu autoridade tijolo por tijolo. Hoje coordena o comercial inteiro, não porque foi escolhida, mas porque provou, dia após dia, que sabia o caminho. É referência de postura, visão e resultado dentro da CW.',
     stats: [
-      { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
+      { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Coordenação', label: 'CARGO' },
       { icon: 'crown',    valor: 'Referência', label: 'STATUS' },
     ],
@@ -62,7 +62,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     frase: 'A evolução de um executor de elite para um líder que automatiza e inspira o time.',
     historia: 'Como SDR, o Pedro sempre foi sinônimo de meta batida. Mas foi ao assumir a liderança comercial que ele levou a operação para outro nível. Focando em escala e eficiência, ele desenvolveu automações tecnológicas inteligentes que hoje rodam nos bastidores do time, economizando tempo e eliminando erros. Hoje, ele lidera construindo os processos que sustentam nosso crescimento, sendo uma referência e inspiração para todos.',
     stats: [
-      { icon: 'trending', valor: '1', label: 'PROMOÇÕES' },
+      { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Liderança', label: 'CARGO' },
       { icon: 'crown',    valor: 'Inovador', label: 'STATUS' },
     ],
@@ -73,7 +73,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     frase: 'Estagiário é só o ponto de partida, o destino você escolhe.',
     historia: 'Entrou como estagiário de BDR quando muita gente ainda estava aprendendo o que era prospecção. Enquanto outros esperavam a oportunidade chegar, ele foi construindo a própria. Virou liderança de BDR antes do esperado e hoje comanda os Representantes sendo liderança de representantes.',
     stats: [
-      { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
+      { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Liderança Rep.', label: 'CARGO' },
       { icon: 'crown',    valor: 'Em ascensão', label: 'STATUS' },
     ],
@@ -84,7 +84,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     frase: 'Cada etapa foi escolha, não sorte.',
     historia: 'Whenna não pulou etapas, ela as dominou. Entrou como estagiária de BDR, foi SDR, assumiu a liderança de pré-vendas e hoje lidera os Closers. Cada promoção veio porque ela entregava mais do que o esperado no cargo que estava, antes de olhar pro próximo. É a prova viva de que a jornada mais longa costuma ser a mais sólida.',
     stats: [
-      { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
+      { icon: 'trending', valor: '4', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Liderança Closer', label: 'CARGO' },
       { icon: 'crown',    valor: 'Completa', label: 'PERFIL' },
     ],
@@ -95,7 +95,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     frase: 'Cada "não" que recebi como SDR foi o treino que me fez fechar como Closer.',
     historia: 'João Paulo entrou na CW como SDR JR I e foi subindo cada degrau com consistência e garra. De JR I para JR II, de JR II para JR III, sem pular etapa, sem reclamar do processo. Quando dominou o jogo da prospecção de cabo a rabo, veio a promoção que todo SDR sonha: Closer. A trajetória do João Paulo é a prova de que não existe atalho, existe preparo. Quem aprende a abrir portas, aprende a fechar negócios.',
     stats: [
-      { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
+      { icon: 'trending', valor: '4', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Closer',  label: 'CARGO ATUAL' },
       { icon: 'crown',    valor: 'SDR → Closer', label: 'JORNADA' },
     ],
@@ -212,15 +212,6 @@ function DetailModal({ membro, onClose }: { membro: MembroHall; onClose: () => v
               </div>
             ))}
           </div>
-
-          {/* Frase */}
-          {membro.frase && (
-            <blockquote style={{ borderLeft: `2px solid ${CW.gold}99`, paddingLeft: '1rem' }}>
-              <p className="text-sm italic leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                "{membro.frase}"
-              </p>
-            </blockquote>
-          )}
 
           {/* História */}
           <p className="text-sm leading-relaxed flex-1" style={{ color: 'rgba(212,168,255,0.7)' }}>
