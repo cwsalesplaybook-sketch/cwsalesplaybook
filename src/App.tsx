@@ -50,6 +50,7 @@ import CloserMetas from '@/pages/closer/Metas';
 import CloserProcesso from '@/pages/closer/Processo';
 import CloserRotina from '@/pages/closer/Rotina';
 import CloserConcorrentes from '@/pages/closer/Concorrentes';
+import CentralAjuda from '@/pages/CentralAjuda';
 import Automacoes from '@/pages/Automacoes';
 import Biblioteca from '@/pages/Biblioteca';
 import RegrasConduta from '@/pages/RegrasConduta';
@@ -179,6 +180,7 @@ function AnimatedRoutes() {
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/meta" element={<MetaMes />} />
           <Route path="/faq" element={<FaqPage />} />
+          <Route path="/ajuda" element={<CentralAjuda />} />
           <Route path="/mural" element={<MuralPage />} />
           <Route path="/changelog" element={<ChangelogPage />} />
           <Route path="/calculadora" element={<Calculadora />} />
