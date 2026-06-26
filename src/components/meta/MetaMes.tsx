@@ -98,8 +98,25 @@ export default function MetaMes() {
     const mesAtual = new Date().toISOString().slice(0, 7);
     setMes(mesAtual);
     const { data } = await supabase.from('user_metas').select('*').eq('user_id', session.user.id).eq('mes', mesAtual).single();
-    if (data) setMetaData({ meta1: data.meta1, meta2: data.meta2, meta3: data.meta3, mega1: data.mega1 ?? 0, mega2: data.mega2 ?? 0, mega3: data.mega3 ?? 0, ajuste: data.ajuste, sdrId: data.sdr_id });
-    else setConfig(true);
+    if (data) {
+      setMetaData({ meta1: data.meta1, meta2: data.meta2, meta3: data.meta3, mega1: data.mega1 ?? 0, mega2: data.mega2 ?? 0, mega3: data.mega3 ?? 0, ajuste: data.ajuste, sdrId: data.sdr_id });
+    } else {
+      // Auto-detecta o SDR pelo e-mail do login — sem precisar selecionar manualmente
+      let autoSdrId = '';
+      try {
+        const r = await fetch('/api/pipedrive-users');
+        const json = await r.json();
+        if (json.ok && session.user.email) {
+          const match = (json.users as { id: string; email: string }[]).find(
+            u => u.email?.toLowerCase() === session.user.email!.toLowerCase()
+          );
+          if (match) autoSdrId = match.id;
+        }
+      } catch { /* ignora falha na detecção — o usuário seleciona manualmente */ }
+
+      setMetaData(m => ({ ...m, sdrId: autoSdrId }));
+      setConfig(true);
+    }
   }, []);
 
   const buscarGanhos = useCallback(async (sdrId: string) => {
