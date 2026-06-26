@@ -1,6 +1,6 @@
 /** Calculadora de Planos CW — comparativo de cenários. */
 import { useState } from 'react';
-import { Calculator, Minus, Plus, TrendingDown } from 'lucide-react';
+import { Minus, Plus, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   PLANOS, PERIODOS, MODULOS, PLANOS_PRECO, MODULOS_PRECO,
@@ -47,17 +47,6 @@ export default function Calculadora() {
 
   return (
     <div className="p-8">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shrink-0">
-          <Calculator className="h-5 w-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-cw-text tracking-tight">Calculadora de Planos</h1>
-          <p className="text-sm text-cw-muted mt-0.5">Monte e compare propostas para o cliente</p>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
         {/* ── Coluna esquerda: configuração ── */}
