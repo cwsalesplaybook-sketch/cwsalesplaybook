@@ -280,8 +280,20 @@ export default function MetaMes() {
                 <RefreshCw className={cn('h-3.5 w-3.5 text-cw-muted hover:text-cw-purple', loading && 'animate-spin')} />
               </button>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={cn('text-xs font-black px-4 py-1.5 rounded-full border',
+            <div className="flex items-center gap-1.5">
+              {/* Controles manuais minimalistas */}
+              <button onClick={() => { setAjusteQtd('1'); setAjusteMot(''); setAjusteModal('sub'); }}
+                title="Remover ganho"
+                className="h-6 w-6 rounded-md text-cw-muted/50 hover:text-red-400 hover:bg-red-50 flex items-center justify-center transition-all text-sm font-bold">
+                −
+              </button>
+              <button onClick={() => { setAjusteQtd('1'); setAjusteMot(''); setAjusteModal('add'); }}
+                title="Adicionar ganho"
+                className="h-6 w-6 rounded-md text-cw-muted/50 hover:text-cw-purple hover:bg-cw-purple/10 flex items-center justify-center transition-all text-sm font-bold">
+                +
+              </button>
+              <div className="w-px h-4 bg-cw-border mx-0.5" />
+              <span className={cn('text-xs font-black px-3 py-1 rounded-full border',
                 status === 'no-ritmo'
                   ? 'bg-green-50 text-green-600 border-green-200'
                   : 'bg-red-50 text-red-500 border-red-200'
@@ -435,26 +447,15 @@ export default function MetaMes() {
         </div>
       )}
 
-      {/* Botões ajuste manual / Atualizar */}
-      <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
-        <button onClick={() => { setAjusteQtd('1'); setAjusteMot(''); setAjusteModal('sub'); }}
-          className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-white border border-cw-red/30 text-cw-red font-bold text-base hover:bg-red-50 transition-colors shadow-sm">
-          — Remover
-        </button>
-        <div className="flex flex-col items-center gap-1">
-          <button onClick={() => buscarGanhos(metaData.sdrId)} disabled={loading || !metaData.sdrId}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-cw-border bg-white text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 font-semibold text-sm transition-colors disabled:opacity-40 shadow-sm whitespace-nowrap">
-            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} /> Atualizar
+      {/* Info Pipedrive/Manual */}
+      <p className="text-[11px] text-cw-muted text-center">
+        Pipedrive: {apiData?.ganhos ?? '...'} · Manual: {metaData.ajuste >= 0 ? '+' : ''}{metaData.ajuste}
+        {metaData.sdrId && (
+          <button onClick={() => buscarGanhos(metaData.sdrId)} disabled={loading} className="ml-2 inline-flex items-center gap-1 hover:text-cw-purple transition-colors">
+            <RefreshCw className={cn('h-3 w-3', loading && 'animate-spin')} /> atualizar
           </button>
-          <p className="text-[10px] text-cw-muted whitespace-nowrap">
-            Pipedrive: {apiData?.ganhos ?? '...'} · Manual: {metaData.ajuste >= 0 ? '+' : ''}{metaData.ajuste}
-          </p>
-        </div>
-        <button onClick={() => { setAjusteQtd('1'); setAjusteMot(''); setAjusteModal('add'); }}
-          className="flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base text-white gradient-primary shadow-md transition-opacity hover:opacity-90">
-          + Adicionar
-        </button>
-      </div>
+        )}
+      </p>
 
       {/* Seção inferior — Ritmo Diário + Insights */}
       <div className="grid grid-cols-2 gap-4">
@@ -667,7 +668,7 @@ export default function MetaMes() {
                 <div key={motivo} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-cw-text font-medium truncate pr-2">{motivo}</span>
-                    <span className="text-cw-muted shrink-0">{count}× · {pct}%</span>
+                    <span className="text-cw-muted shrink-0">{count} - {pct}%</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-cw-elevated overflow-hidden">
                     <div
