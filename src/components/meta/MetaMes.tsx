@@ -1,6 +1,6 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useState, useCallback } from 'react';
-import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, AlertTriangle, Star, Rocket } from 'lucide-react';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, AlertTriangle, Star, Rocket, XCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -142,6 +142,7 @@ export default function MetaMes() {
   const [ajusteModal, setAjusteModal] = useState<'add' | 'sub' | null>(null);
   const [ajusteQtd, setAjusteQtd]   = useState('1');
   const [ajusteMot, setAjusteMot]   = useState('');
+  const [perdas, setPerdas] = useState<{ total: number; motivos: { motivo: string; count: number; pct: number }[] } | null>(null);
 
   const carregarPerfil = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -190,9 +191,13 @@ export default function MetaMes() {
     if (!sdrId) return;
     setLoading(true);
     try {
-      const r = await fetch(`/api/meta?sdrId=${sdrId}`, { cache: 'no-store' });
-      const json = await r.json();
-      if (json.ok) setApiData(json);
+      const [rMeta, rPerdas] = await Promise.all([
+        fetch(`/api/meta?sdrId=${sdrId}`, { cache: 'no-store' }),
+        fetch(`/api/perdas?sdrId=${sdrId}`, { cache: 'no-store' }),
+      ]);
+      const [jMeta, jPerdas] = await Promise.all([rMeta.json(), rPerdas.json()]);
+      if (jMeta.ok) setApiData(jMeta);
+      if (jPerdas.ok) setPerdas(jPerdas);
     } finally { setLoading(false); }
   }, []);
 
@@ -445,6 +450,51 @@ export default function MetaMes() {
           + Adicionar
         </button>
       </div>
+
+      {/* Motivos de Perda */}
+      {metaData.sdrId && (
+        <div className="cw-card p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+              <XCircle className="h-4 w-4 text-red-400" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-cw-text">Motivos de Perda</h3>
+              <p className="text-xs text-cw-muted">
+                {perdas ? `${perdas.total} negócio${perdas.total !== 1 ? 's' : ''} perdido${perdas.total !== 1 ? 's' : ''} este mês` : 'Carregando...'}
+              </p>
+            </div>
+          </div>
+
+          {!perdas ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map(i => <div key={i} className="h-10 rounded-xl cw-shimmer" />)}
+            </div>
+          ) : perdas.total === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-6 text-center">
+              <Check className="h-8 w-8 text-emerald-400" />
+              <p className="text-sm font-semibold text-cw-text">Nenhuma perda registrada este mês!</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {perdas.motivos.map(({ motivo, count, pct }) => (
+                <div key={motivo} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-cw-text font-medium truncate pr-2">{motivo}</span>
+                    <span className="text-cw-muted shrink-0">{count}× · {pct}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-cw-elevated overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-red-400/70 transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Seção inferior — Ritmo Diário + Insights */}
       <div className="grid grid-cols-2 gap-4">
