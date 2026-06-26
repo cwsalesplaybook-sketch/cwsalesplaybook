@@ -4,7 +4,7 @@ const PIPELINE_VENDAS = 2;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=300');
 
   if (!TOKEN) return res.status(500).json({ ok: false, erro: 'Token não configurado' });
 

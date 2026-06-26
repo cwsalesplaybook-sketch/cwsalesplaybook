@@ -206,13 +206,14 @@ export default function MetaMes() {
     }
   }, []);
 
-  const buscarGanhos = useCallback(async (sdrId: string) => {
+  const buscarGanhos = useCallback(async (sdrId: string, forceRefresh = false) => {
     if (!sdrId) return;
     setLoading(true);
+    const bust = forceRefresh ? `&_t=${Date.now()}` : '';
     try {
       const [rMeta, rPerdas] = await Promise.all([
-        fetch(`/api/meta?sdrId=${sdrId}`, { cache: 'no-store' }),
-        fetch(`/api/perdas?sdrId=${sdrId}`, { cache: 'no-store' }),
+        fetch(`/api/meta?sdrId=${sdrId}${bust}`),
+        fetch(`/api/perdas?sdrId=${sdrId}${bust}`),
       ]);
       const [jMeta, jPerdas] = await Promise.all([rMeta.json(), rPerdas.json()]);
       if (jMeta.ok) setApiData(jMeta);
@@ -231,7 +232,7 @@ export default function MetaMes() {
     await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: novosDados.sdrId, meta1: novosDados.meta1, meta2: novosDados.meta2, meta3: novosDados.meta3, mega1: novosDados.mega1, mega2: novosDados.mega2, mega3: novosDados.mega3, ajuste: novosDados.ajuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
     setMetaData(novosDados);
     setConfig(false);
-    if (novosDados.sdrId) buscarGanhos(novosDados.sdrId);
+    if (novosDados.sdrId) buscarGanhos(novosDados.sdrId, true);
   };
 
   const alterarAjuste = async (delta: number) => {
@@ -276,7 +277,7 @@ export default function MetaMes() {
             <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
               <Target className="h-4 w-4" />
               META DO MÊS — STATUS
-              <button onClick={() => buscarGanhos(metaData.sdrId)} disabled={loading} className="ml-1">
+              <button onClick={() => buscarGanhos(metaData.sdrId, true)} disabled={loading} className="ml-1">
                 <RefreshCw className={cn('h-3.5 w-3.5 text-cw-muted hover:text-cw-purple', loading && 'animate-spin')} />
               </button>
             </div>
