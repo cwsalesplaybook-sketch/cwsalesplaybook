@@ -123,7 +123,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
-    id: 'gregory', nome: 'Gregory Lavor', foto: '/hall/Gregory.jpeg',
+    id: 'gregory', nome: 'Gregory Lavor', foto: '/hall/Gregory.png',
     cargo: 'Closer', jornada: ['SDR', 'Closer'],
     frase: 'Aprendi aqui do zero. E ainda não parei.',
     historia: 'Gregory chegou sem nenhuma experiência em vendas e aprendeu tudo dentro da CW. No primeiro mês como SDR não bateu meta, no sexto já entregava Meta 3 de forma antecipada. Passou pelo processo seletivo interno de 3 etapas e migrou pro time de Closer. Manteve a mesma lógica: consistência mês a mês, entregando Meta 3 ou Mega Meta. Em 1 ano e meio foi de Closer Jr I direto ao Jr III (pulou o nível II), depois Pleno I e, mais recentemente, Pleno II. Segue crescendo.',
