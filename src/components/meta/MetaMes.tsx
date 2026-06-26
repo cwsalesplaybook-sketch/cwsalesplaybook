@@ -281,6 +281,10 @@ export default function MetaMes() {
               </button>
             </div>
             <div className="flex items-center gap-1.5">
+              {/* Info Pipedrive/Manual */}
+              <span className="text-[10px] text-cw-muted/70 whitespace-nowrap hidden sm:inline">
+                Pipedrive: {apiData?.ganhos ?? '...'} · Manual: {metaData.ajuste >= 0 ? '+' : ''}{metaData.ajuste}
+              </span>
               {/* Controles manuais minimalistas */}
               <button onClick={() => { setAjusteQtd('1'); setAjusteMot(''); setAjusteModal('sub'); }}
                 title="Remover ganho"
@@ -447,15 +451,6 @@ export default function MetaMes() {
         </div>
       )}
 
-      {/* Info Pipedrive/Manual */}
-      <p className="text-[11px] text-cw-muted text-center">
-        Pipedrive: {apiData?.ganhos ?? '...'} · Manual: {metaData.ajuste >= 0 ? '+' : ''}{metaData.ajuste}
-        {metaData.sdrId && (
-          <button onClick={() => buscarGanhos(metaData.sdrId)} disabled={loading} className="ml-2 inline-flex items-center gap-1 hover:text-cw-purple transition-colors">
-            <RefreshCw className={cn('h-3 w-3', loading && 'animate-spin')} /> atualizar
-          </button>
-        )}
-      </p>
 
       {/* Seção inferior — Ritmo Diário + Insights */}
       <div className="grid grid-cols-2 gap-4">
