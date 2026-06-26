@@ -217,12 +217,15 @@ export default function MetaMes() {
   const { meta1, meta2, meta3, mega1, mega2, mega3 } = metaData;
   const temMega = mega1 > 0 || mega2 > 0 || mega3 > 0;
   const diasRestantes  = apiData?.diasRestantes  ?? 20;
-  const diasPassados   = apiData?.diasPassados   ?? 1;
+  // diasPassados só é confiável quando o Pipedrive retornou dados reais (apiData != null).
+  // Fallback 0 garante que projeção e insights não calculem com divisor falso (ex: ÷1 → 1100).
+  const diasPassados   = apiData?.diasPassados   ?? 0;
   const diasUteisTotal = apiData?.diasUteisTotal ?? 22;
   const metaReferencia = meta3 || meta2 || meta1;
   const status   = getStatus(totalGanhos, meta1, diasPassados, diasUteisTotal);
   const forecast = getMensagemForecast(totalGanhos, meta1, meta2, meta3, mega1, mega2, mega3);
-  const projecao = diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * diasUteisTotal) : 0;
+  // Projeção só faz sentido com dados reais do Pipedrive
+  const projecao = apiData && diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * diasUteisTotal) : 0;
   const porDia   = (m: number) => diasRestantes > 0 ? Math.ceil(Math.max(0, m - totalGanhos) / diasRestantes) : 0;
   const falta    = (m: number) => Math.max(0, m - totalGanhos);
   const maxMeta  = meta3 || meta2 || meta1 || 1;
@@ -362,7 +365,9 @@ export default function MetaMes() {
               <TrendingUp className="h-4 w-4 text-cw-purple shrink-0" />
               <div>
                 <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Projeção Final</p>
-                <p className="text-base font-black text-cw-text">{projecao} <span className="text-sm text-cw-muted font-normal">/ {metaReferencia || '?'}</span></p>
+                <p className="text-base font-black text-cw-text">
+                  {apiData ? <>{projecao} <span className="text-sm text-cw-muted font-normal">/ {metaReferencia || '?'}</span></> : <span className="text-sm text-cw-muted font-normal">— configure seu perfil</span>}
+                </p>
               </div>
             </div>
             <div className="bg-cw-elevated rounded-xl border border-cw-border px-4 py-3 flex items-center gap-3">
@@ -480,10 +485,19 @@ export default function MetaMes() {
 
           <div className="space-y-3">
             {(() => {
-              const mediaFechDia = diasPassados > 0 ? (totalGanhos / diasPassados) : 0;
+              // Insights só fazem sentido com dados reais do Pipedrive (diasPassados > 0)
+              if (!apiData || diasPassados === 0) {
+                return (
+                  <div className="flex items-center justify-center py-8 text-cw-muted text-sm">
+                    Configure seu perfil para ver os insights.
+                  </div>
+                );
+              }
+
+              const mediaFechDia = totalGanhos / diasPassados;
               const ritmoNecessarioM1 = diasUteisTotal > 0 && meta1 > 0 ? meta1 / diasUteisTotal : 0;
               const pctRitmo = ritmoNecessarioM1 > 0 ? ((mediaFechDia - ritmoNecessarioM1) / ritmoNecessarioM1) * 100 : 0;
-              const projecaoFinal = diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * diasUteisTotal) : 0;
+              const projecaoFinal = Math.round(mediaFechDia * diasUteisTotal);
 
               const insights: { icon: React.ReactNode; texto: string; sub: string; cor: string }[] = [];
 
