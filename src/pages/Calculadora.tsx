@@ -1,7 +1,7 @@
 /** Calculadora de Planos CW — multi-loja, descontos e proposta copiável.
  *  Portada da calculadora avançada (calculad0racw) para o visual do playbook. */
 import { useMemo, useState } from 'react';
-import { Plus, Minus, Copy, Check, Trash2, Percent, CopyPlus } from 'lucide-react';
+import { Plus, Minus, Copy, Check, Trash2, Percent, CopyPlus, PiggyBank } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /* ----------------------------- Dados ----------------------------- */
@@ -80,12 +80,14 @@ function calcStore(s: StoreConfig) {
   const factor = 1 - (partner + custom) / 100;
   const planTotal = base.t * factor;
   const planMonthlyEffective = s.period === 'Mensal' ? base.m * factor : planTotal / mult;
+  // Economia vs. pagar o valor mensal cheio pelo mesmo nº de meses (só o plano).
+  const economiaVsMensal = Math.max(0, PLANOS[s.planType].Mensal.m * mult - planTotal);
   return {
     base, mult, modulesMonthly, selfMonthly, addonsMonthly, addonsTotal,
     planTotal, planMonthlyEffective,
     total: planTotal + addonsTotal,
     monthly: planMonthlyEffective + addonsMonthly,
-    partner, custom,
+    partner, custom, economiaVsMensal,
   };
 }
 
@@ -106,6 +108,7 @@ function buildProposta(calcs: { s: StoreConfig; c: Calc }[], consolidated: { tot
     });
     out.push(`_Equivalente mensal: ${BRL(c.monthly)}/mês_`);
     out.push(`*Total do período: ${BRL(c.total)}*`);
+    if (c.economiaVsMensal > 0.5) out.push(`💰 Economia vs. mês a mês: ${BRL(c.economiaVsMensal)}`);
     out.push('');
   }
   if (multi) {
@@ -374,6 +377,15 @@ export default function Calculadora() {
               <div className="flex justify-between text-[15px]"><span className="text-cw-muted">Equivalente mensal</span><span className="font-bold text-cw-text">{BRL(ac.monthly)}/mês</span></div>
               <div className="flex items-end justify-between pt-1"><span className="font-bold text-cw-text">Total do período</span><span className="text-2xl font-black text-[#5b21b6]">{BRL(ac.total)}</span></div>
             </div>
+            {ac.economiaVsMensal > 0.5 && (
+              <div className="mt-3 flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-3 py-2.5">
+                <PiggyBank className="h-4 w-4 text-emerald-600 shrink-0" />
+                <p className="text-xs text-emerald-700 leading-snug">
+                  No <span className="font-bold">{active.period.toLowerCase()}</span> você economiza{' '}
+                  <span className="font-black">{BRL(ac.economiaVsMensal)}</span> vs. pagar mês a mês.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="cw-card p-6">
