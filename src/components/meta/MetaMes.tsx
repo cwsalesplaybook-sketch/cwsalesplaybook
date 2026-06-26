@@ -33,10 +33,30 @@ function getMensagemForecast(ganhos: number, m1: number, m2: number, m3: number,
   return { texto: 'Você está no forecast da Meta 1', nivel: 0 };
 }
 
-function ConfigModal({ metaData, nomeDetectado, onSave, onClose }: { metaData: MetaData; nomeDetectado?: string; onSave: (d: MetaData) => void; onClose: () => void }) {
+function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose }: {
+  metaData: MetaData;
+  nomeDetectado?: string;
+  pipedriveUsers: { id: string; name: string }[];
+  onSave: (d: MetaData) => void;
+  onClose: () => void;
+}) {
   const [form, setForm] = useState(metaData);
-  const [trocarNome, setTrocarNome] = useState(false);
-  const nomeExibido = nomeDetectado || SDRS_ATIVOS[form.sdrId] || '';
+  const [busca, setBusca] = useState(nomeDetectado || SDRS_ATIVOS[metaData.sdrId] || '');
+  const [nomeSelecionado, setNomeSelecionado] = useState(nomeDetectado || SDRS_ATIVOS[metaData.sdrId] || '');
+  const [aberto, setAberto] = useState(false);
+
+  const lista = pipedriveUsers.length > 0 ? pipedriveUsers : Object.entries(SDRS_ATIVOS).map(([id, name]) => ({ id, name }));
+  const filtrados = busca.length >= 1
+    ? lista.filter(u => u.name.toLowerCase().includes(busca.toLowerCase())).slice(0, 8)
+    : [];
+
+  const selecionarUsuario = (u: { id: string; name: string }) => {
+    setForm(f => ({ ...f, sdrId: u.id }));
+    setBusca(u.name);
+    setNomeSelecionado(u.name);
+    setAberto(false);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
@@ -45,24 +65,37 @@ function ConfigModal({ metaData, nomeDetectado, onSave, onClose }: { metaData: M
           <button onClick={onClose} className="text-cw-muted hover:text-cw-text transition-colors"><X className="h-5 w-5" /></button>
         </div>
         <div className="space-y-4">
-          <div>
+          <div className="relative">
             <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Seu nome (SDR)</label>
-            {nomeExibido && !trocarNome ? (
-              <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
-                <div className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-600 shrink-0" />
-                  <span className="text-sm font-semibold text-green-700">{nomeExibido}</span>
-                </div>
-                <button onClick={() => setTrocarNome(true)} className="text-[11px] text-cw-muted hover:text-cw-purple underline">
-                  Não sou eu
-                </button>
+            <div className="relative">
+              <input
+                type="text"
+                value={busca}
+                onChange={e => { setBusca(e.target.value); setNomeSelecionado(''); setAberto(true); }}
+                onFocus={() => setAberto(true)}
+                placeholder="Digite seu nome..."
+                className={cn(
+                  'w-full bg-cw-elevated border rounded-xl px-3 py-2.5 pr-8 text-sm text-cw-text placeholder:text-cw-muted focus:outline-none',
+                  nomeSelecionado ? 'border-green-400 bg-green-50' : 'border-cw-border focus:border-cw-purple'
+                )}
+              />
+              {nomeSelecionado && (
+                <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600 pointer-events-none" />
+              )}
+            </div>
+            {aberto && filtrados.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full bg-white border border-cw-border rounded-xl shadow-lg overflow-hidden">
+                {filtrados.map(u => (
+                  <button
+                    key={u.id}
+                    type="button"
+                    onClick={() => selecionarUsuario(u)}
+                    className="w-full text-left px-3 py-2.5 text-sm text-cw-text hover:bg-cw-purple/5 hover:text-cw-purple transition-colors"
+                  >
+                    {u.name}
+                  </button>
+                ))}
               </div>
-            ) : (
-              <select value={form.sdrId} onChange={e => setForm(f => ({ ...f, sdrId: e.target.value }))}
-                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple">
-                <option value="">Selecione seu nome</option>
-                {Object.entries(SDRS_ATIVOS).map(([id, nome]) => <option key={id} value={id}>{nome}</option>)}
-              </select>
             )}
           </div>
           {[1, 2, 3].map(n => (
@@ -105,6 +138,7 @@ export default function MetaMes() {
   const [mes, setMes]             = useState('');
   const [conversao, setConversao] = useState(50);
   const [autoNome, setAutoNome]   = useState('');
+  const [pipedriveUsers, setPipedriveUsers] = useState<{ id: string; name: string }[]>([]);
 
   const carregarPerfil = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -122,13 +156,26 @@ export default function MetaMes() {
       try {
         const r = await fetch('/api/pipedrive-users');
         const json = await r.json();
-        if (json.ok && session.user.email) {
-          const match = (json.users as { id: string; name: string; email: string }[]).find(
-            u => u.email?.toLowerCase() === session.user.email!.toLowerCase()
-          );
-          if (match) { autoSdrId = match.id; autoSdrNome = match.name; }
+        if (json.ok) {
+          const users = json.users as { id: string; name: string; email: string }[];
+          setPipedriveUsers(users.map(u => ({ id: u.id, name: u.name })));
+          if (session.user.email) {
+            // 1º: tenta pelo e-mail
+            const byEmail = users.find(u => u.email?.toLowerCase() === session.user.email!.toLowerCase());
+            if (byEmail) { autoSdrId = byEmail.id; autoSdrNome = byEmail.name; }
+            else {
+              // 2º: tenta pelo nome do Google
+              const fullName = (session.user.user_metadata?.full_name ?? '').toLowerCase();
+              if (fullName) {
+                const byName = users.find(u =>
+                  u.name.toLowerCase().includes(fullName) || fullName.includes(u.name.toLowerCase())
+                );
+                if (byName) { autoSdrId = byName.id; autoSdrNome = byName.name; }
+              }
+            }
+          }
         }
-      } catch { /* ignora falha na detecção — o usuário seleciona manualmente */ }
+      } catch { /* ignora falha — usuário digita o nome manualmente */ }
 
       setAutoNome(autoSdrNome);
       setMetaData(m => ({ ...m, sdrId: autoSdrId }));
@@ -186,7 +233,7 @@ export default function MetaMes() {
 
   return (
     <div className="p-6  space-y-4">
-      {config && <ConfigModal metaData={metaData} nomeDetectado={autoNome} onSave={salvarConfig} onClose={() => setConfig(false)} />}
+      {config && <ConfigModal metaData={metaData} nomeDetectado={autoNome} pipedriveUsers={pipedriveUsers} onSave={salvarConfig} onClose={() => setConfig(false)} />}
 
       {/* Header */}
       <div className="flex items-center justify-between">
