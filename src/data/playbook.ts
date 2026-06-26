@@ -408,4 +408,66 @@ export const FAQ: FaqItem[] = [
     pergunta: 'O que é o KDS?',
     resposta: 'Kitchen Display System — tela de gestão de pedidos na cozinha. Os pedidos chegam automaticamente na tela da cozinha, eliminando comandas em papel e reduzindo erros. Disponível no plano Mesas.',
   },
+  // ── INTEGRAÇÃO WHATSAPP (META) ─────────────────────────────────────────────
+  {
+    categoria: 'Integração WhatsApp (Meta)',
+    pergunta: 'O que é a integração oficial com a Meta?',
+    resposta: 'É a integração do WhatsApp via API oficial da Meta. O ChatBot e as notificações de pedido passam a ser enviados pela infraestrutura da própria Meta, com mais estabilidade e independência — sem depender da extensão do WhatsApp. O envio de campanhas pela API oficial ainda não está disponível (é a próxima etapa); por enquanto contempla ChatBot e notificações automáticas.',
+  },
+  {
+    categoria: 'Integração WhatsApp (Meta)',
+    pergunta: 'Preciso manter um computador ligado para o WhatsApp funcionar?',
+    resposta: 'Não. Com a API oficial da Meta, as mensagens saem pela infraestrutura da Meta — não é mais necessário deixar um computador ligado com o navegador aberto. Essa dependência existia no modelo da extensão do WhatsApp.',
+  },
+  {
+    categoria: 'Integração WhatsApp (Meta)',
+    pergunta: 'Vou perder meu WhatsApp Business ao conectar?',
+    resposta: 'Não. A integração tem suporte a coexistência: o mesmo número continua sendo usado normalmente pelos atendentes no WhatsApp Business e no WhatsApp Web, ao mesmo tempo que roda as automações. Não é preciso escolher entre atendimento humano e automação — os dois funcionam juntos. Recomenda-se manter a opção de coexistência habilitada durante a configuração.',
+  },
+  {
+    categoria: 'Integração WhatsApp (Meta)',
+    pergunta: 'Posso conectar mais de um número?',
+    resposta: 'A integração foi feita com suporte a múltiplos números, mas nesta primeira versão cada estabelecimento pode usar apenas um número conectado por vez. A gestão de múltiplos números no mesmo estabelecimento chega em versões futuras.',
+  },
+  {
+    categoria: 'Integração WhatsApp (Meta)',
+    pergunta: 'O ChatBot precisa de modelos (templates) aprovados pela Meta?',
+    resposta: 'Não. Como a conversa é sempre iniciada pelo cliente, abre-se uma "janela" de 24h em que o ChatBot responde livremente, sem template. Os modelos aprovados pela Meta só são exigidos para iniciar uma conversa fora das 24h (janela fechada) — caso de campanhas e de notificações quando o cliente está sem conversa ativa. Quem aprova os templates é a própria Meta, e eles não podem ser editados depois de criados (para mudar, cria-se um novo).',
+  },
+  {
+    categoria: 'Integração WhatsApp (Meta)',
+    pergunta: 'O que muda na área de WhatsApp e nas notificações de pedido?',
+    resposta: 'Surge a área "Gerenciar WhatsApp", que centraliza tudo no portal: números conectados, modelos de mensagem, notificações de pedido e personalização do ChatBot (antes só na extensão). Nas notificações, cada evento passa a ter duas mensagens — uma para janela aberta (sem template e sem custo da Meta) e uma para janela fechada (template aprovado, que pode gerar cobrança da Meta). O sistema escolhe automaticamente qual usar conforme o cliente ter ou não conversa ativa.',
+  },
+  // ── CW APP STORE ───────────────────────────────────────────────────────────
+  {
+    categoria: 'CW App Store',
+    pergunta: 'O que é a CW App Store?',
+    resposta: 'É o marketplace de aplicativos da Cardápio Web: um catálogo centralizado, dentro do portal, com integrações da própria CW e de parceiros (sistemas de gestão, marketing, delivery, chatbot e outras soluções). O objetivo é dar mais organização, controle e transparência — o cliente descobre, instala e gerencia integrações num só lugar.',
+  },
+  {
+    categoria: 'CW App Store',
+    pergunta: 'Onde o cliente acessa e como encontra os apps?',
+    resposta: 'Pela tela "CW Apps", no menu lateral do portal. Lá o lojista vê primeiro os apps já instalados, depois os recomendados e a lista completa de disponíveis, com filtro por categoria: Marketing, Vendas, Gestão e Logística. Ao abrir um app, vê capturas de tela, descrição completa, nota média e avaliações de outros restaurantes.',
+  },
+  {
+    categoria: 'CW App Store',
+    pergunta: 'O que significa "instalar" um aplicativo?',
+    resposta: 'Instalar é autorizar que o aplicativo acesse os dados do estabelecimento pela API da CW. Essa autorização é concedida por estabelecimento: se o cliente tem mais de uma loja e quer o mesmo app em todas, precisa instalar em cada uma. Sem essa etapa, o app não consegue consultar nem operar sobre os dados da loja. Apps instalados ficam acessíveis por um atalho no canto superior direito, com os botões Acessar e Desinstalar.',
+  },
+  {
+    categoria: 'CW App Store',
+    pergunta: 'Como funciona a segurança e a autorização dos apps?',
+    resposta: 'Pelo novo modelo OAuth 2.0 com PKCE: cada aplicativo pede autorização diretamente ao estabelecimento, com permissões específicas (catálogo, pedidos, loja, cupons, avaliações, clientes). O acesso pode ser revisado, bloqueado ou revogado individualmente por app, sem afetar as outras integrações. É bem mais seguro e transparente que o modelo antigo, em que um único token do estabelecimento dava acesso total.',
+  },
+  {
+    categoria: 'CW App Store',
+    pergunta: 'A autenticação antiga por token deixa de funcionar?',
+    resposta: 'Não. As integrações que usam token continuam operando normalmente, mas esse modelo está sendo desencorajado (pode ser descontinuado no futuro) e não aparece no marketplace. Novas integrações devem usar o novo modelo de autenticação da API aberta para poderem fazer parte da CW App Store.',
+  },
+  {
+    categoria: 'CW App Store',
+    pergunta: 'O cliente pode avaliar os aplicativos?',
+    resposta: 'Sim. Com o app instalado, o lojista pode avaliar diretamente pela página do aplicativo: nota de 1 a 5 estrelas e um comentário de até 300 caracteres. A nota média e as avaliações ficam visíveis na página do app, ajudando outros restaurantes a decidir.',
+  },
 ];
