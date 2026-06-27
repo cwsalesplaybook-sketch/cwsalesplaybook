@@ -56,12 +56,16 @@ export default function ModoGestor() {
       .select('user_id, apelido, squad, papel')
       .then(({ data }) => {
         if (data) {
-          setMembros(data.map(d => ({
-            userId: d.user_id,
-            apelido: d.apelido,
-            squad: d.squad ?? null,
-            papel: (d.papel as Papel) ?? 'SDR',
-          })));
+          setMembros(
+            data
+              .filter(d => d.apelido)
+              .map(d => ({
+                userId: d.user_id,
+                apelido: d.apelido as string,
+                squad: d.squad ?? null,
+                papel: (d.papel as Papel) ?? 'SDR',
+              }))
+          );
         }
         setLoadingMembros(false);
       });
@@ -188,7 +192,7 @@ export default function ModoGestor() {
               {membros.map((m) => (
                 <div key={m.userId} className="cw-card p-4 flex items-center gap-3 group">
                   <div className="h-10 w-10 rounded-full bg-[#4a0080] flex items-center justify-center text-[12px] font-black text-white shrink-0">
-                    {m.apelido.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
+                    {(m.apelido ?? '?').split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-cw-text leading-tight truncate">{m.apelido}</p>
