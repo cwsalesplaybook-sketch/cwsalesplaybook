@@ -10,6 +10,8 @@ interface Ctx {
   /** Papel fixado pelo onboarding — null se o usuário ainda não completou. */
   lockedPapel: Papel | null;
   squad: string | null;
+  /** Squads que a liderança acompanha (vazio para não-líderes). */
+  squadsLideradas: string[];
   apelido: string | null;
   /** Bloqueia navegação na sidebar enquanto o wizard de onboarding está ativo. */
   onboardingActive: boolean;
@@ -24,6 +26,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   });
   const [lockedPapel, setLockedPapel] = useState<Papel | null>(null);
   const [squad, setSquad] = useState<string | null>(null);
+  const [squadsLideradas, setSquadsLideradas] = useState<string[]>([]);
   const [apelido, setApelido] = useState<string | null>(null);
   const [onboardingActive, setOnboardingActive] = useState(false);
 
@@ -38,6 +41,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
       setOnboardingActive(true);
     }
     setSquad((m?.squad as string) ?? null);
+    setSquadsLideradas(Array.isArray(m?.squads_lideradas) ? (m.squads_lideradas as string[]) : []);
     setApelido((m?.apelido as string) ?? null);
   };
 
@@ -50,6 +54,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
       if (!session) {
         setLockedPapel(null);
         setSquad(null);
+        setSquadsLideradas([]);
         setApelido(null);
         setOnboardingActive(false);
         return;
@@ -66,7 +71,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <SidebarContext.Provider value={{ papel, setPapel, lockedPapel, squad, apelido, onboardingActive, setOnboardingActive }}>
+    <SidebarContext.Provider value={{ papel, setPapel, lockedPapel, squad, squadsLideradas, apelido, onboardingActive, setOnboardingActive }}>
       {children}
     </SidebarContext.Provider>
   );

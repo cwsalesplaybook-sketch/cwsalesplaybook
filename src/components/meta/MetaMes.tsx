@@ -1,8 +1,10 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useState, useCallback } from 'react';
-import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, AlertTriangle, Star, Rocket, XCircle } from 'lucide-react';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, AlertTriangle, Star, Rocket, XCircle, User, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { useSidebarContext } from '@/context/SidebarContext';
+import TeamMetaView from './TeamMetaView';
 
 const SDRS_ATIVOS: Record<string, string> = {
   '1523': 'Miguel Nunes', '1445': 'Gabrielly Oliveira', '1556': 'Thais Giurizatto',
@@ -129,7 +131,7 @@ function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose 
   );
 }
 
-export default function MetaMes() {
+function PersonalMetaView() {
   const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, sdrId: '' });
   const [apiData, setApiData]     = useState<ApiData | null>(null);
   const [loading, setLoading]     = useState(false);
@@ -688,6 +690,38 @@ export default function MetaMes() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/** Wrapper: lideranças com squad veem o toggle Meta do Time / Minha Meta.
+ *  Demais usuários veem direto a visão individual. */
+export default function MetaMes() {
+  const { papel, squadsLideradas } = useSidebarContext();
+  const isLider = papel === 'Liderança' && squadsLideradas.length > 0;
+  const [vista, setVista] = useState<'time' | 'individual'>('time');
+
+  if (!isLider) return <PersonalMetaView />;
+
+  return (
+    <div className="space-y-2">
+      {/* Toggle de visão */}
+      <div className="px-6 pt-6">
+        <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-cw-elevated border border-cw-border">
+          <button onClick={() => setVista('time')}
+            className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
+              vista === 'time' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
+            <Users className="h-3.5 w-3.5" /> Meta do Time
+          </button>
+          <button onClick={() => setVista('individual')}
+            className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
+              vista === 'individual' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
+            <User className="h-3.5 w-3.5" /> Minha Meta
+          </button>
+        </div>
+      </div>
+
+      {vista === 'time' ? <TeamMetaView squads={squadsLideradas} /> : <PersonalMetaView />}
     </div>
   );
 }

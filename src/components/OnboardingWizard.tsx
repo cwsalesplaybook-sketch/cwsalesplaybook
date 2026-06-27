@@ -66,8 +66,13 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
   const [squad, setSquad] = useState<string | null>(null);
   // cargo específico de liderança (ex: "Liderança Comercial")
   const [cargoLideranca, setCargoLideranca] = useState<string | null>(null);
+  // squads que a liderança acompanha (ex: ['Tubarão'])
+  const [squadsLideradas, setSquadsLideradas] = useState<string[]>([]);
   const [apelido, setApelido] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const toggleSquadLiderada = (s: string) =>
+    setSquadsLideradas(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
 
   const needsSquad     = papel === 'SDR';
   const needsSubCargo  = papel === 'Liderança';
@@ -97,7 +102,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
   const canNext = () => {
     if (step === 0) return true;
     if (step === 1) return papel !== null;
-    if (step === 2) return needsSubCargo ? cargoLideranca !== null : squad !== null;
+    if (step === 2) return needsSubCargo ? (cargoLideranca !== null && squadsLideradas.length > 0) : squad !== null;
     return true;
   };
 
@@ -106,12 +111,15 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
     setSaving(true);
     const name = apelido.trim() || null;
 
+    const squadsLed = papel === 'Liderança' ? squadsLideradas : [];
+
     // 1. Atualiza metadados do auth (visão do sidebar)
     const { error, data: authData } = await supabase.auth.updateUser({
       data: {
         papel,
         squad: papel === 'SDR' ? squad : null,
         cargo_lideranca: papel === 'Liderança' ? cargoLideranca : null,
+        squads_lideradas: squadsLed,
         apelido: name,
         onboarding_done: true,
       },
@@ -128,6 +136,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
         apelido: name,
         papel,
         squad: papel === 'SDR' ? squad : null,
+        squads_lideradas: squadsLed,
         cargo_lideranca: papel === 'Liderança' ? cargoLideranca : null,
         onboarding_done: true,
         updated_at: new Date().toISOString(),
@@ -300,6 +309,36 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
                   </p>
                 </div>
               )}
+
+              {/* Squads que a liderança acompanha */}
+              <div className="pt-4 border-t border-cw-border space-y-2.5">
+                <div>
+                  <h3 className="text-sm font-black text-cw-text">Quais squads você lidera?</h3>
+                  <p className="text-[12px] text-cw-muted">
+                    Você vai acompanhar a meta e o desempenho de cada membro desses times. Pode marcar mais de um.
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {SQUADS_SDR.map(s => {
+                    const sel = squadsLideradas.includes(s);
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => toggleSquadLiderada(s)}
+                        className={cn(
+                          'py-4 rounded-xl border-2 text-center font-bold text-[15px] transition-all duration-150 flex items-center justify-center gap-1.5',
+                          sel
+                            ? 'border-cw-purple bg-cw-purple/10 text-cw-purple'
+                            : 'border-cw-border bg-cw-elevated text-cw-muted hover:border-cw-purple/40 hover:text-cw-text'
+                        )}
+                      >
+                        {sel && <Check className="h-3.5 w-3.5" />}
+                        {s}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
 
@@ -383,6 +422,14 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
                     <Check className="h-3.5 w-3.5 text-cw-purple shrink-0" />
                     <p className="text-[12px] text-cw-muted">
                       Área: <span className="font-bold text-cw-text">{cargoLideranca}</span>
+                    </p>
+                  </div>
+                )}
+                {squadsLideradas.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Check className="h-3.5 w-3.5 text-cw-purple shrink-0" />
+                    <p className="text-[12px] text-cw-muted">
+                      Squads que lidera: <span className="font-bold text-cw-text">{squadsLideradas.join(', ')}</span>
                     </p>
                   </div>
                 )}
