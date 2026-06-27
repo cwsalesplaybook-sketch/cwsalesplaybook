@@ -14,6 +14,7 @@ import { FloatingSearch } from '@/components/FloatingSearch';
 import { EditorProvider } from '@/admin/EditorContext';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { EditorBanner } from '@/admin/EditorBanner';
+import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner';
 import { PasswordGate } from '@/admin/PasswordGate';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
@@ -206,6 +207,7 @@ function AppLayout() {
         <div className="flex h-screen w-full overflow-hidden bg-cw-bg text-cw-text">
           <Sidebar />
           <main className="flex-1 overflow-y-auto scrollbar-cw">
+            <ImpersonationBanner />
             <EditorBanner />
             <AnimatedRoutes />
           </main>

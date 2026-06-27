@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { Crown, ShieldCheck, BookOpen, Target, BarChart2, LayoutDashboard, Zap, Users, Map, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Crown, ShieldCheck, BookOpen, Target, BarChart2, LayoutDashboard, Zap, Users, Map, Loader2, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { useSidebarContext, type Papel } from '@/context/SidebarContext';
+import { useSidebarContext, type Papel, type ImpersonationTarget } from '@/context/SidebarContext';
 import { useEditor } from '@/admin/EditorContext';
 import { Header } from '@/components/layout/Header';
+import { supabase } from '@/integrations/supabase/client';
 
 const PLAYBOOKS = [
   { label: 'SDR',            papel: 'SDR' as Papel,           icon: Zap,     desc: 'Prospecção, qualificação e agendamento de reuniões.' },
@@ -33,11 +34,38 @@ const LIDERANCAS = [
   { nome: 'Beatriz Magalhães',  cargo: 'Liderança de Parcerias'    },
 ];
 
+interface SdrProfile {
+  userId: string;
+  apelido: string;
+  squad: string | null;
+  papel: Papel;
+}
+
 export default function ModoGestor() {
-  const { papel, setPapel } = useSidebarContext();
+  const { papel, setPapel, setImpersonating } = useSidebarContext();
   const { isGestor } = useEditor();
   const navigate = useNavigate();
   const [switching, setSwitching] = useState<Papel | null>(null);
+  const [membros, setMembros] = useState<SdrProfile[]>([]);
+  const [loadingMembros, setLoadingMembros] = useState(true);
+
+  useEffect(() => {
+    if (!isGestor) return;
+    supabase
+      .from('sdr_profiles')
+      .select('user_id, apelido, squad, papel')
+      .then(({ data }) => {
+        if (data) {
+          setMembros(data.map(d => ({
+            userId: d.user_id,
+            apelido: d.apelido,
+            squad: d.squad ?? null,
+            papel: (d.papel as Papel) ?? 'SDR',
+          })));
+        }
+        setLoadingMembros(false);
+      });
+  }, [isGestor]);
 
   if (!isGestor) {
     return (
@@ -54,6 +82,17 @@ export default function ModoGestor() {
     await new Promise(r => setTimeout(r, 300));
     setPapel(novoPapel);
     setSwitching(null);
+    navigate('/start');
+  };
+
+  const verComo = (membro: SdrProfile) => {
+    const target: ImpersonationTarget = {
+      apelido: membro.apelido,
+      papel: membro.papel,
+      squad: membro.squad,
+      userId: membro.userId,
+    };
+    setImpersonating(target);
     navigate('/start');
   };
 
@@ -128,6 +167,45 @@ export default function ModoGestor() {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* Visualizar como membro */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-cw-purple-light" />
+            <h2 className="text-lg font-bold">Visualizar como</h2>
+            <span className="text-xs text-cw-muted font-normal">Veja o playbook pelos olhos de cada membro</span>
+          </div>
+          {loadingMembros ? (
+            <div className="flex items-center gap-2 text-cw-muted text-sm">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Carregando membros...
+            </div>
+          ) : membros.length === 0 ? (
+            <p className="text-sm text-cw-muted">Nenhum membro configurou o perfil ainda.</p>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {membros.map((m) => (
+                <div key={m.userId} className="cw-card p-4 flex items-center gap-3 group">
+                  <div className="h-10 w-10 rounded-full bg-[#4a0080] flex items-center justify-center text-[12px] font-black text-white shrink-0">
+                    {m.apelido.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-cw-text leading-tight truncate">{m.apelido}</p>
+                    <p className="text-xs text-cw-muted mt-0.5">{m.papel}{m.squad ? ` · ${m.squad}` : ''}</p>
+                  </div>
+                  <button
+                    onClick={() => verComo(m)}
+                    title={`Ver como ${m.apelido}`}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold text-cw-purple-light bg-cw-purple/10 hover:bg-cw-purple/20 px-2 py-1 rounded-lg shrink-0"
+                  >
+                    <Eye className="h-3 w-3" />
+                    Ver
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Lideranças */}
