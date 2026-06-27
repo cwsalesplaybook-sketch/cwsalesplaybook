@@ -685,7 +685,8 @@ function PersonalMetaView() {
                     />
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
           )}
         </div>
