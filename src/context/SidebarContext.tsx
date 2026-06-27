@@ -4,6 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type Papel = 'SDR' | 'Closer' | 'Representante' | 'Parcerias' | 'Liderança';
 
+export interface ImpersonationTarget {
+  apelido: string;
+  papel: Papel;
+  squad: string | null;
+  userId: string;
+}
+
 interface Ctx {
   papel: Papel;
   setPapel: (p: Papel) => void;
@@ -16,6 +23,9 @@ interface Ctx {
   /** Bloqueia navegação na sidebar enquanto o wizard de onboarding está ativo. */
   onboardingActive: boolean;
   setOnboardingActive: (v: boolean) => void;
+  /** Impersonação: gestor visualizando como outro usuário. */
+  impersonating: ImpersonationTarget | null;
+  setImpersonating: (target: ImpersonationTarget | null) => void;
 }
 
 const SidebarContext = createContext<Ctx | undefined>(undefined);
@@ -29,6 +39,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [squadsLideradas, setSquadsLideradas] = useState<string[]>([]);
   const [apelido, setApelido] = useState<string | null>(null);
   const [onboardingActive, setOnboardingActive] = useState(false);
+  const [impersonating, setImpersonating] = useState<ImpersonationTarget | null>(null);
 
   const applyMeta = (m: Record<string, unknown>) => {
     const saved = m?.papel as Papel | undefined;
@@ -70,8 +81,18 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('cw-papel', p);
   };
 
+  // Quando impersonando, sobrescreve papel/squad/apelido visíveis
+  const visiblePapel = impersonating ? impersonating.papel : papel;
+  const visibleSquad = impersonating ? impersonating.squad : squad;
+  const visibleApelido = impersonating ? impersonating.apelido : apelido;
+
   return (
-    <SidebarContext.Provider value={{ papel, setPapel, lockedPapel, squad, squadsLideradas, apelido, onboardingActive, setOnboardingActive }}>
+    <SidebarContext.Provider value={{
+      papel: visiblePapel, setPapel, lockedPapel,
+      squad: visibleSquad, squadsLideradas, apelido: visibleApelido,
+      onboardingActive, setOnboardingActive,
+      impersonating, setImpersonating,
+    }}>
       {children}
     </SidebarContext.Provider>
   );
