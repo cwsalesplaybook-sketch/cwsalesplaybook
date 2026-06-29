@@ -33,6 +33,7 @@ import Pipeline from '@/components/pipeline/Pipeline';
 import Gestao from '@/components/gestao/Gestao';
 import Ranking from '@/components/ranking/Ranking';
 import MetaMes from '@/components/meta/MetaMes';
+import Promocoes from '@/pages/Promocoes';
 import Start from '@/pages/Start';
 import BadgesPage from '@/pages/Badges';
 import FaqPage from '@/pages/Faq';
@@ -180,6 +181,7 @@ function AnimatedRoutes() {
           <Route path="/berserker" element={<Berserker />} />
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/meta" element={<MetaMes />} />
+          <Route path="/promocoes" element={<Promocoes />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/ajuda" element={<CentralAjuda />} />
           <Route path="/mural" element={<MuralPage />} />

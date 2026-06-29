@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
 import TeamMetaView from './TeamMetaView';
+import PromocaoCelebration from './PromocaoCelebration';
 
 const SDRS_ATIVOS: Record<string, string> = {
   '1523': 'Miguel Nunes', '1445': 'Gabrielly Oliveira', '1556': 'Thais Giurizatto',
@@ -696,16 +697,25 @@ function PersonalMetaView() {
 }
 
 /** Wrapper: lideranças com squad veem o toggle Meta do Time / Minha Meta.
- *  Demais usuários veem direto a visão individual. */
+ *  Demais usuários veem direto a visão individual.
+ *  A celebração de promoção aparece no topo para quem tiver uma pendente. */
 export default function MetaMes() {
   const { papel, squadsLideradas } = useSidebarContext();
   const isLider = papel === 'Liderança' && squadsLideradas.length > 0;
   const [vista, setVista] = useState<'time' | 'individual'>('time');
 
-  if (!isLider) return <PersonalMetaView />;
+  if (!isLider) {
+    return (
+      <>
+        <PromocaoCelebration />
+        <PersonalMetaView />
+      </>
+    );
+  }
 
   return (
     <div className="space-y-2">
+      <PromocaoCelebration />
       {/* Toggle de visão */}
       <div className="px-6 pt-6">
         <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-cw-elevated border border-cw-border">
