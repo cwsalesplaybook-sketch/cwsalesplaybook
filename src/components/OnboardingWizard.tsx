@@ -1,5 +1,5 @@
 /** Wizard de onboarding — exibido na primeira entrada do usuário. */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   BookOpen, Target, Calendar, Trophy, HelpCircle, Zap,
   Sparkles, ArrowRight, Check, Bell, AlertCircle,
@@ -41,6 +41,13 @@ const CARGOS_LIDERANCA = [
   'Coordenação de Parcerias',
 ];
 
+/** CEOs: pulam a seleção de cargo/squad — entram direto como Liderança com acesso a todos os squads. */
+const EMAILS_CEO = [
+  'matheus.lessa@cardapioweb.com',
+  'johnnyalves@cardapioweb.com',
+  'glauton@cardapioweb.com',
+];
+
 const PAPEIS_INFO: Record<Papel, { desc: string; aviso?: string }> = {
   SDR:          { desc: 'Prospecção, qualificação e cadências de outbound' },
   Closer:       { desc: 'Negociação, fechamento e expansão de contas' },
@@ -60,6 +67,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
   const userEmail = userProfile.email?.toLowerCase() ?? '';
   const cargoSugerido = EMAILS_LIDERANCA[userEmail] ?? null;
   const podeEscolherLideranca = cargoSugerido !== null;
+  const isCEO = EMAILS_CEO.includes(userEmail);
 
   const [step, setStep] = useState(0);
   const [papel, setPapel] = useState<Papel | null>(null);
@@ -146,6 +154,48 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
     localStorage.setItem('cw-papel', papel);
     onComplete();
   };
+
+  /** CEOs entram direto como Liderança com acesso a todos os squads, sem passar pelo wizard. */
+  const handleCompleteCEO = async () => {
+    setSaving(true);
+    const { error, data: authData } = await supabase.auth.updateUser({
+      data: {
+        papel: 'Liderança',
+        squad: null,
+        cargo_lideranca: 'Diretoria',
+        squads_lideradas: SQUADS_SDR,
+        apelido: userProfile.fullName ?? null,
+        onboarding_done: true,
+      },
+    });
+    if (error) { setSaving(false); return; }
+
+    const uid = authData?.user?.id;
+    const email = authData?.user?.email ?? userEmail;
+    if (uid) {
+      await supabase.from('sdr_profiles').upsert({
+        user_id: uid,
+        email,
+        apelido: userProfile.fullName ?? null,
+        papel: 'Liderança',
+        squad: null,
+        squads_lideradas: SQUADS_SDR,
+        cargo_lideranca: 'Diretoria',
+        onboarding_done: true,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+    }
+
+    localStorage.setItem('cw-papel', 'Liderança');
+    onComplete();
+  };
+
+  useEffect(() => {
+    if (isCEO) handleCompleteCEO();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCEO]);
+
+  if (isCEO) return null;
 
   const wrapper = inline
     ? 'w-full'
