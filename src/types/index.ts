@@ -81,6 +81,17 @@ export interface Badge {
   regra: (checked: Record<string, boolean>) => boolean;
 }
 
+export interface Pessoa {
+  id: string;
+  nome: string;
+  cargo: string;
+  squad?: string;
+  slack?: string;
+  bio?: string;
+  foto?: string;
+  email?: string;
+}
+
 export interface GlossarioTermo {
   termo: string;
   definicao: string;
