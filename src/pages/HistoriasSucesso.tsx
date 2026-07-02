@@ -144,6 +144,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'crown',    valor: 'O cara', label: 'STATUS' },
     ],
   },
+  {
+    id: 'tatyanna', nome: 'Tatyanna Freitas', foto: '/hall/TatyannaFreitas.jpeg',
+    cargo: 'Closer', jornada: ['SDR JR III', 'SDR Pleno I', 'Closer'],
+    frase: '',
+    historia: 'A história de Tatyanna com a Cardápio Web começou antes da trajetória atual. Ela ficou cerca de 3 meses na empresa e, mesmo em pouco tempo, se identificou muito com a cultura, com as pessoas e com o jeito que a empresa cuida dos colaboradores — foi um lugar que marcou de verdade. Depois surgiu uma oportunidade em outra empresa e ela resolveu aceitar o novo desafio. Passou 6 meses lá, aprendeu bastante, mas sempre sentia que faltava alguma coisa: nunca deixou de admirar a Cardápio Web e sempre teve vontade de voltar, porque sabia que era um lugar onde poderia crescer e se desenvolver de verdade. Quando surgiu a oportunidade de retornar, ficou muito feliz. Voltou como SDR com um propósito claro: aproveitar essa nova chance e dar o melhor todos os dias. Trabalhou com muita dedicação, aprendeu com cada desafio e conseguiu bater a meta durante 3 meses seguidos. Com esse resultado, surgiu a chance de participar do processo seletivo interno para Closer. Deu o máximo em cada etapa e foi aprovada — um momento especial, porque sentiu que todo o esforço tinha valido a pena. Hoje inicia como Closer e é grata por essa trajetória. Olhando pra trás, voltar pra Cardápio Web foi uma das melhores decisões que tomou: encontrou um lugar onde se sente valorizada, onde pode aprender todos os dias e onde tem espaço pra crescer. Prova de que, quando a gente acredita no lugar onde está e se dedica de verdade, as oportunidades aparecem — e esse é só o começo da caminhada que quer construir dentro da Cardápio Web.',
+    stats: [
+      { icon: 'trending', valor: '3 meses', label: 'META BATIDA SEGUIDA' },
+      { icon: 'star',     valor: 'Closer', label: 'CARGO ATUAL' },
+      { icon: 'crown',    valor: 'SDR JR III → Pleno I → Closer', label: 'JORNADA' },
+    ],
+  },
 ];
 
 function StatIcon({ type }: { type: Stat['icon'] }) {
