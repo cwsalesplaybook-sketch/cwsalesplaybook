@@ -88,7 +88,6 @@ export interface Pessoa {
   squad?: string;
   slack?: string;
   bio?: string;
-  foto?: string;
   email?: string;
 }
 
