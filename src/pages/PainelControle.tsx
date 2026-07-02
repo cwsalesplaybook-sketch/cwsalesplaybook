@@ -80,7 +80,7 @@ const GUIDE_SECTIONS = [
     items: [
       { action: 'Texto de boas-vindas', how: 'Clique em qualquer título ou parágrafo da hero section' },
       { action: 'Timeline "A jornada da CW"', how: 'Clique em título ou descrição de cada marco para editar; botão + para adicionar novo marco; lixeira para remover' },
-      { action: '"Quem é quem no time"', how: 'Automático — atualiza sozinho conforme o cargo que cada pessoa escolhe no wizard de onboarding' },
+      { action: '"Quem é quem no time"', how: 'Botão "+ Pessoa" para adicionar; clique em nome/cargo para editar; lixeira no hover para remover' },
       { action: 'Checklist de onboarding', how: 'Clique em qualquer item da lista para editar o texto' },
     ],
   },
