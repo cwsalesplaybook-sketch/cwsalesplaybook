@@ -60,6 +60,22 @@ function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose 
     setAberto(false);
   };
 
+  // Resolve o SDR mesmo que o usuário não tenha clicado numa sugestão do dropdown
+  // (ex: digitou só o primeiro nome, "enizia", e foi direto no Salvar).
+  const resolverUsuario = (): { id: string; name: string } | null => {
+    const alvo = busca.trim().toLowerCase();
+    if (!alvo) return null;
+    if (form.sdrId && nomeSelecionado && nomeSelecionado.toLowerCase() === alvo) {
+      return { id: form.sdrId, name: nomeSelecionado };
+    }
+    const exato = lista.find(u => u.name.toLowerCase() === alvo);
+    if (exato) return exato;
+    const porPrimeiroNome = lista.filter(u => u.name.toLowerCase().split(' ')[0] === alvo);
+    if (porPrimeiroNome.length === 1) return porPrimeiroNome[0];
+    if (filtrados.length === 1) return filtrados[0];
+    return null;
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
@@ -124,7 +140,15 @@ function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose 
             ))}
           </div>
         </div>
-        <button onClick={() => onSave(form)} className="w-full mt-6 py-3 rounded-xl font-bold text-sm text-white gradient-primary transition-opacity hover:opacity-90">
+        <button
+          onClick={() => {
+            const resolvido = resolverUsuario();
+            if (resolvido) { onSave({ ...form, sdrId: resolvido.id }); return; }
+            if (!form.sdrId) { alert('Não encontrei esse SDR pelo nome digitado. Selecione um nome na lista.'); return; }
+            onSave(form);
+          }}
+          className="w-full mt-6 py-3 rounded-xl font-bold text-sm text-white gradient-primary transition-opacity hover:opacity-90"
+        >
           Salvar configurações
         </button>
       </div>
