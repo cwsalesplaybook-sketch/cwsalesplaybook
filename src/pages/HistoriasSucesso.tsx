@@ -79,6 +79,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
+    id: 'gregory', nome: 'Gregory Lavor', foto: '/hall/Gregory.png',
+    cargo: 'Liderança de Closer', jornada: ['SDR', 'Closer', 'Liderança de Closer'],
+    frase: 'Aprendi aqui do zero. E ainda não parei.',
+    historia: 'Gregory chegou sem nenhuma experiência em vendas e aprendeu tudo dentro da CW. No primeiro mês como SDR não bateu meta, no sexto já entregava Meta 3 de forma antecipada. Passou pelo processo seletivo interno de 3 etapas e migrou pro time de Closer. Manteve a mesma lógica: consistência mês a mês, entregando Meta 3 ou Mega Meta. Em 1 ano e meio foi de Closer Jr I direto ao Jr III (pulou o nível II), depois Pleno I e Pleno II. Recentemente foi promovido a Liderança de Closer, coroando uma trajetória de quem aprendeu tudo do zero e não parou de crescer.',
+    stats: [
+      { icon: 'trending', valor: '5', label: 'PROMOÇÕES' },
+      { icon: 'star',     valor: 'Liderança de Closer', label: 'CARGO ATUAL' },
+      { icon: 'crown',    valor: 'Do zero ao topo', label: 'JORNADA' },
+    ],
+  },
+  {
     id: 'whenna', nome: 'Whenna Oliveira', foto: '/hall/WhennaOliveira.jpeg',
     cargo: 'Liderança de Closer', jornada: ['Estágio BDR', 'SDR', 'Liderança Pré-Vendas', 'Liderança Closer'],
     frase: 'Cada etapa foi escolha, não sorte.',
@@ -120,17 +131,6 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'trending', valor: 'Todos', label: 'SETORES' },
       { icon: 'star',     valor: 'Diretor', label: 'CW CAST' },
       { icon: 'crown',    valor: 'Master', label: 'STATUS' },
-    ],
-  },
-  {
-    id: 'gregory', nome: 'Gregory Lavor', foto: '/hall/Gregory.png',
-    cargo: 'Liderança de Closer', jornada: ['SDR', 'Closer', 'Liderança de Closer'],
-    frase: 'Aprendi aqui do zero. E ainda não parei.',
-    historia: 'Gregory chegou sem nenhuma experiência em vendas e aprendeu tudo dentro da CW. No primeiro mês como SDR não bateu meta, no sexto já entregava Meta 3 de forma antecipada. Passou pelo processo seletivo interno de 3 etapas e migrou pro time de Closer. Manteve a mesma lógica: consistência mês a mês, entregando Meta 3 ou Mega Meta. Em 1 ano e meio foi de Closer Jr I direto ao Jr III (pulou o nível II), depois Pleno I e Pleno II. Recentemente foi promovido a Liderança de Closer, coroando uma trajetória de quem aprendeu tudo do zero e não parou de crescer.',
-    stats: [
-      { icon: 'trending', valor: '5', label: 'PROMOÇÕES' },
-      { icon: 'star',     valor: 'Liderança de Closer', label: 'CARGO ATUAL' },
-      { icon: 'crown',    valor: 'Do zero ao topo', label: 'JORNADA' },
     ],
   },
   {
