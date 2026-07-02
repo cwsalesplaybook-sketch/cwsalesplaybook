@@ -112,7 +112,7 @@ export function TimeGrid() {
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-xs text-cw-text leading-snug truncate">{p.apelido}</p>
                         <p className="text-[11px] text-cw-muted truncate">
-                          {p.papel}{p.squad ? ` · ${p.squad}` : ''}
+                          {p.cargoLideranca ?? p.papel}{p.squad ? ` · ${p.squad}` : ''}
                         </p>
                       </div>
                     </div>
