@@ -124,12 +124,12 @@ const MEMBROS_PADRAO: MembroHall[] = [
   },
   {
     id: 'gregory', nome: 'Gregory Lavor', foto: '/hall/Gregory.png',
-    cargo: 'Closer', jornada: ['SDR', 'Closer'],
+    cargo: 'Liderança de Closer', jornada: ['SDR', 'Closer', 'Liderança de Closer'],
     frase: 'Aprendi aqui do zero. E ainda não parei.',
-    historia: 'Gregory chegou sem nenhuma experiência em vendas e aprendeu tudo dentro da CW. No primeiro mês como SDR não bateu meta, no sexto já entregava Meta 3 de forma antecipada. Passou pelo processo seletivo interno de 3 etapas e migrou pro time de Closer. Manteve a mesma lógica: consistência mês a mês, entregando Meta 3 ou Mega Meta. Em 1 ano e meio foi de Closer Jr I direto ao Jr III (pulou o nível II), depois Pleno I e, mais recentemente, Pleno II. Segue crescendo.',
+    historia: 'Gregory chegou sem nenhuma experiência em vendas e aprendeu tudo dentro da CW. No primeiro mês como SDR não bateu meta, no sexto já entregava Meta 3 de forma antecipada. Passou pelo processo seletivo interno de 3 etapas e migrou pro time de Closer. Manteve a mesma lógica: consistência mês a mês, entregando Meta 3 ou Mega Meta. Em 1 ano e meio foi de Closer Jr I direto ao Jr III (pulou o nível II), depois Pleno I e Pleno II. Recentemente foi promovido a Liderança de Closer, coroando uma trajetória de quem aprendeu tudo do zero e não parou de crescer.',
     stats: [
-      { icon: 'trending', valor: '4', label: 'PROMOÇÕES' },
-      { icon: 'star',     valor: 'Closer Pleno II', label: 'CARGO ATUAL' },
+      { icon: 'trending', valor: '5', label: 'PROMOÇÕES' },
+      { icon: 'star',     valor: 'Liderança de Closer', label: 'CARGO ATUAL' },
       { icon: 'crown',    valor: 'Do zero ao topo', label: 'JORNADA' },
     ],
   },
@@ -148,7 +148,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     id: 'tatyanna', nome: 'Tatyanna Freitas', foto: '/hall/TatyannaFreitas.jpeg',
     cargo: 'Closer', jornada: ['SDR JR III', 'SDR Pleno I', 'Closer'],
     frase: '',
-    historia: 'A história de Tatyanna com a Cardápio Web começou antes da trajetória atual. Ela ficou cerca de 3 meses na empresa e, mesmo em pouco tempo, se identificou muito com a cultura, com as pessoas e com o jeito que a empresa cuida dos colaboradores — foi um lugar que marcou de verdade. Depois surgiu uma oportunidade em outra empresa e ela resolveu aceitar o novo desafio. Passou 6 meses lá, aprendeu bastante, mas sempre sentia que faltava alguma coisa: nunca deixou de admirar a Cardápio Web e sempre teve vontade de voltar, porque sabia que era um lugar onde poderia crescer e se desenvolver de verdade. Quando surgiu a oportunidade de retornar, ficou muito feliz. Voltou como SDR com um propósito claro: aproveitar essa nova chance e dar o melhor todos os dias. Trabalhou com muita dedicação, aprendeu com cada desafio e conseguiu bater a meta durante 3 meses seguidos. Com esse resultado, surgiu a chance de participar do processo seletivo interno para Closer. Deu o máximo em cada etapa e foi aprovada — um momento especial, porque sentiu que todo o esforço tinha valido a pena. Hoje inicia como Closer e é grata por essa trajetória. Olhando pra trás, voltar pra Cardápio Web foi uma das melhores decisões que tomou: encontrou um lugar onde se sente valorizada, onde pode aprender todos os dias e onde tem espaço pra crescer. Prova de que, quando a gente acredita no lugar onde está e se dedica de verdade, as oportunidades aparecem — e esse é só o começo da caminhada que quer construir dentro da Cardápio Web.',
+    historia: 'Tatyanna já tinha passado pela CW antes: ficou cerca de 3 meses e se identificou de cara com a cultura e com o jeito que a empresa cuida das pessoas. Saiu pra encarar um novo desafio, passou 6 meses fora, mas nunca deixou de admirar a Cardápio Web e sempre quis voltar. Quando a chance surgiu, voltou como SDR com um propósito claro e bateu a meta 3 meses seguidos. Com esse resultado, entrou no processo seletivo interno para Closer, deu o máximo em cada etapa e foi aprovada. Hoje inicia como Closer, prova de que acreditar no lugar certo e se dedicar de verdade abre as portas certas.',
     stats: [
       { icon: 'trending', valor: '3 meses', label: 'META BATIDA SEGUIDA' },
       { icon: 'star',     valor: 'Closer', label: 'CARGO ATUAL' },
