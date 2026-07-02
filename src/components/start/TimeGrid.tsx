@@ -1,4 +1,4 @@
-/** Grid "Quem é quem" do time comercial — agrupado por hierarquia, foto via Google OAuth. */
+/** Grid "Quem é quem" do time comercial — agrupado por hierarquia. Sem fotos: só iniciais. */
 import { Users, Plus, Trash2 } from 'lucide-react';
 import { TIME } from '@/data/time';
 import { useEditableContent, useContentStore } from '@/store/contentStore';
@@ -6,7 +6,6 @@ import { useEditor } from '@/admin/EditorContext';
 import { EditableText } from '@/admin/EditableText';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
-import { useUserProfile } from '@/hooks/useUserProfile';
 import type { Pessoa } from '@/types';
 
 const STORE_KEY = 'start.time';
@@ -31,7 +30,6 @@ export function TimeGrid() {
   const { isEditing } = useEditor();
   const items = useEditableContent<Pessoa[]>(STORE_KEY, TIME);
   const saveOverride = useContentStore((s) => s.saveOverride);
-  const { avatarUrl, email } = useUserProfile();
 
   const update = async (next: Pessoa[]) => {
     try { await saveOverride(STORE_KEY, next); }
@@ -90,10 +88,6 @@ export function TimeGrid() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
               {pessoas.map(({ p, idx }) => {
                 const initials = p.nome.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
-                const isMe = !!email && (
-                  p.email === email ||
-                  p.slack?.toLowerCase().includes(email.split('@')[0].toLowerCase()) === true
-                );
 
                 return (
                   <div key={p.id} className="group relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-cw-elevated border border-cw-border hover:border-cw-purple/40 hover:bg-white hover:shadow-sm transition-all duration-150">
@@ -107,16 +101,9 @@ export function TimeGrid() {
                       </button>
                     )}
 
-                    {/* Avatar — prioridade: foto Google (eu logado) > foto estática > iniciais */}
-                    {isMe && avatarUrl ? (
-                      <img src={avatarUrl} alt={p.nome} className="h-9 w-9 rounded-full object-cover shrink-0 border-2 border-cw-purple/40" referrerPolicy="no-referrer" />
-                    ) : p.foto ? (
-                      <img src={p.foto} alt={p.nome} className="h-9 w-9 rounded-full object-cover shrink-0 border border-cw-border" />
-                    ) : (
-                      <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-xs shrink-0">
-                        {initials}
-                      </div>
-                    )}
+                    <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-white font-bold text-xs shrink-0">
+                      {initials}
+                    </div>
 
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-xs text-cw-text leading-snug truncate">

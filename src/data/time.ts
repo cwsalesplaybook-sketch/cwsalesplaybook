@@ -7,22 +7,22 @@ export const TIME: Pessoa[] = [
   { id: 'glauton',    nome: 'Glauton Santos',                      cargo: 'Sócio Fundador',                      slack: '@glauton'   },
 
   // ── COORDENAÇÃO ─────────────────────────────────────────────────
-  { id: 'ana-clara-lobo',  nome: 'Ana Clara Lobo',                 cargo: 'Coordenadora Comercial',              slack: '@anaclara',  foto: '/team/ana-clara.jpeg',     email: 'ana.clara@cardapioweb.com'        },
+  { id: 'ana-clara-lobo',  nome: 'Ana Clara Lobo',                 cargo: 'Coordenadora Comercial',              slack: '@anaclara',  email: 'ana.clara@cardapioweb.com'        },
   { id: 'vanessa',         nome: 'Vanessa Alencar',                cargo: 'Coordenadora de Parcerias',           slack: '@vanessa'                                                                    },
 
   // ── LIDERANÇA (continuação) ─────────────────────────────────────
   { id: 'beatriz',         nome: 'Beatriz Magalhães',              cargo: 'Liderança de Parcerias',              slack: '@beatriz'                                                                    },
 
   // ── REPRESENTANTES ──────────────────────────────────────────────
-  { id: 'hyorranes',       nome: 'Hyorranes',                      cargo: 'Liderança de Representantes',         slack: '@hyorranes', foto: '/team/hyorranes.jpeg',    email: 'hyorranes.souza@cardapioweb.com'  },
+  { id: 'hyorranes',       nome: 'Hyorranes',                      cargo: 'Liderança de Representantes',         slack: '@hyorranes', email: 'hyorranes.souza@cardapioweb.com'  },
   { id: 'gabrielly-psm',   nome: 'Gabrielly Oliveira',              cargo: 'PSM',                                slack: '@gabrielly'                                                                   },
   { id: 'bea-andrade',     nome: 'Bea Andrade',                    cargo: 'PSM',                                 slack: '@beaandrade'                                                                 },
 
   // ── LIDERANÇA ───────────────────────────────────────────────────
-  { id: 'joelma',          nome: 'Joelma Vieira',                  cargo: 'Liderança de Pré-Vendas (SDR)',       slack: '@joelma',    foto: '/team/joelma.jpeg',                 email: 'joelma.vieira@cardapioweb.com'   },
-  { id: 'pedro',           nome: 'Pedro Ferreira',                 cargo: 'Liderança de Pré-Vendas',             slack: '@pedro',     foto: '/team/pedro-ferreira.jpeg', email: 'pedro.ferreira@cardapioweb.com'  },
+  { id: 'joelma',          nome: 'Joelma Vieira',                  cargo: 'Liderança de Pré-Vendas (SDR)',       slack: '@joelma',    email: 'joelma.vieira@cardapioweb.com'   },
+  { id: 'pedro',           nome: 'Pedro Ferreira',                 cargo: 'Liderança de Pré-Vendas',             slack: '@pedro',     email: 'pedro.ferreira@cardapioweb.com'  },
   { id: 'anderson',        nome: 'Antonio Anderson Castro da Silva', cargo: 'Liderança de Pré-Vendas',           slack: '@anderson',                                    email: 'antonio.anderson@cardapioweb.com' },
-  { id: 'whenna',          nome: 'Whenna Oliveira',                cargo: 'Liderança de Closer',                 slack: '@whenna',    foto: '/team/whenna.jpeg',         email: 'whenna.oliveira@cardapioweb.com' },
+  { id: 'whenna',          nome: 'Whenna Oliveira',                cargo: 'Liderança de Closer',                 slack: '@whenna',    email: 'whenna.oliveira@cardapioweb.com' },
   { id: 'gregory',         nome: 'Gregory Lavor',                  cargo: 'Liderança de Closer',                 slack: '@gregory'   },
 
   // ── ANALISTAS / ASSESSORES ──────────────────────────────────────
@@ -32,7 +32,7 @@ export const TIME: Pessoa[] = [
   // ── CLOSERS ─────────────────────────────────────────────────────
   { id: 'joao',            nome: 'João Paulo',                     cargo: 'Closer',                              slack: '@joao'      },
   { id: 'gustavo',         nome: 'Gustavo Duarte Pinheiro Silva',  cargo: 'Closer',                              slack: '@gustavo'   },
-  { id: 'luan',            nome: 'Luan Nicolas',                   cargo: 'Closer JR III',                       slack: '@luan',      foto: '/team/luan-nicolas.jpeg' },
+  { id: 'luan',            nome: 'Luan Nicolas',                   cargo: 'Closer JR III',                       slack: '@luan'       },
   { id: 'guilherme',       nome: 'Guilherme da Silva Gomes',       cargo: 'Closer Jr',                           slack: '@guilherme' },
   { id: 'leandro',         nome: 'Leandro dos Santos',             cargo: 'Closer',                              slack: '@leandro'   },
   { id: 'cleber',          nome: 'Cleber Rodrigues',               cargo: 'Closer JR I',                         slack: '@cleber'    },
