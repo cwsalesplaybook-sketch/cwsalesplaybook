@@ -107,45 +107,6 @@ export const NIVEIS: NivelCarreira[] = [
   },
 ];
 
-export interface TierInfo {
-  id: string;
-  nome: string;
-  cor: string;
-  perfilLead: string;
-  sdrs: string[];
-}
-
-export const TIERS: TierInfo[] = [
-  {
-    id: 'parcerias',
-    nome: 'TIER PARCERIAS',
-    cor: 'from-purple-500/30 to-purple-700/10 border-purple-500/40',
-    perfilLead: 'Contas estratégicas, redes e parcerias institucionais. Ciclos longos, ticket alto.',
-    sdrs: ['João Paulo', 'Miguel Nunes', 'Thais Giurizatto'],
-  },
-  {
-    id: 't1-2',
-    nome: 'TIER 1 & 2',
-    cor: 'from-cw-orange/30 to-cw-orange/5 border-cw-orange/40',
-    perfilLead: 'Restaurantes premium e contas de maior porte. Operação madura, decisor presente.',
-    sdrs: ['Marcos Vinicius', 'Lara Stefanny', 'Gabrielly Oliveira', 'Caique Silva', 'Luis Lincoln'],
-  },
-  {
-    id: 't3',
-    nome: 'TIER 3',
-    cor: 'from-blue-500/30 to-blue-700/10 border-blue-500/40',
-    perfilLead: 'Restaurantes de médio porte. Volume saudável, ciclo equilibrado.',
-    sdrs: ['Ana Alice', 'Ryan Felipe', 'Tatyanna Freitas', 'Islene Santos', 'Matheus Cunha', 'Jonas Sobreira', 'Raissa Fonseca', 'Karol Santos', 'Kailane Carvalho', 'Raissa Cristina', 'José Guilherme'],
-  },
-  {
-    id: 't4-5',
-    nome: 'TIER 4 & 5',
-    cor: 'from-green-500/30 to-green-700/10 border-green-500/40',
-    perfilLead: 'Lojas pequenas e leads automatizados. Volume alto, ciclo curto.',
-    sdrs: ['Clara IA'],
-  },
-];
-
 export const NIVEL_ORDER = ['jr1', 'jr2', 'jr3', 'pl1', 'pl2', 'pl3', 'sr1', 'sr2', 'sr3'];
 
 /** Helper de formatação BRL. */
