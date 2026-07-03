@@ -133,7 +133,7 @@ export function CareerTrack() {
         <p className="text-sm text-cw-muted mb-5">
           <EditableText
             storeKey="carreira.evolucao.subtitulo"
-            defaultValue="Comparativo do potencial total mensal por nível, considerando a faixa Estrela ⭐ com Meta 3 batida."
+            defaultValue="Comparativo do potencial total mensal por nível, com Meta 3 batida."
             multiline
             className="text-sm"
           />
@@ -143,8 +143,7 @@ export function CareerTrack() {
           {ordered.map((n) => {
             const t = tierOf(n.id);
             const styles = tierStyles[t];
-            const estrela = n.faixas[1] ?? n.faixas[0];
-            const ote = estrela?.meta3?.ote ?? 0;
+            const ote = n.faixas[0]?.meta3?.ote ?? 0;
             const pct = (ote / maxOte) * 100;
             return (
               <div key={n.id} className="grid grid-cols-[60px_1fr_120px] items-center gap-3">
@@ -154,7 +153,7 @@ export function CareerTrack() {
                     className={cn('h-full transition-all duration-700 ease-out flex items-center justify-end pr-2', styles.bar)}
                     style={{ width: `${pct}%` }}
                   >
-                    <span className="text-[10px] font-bold text-cw-purple-dark">⭐ Meta 3</span>
+                    <span className="text-[10px] font-bold text-cw-purple-dark">Meta 3</span>
                   </div>
                 </div>
                 <span className="text-right font-mono font-semibold text-cw-text">{brl(ote)}</span>
@@ -211,7 +210,7 @@ export function CareerTrack() {
                       <span className="font-bold text-cw-text">{n.baseSalarial ? brl(n.baseSalarial) : '—'}</span>
                     </div>
                     <p className="text-xs text-cw-muted mt-0.5">
-                      OTE estrela em Meta 3: <span className={cn('font-semibold', styles.label)}>{n.faixas[1]?.meta3 ? brl(n.faixas[1].meta3.ote) : '—'}</span>
+                      OTE em Meta 3: <span className={cn('font-semibold', styles.label)}>{n.faixas[0]?.meta3 ? brl(n.faixas[0].meta3.ote) : '—'}</span>
                     </p>
                   </div>
                 </div>
