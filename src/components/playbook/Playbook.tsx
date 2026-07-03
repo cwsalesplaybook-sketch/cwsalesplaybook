@@ -1,6 +1,10 @@
 /** Seção Playbook — abas com conteúdo de referência do time.
  *  Todos os textos e listas são editáveis no Modo Gestor. */
-import { ExternalLink, Briefcase, Target, Map, Sparkles, CheckCircle2, Zap, Swords, Handshake, XCircle, DollarSign, ArrowRight, Trash2, Plus, Megaphone, Lightbulb } from 'lucide-react';
+import {
+  ExternalLink, Briefcase, Target, Map, Sparkles, CheckCircle2, Zap, Swords, Handshake, XCircle,
+  DollarSign, ArrowRight, Trash2, Plus, Megaphone, Lightbulb, Compass, Wrench, GraduationCap,
+  Rocket, ClipboardList, Workflow, TrendingUp, Puzzle, Headphones, type LucideIcon,
+} from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
@@ -9,10 +13,12 @@ import {
   PLAYBOOK_URL, CARGOS, JORNADA, SPIN, BANT, OBJECOES, PASSAGEM_BASTAO, MOTIVOS_PERDA,
   HACKS, AIDA, SPIN_FUNCIONALIDADES,
 } from '@/data/playbook';
+import { PRIMEIROS_PASSOS, AJUDA_GESTAO, AJUDA_AUTOMACAO, AJUDA_VENDAS, AJUDA_MODULOS, AJUDA_SUPORTE } from '@/data/playbookAjuda';
 import CulturaEstrategia from './CulturaEstrategia';
 import { PlaybookProduto } from './PlaybookProduto';
 import { PlaybookPlanos } from './PlaybookPlanos';
 import { PlaybookConcorrentes } from './PlaybookConcorrentes';
+import { AjudaCategoria } from './AjudaCategoria';
 import { cn } from '@/lib/utils';
 import { useSearchParams } from 'react-router-dom';
 import { EditableText } from '@/admin/EditableText';
@@ -78,22 +84,52 @@ function SheetLink({ label = 'Abrir na planilha completa', urlKey = 'playbook.ur
 }
 
 const TABS_DEFAULT = [
-  { id: 'cultura',      label: '🧭 Cultura & Estratégia' },
-  { id: 'produto',      label: '🛠️ Produto' },
-  { id: 'planos',       label: '💰 Planos & Preços' },
-  { id: 'concorrentes', label: '⚔️ Concorrentes' },
-  { id: 'jornada',      label: '🗺️ Jornada' },
-  { id: 'cargos',       label: '📋 Cargos' },
-  { id: 'icp',          label: '🎯 ICP' },
-  { id: 'aida',         label: '📣 AIDA' },
-  { id: 'spin',         label: '🔄 SPIN' },
-  { id: 'bant',         label: '✅ BANT' },
-  { id: 'hacks',        label: '💡 Hacks' },
-  { id: 'objecoes',     label: '⚡ Objeções' },
-  { id: 'passagem',     label: '🤝 Passagem' },
-  { id: 'perda',        label: '❌ Motivos de Perda' },
-  { id: 'treinamento',  label: '🎓 Treinamento' },
+  { id: 'cultura',              label: 'Cultura & Estratégia' },
+  { id: 'produto',              label: 'Produto' },
+  { id: 'primeiros-passos',     label: 'Primeiros Passos' },
+  { id: 'ajuda-gestao',         label: 'Gestão' },
+  { id: 'ajuda-automacao',      label: 'Automação' },
+  { id: 'ajuda-vendas',         label: 'Aumento de Vendas' },
+  { id: 'ajuda-modulos',        label: 'Módulos do Sistema' },
+  { id: 'ajuda-suporte',        label: 'Suporte' },
+  { id: 'planos',               label: 'Planos & Preços' },
+  { id: 'concorrentes',         label: 'Concorrentes' },
+  { id: 'jornada',              label: 'Jornada' },
+  { id: 'cargos',               label: 'Cargos' },
+  { id: 'icp',                  label: 'ICP' },
+  { id: 'aida',                 label: 'AIDA' },
+  { id: 'spin',                 label: 'SPIN' },
+  { id: 'bant',                 label: 'BANT' },
+  { id: 'hacks',                label: 'Hacks' },
+  { id: 'objecoes',             label: 'Objeções' },
+  { id: 'passagem',             label: 'Passagem' },
+  { id: 'perda',                label: 'Motivos de Perda' },
+  { id: 'treinamento',          label: 'Treinamento' },
 ];
+
+const TAB_ICONS: Record<string, LucideIcon> = {
+  cultura: Compass,
+  produto: Wrench,
+  'primeiros-passos': Rocket,
+  'ajuda-gestao': ClipboardList,
+  'ajuda-automacao': Workflow,
+  'ajuda-vendas': TrendingUp,
+  'ajuda-modulos': Puzzle,
+  'ajuda-suporte': Headphones,
+  planos: DollarSign,
+  concorrentes: Swords,
+  jornada: Map,
+  cargos: Briefcase,
+  icp: Target,
+  aida: Megaphone,
+  spin: Sparkles,
+  bant: CheckCircle2,
+  hacks: Lightbulb,
+  objecoes: Zap,
+  passagem: Handshake,
+  perda: XCircle,
+  treinamento: GraduationCap,
+};
 
 export default function Playbook() {
   const { papel } = useSidebarContext();
@@ -123,15 +159,19 @@ export default function Playbook() {
         <Tabs defaultValue={tabFromUrl} key={tabFromUrl} className="w-full">
           <div className="overflow-x-auto scrollbar-cw -mx-1 pb-2">
             <TabsList className="bg-cw-surface border border-cw-border p-1 inline-flex w-max">
-              {tabs.map((t, i) => (
-                <TabsTrigger
-                  key={t.id}
-                  value={t.id}
-                  className="data-[state=active]:gradient-primary data-[state=active]:text-white whitespace-nowrap text-xs font-medium"
-                >
-                  <EditableText storeKey={`playbook.tabs.${i}.label`} defaultValue={t.label} className="text-xs font-medium" />
-                </TabsTrigger>
-              ))}
+              {tabs.map((t, i) => {
+                const Icon = TAB_ICONS[t.id] ?? Sparkles;
+                return (
+                  <TabsTrigger
+                    key={t.id}
+                    value={t.id}
+                    className="data-[state=active]:gradient-primary data-[state=active]:text-white whitespace-nowrap text-xs font-medium gap-1.5"
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    <EditableText storeKey={`playbook.tabs.${i}.label`} defaultValue={t.label} className="text-xs font-medium" />
+                  </TabsTrigger>
+                );
+              })}
             </TabsList>
           </div>
 
@@ -143,6 +183,36 @@ export default function Playbook() {
           {/* PRODUTO */}
           <TabsContent value="produto" className="mt-6">
             <PlaybookProduto />
+          </TabsContent>
+
+          {/* PRIMEIROS PASSOS */}
+          <TabsContent value="primeiros-passos" className="mt-6">
+            <AjudaCategoria topicos={PRIMEIROS_PASSOS} />
+          </TabsContent>
+
+          {/* GESTÃO (Central de Ajuda) */}
+          <TabsContent value="ajuda-gestao" className="mt-6">
+            <AjudaCategoria topicos={AJUDA_GESTAO} />
+          </TabsContent>
+
+          {/* AUTOMAÇÃO */}
+          <TabsContent value="ajuda-automacao" className="mt-6">
+            <AjudaCategoria topicos={AJUDA_AUTOMACAO} />
+          </TabsContent>
+
+          {/* AUMENTO DE VENDAS */}
+          <TabsContent value="ajuda-vendas" className="mt-6">
+            <AjudaCategoria topicos={AJUDA_VENDAS} />
+          </TabsContent>
+
+          {/* MÓDULOS DO SISTEMA */}
+          <TabsContent value="ajuda-modulos" className="mt-6">
+            <AjudaCategoria topicos={AJUDA_MODULOS} />
+          </TabsContent>
+
+          {/* SUPORTE */}
+          <TabsContent value="ajuda-suporte" className="mt-6">
+            <AjudaCategoria topicos={AJUDA_SUPORTE} />
           </TabsContent>
 
           {/* PLANOS & PREÇOS */}
