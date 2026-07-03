@@ -2,7 +2,6 @@
 import { Trophy } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { CareerTrack } from './CareerTrack';
-import { TierMap } from './TierMap';
 import { EditableText } from '@/admin/EditableText';
 
 export default function Carreira() {
@@ -52,13 +51,6 @@ export default function Carreira() {
               </p>
             </div>
           </div>
-        </section>
-
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-cw-muted mb-3">
-            <EditableText storeKey="carreira.tiers.titulo" defaultValue="Mapa de Tiers" className="text-sm font-semibold uppercase tracking-wider" />
-          </h3>
-          <TierMap />
         </section>
       </div>
     </>
