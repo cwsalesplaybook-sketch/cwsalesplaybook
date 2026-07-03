@@ -155,6 +155,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'crown',    valor: 'SDR JR III → Pleno I → Closer', label: 'JORNADA' },
     ],
   },
+  {
+    id: 'miguel', nome: 'Miguel Nunes', foto: '/hall/MiguelNunes.jpeg',
+    cargo: 'Closer', jornada: ['SDR', 'Closer'],
+    frase: 'Aprendi tudo do zero. Bati meta todo mês até provar que estava pronto.',
+    historia: 'Miguel chegou na Cardápio Web sem nenhuma experiência prévia como SDR e sem conhecer a fundo a solução que ia vender. Em vez de esperar o tempo ensinar, foi atrás: observou de perto quem já tinha resultado, absorveu cada feedback e ajustou a rotina toda semana. Foram 7 meses como SDR, e em todos eles bateu meta, sem exceção. Essa consistência abriu a porta para o processo seletivo interno de Closer, que ele encarou e passou. Hoje inicia como Closer, prova de que dedicação e aprendizado constante valem mais do que já chegar sabendo.',
+    stats: [
+      { icon: 'trending', valor: '7 meses', label: 'META BATIDA SEGUIDA' },
+      { icon: 'star',     valor: 'Closer', label: 'CARGO ATUAL' },
+      { icon: 'crown',    valor: 'SDR → Closer', label: 'JORNADA' },
+    ],
+  },
 ];
 
 function StatIcon({ type }: { type: Stat['icon'] }) {
