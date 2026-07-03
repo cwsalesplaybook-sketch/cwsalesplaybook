@@ -19,10 +19,13 @@ interface Destino {
   /** Se true, repassa o texto digitado como ?q= (ex: destacar o cupom buscado). */
   passQuery?: boolean;
   cor: string;
+  /** Id estável usado pela busca por IA (ver api/assistant-search.js) para apontar de volta pra esse destino. */
+  id?: string;
 }
 
 const DESTINOS_SDR: Destino[] = [
   {
+    id: 'calculadora',
     tags: ['calculadora', 'calcular', 'calcula', 'proposta', 'simular', 'simulação'],
     label: 'Calculadora',
     descricao: 'Monte e compare propostas de planos',
@@ -30,6 +33,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-cw-purple/20 text-cw-purple-light border-cw-purple/30',
   },
   {
+    id: 'totem-faq',
     tags: ['totem', 'autoatendimento', 'dispositivo', 'quiosque'],
     label: 'Totem — FAQ',
     descricao: 'Dúvidas sobre o Totem de Autoatendimento',
@@ -37,6 +41,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
   },
   {
+    id: 'faq',
     tags: ['faq', 'dúvida', 'duvida', 'pergunta frequente', 'perguntas'],
     label: 'FAQ',
     descricao: 'Perguntas frequentes sobre produto e planos',
@@ -44,6 +49,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
   },
   {
+    id: 'changelog',
     tags: ['changelog', 'novidade', 'atualização', 'atualizacao', 'update', 'mudança'],
     label: 'Changelog',
     descricao: 'Últimas atualizações da plataforma',
@@ -51,6 +57,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-cw-yellow/20 text-cw-yellow border-cw-yellow/30',
   },
   {
+    id: 'avisos',
     tags: ['aviso', 'avisos', 'mural', 'comunicado'],
     label: 'Mural de Avisos',
     descricao: 'Comunicados e atualizações do time',
@@ -58,6 +65,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-cw-red/20 text-cw-red border-cw-red/30',
   },
   {
+    id: 'planos-precos',
     tags: ['plano', 'planos', 'preço', 'preco', 'valor', 'mensalidade', 'mesas', 'delivery', 'premium', 'módulo', 'modulo', 'desconto'],
     label: 'Planos & Preços',
     descricao: 'Tabela de planos, módulos e descontos',
@@ -65,6 +73,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   },
   {
+    id: 'objecoes',
     tags: ['objeção', 'objeções', 'objecao', 'caro', 'concorrente', 'resistência'],
     label: 'Objeções',
     descricao: 'Matriz de objeções com scripts prontos',
@@ -72,6 +81,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-cw-red/15 text-cw-red border-cw-red/30',
   },
   {
+    id: 'spin',
     tags: ['spin', 'situação', 'problema', 'implicação', 'necessidade', 'perguntas de venda'],
     label: 'SPIN Selling',
     descricao: 'Perguntas SPIN por funcionalidade',
@@ -79,6 +89,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-cw-purple/15 text-cw-purple-light border-cw-purple/30',
   },
   {
+    id: 'cold-call-aida',
     tags: ['cold call', 'prospecção', 'prospeccao', 'ligação', 'roteiro', 'aida', 'script'],
     label: 'Cold Call — AIDA',
     descricao: 'Roteiro completo de prospecção',
@@ -86,6 +97,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
   },
   {
+    id: 'hacks',
     tags: ['hack', 'dica', 'urgência', 'whatsapp', 'follow up'],
     label: 'Hacks de Pré-vendas',
     descricao: 'Scripts para situações difíceis',
@@ -93,6 +105,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-cw-yellow/15 text-cw-yellow border-cw-yellow/30',
   },
   {
+    id: 'produto',
     tags: ['produto', 'funcionalidade', 'chatbot', 'ia', 'disparador', 'kds', 'cardápio', 'ifood'],
     label: 'Produto',
     descricao: 'Funcionalidades e integrações',
@@ -100,6 +113,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
   },
   {
+    id: 'primeiros-passos',
     tags: ['primeiros passos', 'primeiro acesso', 'senha', 'login', 'cardápio demonstrativo', 'demonstrativo', 'boas-vindas', 'boas vindas'],
     label: 'Primeiros Passos',
     descricao: 'Primeiro acesso, planos e cardápios demonstrativos',
@@ -107,6 +121,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   },
   {
+    id: 'gestao',
     tags: ['gestão de pedidos', 'mesas', 'comandas', 'comanda', 'kds', 'caixa', 'desempenho', 'histórico de pedidos', 'minha empresa', 'catálogo', 'delivery', 'clientes', 'avaliações', 'avaliacoes', 'fiado', 'administrativo', 'configurações', 'configuracoes', 'impressora', 'meus links'],
     label: 'Gestão',
     descricao: 'Pedidos, mesas, caixa, catálogo e mais',
@@ -114,6 +129,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
   },
   {
+    id: 'automacao',
     tags: ['automação', 'automacao', 'disparo', 'campanha', 'cardapinho', 'food marketing', 'integrações', 'integracoes'],
     label: 'Automação',
     descricao: 'WhatsApp, chatbot Cardapinho e integrações',
@@ -121,6 +137,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-cw-purple/15 text-cw-purple-light border-cw-purple/30',
   },
   {
+    id: 'aumento-vendas',
     tags: ['cupom', 'cupons', 'fidelidade', 'cashback', 'pontos', 'aumento de vendas'],
     label: 'Aumento de Vendas',
     descricao: 'Cupons, descontos e fidelidade',
@@ -128,6 +145,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-cw-yellow/15 text-cw-yellow border-cw-yellow/30',
   },
   {
+    id: 'modulos-sistema',
     tags: ['estoque avançado', 'estoque', 'insumo', 'ficha técnica', 'financeiro', 'fluxo de caixa', 'entregador', 'entregadores', 'marketplace', 'marketplaces', 'fiscal', 'nota fiscal', 'nfe', 'módulos do sistema'],
     label: 'Módulos do Sistema',
     descricao: 'Estoque, financeiro, entregadores e fiscal',
@@ -135,6 +153,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-cw-red/15 text-cw-red border-cw-red/30',
   },
   {
+    id: 'suporte',
     tags: ['suporte', 'atendimento', 'anydesk', 'acesso remoto'],
     label: 'Suporte',
     descricao: 'Canais de atendimento e acesso remoto',
@@ -142,6 +161,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
   },
   {
+    id: 'bant',
     tags: ['bant', 'qualificação', 'budget', 'autoridade', 'timing'],
     label: 'BANT',
     descricao: 'Metodologia de qualificação',
@@ -149,6 +169,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-cw-purple/15 text-cw-purple-light border-cw-purple/30',
   },
   {
+    id: 'passagem-bastao',
     tags: ['passagem', 'bastão', 'closer', 'handoff', 'checklist'],
     label: 'Passagem de Bastão',
     descricao: 'Checklist SDR → Closer',
@@ -156,6 +177,7 @@ const DESTINOS_SDR: Destino[] = [
     cor: 'bg-cw-purple/15 text-cw-purple-light border-cw-purple/30',
   },
   {
+    id: 'cultura-estrategia',
     tags: ['cultura', 'missão', 'visão', 'valores', 'memorando', 'commerce first'],
     label: 'Cultura & Estratégia',
     descricao: 'Missão, visão e valores da CW',
@@ -167,6 +189,7 @@ const DESTINOS_SDR: Destino[] = [
 /** Seções compartilhadas (idênticas em todos os dashboards). */
 const DESTINOS_SHARED: Destino[] = [
   {
+    id: 'comece-aqui',
     tags: ['comece', 'comece aqui', 'início', 'inicio', 'onboarding', 'boas vindas', 'glossário', 'glossario'],
     label: 'Comece Aqui',
     descricao: 'Boas-vindas, onboarding e glossário',
@@ -181,6 +204,7 @@ const DESTINOS_SHARED: Destino[] = [
     cor: 'bg-cw-yellow/15 text-cw-yellow border-cw-yellow/30',
   },
   {
+    id: 'historias-sucesso',
     tags: ['história', 'historias', 'histórias', 'hall', 'sucesso', 'fama'],
     label: 'Histórias de Sucesso',
     descricao: 'Hall da fama do time',
@@ -188,6 +212,7 @@ const DESTINOS_SHARED: Destino[] = [
     cor: 'bg-cw-purple/15 text-cw-purple-light border-cw-purple/30',
   },
   {
+    id: 'pipeline',
     tags: ['pipeline', 'funil de vendas'],
     label: 'Pipeline',
     descricao: 'Visão do pipeline de vendas',
@@ -199,6 +224,7 @@ const DESTINOS_SHARED: Destino[] = [
 /** Destinos do dashboard de Closer (seções próprias + compartilhadas). */
 const DESTINOS_CLOSER: Destino[] = [
   {
+    id: 'closer-planos',
     tags: ['plano', 'planos', 'preço', 'preco', 'valor', 'mensalidade', 'mesas', 'delivery', 'premium', 'módulo', 'modulo', 'franquia', 'franquias'],
     label: 'Planos e Preços',
     descricao: 'Planos, módulos e franquias',
@@ -206,6 +232,7 @@ const DESTINOS_CLOSER: Destino[] = [
     cor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   },
   {
+    id: 'closer-descontos',
     tags: ['cupom', 'cupons', 'desconto', 'descontos', 'parcerias', 'parceria', 'código', 'codigo', 'reopen', 'negociação', 'negociacao'],
     label: 'Descontos',
     descricao: 'Códigos de desconto (parcerias, negociação, reopen)',
@@ -214,6 +241,7 @@ const DESTINOS_CLOSER: Destino[] = [
     cor: 'bg-cw-yellow/15 text-cw-yellow border-cw-yellow/30',
   },
   {
+    id: 'closer-templates',
     tags: ['template', 'templates', 'mensagem', 'mensagens', 'follow-up', 'followup', 'cobrança', 'cobranca', 'script', 'copiar'],
     label: 'Templates',
     descricao: 'Mensagens prontas para copiar e enviar',
@@ -221,6 +249,7 @@ const DESTINOS_CLOSER: Destino[] = [
     cor: 'bg-cw-purple/15 text-cw-purple-light border-cw-purple/30',
   },
   {
+    id: 'closer-metas',
     tags: ['meta', 'metas', 'objetivo', 'progresso', 'fechamento', 'mês', 'mes', 'módulos', 'modulos'],
     label: 'Metas',
     descricao: 'Acompanhe sua meta do mês e módulos',
@@ -228,6 +257,7 @@ const DESTINOS_CLOSER: Destino[] = [
     cor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   },
   {
+    id: 'closer-objecoes',
     tags: ['objeção', 'objeções', 'objecao', 'objecoes', 'contorno', 'caro', 'resistência', 'sócio', 'socio', 'esposa', 'pensar', 'financeiro'],
     label: 'Objeções',
     descricao: 'Contorno de objeções com discurso de solução',
@@ -235,6 +265,7 @@ const DESTINOS_CLOSER: Destino[] = [
     cor: 'bg-cw-red/15 text-cw-red border-cw-red/30',
   },
   {
+    id: 'closer-processo',
     tags: ['processo', 'funil', 'funis', 'spin', 'etapa', 'etapas', 'reunião', 'reuniao', 'checklist', 'checklists', 'critério', 'criterios', 'critérios', 'avaliação', 'avaliacao', 'follow', 'followup', 'follow up', 'no-show', 'no show'],
     label: 'Processo de Venda',
     descricao: 'Funis, SPIN, etapas, checklists, critérios e follow-up',
@@ -242,6 +273,7 @@ const DESTINOS_CLOSER: Destino[] = [
     cor: 'bg-cw-purple/15 text-cw-purple-light border-cw-purple/30',
   },
   {
+    id: 'closer-rotina',
     tags: ['rotina', 'hora ouro', 'hora de ouro', 'produtividade', 'crm', 'progressão', 'progressao', 'carreira', 'nível', 'niveis', 'níveis', 'promoção', 'promocao'],
     label: 'Rotina & Progressão',
     descricao: 'Hora Ouro, CRM e níveis de carreira',
@@ -249,6 +281,7 @@ const DESTINOS_CLOSER: Destino[] = [
     cor: 'bg-cw-yellow/15 text-cw-yellow border-cw-yellow/30',
   },
   {
+    id: 'closer-concorrentes',
     tags: ['concorrente', 'concorrentes', 'anota', 'anota ai', 'goomer', 'saipos', 'whatsmenu', 'consumer', 'comparativo', 'comparação'],
     label: 'Concorrentes',
     descricao: 'Comparativo com os principais concorrentes',
@@ -266,6 +299,18 @@ function destinosDoPapel(papel: string): Destino[] {
   if (papel === 'Closer') return DESTINOS_CLOSER;
   if (papel === 'SDR' || papel === 'Liderança') return DESTINOS_SDR;
   return DESTINOS_SHARED;
+}
+
+/** Todos os destinos navegáveis do papel (inclui os compartilhados, que a busca local
+ *  por palavra-chave do SDR não indexa, mas a IA pode apontar pra eles). */
+function todosDestinos(papel: string): Destino[] {
+  if (papel === 'Closer') return DESTINOS_CLOSER;
+  if (papel === 'SDR' || papel === 'Liderança') return [...DESTINOS_SDR, ...DESTINOS_SHARED];
+  return DESTINOS_SHARED;
+}
+
+function destinoPorId(papel: string, id: string): Destino | undefined {
+  return todosDestinos(papel).find(d => d.id === id);
 }
 
 function buscar(query: string, papel: string): Destino[] {
@@ -364,6 +409,7 @@ export function FloatingSearch() {
   const [aberto, setAberto] = useState(false);
   const [query, setQuery]   = useState('');
   const [novo, setNovo]     = useState(false);
+  const [statusIA, setStatusIA] = useState<'idle' | 'pensando' | 'sem-resultado'>('idle');
   const inputRef = useRef<HTMLInputElement>(null);
   const nav = useNavigate();
 
@@ -392,6 +438,7 @@ export function FloatingSearch() {
       setTimeout(() => inputRef.current?.focus(), 120);
     } else {
       setQuery('');
+      setStatusIA('idle');
     }
   }, [aberto]);
 
@@ -408,13 +455,36 @@ export function FloatingSearch() {
     else if (d.tab) url = `${d.path}?tab=${d.tab}`;
     nav(url);
     setAberto(false);
+    setStatusIA('idle');
+  }
+
+  /** Fallback quando a busca local por palavra-chave não acha nada:
+   *  manda a pergunta pra IA (Gemini) decidir a seção certa. */
+  async function perguntarIA(texto: string) {
+    setStatusIA('pensando');
+    try {
+      const r = await fetch('/api/assistant-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: texto, papel }),
+      });
+      const json = await r.json();
+      const destino = json?.ok && json.id ? destinoPorId(papel, json.id) : undefined;
+      if (destino) ir(destino);
+      else setStatusIA('sem-resultado');
+    } catch {
+      setStatusIA('sem-resultado');
+    }
+  }
+
+  function submeter() {
+    const res = buscar(query, papel);
+    if (res.length >= 1) ir(res[0]);
+    else if (query.trim()) perguntarIA(query.trim());
   }
 
   function handleEnter(e: React.KeyboardEvent) {
-    if (e.key === 'Enter') {
-      const res = buscar(query, papel);
-      if (res.length >= 1) ir(res[0]);
-    }
+    if (e.key === 'Enter') submeter();
   }
 
   const resultados = buscar(query, papel);
@@ -456,11 +526,11 @@ export function FloatingSearch() {
                   <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2">
                     {papel === 'Closer' ? (
                       <p className="text-[12px] text-[#d4c0ee] leading-snug">
-                        Digite uma seção (<span className="text-cw-yellow font-semibold">"planos"</span>), a frase do lead (<span className="text-cw-yellow font-semibold">"me manda no whatsapp"</span>) ou um concorrente (<span className="text-cw-yellow font-semibold">"consumer"</span>) para ver os diferenciais da CW.
+                        Digite uma seção (<span className="text-cw-yellow font-semibold">"planos"</span>), a frase do lead (<span className="text-cw-yellow font-semibold">"me manda no whatsapp"</span>), um concorrente (<span className="text-cw-yellow font-semibold">"consumer"</span>) ou uma pergunta com suas palavras — te levo direto pra seção certa.
                       </p>
                     ) : (
                       <p className="text-[12px] text-[#d4c0ee] leading-snug">
-                        Digite uma palavra-chave — tipo <span className="text-cw-yellow font-semibold">"totem"</span> ou <span className="text-cw-yellow font-semibold">"calculadora"</span> — e te levo direto pra seção certa.
+                        Digite uma palavra-chave — tipo <span className="text-cw-yellow font-semibold">"totem"</span> ou <span className="text-cw-yellow font-semibold">"calculadora"</span> — ou uma pergunta com suas palavras, e te levo direto pra seção certa.
                       </p>
                     )}
                   </div>
@@ -509,8 +579,30 @@ export function FloatingSearch() {
                 </div>
               )}
 
-              {/* Nenhum resultado */}
-              {query.trim() && resultados.length === 0 && (
+              {/* Sem resultado local ainda — oferece a busca por IA */}
+              {query.trim() && resultados.length === 0 && statusIA === 'idle' && (
+                <div className="flex items-end gap-2">
+                  <BotAvatar size={24} />
+                  <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2 max-w-[85%]">
+                    <p className="text-[12px] text-[#d4c0ee]">
+                      Não achei de cara — aperta <span className="text-cw-yellow font-semibold">Enter</span> que eu peço uma força pra IA 🤔
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Pensando (IA) */}
+              {statusIA === 'pensando' && (
+                <div className="flex items-end gap-2">
+                  <BotAvatar size={24} />
+                  <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2">
+                    <p className="text-[12px] text-[#d4c0ee] animate-pulse">Pensando...</p>
+                  </div>
+                </div>
+              )}
+
+              {/* IA também não achou */}
+              {statusIA === 'sem-resultado' && (
                 <div className="flex items-end gap-2">
                   <BotAvatar size={24} />
                   <div className="bg-[#2d1760] rounded-2xl rounded-bl-sm px-3 py-2 max-w-[85%]">
@@ -529,15 +621,16 @@ export function FloatingSearch() {
                 <input
                   ref={inputRef}
                   value={query}
-                  onChange={e => setQuery(e.target.value)}
+                  onChange={e => { setQuery(e.target.value); setStatusIA('idle'); }}
                   onKeyDown={handleEnter}
                   placeholder={papel === 'Closer' ? 'Ex: "me manda no whatsapp", consumer, planos...' : 'Ex: calculadora, totem, objeção...'}
                   className="flex-1 bg-transparent text-[13px] text-white placeholder:text-[#7c5aa8] outline-none"
                 />
                 {query ? (
                   <button
-                    onClick={() => { const res = buscar(query, papel); if (res.length > 0) ir(res[0]); }}
-                    className="h-6 w-6 rounded-lg gradient-primary flex items-center justify-center shrink-0"
+                    onClick={submeter}
+                    disabled={statusIA === 'pensando'}
+                    className="h-6 w-6 rounded-lg gradient-primary flex items-center justify-center shrink-0 disabled:opacity-50"
                   >
                     <Send className="h-3 w-3 text-white" />
                   </button>
