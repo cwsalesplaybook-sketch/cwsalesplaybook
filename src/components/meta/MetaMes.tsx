@@ -48,7 +48,16 @@ function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose 
   const [nomeSelecionado, setNomeSelecionado] = useState(nomeDetectado || SDRS_ATIVOS[metaData.sdrId] || '');
   const [aberto, setAberto] = useState(false);
 
-  const lista = pipedriveUsers.length > 0 ? pipedriveUsers : Object.entries(SDRS_ATIVOS).map(([id, name]) => ({ id, name }));
+  // Mescla a lista ao vivo do Pipedrive com a lista fixa de SDRs — a live pode
+  // não trazer todo mundo (conta inativa, paginação), mas o time mantém
+  // SDRS_ATIVOS como fonte de verdade dos IDs válidos pro campo "[QUAL] SDR/BDR".
+  const idsVivos = new Set(pipedriveUsers.map(u => u.id));
+  const lista = [
+    ...pipedriveUsers,
+    ...Object.entries(SDRS_ATIVOS)
+      .filter(([id]) => !idsVivos.has(id))
+      .map(([id, name]) => ({ id, name })),
+  ];
   const filtrados = busca.length >= 1
     ? lista.filter(u => u.name.toLowerCase().includes(busca.toLowerCase())).slice(0, 8)
     : [];
