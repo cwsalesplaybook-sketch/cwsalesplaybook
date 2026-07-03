@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { SidebarProvider, ForcePapel, type Papel } from '@/context/SidebarContext';
+import { SidebarProvider, ForcePapel, useSidebarContext, type Papel } from '@/context/SidebarContext';
 import { useContentStore } from '@/store/contentStore';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AgentBalls } from '@/components/layout/AgentBalls';
@@ -137,6 +137,15 @@ function LoginRedirectHandler() {
   return null;
 }
 
+/** Rota "/" (Sales Enablement) é do dashboard padrão/liderança — um Closer que
+ *  chegue aqui por link antigo/salvo é levado pro próprio dashboard, já que
+ *  a página não faz parte da nav dele. */
+function HomeRoute() {
+  const { papel } = useSidebarContext();
+  if (papel === 'Closer') return <Navigate to="/closer/dashboard" replace />;
+  return <Dashboard />;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
   return (
@@ -150,7 +159,7 @@ function AnimatedRoutes() {
         className="min-h-full"
       >
         <Routes location={location}>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<HomeRoute />} />
           {/* Comece Aqui, Cultura, Histórias e Pipeline são idênticos em todos os
               dashboards: ForcePapel="SDR" faz lerem o conteúdo global (sem prefixo). */}
           <Route path="/start" element={<ForcePapel papel="SDR"><Start /></ForcePapel>} />
