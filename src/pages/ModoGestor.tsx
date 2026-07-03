@@ -7,6 +7,11 @@ import { useEditor } from '@/admin/EditorContext';
 import { Header } from '@/components/layout/Header';
 import { supabase } from '@/integrations/supabase/client';
 
+const PLAYBOOKS = [
+  { label: 'SDR',    papel: 'SDR' as Papel,    icon: Zap,    desc: 'Prospecção, qualificação e agendamento de reuniões.' },
+  { label: 'Closer', papel: 'Closer' as Papel, icon: Target, desc: 'Condução de reuniões e fechamento de vendas.' },
+];
+
 const FERRAMENTAS = [
   { icon: ShieldCheck,     label: 'Editor de Conteúdo',    desc: 'Editar textos, avisos e links do playbook em tempo real.',     hint: 'Ctrl+Shift+E' },
   { icon: Target,          label: 'Meta do Mês',           desc: 'Acompanhar progresso e metas individuais e do time.'                      },
@@ -34,11 +39,12 @@ interface SdrProfile {
 }
 
 export default function ModoGestor() {
-  const { setImpersonating } = useSidebarContext();
+  const { papel, setPapel, setImpersonating } = useSidebarContext();
   const { isGestor, isEditing, openPasswordModal, lock } = useEditor();
   const navigate = useNavigate();
   const [membros, setMembros] = useState<SdrProfile[]>([]);
   const [loadingMembros, setLoadingMembros] = useState(true);
+  const [switching, setSwitching] = useState<Papel | null>(null);
 
   useEffect(() => {
     if (!isGestor) return;
@@ -82,10 +88,61 @@ export default function ModoGestor() {
     navigate('/start');
   };
 
+  const switchPlaybook = async (novoPapel: Papel) => {
+    if (novoPapel === papel || switching) return;
+    setSwitching(novoPapel);
+    await new Promise(r => setTimeout(r, 300));
+    setPapel(novoPapel);
+    setSwitching(null);
+    navigate('/start');
+  };
+
   return (
     <>
       <Header titulo="Modo Gestor" subtitulo="Dashboards, ferramentas e lideranças do comercial" />
       <div className="p-8 space-y-10">
+
+        {/* Trocar Playbook */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Crown className="h-5 w-5 text-cw-yellow" />
+            <h2 className="text-lg font-bold">Trocar Playbook</h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {PLAYBOOKS.map(({ label, papel: opt, icon: Icon, desc }) => {
+              const isActive = papel === opt;
+              const isSwitching = switching === opt;
+              return (
+                <button
+                  key={opt}
+                  onClick={() => switchPlaybook(opt)}
+                  disabled={!!switching}
+                  className={cn(
+                    'relative flex flex-col items-center gap-3 p-6 rounded-2xl border text-sm font-bold transition-all duration-300',
+                    isActive
+                      ? 'bg-[#2d1760] border-cw-purple text-white shadow-lg shadow-cw-purple/20'
+                      : switching
+                        ? 'opacity-40 cursor-not-allowed bg-cw-surface border-cw-border text-cw-muted'
+                        : 'bg-cw-surface border-cw-border text-cw-muted hover:border-cw-purple/50 hover:text-cw-text cursor-pointer'
+                  )}
+                >
+                  {isSwitching ? (
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  ) : (
+                    <Icon className={cn('h-6 w-6', isActive ? 'text-cw-yellow' : '')} />
+                  )}
+                  <div className="text-center">
+                    <p className="leading-tight">{label}</p>
+                    <p className={cn('text-[10px] font-normal mt-1 leading-snug', isActive ? 'text-white/60' : 'text-cw-muted/60')}>{desc}</p>
+                  </div>
+                  {isActive && !isSwitching && (
+                    <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-cw-yellow" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
         {/* Ativar/desativar edição de conteúdo — antes só dava pelo atalho Ctrl+Shift+E */}
         <section className="cw-card p-4 flex items-center justify-between gap-4 flex-wrap">
