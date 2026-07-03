@@ -26,6 +26,9 @@ interface Ctx {
   /** Impersonação: gestor visualizando como outro usuário. */
   impersonating: ImpersonationTarget | null;
   setImpersonating: (target: ImpersonationTarget | null) => void;
+  /** false até a sessão carregar e o papel real (auth) ser aplicado —
+   *  evita a Sidebar piscar com o papel padrão antes do papel real chegar. */
+  papelReady: boolean;
 }
 
 const SidebarContext = createContext<Ctx | undefined>(undefined);
@@ -40,6 +43,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [apelido, setApelido] = useState<string | null>(null);
   const [onboardingActive, setOnboardingActive] = useState(false);
   const [impersonating, setImpersonating] = useState<ImpersonationTarget | null>(null);
+  const [papelReady, setPapelReady] = useState(false);
 
   const applyMeta = (m: Record<string, unknown>) => {
     const saved = m?.papel as Papel | undefined;
@@ -59,6 +63,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) applyMeta(data.session.user.user_metadata ?? {});
+      setPapelReady(true);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -68,9 +73,11 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
         setSquadsLideradas([]);
         setApelido(null);
         setOnboardingActive(false);
+        setPapelReady(true);
         return;
       }
       applyMeta(session.user.user_metadata ?? {});
+      setPapelReady(true);
     });
 
     return () => subscription.unsubscribe();
@@ -92,6 +99,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
       squad: visibleSquad, squadsLideradas, apelido: visibleApelido,
       onboardingActive, setOnboardingActive,
       impersonating, setImpersonating,
+      papelReady,
     }}>
       {children}
     </SidebarContext.Provider>

@@ -84,7 +84,7 @@ const PLAYBOOK_OPTIONS: { label: string; papel: Papel; icon: LucideIcon; short: 
 const STORE_KEY = 'sidebar.nav';
 
 export function Sidebar() {
-  const { papel, setPapel, lockedPapel, squad, squadsLideradas, apelido, onboardingActive } = useSidebarContext();
+  const { papel, setPapel, lockedPapel, squad, squadsLideradas, apelido, onboardingActive, papelReady } = useSidebarContext();
   const { isEditing, openPasswordModal, lock, isMaster, isGestor } = useEditor();
   const userProfile = useUserProfile();
   const { isFav, toggle: toggleFav } = useNavFavorites(userProfile.email ?? '');
@@ -266,38 +266,48 @@ export function Sidebar() {
           );
         })()}
 
-        {/* Favoritos do colaborador */}
-        {favItems.length > 0 && (
-          <div>
-            <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8] flex items-center gap-1">
-              <Star className="h-3 w-3 fill-current text-cw-yellow" /> Favoritos
-            </p>
-            <div className="space-y-0.5">
-              {favItems.map(item => <NavItemEl key={`fav-${item.to}`} item={item} />)}
-            </div>
+        {/* Enquanto o papel real (auth) ainda não carregou, não renderiza a nav
+            padrão/localStorage — evita piscar o papel errado num device novo. */}
+        {!papelReady ? (
+          <div className="space-y-1.5">
+            {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-8 rounded-xl cw-shimmer" />)}
           </div>
-        )}
-
-        {/* Seções */}
-        {sections.map(section => {
-          const sItems = sectionItems(section.routes);
-          if (sItems.length === 0) return null;
-          return (
-            <div key={section.label}>
-              <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8]">
-                {section.label}
-              </p>
-              <div className="space-y-0.5">
-                {sItems.map(item => <NavItemEl key={item.to} item={item} />)}
+        ) : (
+          <>
+            {/* Favoritos do colaborador */}
+            {favItems.length > 0 && (
+              <div>
+                <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8] flex items-center gap-1">
+                  <Star className="h-3 w-3 fill-current text-cw-yellow" /> Favoritos
+                </p>
+                <div className="space-y-0.5">
+                  {favItems.map(item => <NavItemEl key={`fav-${item.to}`} item={item} />)}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            )}
 
-        {/* Extras fora das seções */}
-        {items.filter(i => i.to !== '/start' && !allSectionRoutes.includes(i.to)).map(item => (
-          <NavItemEl key={item.to} item={item} />
-        ))}
+            {/* Seções */}
+            {sections.map(section => {
+              const sItems = sectionItems(section.routes);
+              if (sItems.length === 0) return null;
+              return (
+                <div key={section.label}>
+                  <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8]">
+                    {section.label}
+                  </p>
+                  <div className="space-y-0.5">
+                    {sItems.map(item => <NavItemEl key={item.to} item={item} />)}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Extras fora das seções */}
+            {items.filter(i => i.to !== '/start' && !allSectionRoutes.includes(i.to)).map(item => (
+              <NavItemEl key={item.to} item={item} />
+            ))}
+          </>
+        )}
 
 
         {/* Painel de Controle — exclusivo do Modo Gestor */}
