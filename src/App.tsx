@@ -23,6 +23,7 @@ import Dashboard from '@/components/dashboard/Dashboard';
 import Agenda from '@/components/agenda/Agenda';
 import Cultura from '@/components/cultura/Cultura';
 import Onboarding from '@/components/onboarding/Onboarding';
+import OnboardingReps from '@/components/onboarding/OnboardingReps';
 import Carreira from '@/components/carreira/Carreira';
 import Berserker from '@/components/berserker/Berserker';
 import Playbook from '@/components/playbook/Playbook';
@@ -30,9 +31,11 @@ import PlaybookCloser from '@/components/playbook/PlaybookCloser';
 import PlaybookParcerias from '@/components/playbook/PlaybookParcerias';
 import PlaybookRepresentantes from '@/components/playbook/PlaybookRepresentantes';
 import Pipeline from '@/components/pipeline/Pipeline';
+import PipelineReps from '@/components/pipeline/PipelineReps';
 import Gestao from '@/components/gestao/Gestao';
 import Ranking from '@/components/ranking/Ranking';
 import MetaMes from '@/components/meta/MetaMes';
+import MetaMesReps from '@/components/meta/MetaMesReps';
 import Promocoes from '@/pages/Promocoes';
 import Start from '@/pages/Start';
 import BadgesPage from '@/pages/Badges';
@@ -52,12 +55,7 @@ import CloserMetas from '@/pages/closer/Metas';
 import CloserProcesso from '@/pages/closer/Processo';
 import CloserRotina from '@/pages/closer/Rotina';
 import CloserConcorrentes from '@/pages/closer/Concorrentes';
-import RepsDashboard from '@/pages/reps/Dashboard';
-import RepsMetas from '@/pages/reps/Metas';
-import RepsTerritorio from '@/pages/reps/Territorio';
-import RepsObjecoes from '@/pages/reps/Objecoes';
-import RepsProcesso from '@/pages/reps/Processo';
-import RepsConcorrentes from '@/pages/reps/Concorrentes';
+import Comunidade from '@/pages/Comunidade';
 import CentralAjuda from '@/pages/CentralAjuda';
 import Automacoes from '@/pages/Automacoes';
 import Biblioteca from '@/pages/Biblioteca';
@@ -149,8 +147,27 @@ function LoginRedirectHandler() {
 function HomeRoute() {
   const { papel } = useSidebarContext();
   if (papel === 'Closer') return <Navigate to="/closer/dashboard" replace />;
-  if (papel === 'Representante') return <Navigate to="/reps/dashboard" replace />;
+  if (papel === 'Representante') return <Navigate to="/start" replace />;
   return <Dashboard />;
+}
+
+/** Onboarding, Pipeline e Meta do Mês de Representante ainda não têm
+ *  integração pronta (mesmo estado do portal real de reps) — mostram
+ *  versões próprias em vez do fluxo completo do SDR. */
+function OnboardingRoute() {
+  const { papel } = useSidebarContext();
+  return papel === 'Representante' ? <OnboardingReps /> : <Onboarding />;
+}
+
+function PipelineRoute() {
+  const { papel } = useSidebarContext();
+  if (papel === 'Representante') return <PipelineReps />;
+  return <ForcePapel papel="SDR"><Pipeline /></ForcePapel>;
+}
+
+function MetaRoute() {
+  const { papel } = useSidebarContext();
+  return papel === 'Representante' ? <MetaMesReps /> : <MetaMes />;
 }
 
 function AnimatedRoutes() {
@@ -186,24 +203,18 @@ function AnimatedRoutes() {
           <Route path="/closer/processo" element={<CloserProcesso />} />
           <Route path="/closer/rotina" element={<CloserRotina />} />
           <Route path="/closer/concorrentes" element={<CloserConcorrentes />} />
-          {/* Seções do dashboard de REPS (Representantes) */}
-          <Route path="/reps/dashboard" element={<RepsDashboard />} />
-          <Route path="/reps/metas" element={<RepsMetas />} />
-          <Route path="/reps/territorio" element={<RepsTerritorio />} />
-          <Route path="/reps/objecoes" element={<RepsObjecoes />} />
-          <Route path="/reps/processo" element={<RepsProcesso />} />
-          <Route path="/reps/concorrentes" element={<RepsConcorrentes />} />
+          <Route path="/comunidade" element={<Comunidade />} />
           <Route path="/agenda" element={<Agenda />} />
-          <Route path="/pipeline" element={<ForcePapel papel="SDR"><Pipeline /></ForcePapel>} />
+          <Route path="/pipeline" element={<PipelineRoute />} />
           <Route path="/cultura" element={<ForcePapel papel="SDR"><Cultura /></ForcePapel>} />
           <Route path="/historias" element={<ForcePapel papel="SDR"><HistoriasSucesso /></ForcePapel>} />
-          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/onboarding" element={<OnboardingRoute />} />
           <Route path="/badges" element={<BadgesPage />} />
           <Route path="/carreira" element={<Carreira />} />
           <Route path="/gestao" element={<Gestao />} />
           <Route path="/berserker" element={<Berserker />} />
           <Route path="/ranking" element={<Ranking />} />
-          <Route path="/meta" element={<MetaMes />} />
+          <Route path="/meta" element={<MetaRoute />} />
           <Route path="/promocoes" element={<Promocoes />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/ajuda" element={<CentralAjuda />} />
