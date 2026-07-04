@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Crown, ShieldCheck, Target, BarChart2, LayoutDashboard, Zap, Users, Loader2, Eye, Pencil, X, MapIcon, ExternalLink, type LucideIcon } from 'lucide-react';
+import { Crown, ShieldCheck, Target, BarChart2, LayoutDashboard, Zap, Users, Loader2, Eye, Pencil, X, MapIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useSidebarContext, type Papel, type ImpersonationTarget } from '@/context/SidebarContext';
@@ -7,24 +7,10 @@ import { useEditor } from '@/admin/EditorContext';
 import { Header } from '@/components/layout/Header';
 import { supabase } from '@/integrations/supabase/client';
 
-/** REPS roda como projeto Vercel próprio (base duplicada), não como papel interno —
- *  por isso é um link externo, e não um switchPlaybook. */
-const REPS_URL = 'https://cw-playbook-reps.vercel.app/';
-
-interface PlaybookOption {
-  label: string;
-  /** Troca o papel dentro deste app (SDR/Closer). */
-  papel?: Papel;
-  /** REPS é um site externo — clicar abre em nova aba em vez de trocar o papel. */
-  href?: string;
-  icon: LucideIcon;
-  desc: string;
-}
-
-const PLAYBOOKS: PlaybookOption[] = [
-  { label: 'SDR',    papel: 'SDR',    icon: Zap,    desc: 'Prospecção, qualificação e agendamento de reuniões.' },
-  { label: 'Closer', papel: 'Closer', icon: Target, desc: 'Condução de reuniões e fechamento de vendas.' },
-  { label: 'REPS',   href: REPS_URL,  icon: MapIcon, desc: 'Dashboard exclusivo do time de Representantes.' },
+const PLAYBOOKS = [
+  { label: 'SDR',    papel: 'SDR' as Papel,          icon: Zap,     desc: 'Prospecção, qualificação e agendamento de reuniões.' },
+  { label: 'Closer', papel: 'Closer' as Papel,       icon: Target,  desc: 'Condução de reuniões e fechamento de vendas.' },
+  { label: 'REPS',   papel: 'Representante' as Papel,icon: MapIcon, desc: 'Atendimento, território e gestão de contas externas.' },
 ];
 
 const FERRAMENTAS = [
@@ -103,8 +89,8 @@ export default function ModoGestor() {
     navigate('/start');
   };
 
-  const switchPlaybook = async (novoPapel?: Papel) => {
-    if (!novoPapel || novoPapel === papel || switching) return;
+  const switchPlaybook = async (novoPapel: Papel) => {
+    if (novoPapel === papel || switching) return;
     setSwitching(novoPapel);
     await new Promise(r => setTimeout(r, 300));
     setPapel(novoPapel);
@@ -124,19 +110,19 @@ export default function ModoGestor() {
             <h2 className="text-lg font-bold">Trocar Playbook</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {PLAYBOOKS.map(({ label, papel: opt, href, icon: Icon, desc }) => {
-              const isActive = !!opt && papel === opt;
-              const isSwitching = !!opt && switching === opt;
+            {PLAYBOOKS.map(({ label, papel: opt, icon: Icon, desc }) => {
+              const isActive = papel === opt;
+              const isSwitching = switching === opt;
               return (
                 <button
-                  key={label}
-                  onClick={() => (href ? window.open(href, '_blank', 'noopener,noreferrer') : switchPlaybook(opt))}
-                  disabled={!href && !!switching}
+                  key={opt}
+                  onClick={() => switchPlaybook(opt)}
+                  disabled={!!switching}
                   className={cn(
                     'relative flex flex-col items-center gap-3 p-6 rounded-2xl border text-sm font-bold transition-all duration-300',
                     isActive
                       ? 'bg-[#2d1760] border-cw-purple text-white shadow-lg shadow-cw-purple/20'
-                      : switching && !href
+                      : switching
                         ? 'opacity-40 cursor-not-allowed bg-cw-surface border-cw-border text-cw-muted'
                         : 'bg-cw-surface border-cw-border text-cw-muted hover:border-cw-purple/50 hover:text-cw-text cursor-pointer'
                   )}
@@ -147,10 +133,7 @@ export default function ModoGestor() {
                     <Icon className={cn('h-6 w-6', isActive ? 'text-cw-yellow' : '')} />
                   )}
                   <div className="text-center">
-                    <p className="leading-tight flex items-center justify-center gap-1">
-                      {label}
-                      {href && <ExternalLink className="h-3 w-3 opacity-50" />}
-                    </p>
+                    <p className="leading-tight">{label}</p>
                     <p className={cn('text-[10px] font-normal mt-1 leading-snug', isActive ? 'text-white/60' : 'text-cw-muted/60')}>{desc}</p>
                   </div>
                   {isActive && !isSwitching && (

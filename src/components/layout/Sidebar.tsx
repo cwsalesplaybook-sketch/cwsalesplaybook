@@ -73,6 +73,27 @@ const CLOSER_SECTIONS = [
   { label: 'Cultura e Time',    routes: ['/historias'] },
 ];
 
+/** Dashboard de REPS (Representantes): navegação própria, mesmo formato do Closer. */
+const NAV_REPS: NavItem[] = [
+  { to: '/start',             label: 'Comece Aqui',          icon: 'Sparkles',       end: false },
+  { to: '/reps/dashboard',    label: 'Dashboard',            icon: 'LayoutDashboard',end: false },
+  { to: '/reps/territorio',   label: 'Território',           icon: 'MapIcon',        end: false },
+  { to: '/reps/objecoes',     label: 'Objeções',              icon: 'ShieldCheck',    end: false },
+  { to: '/reps/processo',     label: 'Processo de Atendimento', icon: 'Target',      end: false },
+  { to: '/reps/concorrentes', label: 'Concorrentes',         icon: 'Sword',          end: false },
+  { to: '/pipeline',          label: 'Pipeline',             icon: 'BarChart2',      end: false },
+  { to: '/reps/metas',        label: 'Metas',                 icon: 'Award',          end: false },
+  { to: '/historias',         label: 'Histórias de Sucesso', icon: 'Trophy',         end: false },
+  { to: '/ajuda',             label: 'Central de Ajuda',     icon: 'HelpCircle',     end: false },
+];
+
+const REPS_SECTIONS = [
+  { label: 'Operação',       routes: ['/reps/dashboard'] },
+  { label: 'Comercial',      routes: ['/reps/territorio', '/reps/objecoes', '/reps/processo', '/reps/concorrentes', '/pipeline'] },
+  { label: 'Carreira',       routes: ['/reps/metas'] },
+  { label: 'Cultura e Time', routes: ['/historias'] },
+];
+
 /** Seletor de playbooks — cada opção troca o papel inteiro do app */
 const PLAYBOOK_OPTIONS: { label: string; papel: Papel; icon: LucideIcon; short: string }[] = [
   { label: 'SDR',            papel: 'SDR',          icon: Zap,     short: 'SDR'   },
@@ -90,12 +111,13 @@ export function Sidebar() {
   const { isFav, toggle: toggleFav } = useNavFavorites(userProfile.email ?? '');
   const navigate = useNavigate();
   const isCloser = papel === 'Closer';
+  const isReps = papel === 'Representante';
   const rawItems = useGlobalEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
-  // Closer tem navegação própria, hardcoded (não passa pelo override global).
-  const items = isCloser ? NAV_CLOSER : rawItems.filter(i => i.to !== '/mural');
-  const sections = isCloser ? CLOSER_SECTIONS : SECTIONS;
-  // Edição de nav só vale para o nav global (SDR/Liderança), não para o do Closer.
-  const navEditable = isEditing && !isCloser;
+  // Closer e REPS têm navegação própria, hardcoded (não passa pelo override global).
+  const items = isCloser ? NAV_CLOSER : isReps ? NAV_REPS : rawItems.filter(i => i.to !== '/mural');
+  const sections = isCloser ? CLOSER_SECTIONS : isReps ? REPS_SECTIONS : SECTIONS;
+  // Edição de nav só vale para o nav global (SDR/Liderança), não para Closer/REPS.
+  const navEditable = isEditing && !isCloser && !isReps;
   const saveGlobalOverride = useContentStore((s) => s.saveGlobalOverride);
 
   const update = async (next: NavItem[]) => {
