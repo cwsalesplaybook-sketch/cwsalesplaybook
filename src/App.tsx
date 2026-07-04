@@ -52,6 +52,12 @@ import CloserMetas from '@/pages/closer/Metas';
 import CloserProcesso from '@/pages/closer/Processo';
 import CloserRotina from '@/pages/closer/Rotina';
 import CloserConcorrentes from '@/pages/closer/Concorrentes';
+import RepsDashboard from '@/pages/reps/Dashboard';
+import RepsMetas from '@/pages/reps/Metas';
+import RepsTerritorio from '@/pages/reps/Territorio';
+import RepsObjecoes from '@/pages/reps/Objecoes';
+import RepsProcesso from '@/pages/reps/Processo';
+import RepsConcorrentes from '@/pages/reps/Concorrentes';
 import CentralAjuda from '@/pages/CentralAjuda';
 import Automacoes from '@/pages/Automacoes';
 import Biblioteca from '@/pages/Biblioteca';
@@ -143,6 +149,7 @@ function LoginRedirectHandler() {
 function HomeRoute() {
   const { papel } = useSidebarContext();
   if (papel === 'Closer') return <Navigate to="/closer/dashboard" replace />;
+  if (papel === 'Representante') return <Navigate to="/reps/dashboard" replace />;
   return <Dashboard />;
 }
 
@@ -179,6 +186,13 @@ function AnimatedRoutes() {
           <Route path="/closer/processo" element={<CloserProcesso />} />
           <Route path="/closer/rotina" element={<CloserRotina />} />
           <Route path="/closer/concorrentes" element={<CloserConcorrentes />} />
+          {/* Seções do dashboard de REPS (Representantes) */}
+          <Route path="/reps/dashboard" element={<RepsDashboard />} />
+          <Route path="/reps/metas" element={<RepsMetas />} />
+          <Route path="/reps/territorio" element={<RepsTerritorio />} />
+          <Route path="/reps/objecoes" element={<RepsObjecoes />} />
+          <Route path="/reps/processo" element={<RepsProcesso />} />
+          <Route path="/reps/concorrentes" element={<RepsConcorrentes />} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/pipeline" element={<ForcePapel papel="SDR"><Pipeline /></ForcePapel>} />
           <Route path="/cultura" element={<ForcePapel papel="SDR"><Cultura /></ForcePapel>} />
