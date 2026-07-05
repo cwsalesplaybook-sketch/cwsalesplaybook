@@ -24,7 +24,7 @@ interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent,
+  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
@@ -73,25 +73,22 @@ const CLOSER_SECTIONS = [
   { label: 'Cultura e Time',    routes: ['/historias'] },
 ];
 
-/** Dashboard de REPS (Representantes): navegação própria, mesmo formato do Closer. */
+/** Dashboard de REPS (Representantes): navegação própria — espelha o portal
+ *  real do canal (cw-playbook-reps.vercel.app). Pipeline e Meta do Mês ainda
+ *  não têm integração pronta para reps (mesmo estado "em construção" de lá). */
 const NAV_REPS: NavItem[] = [
-  { to: '/start',             label: 'Comece Aqui',          icon: 'Sparkles',       end: false },
-  { to: '/reps/dashboard',    label: 'Dashboard',            icon: 'LayoutDashboard',end: false },
-  { to: '/reps/territorio',   label: 'Território',           icon: 'MapIcon',        end: false },
-  { to: '/reps/objecoes',     label: 'Objeções',              icon: 'ShieldCheck',    end: false },
-  { to: '/reps/processo',     label: 'Processo de Atendimento', icon: 'Target',      end: false },
-  { to: '/reps/concorrentes', label: 'Concorrentes',         icon: 'Sword',          end: false },
-  { to: '/pipeline',          label: 'Pipeline',             icon: 'BarChart2',      end: false },
-  { to: '/reps/metas',        label: 'Metas',                 icon: 'Award',          end: false },
-  { to: '/historias',         label: 'Histórias de Sucesso', icon: 'Trophy',         end: false },
-  { to: '/ajuda',             label: 'Central de Ajuda',     icon: 'HelpCircle',     end: false },
+  { to: '/start',       label: 'Comece Aqui', icon: 'Sparkles',  end: false },
+  { to: '/comunidade',  label: 'Comunidade',  icon: 'Users',     end: false },
+  { to: '/onboarding',  label: 'Onboarding',  icon: 'MapIcon',   end: false },
+  { to: '/playbook',    label: 'Playbook',    icon: 'BookOpen',  end: false },
+  { to: '/pipeline',    label: 'Pipeline',    icon: 'BarChart2', end: false },
+  { to: '/meta',        label: 'Meta do Mês', icon: 'Target',    end: false },
+  { to: '/ajuda',       label: 'Central de Ajuda', icon: 'HelpCircle', end: false },
 ];
 
 const REPS_SECTIONS = [
-  { label: 'Operação',       routes: ['/reps/dashboard'] },
-  { label: 'Comercial',      routes: ['/reps/territorio', '/reps/objecoes', '/reps/processo', '/reps/concorrentes', '/pipeline'] },
-  { label: 'Carreira',       routes: ['/reps/metas'] },
-  { label: 'Cultura e Time', routes: ['/historias'] },
+  { label: 'Equipe',    routes: ['/comunidade'] },
+  { label: 'Comercial', routes: ['/onboarding', '/playbook', '/pipeline', '/meta'] },
 ];
 
 /** Seletor de playbooks — cada opção troca o papel inteiro do app */
