@@ -105,7 +105,7 @@ function KpiCard({ label, value, hint, hintClass, icon: Icon }: {
 }
 
 export function DashboardSection() {
-  const { computed, state, update, addModulo, updateModulo, removeModulo } = useCloserMetas();
+  const { computed, state, update } = useCloserMetas();
   const { papel } = useSidebarContext();
   const prefix = (papel === 'SDR' || papel === 'Liderança') ? '' : papel.toLowerCase() + '.';
   const tplOverride = useContentStore(s => s.overrides[prefix + 'templates']) as CloserTemplate[] | undefined;
@@ -224,7 +224,11 @@ export function DashboardSection() {
       </div>
 
       {/* Módulos */}
-      <ModulosSection modulos={state.modulos} onAdd={addModulo} onUpdate={updateModulo} onRemove={removeModulo} />
+      <ModulosSection
+        moduloMeta1={state.moduloMeta1} moduloMeta2={state.moduloMeta2} moduloMeta3={state.moduloMeta3}
+        moduloConquistado={state.moduloConquistado} moduloMetas={computed.moduloMetas}
+        onSave={update}
+      />
     </div>
   );
 }

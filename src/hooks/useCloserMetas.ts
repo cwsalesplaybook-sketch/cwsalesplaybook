@@ -3,13 +3,6 @@
  *  Inspirado no "Controle de Metas" do dashboard de referência. */
 import { useCallback, useEffect, useState } from 'react';
 
-export interface MetaModulo {
-  id: string;
-  nome: string;
-  meta: number;        // meta em unidades
-  conquistado: number; // já conquistado em unidades
-}
-
 export interface MetasState {
   meta1: number;
   meta2: number;
@@ -17,7 +10,11 @@ export interface MetasState {
   jaFechado: number;
   /** null = cálculo automático (dias úteis restantes no mês). */
   diasUteis: number | null;
-  modulos: MetaModulo[];
+  /** Módulos — mesma mecânica de meta1/2/3 + jaFechado, mas em unidades. */
+  moduloMeta1: number;
+  moduloMeta2: number;
+  moduloMeta3: number;
+  moduloConquistado: number;
 }
 
 const STORAGE_KEY = 'cw-closer-metas';
@@ -28,7 +25,10 @@ const EMPTY: MetasState = {
   meta3: 0,
   jaFechado: 0,
   diasUteis: null,
-  modulos: [],
+  moduloMeta1: 0,
+  moduloMeta2: 0,
+  moduloMeta3: 0,
+  moduloConquistado: 0,
 };
 
 const MESES = [
@@ -52,7 +52,7 @@ export function diasUteisRestantes(ref = new Date()): number {
 export interface MetaCalculo {
   valor: number;       // valor alvo da meta
   progresso: number;   // 0–100 (%)
-  falta: number;       // quanto falta em R$
+  falta: number;       // quanto falta (R$ ou unidades)
   porDia: number;      // quanto fechar por dia útil restante
   batida: boolean;
 }
@@ -60,7 +60,8 @@ export interface MetaCalculo {
 export interface MetasComputed extends MetasState {
   mesLabel: string;
   diasRestantes: number;
-  metas: MetaCalculo[];      // [meta1, meta2, meta3]
+  metas: MetaCalculo[];        // [meta1, meta2, meta3] em R$
+  moduloMetas: MetaCalculo[];  // [moduloMeta1, moduloMeta2, moduloMeta3] em unidades
   projecao: number;          // projeção de fechamento no mês
   performance: number;       // % sobre a maior meta (meta 3)
 }
@@ -71,11 +72,7 @@ function load(): MetasState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return EMPTY;
     const parsed = JSON.parse(raw) as Partial<MetasState>;
-    return {
-      ...EMPTY,
-      ...parsed,
-      modulos: Array.isArray(parsed.modulos) ? parsed.modulos : [],
-    };
+    return { ...EMPTY, ...parsed };
   } catch {
     return EMPTY;
   }
@@ -108,28 +105,13 @@ export function useCloserMetas() {
     setState((s) => ({ ...s, jaFechado: Number.isFinite(valor) ? valor : 0 }));
   }, []);
 
-  const addModulo = useCallback((m: Omit<MetaModulo, 'id'>) => {
-    setState((s) => ({
-      ...s,
-      modulos: [...s.modulos, { ...m, id: crypto.randomUUID() }],
-    }));
-  }, []);
-
-  const updateModulo = useCallback((id: string, patch: Partial<MetaModulo>) => {
-    setState((s) => ({
-      ...s,
-      modulos: s.modulos.map((m) => (m.id === id ? { ...m, ...patch } : m)),
-    }));
-  }, []);
-
-  const removeModulo = useCallback((id: string) => {
-    setState((s) => ({ ...s, modulos: s.modulos.filter((m) => m.id !== id) }));
-  }, []);
-
   const now = new Date();
   const dias = state.diasUteis ?? diasUteisRestantes(now);
   const metas = [state.meta1, state.meta2, state.meta3].map((alvo) =>
     calcMeta(alvo, state.jaFechado, dias),
+  );
+  const moduloMetas = [state.moduloMeta1, state.moduloMeta2, state.moduloMeta3].map((alvo) =>
+    calcMeta(alvo, state.moduloConquistado, dias),
   );
   const maiorMeta = Math.max(state.meta1, state.meta2, state.meta3);
   // Projeção: ritmo diário atual × dias úteis totais do mês (estimativa simples).
@@ -145,6 +127,7 @@ export function useCloserMetas() {
     mesLabel: MESES[now.getMonth()],
     diasRestantes: dias,
     metas,
+    moduloMetas,
     projecao,
     performance,
   };
@@ -154,8 +137,5 @@ export function useCloserMetas() {
     computed,
     update,
     setJaFechado,
-    addModulo,
-    updateModulo,
-    removeModulo,
   };
 }
