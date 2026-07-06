@@ -69,7 +69,6 @@ function ProgressoCard({ idx, alvo, progresso, falta, porDia, batida, label }:
 function ModuloRow({ m, onUpdate, onRemove }:
   { m: MetaModulo; onUpdate: (patch: Partial<MetaModulo>) => void; onRemove: () => void }) {
   const [conqInput, setConqInput] = useState(String(m.conquistado));
-  const pct = m.meta > 0 ? Math.min(100, (m.conquistado / m.meta) * 100) : 0;
   const falta = Math.max(0, m.meta - m.conquistado);
   const batida = m.meta > 0 && m.conquistado >= m.meta;
 
@@ -80,51 +79,42 @@ function ModuloRow({ m, onUpdate, onRemove }:
   };
 
   return (
-    <div className="cw-card p-4 space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <p className="font-bold text-sm text-cw-text truncate">{m.nome}</p>
-        <button onClick={onRemove} className="text-cw-muted hover:text-red-400 transition-colors shrink-0">
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
-      </div>
-      <div className="h-1.5 rounded-full bg-cw-elevated overflow-hidden">
-        <div className="h-full rounded-full bg-cw-purple transition-all" style={{ width: `${pct}%` }} />
-      </div>
-      <div className="grid grid-cols-2 gap-2 text-xs">
-        <div>
-          <p className="text-cw-muted">Meta</p>
-          <p className="text-cw-text font-semibold">{m.meta} un</p>
-        </div>
-        <div>
-          <p className="text-cw-muted">Falta</p>
-          <p className={cn('font-semibold', batida ? 'text-emerald-400' : 'text-cw-text')}>
-            {batida ? 'Meta batida! 🎉' : `${falta} un`}
-          </p>
+    <div className="cw-card p-4">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[10px] font-bold text-cw-muted uppercase tracking-widest truncate pr-1">{m.nome}</p>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button onClick={onRemove} className="text-cw-muted hover:text-red-400 transition-colors">
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+          <div className="h-8 w-8 rounded-lg bg-cw-purple/15 border border-cw-purple/30 flex items-center justify-center">
+            <Package className="h-4 w-4 text-cw-purple" />
+          </div>
         </div>
       </div>
-      <div className="border-t border-cw-border pt-2 flex items-center justify-between gap-2">
-        <label className="flex items-center gap-1.5">
-          <span className="text-[10px] text-cw-muted uppercase tracking-widest">Já feito</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={conqInput}
-            onChange={e => setConqInput(e.target.value)}
-            onBlur={() => commit(num(conqInput))}
-            onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-            className="w-14 bg-cw-surface border border-cw-border rounded-lg px-2 py-1 text-sm text-cw-text text-center focus:outline-none focus:border-cw-purple/50"
-          />
-        </label>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => commit(m.conquistado - 1)}
-            className="h-6 w-6 rounded-lg bg-cw-elevated border border-cw-border text-cw-text hover:bg-cw-surface"
-          >−</button>
-          <button
-            onClick={() => commit(m.conquistado + 1)}
-            className="h-6 w-6 rounded-lg bg-cw-purple/15 border border-cw-purple/30 text-cw-purple-light hover:bg-cw-purple/25"
-          >+</button>
-        </div>
+      <div className="flex items-baseline gap-1.5 mt-2">
+        <input
+          type="text"
+          inputMode="numeric"
+          value={conqInput}
+          onChange={e => setConqInput(e.target.value)}
+          onBlur={() => commit(num(conqInput))}
+          onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+          className="w-16 bg-transparent text-2xl font-black text-cw-text focus:outline-none border-b border-dashed border-cw-border focus:border-cw-purple"
+        />
+        <span className="text-sm text-cw-muted font-bold">/ {m.meta}</span>
+      </div>
+      <p className={cn('text-xs mt-0.5', batida ? 'text-emerald-400 font-semibold' : 'text-cw-muted')}>
+        {batida ? 'Meta batida! 🎉' : `Falta ${falta} un`}
+      </p>
+      <div className="flex items-center gap-1 mt-3 pt-3 border-t border-cw-border">
+        <button
+          onClick={() => commit(m.conquistado - 1)}
+          className="h-6 w-6 rounded-lg bg-cw-elevated border border-cw-border text-cw-text hover:bg-cw-surface"
+        >−</button>
+        <button
+          onClick={() => commit(m.conquistado + 1)}
+          className="h-6 w-6 rounded-lg bg-cw-purple/15 border border-cw-purple/30 text-cw-purple-light hover:bg-cw-purple/25"
+        >+</button>
       </div>
     </div>
   );
