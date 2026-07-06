@@ -9,6 +9,7 @@ import { useContentStore } from '@/store/contentStore';
 import { useSidebarContext } from '@/context/SidebarContext';
 import { SEED_TEMPLATES, type CloserTemplate } from '@/data/closerTemplates';
 import { CLOSER_CUPONS } from '@/data/playbookCloser';
+import { ModulosSection } from '@/components/closer/ModuloCard';
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <p className="text-[10px] font-black text-cw-purple uppercase tracking-widest mb-3">{children}</p>;
@@ -104,7 +105,7 @@ function KpiCard({ label, value, hint, hintClass, icon: Icon }: {
 }
 
 export function DashboardSection() {
-  const { computed, state, update } = useCloserMetas();
+  const { computed, state, update, addModulo, updateModulo, removeModulo } = useCloserMetas();
   const { papel } = useSidebarContext();
   const prefix = (papel === 'SDR' || papel === 'Liderança') ? '' : papel.toLowerCase() + '.';
   const tplOverride = useContentStore(s => s.overrides[prefix + 'templates']) as CloserTemplate[] | undefined;
@@ -221,6 +222,9 @@ export function DashboardSection() {
           </div>
         </div>
       </div>
+
+      {/* Módulos */}
+      <ModulosSection modulos={state.modulos} onAdd={addModulo} onUpdate={updateModulo} onRemove={removeModulo} />
     </div>
   );
 }
