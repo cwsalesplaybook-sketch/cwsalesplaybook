@@ -23,6 +23,7 @@ const MASTER_EMAILS = new Set<string>([
   "ana.clara@cardapioweb.com",
   "vanessa.alencar@cardapioweb.com",
   "gabrielly.oliveira@cardapioweb.com",
+  "johnnyalves@cardapioweb.com",
 ]);
 
 const LIDER_SETOR: Record<string, Setor> = {
