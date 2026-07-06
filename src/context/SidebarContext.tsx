@@ -1,5 +1,5 @@
 /** Contexto global do papel selecionado (SDR/Closer) com persistência via Supabase. */
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export type Papel = 'SDR' | 'Closer' | 'Representante' | 'Parcerias' | 'Liderança';
@@ -14,6 +14,12 @@ export interface ImpersonationTarget {
 interface Ctx {
   papel: Papel;
   setPapel: (p: Papel) => void;
+  /** Troca de dashboard do Modo Gestor (preview): "trava" o papel escolhido
+   *  localmente até o próprio gestor confirmar a volta, sem deixar o próximo
+   *  refresh de sessão (onAuthStateChange) reverter sozinho pro papel real. */
+  setPapelPreview: (p: Papel) => void;
+  /** Confirma a volta pro papel real e destrava os refreshes de sessão. */
+  clearPapelPreview: () => void;
   /** Papel fixado pelo onboarding — null se o usuário ainda não completou. */
   lockedPapel: Papel | null;
   squad: string | null;
@@ -44,13 +50,18 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [onboardingActive, setOnboardingActive] = useState(false);
   const [impersonating, setImpersonating] = useState<ImpersonationTarget | null>(null);
   const [papelReady, setPapelReady] = useState(false);
+  const previewLockRef = useRef(false);
 
   const applyMeta = (m: Record<string, unknown>) => {
     const saved = m?.papel as Papel | undefined;
     if (saved) {
-      setPapelState(saved);
+      // Enquanto o gestor estiver "travado" numa prévia de outro dashboard,
+      // não deixa o refresh de sessão sobrescrever a troca manual.
+      if (!previewLockRef.current) {
+        setPapelState(saved);
+        localStorage.setItem('cw-papel', saved);
+      }
       setLockedPapel(saved);
-      localStorage.setItem('cw-papel', saved);
       setOnboardingActive(false);
     } else {
       setOnboardingActive(true);
@@ -68,6 +79,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       if (!session) {
+        previewLockRef.current = false;
         setLockedPapel(null);
         setSquad(null);
         setSquadsLideradas([]);
@@ -88,6 +100,19 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('cw-papel', p);
   };
 
+  const setPapelPreview = (p: Papel) => {
+    previewLockRef.current = true;
+    setPapelState(p);
+    localStorage.setItem('cw-papel', p);
+  };
+
+  const clearPapelPreview = () => {
+    previewLockRef.current = false;
+    const real = lockedPapel ?? papel;
+    setPapelState(real);
+    localStorage.setItem('cw-papel', real);
+  };
+
   // Quando impersonando, sobrescreve papel/squad/apelido visíveis
   const visiblePapel = impersonating ? impersonating.papel : papel;
   const visibleSquad = impersonating ? impersonating.squad : squad;
@@ -95,7 +120,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 
   return (
     <SidebarContext.Provider value={{
-      papel: visiblePapel, setPapel, lockedPapel,
+      papel: visiblePapel, setPapel, setPapelPreview, clearPapelPreview, lockedPapel,
       squad: visibleSquad, squadsLideradas, apelido: visibleApelido,
       onboardingActive, setOnboardingActive,
       impersonating, setImpersonating,
