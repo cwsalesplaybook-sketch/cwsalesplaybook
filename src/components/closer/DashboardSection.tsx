@@ -22,17 +22,18 @@ function num(v: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-function ConfigMetaModal({ meta1, meta2, meta3, onSave, onClose }: {
-  meta1: number; meta2: number; meta3: number;
-  onSave: (v: { meta1: number; meta2: number; meta3: number }) => void;
+function ConfigMetaModal({ meta1, meta2, meta3, jaFechado, diasUteis, onSave, onClose }: {
+  meta1: number; meta2: number; meta3: number; jaFechado: number; diasUteis: number | null;
+  onSave: (v: { meta1: number; meta2: number; meta3: number; jaFechado: number; diasUteis: number | null }) => void;
   onClose: () => void;
 }) {
-  const [form, setForm] = useState({ meta1, meta2, meta3 });
+  const [form, setForm] = useState({ meta1, meta2, meta3, jaFechado });
+  const [diasInput, setDiasInput] = useState(diasUteis != null ? String(diasUteis) : '');
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
+      <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-bold text-cw-text">Configurar Metas</h3>
+          <h3 className="text-lg font-bold text-cw-text">Configurar Metas do Mês</h3>
           <button onClick={onClose} className="text-cw-muted hover:text-cw-text transition-colors"><X className="h-5 w-5" /></button>
         </div>
         <div className="space-y-4">
@@ -48,47 +49,36 @@ function ConfigMetaModal({ meta1, meta2, meta3, onSave, onClose }: {
               />
             </div>
           ))}
+          <div className="border-t border-cw-border pt-4">
+            <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Já Fechado (R$)</label>
+            <input
+              type="number" min={0}
+              value={form.jaFechado}
+              onChange={e => setForm(f => ({ ...f, jaFechado: Number(e.target.value) }))}
+              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple"
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Dias Úteis Restantes</label>
+            <input
+              type="text" inputMode="numeric"
+              value={diasInput}
+              onChange={e => setDiasInput(e.target.value)}
+              placeholder="Automático"
+              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple"
+            />
+            <span className="text-[10px] text-cw-muted">Deixe vazio para cálculo automático</span>
+          </div>
         </div>
         <button
-          onClick={() => onSave(form)}
+          onClick={() => {
+            const dias = diasInput.trim();
+            onSave({ ...form, diasUteis: dias === '' ? null : Math.max(1, num(dias)) });
+          }}
           className="w-full mt-6 py-3 rounded-xl font-bold text-sm text-white gradient-primary transition-opacity hover:opacity-90"
         >
           Salvar metas
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function AjusteFechadoModal({ tipo, onConfirm, onClose }: {
-  tipo: 'add' | 'remove';
-  onConfirm: (valor: number) => void;
-  onClose: () => void;
-}) {
-  const [valor, setValor] = useState('');
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-xs mx-4 shadow-2xl space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-cw-text">{tipo === 'add' ? '+ Adicionar ao fechado' : '− Remover do fechado'}</h3>
-          <button onClick={onClose} className="text-cw-muted hover:text-cw-text"><X className="h-4 w-4" /></button>
-        </div>
-        <div>
-          <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Valor (R$)</label>
-          <input
-            type="text" inputMode="numeric" autoFocus
-            value={valor}
-            onChange={e => setValor(e.target.value)}
-            placeholder="0"
-            className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple"
-          />
-        </div>
-        <button
-          onClick={() => { onConfirm(num(valor)); onClose(); }}
-          disabled={!valor.trim()}
-          className="w-full py-3 rounded-xl font-bold text-sm text-white gradient-primary hover:opacity-90 transition-opacity disabled:opacity-40"
-        >
-          Confirmar
         </button>
       </div>
     </div>
@@ -114,12 +104,11 @@ function KpiCard({ label, value, hint, hintClass, icon: Icon }: {
 }
 
 export function DashboardSection() {
-  const { computed, state, update, setJaFechado } = useCloserMetas();
+  const { computed, state, update } = useCloserMetas();
   const { papel } = useSidebarContext();
   const prefix = (papel === 'SDR' || papel === 'Liderança') ? '' : papel.toLowerCase() + '.';
   const tplOverride = useContentStore(s => s.overrides[prefix + 'templates']) as CloserTemplate[] | undefined;
   const [configOpen, setConfigOpen] = useState(false);
-  const [ajusteTipo, setAjusteTipo] = useState<'add' | 'remove' | null>(null);
 
   const numTemplates = Array.isArray(tplOverride) ? tplOverride.length : SEED_TEMPLATES.length;
   const numCupons = CLOSER_CUPONS.reduce((acc, g) => acc + g.linhas.length, 0);
@@ -142,19 +131,11 @@ export function DashboardSection() {
           <div>
             <SectionTitle>Painel de Comando</SectionTitle>
             <h2 className="text-xl font-black text-cw-text">
-              Central de <span className="text-cw-purple-light">Operações</span>
+              Metas do <span className="text-cw-purple-light">Mês</span>
             </h2>
             <p className="text-sm text-cw-muted mt-1">Monitore suas metas, gerencie estratégias e feche negócios com precisão.</p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <button onClick={() => setAjusteTipo('remove')} title="Remover do fechado"
-              className="h-7 w-7 rounded-lg bg-cw-elevated border border-cw-border text-cw-muted hover:text-red-400 hover:border-red-300 flex items-center justify-center transition-all text-sm font-bold">
-              −
-            </button>
-            <button onClick={() => setAjusteTipo('add')} title="Adicionar ao fechado"
-              className="h-7 w-7 rounded-lg bg-cw-elevated border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-all text-sm font-bold">
-              +
-            </button>
             <button onClick={() => setConfigOpen(true)} title="Configurar metas"
               className="h-7 w-7 rounded-lg bg-cw-elevated border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-all">
               <Settings className="h-3.5 w-3.5" />
@@ -174,15 +155,9 @@ export function DashboardSection() {
       {configOpen && (
         <ConfigMetaModal
           meta1={state.meta1} meta2={state.meta2} meta3={state.meta3}
+          jaFechado={state.jaFechado} diasUteis={state.diasUteis}
           onSave={(v) => { update(v); setConfigOpen(false); }}
           onClose={() => setConfigOpen(false)}
-        />
-      )}
-      {ajusteTipo && (
-        <AjusteFechadoModal
-          tipo={ajusteTipo}
-          onConfirm={(valor) => setJaFechado(Math.max(0, state.jaFechado + (ajusteTipo === 'add' ? valor : -valor)))}
-          onClose={() => setAjusteTipo(null)}
         />
       )}
 
