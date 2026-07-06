@@ -68,7 +68,17 @@ function ProgressoCard({ idx, alvo, progresso, falta, porDia, batida, label }:
 
 function ModuloRow({ m, onUpdate, onRemove }:
   { m: MetaModulo; onUpdate: (patch: Partial<MetaModulo>) => void; onRemove: () => void }) {
+  const [conqInput, setConqInput] = useState(String(m.conquistado));
   const pct = m.meta > 0 ? Math.min(100, (m.conquistado / m.meta) * 100) : 0;
+  const falta = Math.max(0, m.meta - m.conquistado);
+  const batida = m.meta > 0 && m.conquistado >= m.meta;
+
+  const commit = (v: number) => {
+    const val = Math.max(0, v);
+    onUpdate({ conquistado: val });
+    setConqInput(String(val));
+  };
+
   return (
     <div className="cw-card p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
@@ -80,17 +90,38 @@ function ModuloRow({ m, onUpdate, onRemove }:
       <div className="h-1.5 rounded-full bg-cw-elevated overflow-hidden">
         <div className="h-full rounded-full bg-cw-purple transition-all" style={{ width: `${pct}%` }} />
       </div>
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-cw-muted">
-          <span className="text-cw-text font-semibold">{m.conquistado}</span> / {m.meta} unidades
-        </span>
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <p className="text-cw-muted">Meta</p>
+          <p className="text-cw-text font-semibold">{m.meta} un</p>
+        </div>
+        <div>
+          <p className="text-cw-muted">Falta</p>
+          <p className={cn('font-semibold', batida ? 'text-emerald-400' : 'text-cw-text')}>
+            {batida ? 'Meta batida! 🎉' : `${falta} un`}
+          </p>
+        </div>
+      </div>
+      <div className="border-t border-cw-border pt-2 flex items-center justify-between gap-2">
+        <label className="flex items-center gap-1.5">
+          <span className="text-[10px] text-cw-muted uppercase tracking-widest">Já feito</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={conqInput}
+            onChange={e => setConqInput(e.target.value)}
+            onBlur={() => commit(num(conqInput))}
+            onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+            className="w-14 bg-cw-surface border border-cw-border rounded-lg px-2 py-1 text-sm text-cw-text text-center focus:outline-none focus:border-cw-purple/50"
+          />
+        </label>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => onUpdate({ conquistado: Math.max(0, m.conquistado - 1) })}
+            onClick={() => commit(m.conquistado - 1)}
             className="h-6 w-6 rounded-lg bg-cw-elevated border border-cw-border text-cw-text hover:bg-cw-surface"
           >−</button>
           <button
-            onClick={() => onUpdate({ conquistado: m.conquistado + 1 })}
+            onClick={() => commit(m.conquistado + 1)}
             className="h-6 w-6 rounded-lg bg-cw-purple/15 border border-cw-purple/30 text-cw-purple-light hover:bg-cw-purple/25"
           >+</button>
         </div>
