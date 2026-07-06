@@ -68,7 +68,7 @@ function ProgressoCard({ idx, alvo, progresso, falta, porDia, batida, label }:
 }
 
 export function MetasSection() {
-  const { state, computed, update, setJaFechado, addModulo, updateModulo, removeModulo } = useCloserMetas();
+  const { state, computed, update, setJaFechado } = useCloserMetas();
   const [editMetas, setEditMetas] = useState(false);
   const [fechadoInput, setFechadoInput] = useState('');
 
@@ -196,7 +196,11 @@ export function MetasSection() {
       </div>
 
       {/* Módulos */}
-      <ModulosSection modulos={state.modulos} onAdd={addModulo} onUpdate={updateModulo} onRemove={removeModulo} />
+      <ModulosSection
+        moduloMeta1={state.moduloMeta1} moduloMeta2={state.moduloMeta2} moduloMeta3={state.moduloMeta3}
+        moduloConquistado={state.moduloConquistado} moduloMetas={computed.moduloMetas}
+        onSave={update}
+      />
 
       <p className="flex items-center gap-1.5 text-[11px] text-cw-muted">
         <Check className="h-3 w-3 text-emerald-400" /> Seus dados ficam salvos só neste navegador.
