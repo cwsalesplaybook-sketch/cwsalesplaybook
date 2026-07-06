@@ -118,10 +118,10 @@ export function DashboardSection() {
   const metaDiaria = computed.metas.find(m => !m.batida)?.porDia ?? 0;
   const pctMeta3 = meta3.valor > 0 ? (computed.jaFechado / meta3.valor) * 100 : 0;
 
-  const acoes = [
+  const acoes: Array<{ label: string; icon: typeof Target } & ({ to: string } | { onClick: () => void })> = [
     { to: '/closer/descontos', label: 'Pegar Cupom', icon: Percent },
     { to: '/closer/templates', label: 'Copiar Template', icon: FileText },
-    { to: '/closer/metas', label: 'Atualizar Meta', icon: Target },
+    { onClick: () => setConfigOpen(true), label: 'Atualizar Meta', icon: Target },
   ];
 
   return (
@@ -211,13 +211,20 @@ export function DashboardSection() {
             <p className="font-bold text-sm text-cw-text">Ações Rápidas</p>
           </div>
           <div className="space-y-2">
-            {acoes.map(a => (
-              <Link key={a.to} to={a.to}
+            {acoes.map(a => 'to' in a ? (
+              <Link key={a.label} to={a.to}
                 className="flex items-center gap-2.5 px-3 py-3 rounded-xl bg-cw-elevated border border-cw-border text-cw-text hover:bg-cw-surface transition-colors">
                 <a.icon className="h-4 w-4 text-cw-purple shrink-0" />
                 <span className="flex-1 text-sm font-medium">{a.label}</span>
                 <ChevronRight className="h-4 w-4 text-cw-muted" />
               </Link>
+            ) : (
+              <button key={a.label} onClick={a.onClick}
+                className="flex items-center gap-2.5 px-3 py-3 rounded-xl bg-cw-elevated border border-cw-border text-cw-text hover:bg-cw-surface transition-colors w-full text-left">
+                <a.icon className="h-4 w-4 text-cw-purple shrink-0" />
+                <span className="flex-1 text-sm font-medium">{a.label}</span>
+                <ChevronRight className="h-4 w-4 text-cw-muted" />
+              </button>
             ))}
           </div>
         </div>
