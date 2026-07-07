@@ -120,11 +120,18 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
     const name = apelido.trim() || null;
 
     const squadsLed = papel === 'Liderança' ? squadsLideradas : [];
+    // Liderança de Representantes não tem "sabor" próprio de Liderança no app —
+    // cai sempre no dashboard/editor de Representantes, mantendo cargo e squads
+    // liderados para fins de identificação (ex: Promoções).
+    const papelFinal: Papel =
+      papel === 'Liderança' && cargoLideranca === 'Liderança de Representantes'
+        ? 'Representante'
+        : papel;
 
     // 1. Atualiza metadados do auth (visão do sidebar)
     const { error, data: authData } = await supabase.auth.updateUser({
       data: {
-        papel,
+        papel: papelFinal,
         squad: papel === 'SDR' ? squad : null,
         cargo_lideranca: papel === 'Liderança' ? cargoLideranca : null,
         squads_lideradas: squadsLed,
@@ -142,7 +149,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
         user_id: uid,
         email,
         apelido: name,
-        papel,
+        papel: papelFinal,
         squad: papel === 'SDR' ? squad : null,
         squads_lideradas: squadsLed,
         cargo_lideranca: papel === 'Liderança' ? cargoLideranca : null,
@@ -151,7 +158,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
       }, { onConflict: 'user_id' });
     }
 
-    localStorage.setItem('cw-papel', papel);
+    localStorage.setItem('cw-papel', papelFinal);
     onComplete();
   };
 
