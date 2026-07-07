@@ -16,7 +16,7 @@ export const TIME: Pessoa[] = [
   // ── REPRESENTANTES ──────────────────────────────────────────────
   { id: 'hyorranes',       nome: 'Hyorranes',                      cargo: 'Liderança de Representantes',         slack: '@hyorranes', email: 'hyorranes.souza@cardapioweb.com'  },
   { id: 'gabrielly-psm',   nome: 'Gabrielly Oliveira',              cargo: 'PSM',                                slack: '@gabrielly'                                                                   },
-  { id: 'bea-andrade',     nome: 'Bea Andrade',                    cargo: 'PSM',                                 slack: '@beaandrade'                                                                 },
+  { id: 'bea-andrade',     nome: 'Bea Andrade',                    cargo: 'PSM',                                 slack: '@beaandrade',                                  email: 'beatriz.andrade@cardapioweb.com' },
 
   // ── LIDERANÇA ───────────────────────────────────────────────────
   { id: 'joelma',          nome: 'Joelma Vieira',                  cargo: 'Liderança de Pré-Vendas (SDR)',       slack: '@joelma',    email: 'joelma.vieira@cardapioweb.com'   },
