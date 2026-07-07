@@ -185,11 +185,11 @@ function PersonalMetaView() {
   const [config, setConfig]       = useState(false);
   const [userId, setUserId]       = useState('');
   const [mes, setMes]             = useState('');
-  // Conversão varia por tier de carreira: Meta 1/2 converte mais fácil que Meta 3.
+  // Conversão fixa por tier de carreira: Meta 1/2 converte mais fácil que Meta 3.
   // Cada SDR ativa o próprio tier (salvo por pessoa) pra ver a conversão que se aplica a ele.
-  const [convTier12, setConvTier12] = useState(62);
-  const [convTier3, setConvTier3]   = useState(48);
-  const [meuTier, setMeuTier]       = useState<'1-2' | '3'>('1-2');
+  const CONV_TIER12 = 62;
+  const CONV_TIER3  = 48;
+  const [meuTier, setMeuTier] = useState<'1-2' | '3'>('1-2');
 
   useEffect(() => {
     if (!userId) return;
@@ -418,11 +418,15 @@ function PersonalMetaView() {
                   {ritmoHojeValor > 0 && (
                     <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10" style={{ left: `${ritmoHojePct}%` }}
                       title={noRitmoHoje ? 'Você está no ritmo hoje!' : 'Você deveria estar aqui hoje pra manter o ritmo'}>
+                      <span className={cn('absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-black whitespace-nowrap',
+                        noRitmoHoje ? 'text-blue-600' : 'text-amber-600')}>
+                        {Math.round(ritmoHojeValor)}
+                      </span>
                       <div className={cn('w-1 h-5 rounded-full ring-2 ring-white', noRitmoHoje ? 'bg-blue-500' : 'bg-amber-500')} />
                     </div>
                   )}
                 </div>
-                <div className="relative h-7 mt-1">
+                <div className="relative h-3.5 mt-1">
                   {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 }].map(({ label, value }) => {
                     if (!(value > 0)) return null;
                     const left = Math.min((value / maxMeta) * 100, 99);
@@ -435,14 +439,10 @@ function PersonalMetaView() {
                     );
                   })}
                   {ritmoHojeValor > 0 && (
-                    <div className="absolute -translate-x-1/2 flex flex-col items-center" style={{ left: `${ritmoHojePct}%` }}>
-                      <span className={cn('text-xs font-black leading-none', noRitmoHoje ? 'text-blue-600' : 'text-amber-600')}>
-                        {Math.round(ritmoHojeValor)}
-                      </span>
-                      <span className={cn('text-[9px] font-bold whitespace-nowrap', noRitmoHoje ? 'text-blue-600' : 'text-amber-600')}>
-                        Hoje
-                      </span>
-                    </div>
+                    <span className={cn('absolute -translate-x-1/2 text-[9px] font-bold whitespace-nowrap',
+                      noRitmoHoje ? 'text-blue-600' : 'text-amber-600')} style={{ left: `${ritmoHojePct}%` }}>
+                      Hoje
+                    </span>
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-[10px] text-cw-muted">
@@ -608,13 +608,9 @@ function PersonalMetaView() {
                   Tier 3
                 </button>
               </div>
-              <div className="flex items-center gap-1.5 bg-cw-elevated border border-cw-border rounded-xl px-2.5 py-1.5">
-                <button onClick={() => meuTier === '3' ? setConvTier3(c => Math.max(10, c - 5)) : setConvTier12(c => Math.max(10, c - 5))}
-                  className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">−</button>
-                <span className="text-xs font-bold text-cw-purple w-16 text-center">{meuTier === '3' ? convTier3 : convTier12}% conv.</span>
-                <button onClick={() => meuTier === '3' ? setConvTier3(c => Math.min(100, c + 5)) : setConvTier12(c => Math.min(100, c + 5))}
-                  className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">+</button>
-              </div>
+              <span className="text-xs font-bold text-cw-purple bg-cw-elevated border border-cw-border rounded-xl px-2.5 py-1.5">
+                {meuTier === '3' ? CONV_TIER3 : CONV_TIER12}% conv.
+              </span>
             </div>
           </div>
 
@@ -628,7 +624,7 @@ function PersonalMetaView() {
               { label: 'Mega Meta 3', value: mega3, star: false, mega: true },
             ].map(({ label, value, star, mega }) => {
               if (!value) return null;
-              const convAtual = meuTier === '3' ? convTier3 : convTier12;
+              const convAtual = meuTier === '3' ? CONV_TIER3 : CONV_TIER12;
               const fechDia = diasRestantes > 0 ? Math.ceil(Math.max(0, value - totalGanhos) / diasRestantes) : 0;
               const agendDia = convAtual > 0 ? Math.ceil(fechDia / (convAtual / 100)) : 0;
               const batida = totalGanhos >= value;
