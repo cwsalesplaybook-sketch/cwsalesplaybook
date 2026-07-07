@@ -185,7 +185,9 @@ function PersonalMetaView() {
   const [config, setConfig]       = useState(false);
   const [userId, setUserId]       = useState('');
   const [mes, setMes]             = useState('');
-  const [conversao, setConversao] = useState(50);
+  // Conversão varia por tier: Meta 1/2 converte mais fácil que Meta 3 (e Mega Metas).
+  const [convTier12, setConvTier12] = useState(62);
+  const [convTier3, setConvTier3]   = useState(48);
   const [autoNome, setAutoNome]   = useState('');
   const [pipedriveUsers, setPipedriveUsers] = useState<{ id: string; name: string }[]>([]);
   const [ajusteModal, setAjusteModal] = useState<'add' | 'sub' | null>(null);
@@ -573,10 +575,19 @@ function PersonalMetaView() {
                 <p className="text-xs text-cw-muted">{diasRestantes} dias restantes</p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 bg-cw-elevated border border-cw-border rounded-xl px-3 py-1.5">
-              <button onClick={() => setConversao(c => Math.max(10, c - 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">−</button>
-              <span className="text-xs font-bold text-cw-purple w-16 text-center">{conversao}% conv.</span>
-              <button onClick={() => setConversao(c => Math.min(100, c + 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">+</button>
+            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+              <div className="flex items-center gap-1.5 bg-cw-elevated border border-cw-border rounded-xl px-2.5 py-1.5">
+                <span className="text-[9px] font-bold text-cw-muted uppercase tracking-wide">T1/2</span>
+                <button onClick={() => setConvTier12(c => Math.max(10, c - 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">−</button>
+                <span className="text-xs font-bold text-cw-purple w-11 text-center">{convTier12}% conv.</span>
+                <button onClick={() => setConvTier12(c => Math.min(100, c + 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">+</button>
+              </div>
+              <div className="flex items-center gap-1.5 bg-cw-elevated border border-cw-border rounded-xl px-2.5 py-1.5">
+                <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wide">T3</span>
+                <button onClick={() => setConvTier3(c => Math.max(10, c - 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">−</button>
+                <span className="text-xs font-bold text-cw-purple w-11 text-center">{convTier3}% conv.</span>
+                <button onClick={() => setConvTier3(c => Math.min(100, c + 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">+</button>
+              </div>
             </div>
           </div>
 
@@ -590,8 +601,11 @@ function PersonalMetaView() {
               { label: 'Mega Meta 3', value: mega3, star: false, mega: true },
             ].map(({ label, value, star, mega }) => {
               if (!value) return null;
+              // Tier 1/2 (Meta 1 e 2) converte mais fácil que tier 3 (Meta 3 em diante).
+              const ehTier3 = label !== 'Meta 1' && label !== 'Meta 2';
+              const convAtual = ehTier3 ? convTier3 : convTier12;
               const fechDia = diasRestantes > 0 ? Math.ceil(Math.max(0, value - totalGanhos) / diasRestantes) : 0;
-              const agendDia = conversao > 0 ? Math.ceil(fechDia / (conversao / 100)) : 0;
+              const agendDia = convAtual > 0 ? Math.ceil(fechDia / (convAtual / 100)) : 0;
               const batida = totalGanhos >= value;
               return (
                 <div key={label} className={cn(
@@ -618,6 +632,7 @@ function PersonalMetaView() {
                       <div className="text-right">
                         <p className="text-lg font-black text-cw-purple leading-none">{agendDia}</p>
                         <p className="text-[10px] text-cw-muted">agend/dia</p>
+                        <p className="text-[8px] text-cw-muted/60">{convAtual}% conv.</p>
                       </div>
                     </div>
                   )}
