@@ -37,7 +37,6 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/automacoes',  label: 'Automações',             icon: 'Zap',             end: false },
   { to: '/historias',   label: 'Histórias de Sucesso',   icon: 'Trophy',          end: false },
   { to: '/biblioteca',  label: 'Biblioteca',             icon: 'Library',         end: false },
-  { to: '/extensao-bibi', label: 'Extensão Bibi',        icon: 'Puzzle',          end: false },
   { to: '/regras',      label: 'Regras de Conduta',      icon: 'ShieldCheck',     end: false },
   { to: '/onboarding',  label: 'Onboarding',             icon: 'MapIcon',         end: false },
   { to: '/carreira',    label: 'Progressão de Carreira', icon: 'TrendingUp',      end: false },
@@ -46,7 +45,7 @@ const NAV_PADRAO: NavItem[] = [
 
 const SECTIONS = [
   { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline', '/automacoes'] },
-  { label: 'Cultura e Time', routes: ['/historias', '/biblioteca', '/extensao-bibi', '/regras', '/onboarding', '/carreira'] },
+  { label: 'Cultura e Time', routes: ['/historias', '/biblioteca', '/regras', '/onboarding', '/carreira'] },
 ];
 
 /** Dashboard de Closer: navegação própria (hardcoded, não editável).
