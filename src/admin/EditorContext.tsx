@@ -14,6 +14,7 @@ const GESTOR_EMAILS = new Set([
   'antonio.anderson@cardapioweb.com',
   'ana.clara@cardapioweb.com',
   'joelma.vieira@cardapioweb.com',
+  'vithoria.pinheiro@cardapioweb.com',
   'gabrielly.oliveira@cardapioweb.com',
   'vanessa.alencar@cardapioweb.com',
   'beatriz.magalhaes@cardapioweb.com',
