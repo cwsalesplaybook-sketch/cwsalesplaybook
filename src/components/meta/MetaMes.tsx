@@ -426,7 +426,7 @@ function PersonalMetaView() {
                     </div>
                   )}
                 </div>
-                <div className="relative h-3.5 mt-1">
+                <div className="relative h-3.5 mt-2.5">
                   {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 }].map(({ label, value }) => {
                     if (!(value > 0)) return null;
                     const left = Math.min((value / maxMeta) * 100, 99);
