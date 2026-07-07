@@ -418,8 +418,8 @@ function PersonalMetaView() {
                   {ritmoHojeValor > 0 && (
                     <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10" style={{ left: `${ritmoHojePct}%` }}
                       title={noRitmoHoje ? 'Você está no ritmo hoje!' : 'Você deveria estar aqui hoje pra manter o ritmo'}>
-                      <span className={cn('absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-black whitespace-nowrap',
-                        noRitmoHoje ? 'text-blue-600' : 'text-amber-600')}>
+                      <span className={cn('absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-md text-[10px] font-black text-white whitespace-nowrap shadow-sm',
+                        noRitmoHoje ? 'bg-blue-500' : 'bg-amber-500')}>
                         {Math.round(ritmoHojeValor)}
                       </span>
                       <div className={cn('w-1 h-5 rounded-full ring-2 ring-white', noRitmoHoje ? 'bg-blue-500' : 'bg-amber-500')} />
