@@ -27,14 +27,25 @@ function getStatus(ganhos: number, meta1: number, diasPassados: number, diasUtei
   return (ganhos / diasPassados) >= (meta1 / diasUteisTotal) * 0.9 ? 'no-ritmo' : 'atrasado';
 }
 
-function getMensagemForecast(ganhos: number, m1: number, m2: number, m3: number, mg1: number, mg2: number, mg3: number) {
-  if (mg3 > 0 && ganhos >= mg3) return { texto: 'Você bateu a Mega Meta 3! 🚀🏆', nivel: 6 };
-  if (mg2 > 0 && ganhos >= mg2) return { texto: 'Você está no forecast da Mega Meta 3 🚀', nivel: 5 };
-  if (mg1 > 0 && ganhos >= mg1) return { texto: 'Você está no forecast da Mega Meta 2 🚀', nivel: 4 };
-  if (m3 > 0 && ganhos >= m3) return { texto: mg1 > 0 ? 'Você está no forecast da Mega Meta 1 🚀' : 'Você bateu a Meta 3! 🏆', nivel: 3 };
-  if (m2 > 0 && ganhos >= m2) return { texto: 'Você está no forecast da Meta 3', nivel: 2 };
-  if (m1 > 0 && ganhos >= m1) return { texto: 'Você está no forecast da Meta 2', nivel: 1 };
-  return { texto: 'Você está no forecast da Meta 1', nivel: 0 };
+/** Estado do progresso em relação às metas, em ordem crescente: pra cada uma,
+ *  diz se já chegou nela, se tá perto da próxima (80%+ do caminho) ou segue no forecast normal. */
+function getMensagemStatus(ganhos: number, metas: { label: string; value: number }[]) {
+  const validas = metas.filter((m) => m.value > 0);
+  if (validas.length === 0) return { texto: 'Configure suas metas pra acompanhar o progresso', nivel: 0 };
+
+  let alcancada: { label: string; value: number } | null = null;
+  let proxima: { label: string; value: number } | null = null;
+  for (const m of validas) {
+    if (ganhos >= m.value) alcancada = m;
+    else { proxima = m; break; }
+  }
+
+  if (!proxima) return { texto: `Você bateu a ${alcancada!.label}! Parabéns! 🏆🚀`, nivel: 3 };
+
+  const progresso = ganhos / proxima.value;
+  if (alcancada && progresso < 0.8) return { texto: `Você chegou à ${alcancada.label}, parabéns! 🎉`, nivel: 2 };
+  if (progresso >= 0.8) return { texto: `Você está perto da ${proxima.label}!`, nivel: 1 };
+  return { texto: `Você está no forecast da ${proxima.label}`, nivel: 0 };
 }
 
 function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose }: {
@@ -289,7 +300,10 @@ function PersonalMetaView() {
   const diasUteisTotal = apiData?.diasUteisTotal ?? 22;
   const metaReferencia = meta3 || meta2 || meta1;
   const status   = getStatus(totalGanhos, meta1, diasPassados, diasUteisTotal);
-  const forecast = getMensagemForecast(totalGanhos, meta1, meta2, meta3, mega1, mega2, mega3);
+  const forecast = getMensagemStatus(totalGanhos, [
+    { label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 },
+    { label: 'Mega Meta 1', value: mega1 }, { label: 'Mega Meta 2', value: mega2 }, { label: 'Mega Meta 3', value: mega3 },
+  ]);
   // Projeção só faz sentido com dados reais do Pipedrive
   const projecao = apiData && diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * diasUteisTotal) : 0;
   const porDia   = (m: number) => diasRestantes > 0 ? Math.ceil(Math.max(0, m - totalGanhos) / diasRestantes) : 0;
@@ -366,9 +380,33 @@ function PersonalMetaView() {
               {forecast.texto}
             </p>
             {metaReferencia > 0 && (
-              <div className="mt-3">
-                <div className="w-full h-1.5 bg-cw-border rounded-full overflow-hidden">
-                  <div className="h-full bg-cw-purple rounded-full transition-all duration-700" style={{ width: `${pctBarra}%` }} />
+              <div className="mt-4">
+                <div className="relative w-full h-1.5 bg-cw-border rounded-full">
+                  <div className="absolute inset-y-0 left-0 bg-cw-purple rounded-full transition-all duration-700" style={{ width: `${pctBarra}%` }} />
+                  {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }].map(({ label, value }) => {
+                    if (!(value > 0 && value < maxMeta)) return null;
+                    const left = (value / maxMeta) * 100;
+                    const atingida = totalGanhos >= value;
+                    return (
+                      <div key={label} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2" style={{ left: `${left}%` }}
+                        title={atingida ? `Você chegou à ${label}!` : `Você deveria estar aqui pra bater a ${label}`}>
+                        <div className={cn('w-0.5 h-3.5 rounded-full', atingida ? 'bg-green-500' : 'bg-cw-text/40')} />
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="relative h-3.5 mt-1">
+                  {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }].map(({ label, value }) => {
+                    if (!(value > 0 && value < maxMeta)) return null;
+                    const left = (value / maxMeta) * 100;
+                    const atingida = totalGanhos >= value;
+                    return (
+                      <span key={label} className={cn('absolute -translate-x-1/2 text-[9px] font-bold whitespace-nowrap',
+                        atingida ? 'text-green-600' : 'text-cw-muted')} style={{ left: `${left}%` }}>
+                        {label}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
