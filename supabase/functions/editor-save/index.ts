@@ -30,6 +30,7 @@ const LIDER_SETOR: Record<string, Setor> = {
   "pedro.ferreira@cardapioweb.com": "sdr",
   "joelma.vieira@cardapioweb.com": "sdr",
   "antonio.anderson@cardapioweb.com": "sdr",
+  "vithoria.pinheiro@cardapioweb.com": "sdr",
   "whenna.oliveira@cardapioweb.com": "closer",
   "hyorranes.souza@cardapioweb.com": "representante",
   "beatriz.magalhaes@cardapioweb.com": "parcerias",
