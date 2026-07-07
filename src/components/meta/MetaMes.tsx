@@ -383,9 +383,9 @@ function PersonalMetaView() {
               <div className="mt-4">
                 <div className="relative w-full h-1.5 bg-cw-border rounded-full">
                   <div className="absolute inset-y-0 left-0 bg-cw-purple rounded-full transition-all duration-700" style={{ width: `${pctBarra}%` }} />
-                  {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }].map(({ label, value }) => {
-                    if (!(value > 0 && value < maxMeta)) return null;
-                    const left = (value / maxMeta) * 100;
+                  {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 }].map(({ label, value }) => {
+                    if (!(value > 0)) return null;
+                    const left = Math.min((value / maxMeta) * 100, 99);
                     const atingida = totalGanhos >= value;
                     return (
                       <div key={label} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2" style={{ left: `${left}%` }}
@@ -396,9 +396,9 @@ function PersonalMetaView() {
                   })}
                 </div>
                 <div className="relative h-3.5 mt-1">
-                  {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }].map(({ label, value }) => {
-                    if (!(value > 0 && value < maxMeta)) return null;
-                    const left = (value / maxMeta) * 100;
+                  {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 }].map(({ label, value }) => {
+                    if (!(value > 0)) return null;
+                    const left = Math.min((value / maxMeta) * 100, 99);
                     const atingida = totalGanhos >= value;
                     return (
                       <span key={label} className={cn('absolute -translate-x-1/2 text-[9px] font-bold whitespace-nowrap',
