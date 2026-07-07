@@ -310,6 +310,10 @@ function PersonalMetaView() {
   const falta    = (m: number) => Math.max(0, m - totalGanhos);
   const maxMeta  = meta3 || meta2 || meta1 || 1;
   const pctBarra = Math.min(100, (totalGanhos / maxMeta) * 100);
+  // Onde você deveria estar HOJE se estivesse no ritmo certo pra bater a meta de referência.
+  const ritmoHojeValor = apiData && diasPassados > 0 ? (diasPassados / diasUteisTotal) * maxMeta : 0;
+  const ritmoHojePct   = Math.min(ritmoHojeValor / maxMeta * 100, 99);
+  const noRitmoHoje     = totalGanhos >= ritmoHojeValor;
 
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
   const nomeSDR = SDRS_ATIVOS[metaData.sdrId] || '';
@@ -394,6 +398,12 @@ function PersonalMetaView() {
                       </div>
                     );
                   })}
+                  {ritmoHojeValor > 0 && (
+                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10" style={{ left: `${ritmoHojePct}%` }}
+                      title={noRitmoHoje ? 'Você está no ritmo hoje!' : 'Você deveria estar aqui hoje pra manter o ritmo'}>
+                      <div className={cn('w-1 h-5 rounded-full ring-2 ring-white', noRitmoHoje ? 'bg-blue-500' : 'bg-amber-500')} />
+                    </div>
+                  )}
                 </div>
                 <div className="relative h-3.5 mt-1">
                   {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 }].map(({ label, value }) => {
@@ -407,6 +417,21 @@ function PersonalMetaView() {
                       </span>
                     );
                   })}
+                  {ritmoHojeValor > 0 && (
+                    <span className={cn('absolute -translate-x-1/2 text-[9px] font-bold whitespace-nowrap',
+                      noRitmoHoje ? 'text-blue-600' : 'text-amber-600')} style={{ left: `${ritmoHojePct}%` }}>
+                      Hoje
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-[10px] text-cw-muted">
+                  <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-cw-text/40 shrink-0" /> Você deveria estar aqui pra bater cada meta</span>
+                  {ritmoHojeValor > 0 && (
+                    <span className="flex items-center gap-1">
+                      <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', noRitmoHoje ? 'bg-blue-500' : 'bg-amber-500')} />
+                      {noRitmoHoje ? 'Você está no ritmo hoje!' : 'Você deveria estar aqui hoje pra manter o ritmo'}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
