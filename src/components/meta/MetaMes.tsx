@@ -185,9 +185,24 @@ function PersonalMetaView() {
   const [config, setConfig]       = useState(false);
   const [userId, setUserId]       = useState('');
   const [mes, setMes]             = useState('');
-  // Conversão varia por tier: Meta 1/2 converte mais fácil que Meta 3 (e Mega Metas).
+  // Conversão varia por tier de carreira: Meta 1/2 converte mais fácil que Meta 3.
+  // Cada SDR ativa o próprio tier (salvo por pessoa) pra ver a conversão que se aplica a ele.
   const [convTier12, setConvTier12] = useState(62);
   const [convTier3, setConvTier3]   = useState(48);
+  const [meuTier, setMeuTier]       = useState<'1-2' | '3'>('1-2');
+
+  useEffect(() => {
+    if (!userId) return;
+    try {
+      const salvo = localStorage.getItem(`cw-sdr-tier:${userId}`);
+      if (salvo === '1-2' || salvo === '3') setMeuTier(salvo);
+    } catch { /* ignore */ }
+  }, [userId]);
+
+  const selecionarTier = (t: '1-2' | '3') => {
+    setMeuTier(t);
+    try { localStorage.setItem(`cw-sdr-tier:${userId}`, t); } catch { /* ignore */ }
+  };
   const [autoNome, setAutoNome]   = useState('');
   const [pipedriveUsers, setPipedriveUsers] = useState<{ id: string; name: string }[]>([]);
   const [ajusteModal, setAjusteModal] = useState<'add' | 'sub' | null>(null);
@@ -407,7 +422,7 @@ function PersonalMetaView() {
                     </div>
                   )}
                 </div>
-                <div className="relative h-3.5 mt-1">
+                <div className="relative h-7 mt-1">
                   {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 }].map(({ label, value }) => {
                     if (!(value > 0)) return null;
                     const left = Math.min((value / maxMeta) * 100, 99);
@@ -420,10 +435,14 @@ function PersonalMetaView() {
                     );
                   })}
                   {ritmoHojeValor > 0 && (
-                    <span className={cn('absolute -translate-x-1/2 text-[9px] font-bold whitespace-nowrap',
-                      noRitmoHoje ? 'text-blue-600' : 'text-amber-600')} style={{ left: `${ritmoHojePct}%` }}>
-                      Hoje
-                    </span>
+                    <div className="absolute -translate-x-1/2 flex flex-col items-center" style={{ left: `${ritmoHojePct}%` }}>
+                      <span className={cn('text-xs font-black leading-none', noRitmoHoje ? 'text-blue-600' : 'text-amber-600')}>
+                        {Math.round(ritmoHojeValor)}
+                      </span>
+                      <span className={cn('text-[9px] font-bold whitespace-nowrap', noRitmoHoje ? 'text-blue-600' : 'text-amber-600')}>
+                        Hoje
+                      </span>
+                    </div>
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-[10px] text-cw-muted">
@@ -575,18 +594,26 @@ function PersonalMetaView() {
                 <p className="text-xs text-cw-muted">{diasRestantes} dias restantes</p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 flex-wrap justify-end">
-              <div className="flex items-center gap-1.5 bg-cw-elevated border border-cw-border rounded-xl px-2.5 py-1.5">
-                <span className="text-[9px] font-bold text-cw-muted uppercase tracking-wide">T1/2</span>
-                <button onClick={() => setConvTier12(c => Math.max(10, c - 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">−</button>
-                <span className="text-xs font-bold text-cw-purple w-11 text-center">{convTier12}% conv.</span>
-                <button onClick={() => setConvTier12(c => Math.min(100, c + 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">+</button>
+            <div className="flex flex-col items-end gap-1.5">
+              {/* Cada SDR ativa o próprio tier pra ver a conversão que se aplica a ele */}
+              <div className="flex items-center gap-1 bg-cw-elevated border border-cw-border rounded-xl p-1">
+                <button onClick={() => selecionarTier('1-2')}
+                  className={cn('px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all',
+                    meuTier === '1-2' ? 'bg-cw-purple text-white' : 'text-cw-muted hover:text-cw-text')}>
+                  Tier 1/2
+                </button>
+                <button onClick={() => selecionarTier('3')}
+                  className={cn('px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all',
+                    meuTier === '3' ? 'bg-amber-500 text-white' : 'text-cw-muted hover:text-cw-text')}>
+                  Tier 3
+                </button>
               </div>
               <div className="flex items-center gap-1.5 bg-cw-elevated border border-cw-border rounded-xl px-2.5 py-1.5">
-                <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wide">T3</span>
-                <button onClick={() => setConvTier3(c => Math.max(10, c - 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">−</button>
-                <span className="text-xs font-bold text-cw-purple w-11 text-center">{convTier3}% conv.</span>
-                <button onClick={() => setConvTier3(c => Math.min(100, c + 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">+</button>
+                <button onClick={() => meuTier === '3' ? setConvTier3(c => Math.max(10, c - 5)) : setConvTier12(c => Math.max(10, c - 5))}
+                  className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">−</button>
+                <span className="text-xs font-bold text-cw-purple w-16 text-center">{meuTier === '3' ? convTier3 : convTier12}% conv.</span>
+                <button onClick={() => meuTier === '3' ? setConvTier3(c => Math.min(100, c + 5)) : setConvTier12(c => Math.min(100, c + 5))}
+                  className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">+</button>
               </div>
             </div>
           </div>
@@ -601,9 +628,7 @@ function PersonalMetaView() {
               { label: 'Mega Meta 3', value: mega3, star: false, mega: true },
             ].map(({ label, value, star, mega }) => {
               if (!value) return null;
-              // Tier 1/2 (Meta 1 e 2) converte mais fácil que tier 3 (Meta 3 em diante).
-              const ehTier3 = label !== 'Meta 1' && label !== 'Meta 2';
-              const convAtual = ehTier3 ? convTier3 : convTier12;
+              const convAtual = meuTier === '3' ? convTier3 : convTier12;
               const fechDia = diasRestantes > 0 ? Math.ceil(Math.max(0, value - totalGanhos) / diasRestantes) : 0;
               const agendDia = convAtual > 0 ? Math.ceil(fechDia / (convAtual / 100)) : 0;
               const batida = totalGanhos >= value;
