@@ -489,7 +489,7 @@ function PersonalMetaView() {
       )}
 
 
-      {/* Seção inferior — Ritmo Diário + Insights */}
+      {/* Seção inferior — Ritmo Diário + Leads Perdidos (centralizados, sem precisar rolar) */}
       <div className="grid grid-cols-2 gap-4">
 
         {/* Ritmo Diário por Meta */}
@@ -558,164 +558,172 @@ function PersonalMetaView() {
           </div>
         </div>
 
-        {/* Insights Rápidos */}
-        <div className="cw-card p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-400/10 flex items-center justify-center">
-              <Lightbulb className="h-4 w-4 text-amber-400" />
+        {/* Leads Perdidos */}
+        {metaData.sdrId && (
+          <div className="cw-card p-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                <XCircle className="h-4 w-4 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-cw-text">Leads Perdidos</h3>
+                <p className="text-xs text-cw-muted">
+                  {perdas ? `${perdas.total} negócio${perdas.total !== 1 ? 's' : ''} perdido${perdas.total !== 1 ? 's' : ''} este mês` : 'Carregando...'}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-base font-black text-cw-text">Insights Rápidos</h3>
-              <p className="text-xs text-cw-muted">Análise do seu desempenho</p>
-            </div>
+
+            {!perdas ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map(i => <div key={i} className="h-10 rounded-xl cw-shimmer" />)}
+              </div>
+            ) : perdas.total === 0 ? (
+              <div className="flex flex-col items-center gap-2 py-6 text-center">
+                <Check className="h-8 w-8 text-emerald-400" />
+                <p className="text-sm font-semibold text-cw-text">Nenhuma perda registrada este mês!</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                {perdas.leads.map((lead, i) => (
+                  <div key={i} className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl border border-cw-border bg-cw-elevated">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-cw-text truncate">{lead.titulo}</p>
+                      {(lead.nome || lead.telefone) && (
+                        <p className="text-[11px] text-cw-purple font-medium truncate">
+                          {lead.nome || 'Contato'}{lead.telefone ? ` - ${lead.telefone}` : ''}
+                        </p>
+                      )}
+                      <p className="text-[11px] text-cw-muted truncate">{lead.motivo}</p>
+                    </div>
+                    <span className="text-[11px] text-cw-muted shrink-0">
+                      {new Date(lead.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-
-          <div className="space-y-3">
-            {(() => {
-              // Insights só fazem sentido com dados reais do Pipedrive (diasPassados > 0)
-              if (!apiData || diasPassados === 0) {
-                return (
-                  <div className="flex items-center justify-center py-8 text-cw-muted text-sm">
-                    Configure seu perfil para ver os insights.
-                  </div>
-                );
-              }
-
-              const mediaFechDia = totalGanhos / diasPassados;
-              const ritmoNecessarioM1 = diasUteisTotal > 0 && meta1 > 0 ? meta1 / diasUteisTotal : 0;
-              const pctRitmo = ritmoNecessarioM1 > 0 ? ((mediaFechDia - ritmoNecessarioM1) / ritmoNecessarioM1) * 100 : 0;
-              const projecaoFinal = Math.round(mediaFechDia * diasUteisTotal);
-
-              const insights: { icon: React.ReactNode; texto: string; sub: string; cor: string }[] = [];
-
-              if (meta1 > 0 && diasPassados > 0) {
-                if (pctRitmo < 0) {
-                  insights.push({
-                    icon: <AlertTriangle className="h-4 w-4" />,
-                    texto: `${Math.abs(Math.round(pctRitmo))}% abaixo do ritmo necessário da Meta 1`,
-                    sub: 'Acelere o ritmo!',
-                    cor: 'text-red-500 bg-red-50 border-red-200',
-                  });
-                } else {
-                  insights.push({
-                    icon: <TrendingUp className="h-4 w-4" />,
-                    texto: `${Math.round(pctRitmo)}% acima do ritmo necessário da Meta 1`,
-                    sub: 'Continue assim!',
-                    cor: 'text-green-600 bg-green-50 border-green-200',
-                  });
-                }
-              }
-
-              if (diasPassados > 0) {
-                insights.push({
-                  icon: <Zap className="h-4 w-4" />,
-                  texto: `Média de ${mediaFechDia.toFixed(1)} fechamentos por dia`,
-                  sub: 'Continue registrando seus ganhos',
-                  cor: 'text-cw-purple bg-cw-purple/5 border-cw-purple/20',
-                });
-              }
-
-              if (projecaoFinal > 0 && meta3 > 0 && projecaoFinal >= meta3) {
-                insights.push({
-                  icon: <Star className="h-4 w-4" />,
-                  texto: 'Projeção aponta para Meta 3',
-                  sub: `Projeção final: ${projecaoFinal} fechamentos`,
-                  cor: 'text-amber-600 bg-amber-50 border-amber-200',
-                });
-              } else if (projecaoFinal > 0 && meta2 > 0 && projecaoFinal >= meta2) {
-                insights.push({
-                  icon: <Star className="h-4 w-4" />,
-                  texto: 'Projeção aponta para Meta 2',
-                  sub: `Projeção final: ${projecaoFinal} fechamentos`,
-                  cor: 'text-amber-600 bg-amber-50 border-amber-200',
-                });
-              } else if (projecaoFinal > 0 && meta1 > 0) {
-                insights.push({
-                  icon: <Star className="h-4 w-4" />,
-                  texto: `Projeção final: ${projecaoFinal} fechamentos`,
-                  sub: meta1 > 0 ? `Faltam ${Math.max(0, meta1 - projecaoFinal)} para fechar Meta 1` : '',
-                  cor: 'text-cw-muted bg-cw-elevated border-cw-border',
-                });
-              }
-
-              if (meta3 > 0 && totalGanhos >= meta3) {
-                insights.push({
-                  icon: <Star className="h-4 w-4" />,
-                  texto: 'Meta 3 batida!',
-                  sub: 'Performance excepcional este mês',
-                  cor: 'text-amber-600 bg-amber-50 border-amber-200',
-                });
-              }
-
-              if (insights.length === 0) {
-                return (
-                  <div className="flex items-center justify-center py-8 text-cw-muted text-sm">
-                    Configure suas metas para ver os insights.
-                  </div>
-                );
-              }
-
-              return insights.map((ins, i) => (
-                <div key={i} className={cn('flex items-start gap-3 px-4 py-3 rounded-xl border', ins.cor)}>
-                  <span className="shrink-0 mt-0.5">{ins.icon}</span>
-                  <div>
-                    <p className="text-sm font-semibold leading-snug">{ins.texto}</p>
-                    {ins.sub && <p className="text-xs opacity-70 mt-0.5">{ins.sub}</p>}
-                  </div>
-                </div>
-              ));
-            })()}
-          </div>
-        </div>
+        )}
 
       </div>
 
-      {/* Leads Perdidos */}
-      {metaData.sdrId && (
-        <div className="cw-card p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
-              <XCircle className="h-4 w-4 text-red-400" />
-            </div>
+      {/* Insights Rápidos */}
+      <div className="cw-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-amber-400/10 flex items-center justify-center">
+            <Lightbulb className="h-4 w-4 text-amber-400" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-cw-text">Insights Rápidos</h3>
+            <p className="text-xs text-cw-muted">Análise do seu desempenho</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {/* Como funciona a aba — sempre visível, independente de ter dados */}
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl border text-cw-purple bg-cw-purple/5 border-cw-purple/20">
+            <RefreshCw className="h-4 w-4 shrink-0 mt-0.5" />
             <div>
-              <h3 className="text-base font-black text-cw-text">Leads Perdidos</h3>
-              <p className="text-xs text-cw-muted">
-                {perdas ? `${perdas.total} negócio${perdas.total !== 1 ? 's' : ''} perdido${perdas.total !== 1 ? 's' : ''} este mês` : 'Carregando...'}
-              </p>
+              <p className="text-sm font-semibold leading-snug">Essa aba é conectada ao Pipedrive</p>
+              <p className="text-xs opacity-70 mt-0.5">Os ganhos são atualizados em tempo real. Se algum ganho não aparecer, favor sinalizar a Gabi.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl border text-red-500 bg-red-50 border-red-200">
+            <XCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold leading-snug">O que é o card de Leads Perdidos</p>
+              <p className="text-xs opacity-70 mt-0.5">Mostra os leads perdidos pelo closer após irem para a reunião e, por algum motivo, não fecharem — com nome, número e motivo da perda. Use pra fazer follow-up e tentar reativar esses leads.</p>
             </div>
           </div>
 
-          {!perdas ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map(i => <div key={i} className="h-10 rounded-xl cw-shimmer" />)}
-            </div>
-          ) : perdas.total === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-6 text-center">
-              <Check className="h-8 w-8 text-emerald-400" />
-              <p className="text-sm font-semibold text-cw-text">Nenhuma perda registrada este mês!</p>
-            </div>
-          ) : (
-            <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-              {perdas.leads.map((lead, i) => (
-                <div key={i} className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl border border-cw-border bg-cw-elevated">
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-cw-text truncate">{lead.titulo}</p>
-                    {(lead.nome || lead.telefone) && (
-                      <p className="text-[11px] text-cw-purple font-medium truncate">
-                        {lead.nome || 'Contato'}{lead.telefone ? ` - ${lead.telefone}` : ''}
-                      </p>
-                    )}
-                    <p className="text-[11px] text-cw-muted truncate">{lead.motivo}</p>
-                  </div>
-                  <span className="text-[11px] text-cw-muted shrink-0">
-                    {new Date(lead.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                  </span>
+          {(() => {
+            // Insights só fazem sentido com dados reais do Pipedrive (diasPassados > 0)
+            if (!apiData || diasPassados === 0) {
+              return (
+                <div className="flex items-center justify-center py-8 text-cw-muted text-sm">
+                  Configure seu perfil para ver os insights.
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            }
+
+            const mediaFechDia = totalGanhos / diasPassados;
+            const ritmoNecessarioM1 = diasUteisTotal > 0 && meta1 > 0 ? meta1 / diasUteisTotal : 0;
+            const pctRitmo = ritmoNecessarioM1 > 0 ? ((mediaFechDia - ritmoNecessarioM1) / ritmoNecessarioM1) * 100 : 0;
+            const projecaoFinal = Math.round(mediaFechDia * diasUteisTotal);
+
+            const insights: { icon: React.ReactNode; texto: string; sub: string; cor: string }[] = [];
+
+            if (meta1 > 0 && diasPassados > 0) {
+              if (pctRitmo < 0) {
+                insights.push({
+                  icon: <AlertTriangle className="h-4 w-4" />,
+                  texto: `${Math.abs(Math.round(pctRitmo))}% abaixo do ritmo necessário da Meta 1`,
+                  sub: 'Acelere o ritmo!',
+                  cor: 'text-red-500 bg-red-50 border-red-200',
+                });
+              } else {
+                insights.push({
+                  icon: <TrendingUp className="h-4 w-4" />,
+                  texto: `${Math.round(pctRitmo)}% acima do ritmo necessário da Meta 1`,
+                  sub: 'Continue assim!',
+                  cor: 'text-green-600 bg-green-50 border-green-200',
+                });
+              }
+            }
+
+            if (diasPassados > 0) {
+              insights.push({
+                icon: <Zap className="h-4 w-4" />,
+                texto: `Média de ${mediaFechDia.toFixed(1)} fechamentos por dia`,
+                sub: 'Continue registrando seus ganhos',
+                cor: 'text-cw-purple bg-cw-purple/5 border-cw-purple/20',
+              });
+            }
+
+            if (projecaoFinal > 0 && meta3 > 0 && projecaoFinal >= meta3) {
+              insights.push({
+                icon: <Star className="h-4 w-4" />,
+                texto: 'Projeção aponta para Meta 3',
+                sub: `Projeção final: ${projecaoFinal} fechamentos`,
+                cor: 'text-amber-600 bg-amber-50 border-amber-200',
+              });
+            } else if (projecaoFinal > 0 && meta2 > 0 && projecaoFinal >= meta2) {
+              insights.push({
+                icon: <Star className="h-4 w-4" />,
+                texto: 'Projeção aponta para Meta 2',
+                sub: `Projeção final: ${projecaoFinal} fechamentos`,
+                cor: 'text-amber-600 bg-amber-50 border-amber-200',
+              });
+            } else if (projecaoFinal > 0 && meta1 > 0) {
+              insights.push({
+                icon: <Star className="h-4 w-4" />,
+                texto: `Projeção final: ${projecaoFinal} fechamentos`,
+                sub: meta1 > 0 ? `Faltam ${Math.max(0, meta1 - projecaoFinal)} para fechar Meta 1` : '',
+                cor: 'text-cw-muted bg-cw-elevated border-cw-border',
+              });
+            }
+
+            if (meta3 > 0 && totalGanhos >= meta3) {
+              insights.push({
+                icon: <Star className="h-4 w-4" />,
+                texto: 'Meta 3 batida!',
+                sub: 'Performance excepcional este mês',
+                cor: 'text-amber-600 bg-amber-50 border-amber-200',
+              });
+            }
+
+            return insights.map((ins, i) => (
+              <div key={i} className={cn('flex items-start gap-3 px-4 py-3 rounded-xl border', ins.cor)}>
+                <span className="shrink-0 mt-0.5">{ins.icon}</span>
+                <div>
+                  <p className="text-sm font-semibold leading-snug">{ins.texto}</p>
+                  {ins.sub && <p className="text-xs opacity-70 mt-0.5">{ins.sub}</p>}
+                </div>
+              </div>
+            ));
+          })()}
         </div>
-      )}
+      </div>
     </div>
   );
 }
