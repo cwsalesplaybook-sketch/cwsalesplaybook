@@ -18,8 +18,14 @@ export default async function handler(req, res) {
   const iniciaMes = `${ano}-${mes}-01`;
 
   const motivos = {};
+  const leads = [];
   let total = 0;
   let start = 0;
+
+  const isNoShow = (motivo) => {
+    const n = motivo.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    return n.includes('no show') || n.includes('no-show');
+  };
 
   try {
     while (true) {
@@ -40,8 +46,11 @@ export default async function handler(req, res) {
         if (id !== String(sdrId)) continue;
 
         const motivo = deal.lost_reason?.trim() || 'Sem motivo registrado';
+        if (isNoShow(motivo)) continue; // SDR não vê perdas por "No show"
+
         motivos[motivo] = (motivos[motivo] || 0) + 1;
         total++;
+        leads.push({ titulo: deal.title || 'Sem título', motivo, data: lt.slice(0, 10) });
       }
 
       if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
@@ -56,7 +65,9 @@ export default async function handler(req, res) {
       }))
       .sort((a, b) => b.count - a.count);
 
-    res.status(200).json({ ok: true, total, motivos: lista, mes: prefixo });
+    leads.sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : 0));
+
+    res.status(200).json({ ok: true, total, motivos: lista, leads, mes: prefixo });
   } catch (e) {
     res.status(500).json({ ok: false, erro: String(e) });
   }

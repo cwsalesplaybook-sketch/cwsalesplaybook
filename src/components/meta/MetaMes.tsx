@@ -208,7 +208,7 @@ function PersonalMetaView() {
   const [ajusteModal, setAjusteModal] = useState<'add' | 'sub' | null>(null);
   const [ajusteQtd, setAjusteQtd]   = useState('1');
   const [ajusteMot, setAjusteMot]   = useState('');
-  const [perdas, setPerdas] = useState<{ total: number; motivos: { motivo: string; count: number; pct: number }[] } | null>(null);
+  const [perdas, setPerdas] = useState<{ total: number; leads: { titulo: string; motivo: string; data: string }[] } | null>(null);
 
   const carregarPerfil = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -775,7 +775,7 @@ function PersonalMetaView() {
 
       </div>
 
-      {/* Motivos de Perda */}
+      {/* Leads Perdidos */}
       {metaData.sdrId && (
         <div className="cw-card p-6 space-y-4">
           <div className="flex items-center gap-2">
@@ -783,7 +783,7 @@ function PersonalMetaView() {
               <XCircle className="h-4 w-4 text-red-400" />
             </div>
             <div>
-              <h3 className="text-base font-black text-cw-text">Motivos de Perda</h3>
+              <h3 className="text-base font-black text-cw-text">Leads Perdidos</h3>
               <p className="text-xs text-cw-muted">
                 {perdas ? `${perdas.total} negócio${perdas.total !== 1 ? 's' : ''} perdido${perdas.total !== 1 ? 's' : ''} este mês` : 'Carregando...'}
               </p>
@@ -801,31 +801,17 @@ function PersonalMetaView() {
             </div>
           ) : (
             <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-              {perdas.motivos.map(({ motivo, count, pct }) => {
-                const isNoShow = motivo.toLowerCase().includes('no-show') || motivo.toLowerCase().includes('no show');
-                const preocupante = isNoShow && pct >= 30;
-                return (
-                <div key={motivo} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="flex items-center gap-1.5 text-cw-text font-medium truncate pr-2">
-                      {motivo}
-                      {preocupante && (
-                        <span className="shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded-full bg-red-100 text-red-500 border border-red-200 uppercase tracking-wide">
-                          Preocupante
-                        </span>
-                      )}
-                    </span>
-                    <span className="text-cw-muted shrink-0">{count} - {pct}%</span>
+              {perdas.leads.map((lead, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl border border-cw-border bg-cw-elevated">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-cw-text truncate">{lead.titulo}</p>
+                    <p className="text-[11px] text-cw-muted truncate">{lead.motivo}</p>
                   </div>
-                  <div className="h-1.5 rounded-full bg-cw-elevated overflow-hidden">
-                    <div
-                      className={cn('h-full rounded-full transition-all duration-500', preocupante ? 'bg-red-500' : 'bg-red-400/70')}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
+                  <span className="text-[11px] text-cw-muted shrink-0">
+                    {new Date(lead.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                  </span>
                 </div>
-              );
-            })}
+              ))}
             </div>
           )}
         </div>
