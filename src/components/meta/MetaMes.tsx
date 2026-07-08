@@ -218,7 +218,9 @@ function PersonalMetaView() {
   useEffect(() => {
     const el = ritmoCardRef.current;
     if (!el) return;
-    const observer = new ResizeObserver(([entry]) => setRitmoHeight(entry.contentRect.height));
+    // getBoundingClientRect (não o contentRect do ResizeObserver, que exclui padding/borda)
+    // pra bater com a altura total do card, já que aplicamos em `height` (border-box).
+    const observer = new ResizeObserver(() => setRitmoHeight(el.getBoundingClientRect().height));
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -746,7 +748,7 @@ function PersonalMetaView() {
           </div>
           <div>
             <h3 className="text-base font-black text-cw-text">Insights Rápidos</h3>
-            <p className="text-xs text-cw-muted">Análise do seu desempenho</p>
+            <p className="text-xs text-cw-muted">Informações importantes</p>
           </div>
         </div>
 
