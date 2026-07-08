@@ -649,7 +649,6 @@ function PersonalMetaView() {
             const mediaFechDia = totalGanhos / diasPassados;
             const ritmoNecessarioM1 = diasUteisTotal > 0 && meta1 > 0 ? meta1 / diasUteisTotal : 0;
             const pctRitmo = ritmoNecessarioM1 > 0 ? ((mediaFechDia - ritmoNecessarioM1) / ritmoNecessarioM1) * 100 : 0;
-            const projecaoFinal = Math.round(mediaFechDia * diasUteisTotal);
 
             const insights: { icon: React.ReactNode; texto: string; sub: string; cor: string }[] = [];
 
@@ -669,38 +668,6 @@ function PersonalMetaView() {
                   cor: 'text-green-600 bg-green-50 border-green-200',
                 });
               }
-            }
-
-            if (diasPassados > 0) {
-              insights.push({
-                icon: <Zap className="h-4 w-4" />,
-                texto: `Média de ${mediaFechDia.toFixed(1)} fechamentos por dia`,
-                sub: 'Continue registrando seus ganhos',
-                cor: 'text-cw-purple bg-cw-purple/5 border-cw-purple/20',
-              });
-            }
-
-            if (projecaoFinal > 0 && meta3 > 0 && projecaoFinal >= meta3) {
-              insights.push({
-                icon: <Star className="h-4 w-4" />,
-                texto: 'Projeção aponta para Meta 3',
-                sub: `Projeção final: ${projecaoFinal} fechamentos`,
-                cor: 'text-amber-600 bg-amber-50 border-amber-200',
-              });
-            } else if (projecaoFinal > 0 && meta2 > 0 && projecaoFinal >= meta2) {
-              insights.push({
-                icon: <Star className="h-4 w-4" />,
-                texto: 'Projeção aponta para Meta 2',
-                sub: `Projeção final: ${projecaoFinal} fechamentos`,
-                cor: 'text-amber-600 bg-amber-50 border-amber-200',
-              });
-            } else if (projecaoFinal > 0 && meta1 > 0) {
-              insights.push({
-                icon: <Star className="h-4 w-4" />,
-                texto: `Projeção final: ${projecaoFinal} fechamentos`,
-                sub: meta1 > 0 ? `Faltam ${Math.max(0, meta1 - projecaoFinal)} para fechar Meta 1` : '',
-                cor: 'text-cw-muted bg-cw-elevated border-cw-border',
-              });
             }
 
             if (meta3 > 0 && totalGanhos >= meta3) {
