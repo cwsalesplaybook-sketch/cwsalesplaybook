@@ -1,6 +1,6 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useState, useCallback } from 'react';
-import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, AlertTriangle, Star, Rocket, XCircle, User, Users } from 'lucide-react';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, XCircle, User, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
@@ -294,6 +294,10 @@ function PersonalMetaView() {
   const falta    = (m: number) => Math.max(0, m - totalGanhos);
   const maxMeta  = meta3 || meta2 || meta1 || 1;
   const pctBarra = Math.min(100, (totalGanhos / maxMeta) * 100);
+  // Ritmo de fechamentos vs. o necessário pra bater a Meta 1 — mostrado dentro do mini-bloco da Meta 1
+  const temRitmoM1 = !!apiData && diasPassados > 0 && meta1 > 0;
+  const ritmoNecessarioM1 = diasUteisTotal > 0 && meta1 > 0 ? meta1 / diasUteisTotal : 0;
+  const pctRitmoM1 = temRitmoM1 && ritmoNecessarioM1 > 0 ? (((totalGanhos / diasPassados) - ritmoNecessarioM1) / ritmoNecessarioM1) * 100 : 0;
 
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
   const nomeSDR = SDRS_ATIVOS[metaData.sdrId] || '';
@@ -534,6 +538,13 @@ function PersonalMetaView() {
                       {label}{star && ' ★'}{mega && ' 🚀'}
                     </p>
                     <p className="text-[11px] text-cw-muted">{value} fechamentos</p>
+                    {label === 'Meta 1' && temRitmoM1 && (
+                      <p className={cn('text-[10px] font-semibold mt-0.5', pctRitmoM1 < 0 ? 'text-red-500' : 'text-green-600')}>
+                        {pctRitmoM1 < 0
+                          ? `${Math.abs(Math.round(pctRitmoM1))}% abaixo do ritmo necessário`
+                          : `${Math.round(pctRitmoM1)}% acima do ritmo necessário`}
+                      </p>
+                    )}
                   </div>
                   {batida ? (
                     <div className="flex items-center gap-1 text-green-600 text-xs font-bold">
@@ -560,7 +571,7 @@ function PersonalMetaView() {
 
         {/* Leads Perdidos */}
         {metaData.sdrId && (
-          <div className="cw-card p-6 space-y-4">
+          <div className="cw-card p-6 space-y-4 h-full flex flex-col">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
                 <XCircle className="h-4 w-4 text-red-400" />
@@ -578,12 +589,12 @@ function PersonalMetaView() {
                 {[1, 2, 3].map(i => <div key={i} className="h-10 rounded-xl cw-shimmer" />)}
               </div>
             ) : perdas.total === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-6 text-center">
+              <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center">
                 <Check className="h-8 w-8 text-emerald-400" />
                 <p className="text-sm font-semibold text-cw-text">Nenhuma perda registrada este mês!</p>
               </div>
             ) : (
-              <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+              <div className="flex-1 min-h-0 space-y-2 overflow-y-auto pr-1">
                 {perdas.leads.map((lead, i) => (
                   <div key={i} className="flex items-start justify-between gap-3 px-3 py-2.5 rounded-xl border border-cw-border bg-white shadow-sm">
                     <div className="min-w-0">
@@ -638,29 +649,7 @@ function PersonalMetaView() {
               );
             }
 
-            const mediaFechDia = totalGanhos / diasPassados;
-            const ritmoNecessarioM1 = diasUteisTotal > 0 && meta1 > 0 ? meta1 / diasUteisTotal : 0;
-            const pctRitmo = ritmoNecessarioM1 > 0 ? ((mediaFechDia - ritmoNecessarioM1) / ritmoNecessarioM1) * 100 : 0;
-
             const insights: { icon: React.ReactNode; texto: string; sub: string; cor: string }[] = [];
-
-            if (meta1 > 0 && diasPassados > 0) {
-              if (pctRitmo < 0) {
-                insights.push({
-                  icon: <AlertTriangle className="h-4 w-4" />,
-                  texto: `${Math.abs(Math.round(pctRitmo))}% abaixo do ritmo necessário da Meta 1`,
-                  sub: 'Acelere o ritmo!',
-                  cor: 'text-red-500 bg-red-50 border-red-200',
-                });
-              } else {
-                insights.push({
-                  icon: <TrendingUp className="h-4 w-4" />,
-                  texto: `${Math.round(pctRitmo)}% acima do ritmo necessário da Meta 1`,
-                  sub: 'Continue assim!',
-                  cor: 'text-green-600 bg-green-50 border-green-200',
-                });
-              }
-            }
 
             if (meta3 > 0 && totalGanhos >= meta3) {
               insights.push({
@@ -685,7 +674,7 @@ function PersonalMetaView() {
           {/* O que é o card de Leads Perdidos — nota fixa, sempre por último */}
           <div className="flex items-start gap-2 px-3 py-2 rounded-lg border text-red-500 bg-red-50 border-red-200">
             <XCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-            <p className="text-[11px] leading-snug"><span className="font-semibold">Leads Perdidos:</span> leads perdidos pelo closer após a reunião — nome, número e motivo. Use pra fazer follow-up e tentar reativar.</p>
+            <p className="text-[11px] leading-snug"><span className="font-semibold">Leads Perdidos:</span> leads perdidos pelo closer após a reunião, nome, número e motivo. Use pra fazer follow-up e tentar reativar.</p>
           </div>
         </div>
       </div>
