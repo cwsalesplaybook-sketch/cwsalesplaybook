@@ -9,7 +9,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { SidebarProvider, ForcePapel, useSidebarContext, type Papel } from '@/context/SidebarContext';
 import { useContentStore } from '@/store/contentStore';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { AgentBalls } from '@/components/layout/AgentBalls';
 import { FloatingSearch } from '@/components/FloatingSearch';
 import { EditorProvider } from '@/admin/EditorContext';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
@@ -251,7 +250,6 @@ function AppLayout() {
           </main>
           <PasswordGate />
           <FloatingSearch />
-          <AgentBalls />
         </div>
       </SidebarProvider>
     </EditorProvider>
