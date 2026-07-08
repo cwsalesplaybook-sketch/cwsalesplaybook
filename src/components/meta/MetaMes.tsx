@@ -676,7 +676,7 @@ function PersonalMetaView() {
 
         {/* Leads Perdidos */}
         {metaData.sdrId && (
-          <div className="cw-card p-6 space-y-4 h-full flex flex-col">
+          <div className="cw-card p-6 space-y-4 self-start">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
                 <XCircle className="h-4 w-4 text-red-400" />
@@ -694,12 +694,12 @@ function PersonalMetaView() {
                 {[1, 2, 3].map(i => <div key={i} className="h-10 rounded-xl cw-shimmer" />)}
               </div>
             ) : perdas.total === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center">
+              <div className="flex flex-col items-center gap-2 py-6 text-center">
                 <Check className="h-8 w-8 text-emerald-400" />
                 <p className="text-sm font-semibold text-cw-text">Nenhuma perda registrada este mês!</p>
               </div>
             ) : (
-              <div className="flex-1 min-h-0 space-y-2 overflow-y-auto pr-1">
+              <div className="max-h-52 space-y-2 overflow-y-auto pr-1">
                 {perdas.leads.map((lead, i) => (
                   <div key={i} className="flex items-start justify-between gap-3 px-3 py-2.5 rounded-xl border border-cw-border bg-white shadow-sm">
                     <div className="min-w-0">
