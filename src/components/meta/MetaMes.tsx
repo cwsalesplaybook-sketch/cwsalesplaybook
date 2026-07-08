@@ -208,7 +208,7 @@ function PersonalMetaView() {
   const [ajusteModal, setAjusteModal] = useState<'add' | 'sub' | null>(null);
   const [ajusteQtd, setAjusteQtd]   = useState('1');
   const [ajusteMot, setAjusteMot]   = useState('');
-  const [perdas, setPerdas] = useState<{ total: number; leads: { titulo: string; motivo: string; data: string }[] } | null>(null);
+  const [perdas, setPerdas] = useState<{ total: number; leads: { titulo: string; nome: string | null; telefone: string | null; motivo: string; data: string }[] } | null>(null);
 
   const carregarPerfil = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -805,6 +805,11 @@ function PersonalMetaView() {
                 <div key={i} className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl border border-cw-border bg-cw-elevated">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-cw-text truncate">{lead.titulo}</p>
+                    {(lead.nome || lead.telefone) && (
+                      <p className="text-[11px] text-cw-purple font-medium truncate">
+                        {lead.nome || 'Contato'}{lead.telefone ? ` - ${lead.telefone}` : ''}
+                      </p>
+                    )}
                     <p className="text-[11px] text-cw-muted truncate">{lead.motivo}</p>
                   </div>
                   <span className="text-[11px] text-cw-muted shrink-0">
