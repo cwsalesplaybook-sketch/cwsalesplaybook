@@ -7,7 +7,7 @@ import {
   ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
   Loader2, Users, Library, GraduationCap, FileText, Percent, Star,
-  PartyPopper,
+  PartyPopper, Puzzle,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,7 @@ interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users,
+  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users, Puzzle,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
@@ -52,7 +52,7 @@ const SECTIONS = [
  *  'Comece Aqui', Pipeline, Cultura e Histórias são compartilhados (idênticos ao SDR). */
 const NAV_CLOSER: NavItem[] = [
   { to: '/start',               label: 'Comece Aqui',          icon: 'Sparkles',       end: false },
-  { to: '/closer/dashboard',    label: 'Dashboard',            icon: 'LayoutDashboard',end: false },
+  { to: '/closer/dashboard',    label: 'Metas do Mês',         icon: 'LayoutDashboard',end: false },
   { to: '/closer/planos',       label: 'Planos e Preços',      icon: 'Calculator',     end: false },
   { to: '/closer/templates',    label: 'Templates',            icon: 'FileText',       end: false },
   { to: '/closer/descontos',    label: 'Descontos',            icon: 'Percent',        end: false },
@@ -60,7 +60,6 @@ const NAV_CLOSER: NavItem[] = [
   { to: '/closer/processo',     label: 'Processo de Venda',    icon: 'Target',         end: false },
   { to: '/closer/concorrentes', label: 'Concorrentes',         icon: 'Sword',          end: false },
   { to: '/pipeline',            label: 'Pipeline',             icon: 'BarChart2',      end: false },
-  { to: '/closer/metas',        label: 'Metas',                icon: 'Award',          end: false },
   { to: '/closer/rotina',       label: 'Rotina & Progressão',  icon: 'TrendingUp',     end: false },
   { to: '/historias',           label: 'Histórias de Sucesso', icon: 'Trophy',         end: false },
   { to: '/ajuda',               label: 'Central de Ajuda',     icon: 'HelpCircle',     end: false },
@@ -69,7 +68,7 @@ const NAV_CLOSER: NavItem[] = [
 const CLOSER_SECTIONS = [
   { label: 'Operação',          routes: ['/closer/dashboard'] },
   { label: 'Comercial',         routes: ['/closer/planos', '/closer/templates', '/closer/descontos', '/closer/objecoes', '/closer/processo', '/closer/concorrentes', '/pipeline'] },
-  { label: 'Carreira & Rotina', routes: ['/closer/metas', '/closer/rotina'] },
+  { label: 'Carreira & Rotina', routes: ['/closer/rotina'] },
   { label: 'Cultura e Time',    routes: ['/historias'] },
 ];
 

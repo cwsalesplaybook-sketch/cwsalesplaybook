@@ -16,12 +16,13 @@ export const TIME: Pessoa[] = [
   // ── REPRESENTANTES ──────────────────────────────────────────────
   { id: 'hyorranes',       nome: 'Hyorranes',                      cargo: 'Liderança de Representantes',         slack: '@hyorranes', email: 'hyorranes.souza@cardapioweb.com'  },
   { id: 'gabrielly-psm',   nome: 'Gabrielly Oliveira',              cargo: 'PSM',                                slack: '@gabrielly'                                                                   },
-  { id: 'bea-andrade',     nome: 'Bea Andrade',                    cargo: 'PSM',                                 slack: '@beaandrade'                                                                 },
+  { id: 'bea-andrade',     nome: 'Bea Andrade',                    cargo: 'PSM',                                 slack: '@beaandrade',                                  email: 'beatriz.andrade@cardapioweb.com' },
 
   // ── LIDERANÇA ───────────────────────────────────────────────────
   { id: 'joelma',          nome: 'Joelma Vieira',                  cargo: 'Liderança de Pré-Vendas (SDR)',       slack: '@joelma',    email: 'joelma.vieira@cardapioweb.com'   },
   { id: 'pedro',           nome: 'Pedro Ferreira',                 cargo: 'Liderança de Pré-Vendas',             slack: '@pedro',     email: 'pedro.ferreira@cardapioweb.com'  },
   { id: 'anderson',        nome: 'Antonio Anderson Castro da Silva', cargo: 'Liderança de Pré-Vendas',           slack: '@anderson',                                    email: 'antonio.anderson@cardapioweb.com' },
+  { id: 'vithoria',        nome: 'Vithoria Rodrigues',              cargo: 'Liderança de Pré-Vendas',            slack: '@vithoria',                                    email: 'vithoria.pinheiro@cardapioweb.com' },
   { id: 'whenna',          nome: 'Whenna Oliveira',                cargo: 'Liderança de Closer',                 slack: '@whenna',    email: 'whenna.oliveira@cardapioweb.com' },
   { id: 'gregory',         nome: 'Gregory Lavor',                  cargo: 'Liderança de Closer',                 slack: '@gregory'   },
 
@@ -46,7 +47,7 @@ export const TIME: Pessoa[] = [
   { id: 'jonas',           nome: 'Jonas Nicolas Lopez Sobreira',   cargo: 'SDR II',                              slack: '@jonas'     },
   { id: 'enizia',          nome: 'Enízia M. Evangelista',          cargo: 'SDR II',                              slack: '@enizia'    },
   { id: 'ryan',            nome: 'Ryan Felipe Ferreira Vieira',    cargo: 'SDR JR II',                           slack: '@ryan'      },
-  { id: 'raissa',          nome: 'Raissa Fonseca',                 cargo: 'SDR JR II',                           slack: '@raissa'    },
+  { id: 'raissa',          nome: 'Raissa Fonseca',                 cargo: 'SDR JR I',                            slack: '@raissa'    },
   { id: 'luis',            nome: 'Luis Lincon Barroso Oliveira',   cargo: 'SDR JR II',                           slack: '@luis'      },
   { id: 'lara',            nome: 'Lara Stefanny Barbosa',          cargo: 'SDR JR II',                           slack: '@lara'      },
   { id: 'jose-guilherme',  nome: 'José Guilherme da Silva Galdino Feitosa', cargo: 'SDR JR II',                  slack: '@joseguilherme' },
@@ -58,9 +59,15 @@ export const TIME: Pessoa[] = [
   { id: 'ana-clara-rodrigues', nome: 'Ana Clara Rodrigues',        cargo: 'SDR JR',                              slack: '@anaclararodrigues' },
   { id: 'dayana',          nome: 'Dayana',                         cargo: 'SDR JR',                              slack: '@dayana'    },
   { id: 'kailane',         nome: 'Ana Kailane Galdino de Carvalho', cargo: 'SDR',                                slack: '@kailane'   },
-  { id: 'gabriel',         nome: 'Gabriel Alves',                  cargo: 'SDR',                                 slack: '@gabriel'   },
-  { id: 'maria-gabriele',  nome: 'Maria Gabriele',                 cargo: 'SDR',                                 slack: '@mariagabriele' },
-  { id: 'karol',           nome: 'Karol Santos',                   cargo: 'SDR',                                 slack: '@karol'     },
-  { id: 'fabiola',         nome: 'Fabíola Emanuela Cândido Azevedo', cargo: 'SDR',                               slack: '@fabiola'   },
+  { id: 'gabriel',         nome: 'Gabriel Alves',                  cargo: 'SDR JR I',                            slack: '@gabriel'   },
+  { id: 'maria-gabriele',  nome: 'Maria Gabriele',                 cargo: 'SDR JR I',                            slack: '@mariagabriele' },
   { id: 'felipe',          nome: 'Felipe Queiroz',                 cargo: 'SDR',                                 slack: '@felipe'    },
+  { id: 'tiago',           nome: 'Tiago Passos',                   cargo: 'SDR JR II',                           slack: '@tiagopassos' },
+  { id: 'samuel',          nome: 'Samuel Carlos',                  cargo: 'SDR JR I',                            slack: '@samuelcarlos' },
+  { id: 'hitalo',          nome: 'Hitalo Senna',                   cargo: 'SDR JR II',                           slack: '@hitalosenna' },
+  { id: 'adrilene',        nome: 'Adrilene Azevedo',                cargo: 'SDR I',                              slack: '@adrileneazevedo' },
+  { id: 'ana-karine',      nome: 'Ana Karine',                     cargo: 'SDR JR I',                            slack: '@anakarine' },
+  { id: 'yanna',           nome: 'Yanna Alves',                    cargo: 'SDR JR I',                            slack: '@yannaalves' },
+  { id: 'eduarda',         nome: 'Eduarda Chaves',                 cargo: 'SDR JR I',                            slack: '@eduardachaves' },
+  { id: 'gustavo-tavares', nome: 'Gustavo Tavares',                cargo: 'SDR JR I',                            slack: '@gustavotavares' },
 ];
