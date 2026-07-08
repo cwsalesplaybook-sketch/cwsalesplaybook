@@ -1,13 +1,15 @@
 /** Dashboard de Closer — "Central de Operações". Visão geral que agrega as
  *  Metas pessoais (localStorage) e os contadores de Templates/Descontos. */
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Target, TrendingUp, Activity, ArrowUpRight, FileText, Percent, Zap, ChevronRight } from 'lucide-react';
+import { Target, TrendingUp, Activity, ArrowUpRight, FileText, Percent, Zap, ChevronRight, Settings, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCloserMetas } from '@/hooks/useCloserMetas';
 import { useContentStore } from '@/store/contentStore';
 import { useSidebarContext } from '@/context/SidebarContext';
 import { SEED_TEMPLATES, type CloserTemplate } from '@/data/closerTemplates';
 import { CLOSER_CUPONS } from '@/data/playbookCloser';
+import { ModulosSection } from '@/components/closer/ModuloCard';
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <p className="text-[10px] font-black text-cw-purple uppercase tracking-widest mb-3">{children}</p>;
@@ -15,6 +17,74 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 const brl = (v: number) =>
   v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+
+function num(v: string): number {
+  const n = Number(v.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.'));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function ConfigMetaModal({ meta1, meta2, meta3, jaFechado, diasUteis, onSave, onClose }: {
+  meta1: number; meta2: number; meta3: number; jaFechado: number; diasUteis: number | null;
+  onSave: (v: { meta1: number; meta2: number; meta3: number; jaFechado: number; diasUteis: number | null }) => void;
+  onClose: () => void;
+}) {
+  const [form, setForm] = useState({ meta1, meta2, meta3, jaFechado });
+  const [diasInput, setDiasInput] = useState(diasUteis != null ? String(diasUteis) : '');
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-bold text-cw-text">Configurar Metas do Mês</h3>
+          <button onClick={onClose} className="text-cw-muted hover:text-cw-text transition-colors"><X className="h-5 w-5" /></button>
+        </div>
+        <div className="space-y-4">
+          {([1, 2, 3] as const).map(n => (
+            <div key={n}>
+              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta {n} (R$)</label>
+              <input
+                type="number" min={0}
+                value={(form as any)[`meta${n}`]}
+                onChange={e => setForm(f => ({ ...f, [`meta${n}`]: Number(e.target.value) }))}
+                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple"
+                placeholder="0"
+              />
+            </div>
+          ))}
+          <div className="border-t border-cw-border pt-4">
+            <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Já Fechado (R$)</label>
+            <input
+              type="number" min={0}
+              value={form.jaFechado}
+              onChange={e => setForm(f => ({ ...f, jaFechado: Number(e.target.value) }))}
+              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple"
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Dias Úteis Restantes</label>
+            <input
+              type="text" inputMode="numeric"
+              value={diasInput}
+              onChange={e => setDiasInput(e.target.value)}
+              placeholder="Automático"
+              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple"
+            />
+            <span className="text-[10px] text-cw-muted">Deixe vazio para cálculo automático</span>
+          </div>
+        </div>
+        <button
+          onClick={() => {
+            const dias = diasInput.trim();
+            onSave({ ...form, diasUteis: dias === '' ? null : Math.max(1, num(dias)) });
+          }}
+          className="w-full mt-6 py-3 rounded-xl font-bold text-sm text-white gradient-primary transition-opacity hover:opacity-90"
+        >
+          Salvar metas
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function KpiCard({ label, value, hint, hintClass, icon: Icon }: {
   label: string; value: string; hint?: string; hintClass?: string;
@@ -35,10 +105,11 @@ function KpiCard({ label, value, hint, hintClass, icon: Icon }: {
 }
 
 export function DashboardSection() {
-  const { computed } = useCloserMetas();
+  const { computed, state, update } = useCloserMetas();
   const { papel } = useSidebarContext();
   const prefix = (papel === 'SDR' || papel === 'Liderança') ? '' : papel.toLowerCase() + '.';
   const tplOverride = useContentStore(s => s.overrides[prefix + 'templates']) as CloserTemplate[] | undefined;
+  const [configOpen, setConfigOpen] = useState(false);
 
   const numTemplates = Array.isArray(tplOverride) ? tplOverride.length : SEED_TEMPLATES.length;
   const numCupons = CLOSER_CUPONS.reduce((acc, g) => acc + g.linhas.length, 0);
@@ -47,21 +118,31 @@ export function DashboardSection() {
   const metaDiaria = computed.metas.find(m => !m.batida)?.porDia ?? 0;
   const pctMeta3 = meta3.valor > 0 ? (computed.jaFechado / meta3.valor) * 100 : 0;
 
-  const acoes = [
+  const acoes: Array<{ label: string; icon: typeof Target } & ({ to: string } | { onClick: () => void })> = [
     { to: '/closer/descontos', label: 'Pegar Cupom', icon: Percent },
     { to: '/closer/templates', label: 'Copiar Template', icon: FileText },
-    { to: '/closer/metas', label: 'Atualizar Meta', icon: Target },
+    { onClick: () => setConfigOpen(true), label: 'Atualizar Meta', icon: Target },
   ];
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div className="cw-card p-5">
-        <SectionTitle>Painel de Comando</SectionTitle>
-        <h2 className="text-xl font-black text-cw-text">
-          Central de <span className="text-cw-purple-light">Operações</span>
-        </h2>
-        <p className="text-sm text-cw-muted mt-1">Monitore suas metas, gerencie estratégias e feche negócios com precisão.</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <SectionTitle>Painel de Comando</SectionTitle>
+            <h2 className="text-xl font-black text-cw-text">
+              Metas do <span className="text-cw-purple-light">Mês</span>
+            </h2>
+            <p className="text-sm text-cw-muted mt-1">Monitore suas metas, gerencie estratégias e feche negócios com precisão.</p>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button onClick={() => setConfigOpen(true)} title="Configurar metas"
+              className="h-7 w-7 rounded-lg bg-cw-elevated border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-all">
+              <Settings className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
         <div className="flex flex-wrap gap-2 mt-3">
           <Link to="/closer/templates" className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl bg-cw-elevated border border-cw-border text-cw-text hover:bg-cw-surface">
             <FileText className="h-3.5 w-3.5 text-cw-purple" /> <span className="font-black">{numTemplates}</span> Templates
@@ -71,6 +152,15 @@ export function DashboardSection() {
           </Link>
         </div>
       </div>
+
+      {configOpen && (
+        <ConfigMetaModal
+          meta1={state.meta1} meta2={state.meta2} meta3={state.meta3}
+          jaFechado={state.jaFechado} diasUteis={state.diasUteis}
+          onSave={(v) => { update(v); setConfigOpen(false); }}
+          onClose={() => setConfigOpen(false)}
+        />
+      )}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -121,17 +211,31 @@ export function DashboardSection() {
             <p className="font-bold text-sm text-cw-text">Ações Rápidas</p>
           </div>
           <div className="space-y-2">
-            {acoes.map(a => (
-              <Link key={a.to} to={a.to}
+            {acoes.map(a => 'to' in a ? (
+              <Link key={a.label} to={a.to}
                 className="flex items-center gap-2.5 px-3 py-3 rounded-xl bg-cw-elevated border border-cw-border text-cw-text hover:bg-cw-surface transition-colors">
                 <a.icon className="h-4 w-4 text-cw-purple shrink-0" />
                 <span className="flex-1 text-sm font-medium">{a.label}</span>
                 <ChevronRight className="h-4 w-4 text-cw-muted" />
               </Link>
+            ) : (
+              <button key={a.label} onClick={a.onClick}
+                className="flex items-center gap-2.5 px-3 py-3 rounded-xl bg-cw-elevated border border-cw-border text-cw-text hover:bg-cw-surface transition-colors w-full text-left">
+                <a.icon className="h-4 w-4 text-cw-purple shrink-0" />
+                <span className="flex-1 text-sm font-medium">{a.label}</span>
+                <ChevronRight className="h-4 w-4 text-cw-muted" />
+              </button>
             ))}
           </div>
         </div>
       </div>
+
+      {/* Módulos */}
+      <ModulosSection
+        moduloMeta1={state.moduloMeta1} moduloMeta2={state.moduloMeta2} moduloMeta3={state.moduloMeta3}
+        moduloConquistado={state.moduloConquistado} moduloMetas={computed.moduloMetas}
+        onSave={update}
+      />
     </div>
   );
 }

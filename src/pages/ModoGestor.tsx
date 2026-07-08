@@ -40,12 +40,13 @@ interface SdrProfile {
 }
 
 export default function ModoGestor() {
-  const { papel, setPapel, setImpersonating } = useSidebarContext();
+  const { papel, lockedPapel, setPapelPreview, clearPapelPreview, setImpersonating } = useSidebarContext();
   const { isGestor, isEditing, openPasswordModal, lock } = useEditor();
   const navigate = useNavigate();
   const [membros, setMembros] = useState<SdrProfile[]>([]);
   const [loadingMembros, setLoadingMembros] = useState(true);
   const [switching, setSwitching] = useState<Papel | null>(null);
+  const [pendingPapel, setPendingPapel] = useState<Papel | null>(null);
 
   useEffect(() => {
     if (!isGestor) return;
@@ -89,18 +90,54 @@ export default function ModoGestor() {
     navigate('/start');
   };
 
-  const switchPlaybook = async (novoPapel: Papel) => {
+  const pedirTroca = (novoPapel: Papel) => {
     if (novoPapel === papel || switching) return;
-    setSwitching(novoPapel);
+    setPendingPapel(novoPapel);
+  };
+
+  const confirmarTroca = async () => {
+    if (!pendingPapel) return;
+    const destino = pendingPapel;
+    setPendingPapel(null);
+    setSwitching(destino);
     await new Promise(r => setTimeout(r, 300));
-    setPapel(novoPapel);
+    if (destino === lockedPapel) clearPapelPreview();
+    else setPapelPreview(destino);
     setSwitching(null);
     navigate('/start');
   };
 
+  const pendingLabel = PLAYBOOKS.find(p => p.papel === pendingPapel)?.label ?? pendingPapel;
+
   return (
     <>
       <Header titulo="Modo Gestor" subtitulo="Dashboards, ferramentas e lideranças do comercial" />
+
+      {pendingPapel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
+            <p className="text-lg font-bold text-cw-text mb-2">Trocar de dashboard?</p>
+            <p className="text-sm text-cw-muted mb-6">
+              Você deseja ir para o dashboard de <span className="font-bold text-cw-text">{pendingLabel}</span>?
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPendingPapel(null)}
+                className="flex-1 py-2.5 rounded-xl border border-cw-border text-cw-text font-semibold hover:bg-cw-elevated transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarTroca}
+                className="flex-1 py-2.5 rounded-xl bg-cw-purple text-white font-semibold hover:opacity-90 transition-opacity"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="p-8 space-y-10">
 
         {/* Trocar Playbook */}
@@ -116,7 +153,7 @@ export default function ModoGestor() {
               return (
                 <button
                   key={opt}
-                  onClick={() => switchPlaybook(opt)}
+                  onClick={() => pedirTroca(opt)}
                   disabled={!!switching}
                   className={cn(
                     'relative flex flex-col items-center gap-3 p-6 rounded-2xl border text-sm font-bold transition-all duration-300',

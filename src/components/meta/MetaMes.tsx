@@ -1,6 +1,7 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useState, useCallback } from 'react';
-import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, XCircle, User, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, XCircle, User, Users, LayoutGrid } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
@@ -26,14 +27,25 @@ function getStatus(ganhos: number, meta1: number, diasPassados: number, diasUtei
   return (ganhos / diasPassados) >= (meta1 / diasUteisTotal) * 0.9 ? 'no-ritmo' : 'atrasado';
 }
 
-function getMensagemForecast(ganhos: number, m1: number, m2: number, m3: number, mg1: number, mg2: number, mg3: number) {
-  if (mg3 > 0 && ganhos >= mg3) return { texto: 'Você bateu a Mega Meta 3! 🚀🏆', nivel: 6 };
-  if (mg2 > 0 && ganhos >= mg2) return { texto: 'Você está no forecast da Mega Meta 3 🚀', nivel: 5 };
-  if (mg1 > 0 && ganhos >= mg1) return { texto: 'Você está no forecast da Mega Meta 2 🚀', nivel: 4 };
-  if (m3 > 0 && ganhos >= m3) return { texto: mg1 > 0 ? 'Você está no forecast da Mega Meta 1 🚀' : 'Você bateu a Meta 3! 🏆', nivel: 3 };
-  if (m2 > 0 && ganhos >= m2) return { texto: 'Você está no forecast da Meta 3', nivel: 2 };
-  if (m1 > 0 && ganhos >= m1) return { texto: 'Você está no forecast da Meta 2', nivel: 1 };
-  return { texto: 'Você está no forecast da Meta 1', nivel: 0 };
+/** Estado do progresso em relação às metas, em ordem crescente: pra cada uma,
+ *  diz se já chegou nela, se tá perto da próxima (80%+ do caminho) ou segue no forecast normal. */
+function getMensagemStatus(ganhos: number, metas: { label: string; value: number }[]) {
+  const validas = metas.filter((m) => m.value > 0);
+  if (validas.length === 0) return { texto: 'Configure suas metas pra acompanhar o progresso', nivel: 0 };
+
+  let alcancada: { label: string; value: number } | null = null;
+  let proxima: { label: string; value: number } | null = null;
+  for (const m of validas) {
+    if (ganhos >= m.value) alcancada = m;
+    else { proxima = m; break; }
+  }
+
+  if (!proxima) return { texto: `Você bateu a ${alcancada!.label}! Parabéns! 🏆🚀`, nivel: 3 };
+
+  const progresso = ganhos / proxima.value;
+  if (alcancada && progresso < 0.8) return { texto: `Você chegou à ${alcancada.label}, parabéns! 🎉`, nivel: 2 };
+  if (progresso >= 0.8) return { texto: `Você está perto da ${proxima.label}!`, nivel: 1 };
+  return { texto: `Você está no forecast da ${proxima.label}`, nivel: 0 };
 }
 
 function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose }: {
@@ -166,13 +178,31 @@ function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose 
 }
 
 function PersonalMetaView() {
+  const navigate = useNavigate();
   const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, sdrId: '' });
   const [apiData, setApiData]     = useState<ApiData | null>(null);
   const [loading, setLoading]     = useState(false);
   const [config, setConfig]       = useState(false);
   const [userId, setUserId]       = useState('');
   const [mes, setMes]             = useState('');
-  const [conversao, setConversao] = useState(50);
+  // Conversão fixa por tier de carreira: Meta 1/2 converte mais fácil que Meta 3.
+  // Cada SDR ativa o próprio tier (salvo por pessoa) pra ver a conversão que se aplica a ele.
+  const CONV_TIER12 = 62;
+  const CONV_TIER3  = 48;
+  const [meuTier, setMeuTier] = useState<'1-2' | '3'>('1-2');
+
+  useEffect(() => {
+    if (!userId) return;
+    try {
+      const salvo = localStorage.getItem(`cw-sdr-tier:${userId}`);
+      if (salvo === '1-2' || salvo === '3') setMeuTier(salvo);
+    } catch { /* ignore */ }
+  }, [userId]);
+
+  const selecionarTier = (t: '1-2' | '3') => {
+    setMeuTier(t);
+    try { localStorage.setItem(`cw-sdr-tier:${userId}`, t); } catch { /* ignore */ }
+  };
   const [autoNome, setAutoNome]   = useState('');
   const [pipedriveUsers, setPipedriveUsers] = useState<{ id: string; name: string }[]>([]);
   const [ajusteModal, setAjusteModal] = useState<'add' | 'sub' | null>(null);
@@ -287,7 +317,10 @@ function PersonalMetaView() {
   const diasUteisTotal = apiData?.diasUteisTotal ?? 22;
   const metaReferencia = meta3 || meta2 || meta1;
   const status   = getStatus(totalGanhos, meta1, diasPassados, diasUteisTotal);
-  const forecast = getMensagemForecast(totalGanhos, meta1, meta2, meta3, mega1, mega2, mega3);
+  const forecast = getMensagemStatus(totalGanhos, [
+    { label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 },
+    { label: 'Mega Meta 1', value: mega1 }, { label: 'Mega Meta 2', value: mega2 }, { label: 'Mega Meta 3', value: mega3 },
+  ]);
   // Projeção só faz sentido com dados reais do Pipedrive
   const projecao = apiData && diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * diasUteisTotal) : 0;
   const porDia   = (m: number) => diasRestantes > 0 ? Math.ceil(Math.max(0, m - totalGanhos) / diasRestantes) : 0;
@@ -298,6 +331,10 @@ function PersonalMetaView() {
   const temRitmoM1 = !!apiData && diasPassados > 0 && meta1 > 0;
   const ritmoNecessarioM1 = diasUteisTotal > 0 && meta1 > 0 ? meta1 / diasUteisTotal : 0;
   const pctRitmoM1 = temRitmoM1 && ritmoNecessarioM1 > 0 ? (((totalGanhos / diasPassados) - ritmoNecessarioM1) / ritmoNecessarioM1) * 100 : 0;
+  // Onde você deveria estar HOJE se estivesse no ritmo certo pra bater a meta de referência.
+  const ritmoHojeValor = apiData && diasPassados > 0 ? (diasPassados / diasUteisTotal) * maxMeta : 0;
+  const ritmoHojePct   = Math.min(ritmoHojeValor / maxMeta * 100, 99);
+  const noRitmoHoje     = totalGanhos >= ritmoHojeValor;
 
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
   const nomeSDR = SDRS_ATIVOS[metaData.sdrId] || '';
@@ -345,6 +382,10 @@ function PersonalMetaView() {
               )}>
                 {status === 'no-ritmo' ? '↗ No Ritmo' : '↘ Atrasado'}
               </span>
+              <button onClick={() => navigate('/kanban')} title="Kanban de reuniões"
+                className="h-7 w-7 rounded-lg bg-white/60 border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-all">
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </button>
               <button onClick={() => setConfig(true)} title="Configurar metas"
                 className="h-7 w-7 rounded-lg bg-white/60 border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-all">
                 <Settings className="h-3.5 w-3.5" />
@@ -364,9 +405,58 @@ function PersonalMetaView() {
               {forecast.texto}
             </p>
             {metaReferencia > 0 && (
-              <div className="mt-3">
-                <div className="w-full h-1.5 bg-cw-border rounded-full overflow-hidden">
-                  <div className="h-full bg-cw-purple rounded-full transition-all duration-700" style={{ width: `${pctBarra}%` }} />
+              <div className="mt-4">
+                <div className="relative w-full h-1.5 bg-cw-border rounded-full">
+                  <div className="absolute inset-y-0 left-0 bg-cw-purple rounded-full transition-all duration-700" style={{ width: `${pctBarra}%` }} />
+                  {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 }].map(({ label, value }) => {
+                    if (!(value > 0)) return null;
+                    const left = Math.min((value / maxMeta) * 100, 99);
+                    const atingida = totalGanhos >= value;
+                    return (
+                      <div key={label} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2" style={{ left: `${left}%` }}
+                        title={atingida ? `Você chegou à ${label}!` : `Você deveria estar aqui pra bater a ${label}`}>
+                        <div className={cn('w-0.5 h-3.5 rounded-full', atingida ? 'bg-green-500' : 'bg-cw-text/40')} />
+                      </div>
+                    );
+                  })}
+                  {ritmoHojeValor > 0 && (
+                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10" style={{ left: `${ritmoHojePct}%` }}
+                      title={noRitmoHoje ? 'Você está no ritmo hoje!' : 'Você deveria estar aqui hoje pra manter o ritmo'}>
+                      <span className={cn('absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-md text-[10px] font-black text-white whitespace-nowrap shadow-sm',
+                        noRitmoHoje ? 'bg-blue-500' : 'bg-amber-500')}>
+                        {Math.round(ritmoHojeValor)}
+                      </span>
+                      <div className={cn('w-1 h-5 rounded-full ring-2 ring-white', noRitmoHoje ? 'bg-blue-500' : 'bg-amber-500')} />
+                    </div>
+                  )}
+                </div>
+                <div className="relative h-3.5 mt-2.5">
+                  {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 }].map(({ label, value }) => {
+                    if (!(value > 0)) return null;
+                    const left = Math.min((value / maxMeta) * 100, 99);
+                    const atingida = totalGanhos >= value;
+                    return (
+                      <span key={label} className={cn('absolute -translate-x-1/2 text-[9px] font-bold whitespace-nowrap',
+                        atingida ? 'text-green-600' : 'text-cw-muted')} style={{ left: `${left}%` }}>
+                        {label}
+                      </span>
+                    );
+                  })}
+                  {ritmoHojeValor > 0 && (
+                    <span className={cn('absolute -translate-x-1/2 text-[9px] font-bold whitespace-nowrap',
+                      noRitmoHoje ? 'text-blue-600' : 'text-amber-600')} style={{ left: `${ritmoHojePct}%` }}>
+                      Hoje
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-[10px] text-cw-muted">
+                  <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-cw-text/40 shrink-0" /> Você deveria estar aqui pra bater cada meta</span>
+                  {ritmoHojeValor > 0 && (
+                    <span className="flex items-center gap-1">
+                      <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', noRitmoHoje ? 'bg-blue-500' : 'bg-amber-500')} />
+                      {noRitmoHoje ? 'Você está no ritmo hoje!' : 'Você deveria estar aqui hoje pra manter o ritmo'}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -508,10 +598,23 @@ function PersonalMetaView() {
                 <p className="text-xs text-cw-muted">{diasRestantes} dias restantes</p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 bg-cw-elevated border border-cw-border rounded-xl px-3 py-1.5">
-              <button onClick={() => setConversao(c => Math.max(10, c - 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">−</button>
-              <span className="text-xs font-bold text-cw-purple w-16 text-center">{conversao}% conv.</span>
-              <button onClick={() => setConversao(c => Math.min(100, c + 5))} className="text-cw-muted hover:text-cw-text transition-colors font-bold text-sm w-4">+</button>
+            <div className="flex flex-col items-end gap-1.5">
+              {/* Cada SDR ativa o próprio tier pra ver a conversão que se aplica a ele */}
+              <div className="flex items-center gap-1 bg-cw-elevated border border-cw-border rounded-xl p-1">
+                <button onClick={() => selecionarTier('1-2')}
+                  className={cn('px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all',
+                    meuTier === '1-2' ? 'bg-cw-purple text-white' : 'text-cw-muted hover:text-cw-text')}>
+                  Tier 1/2
+                </button>
+                <button onClick={() => selecionarTier('3')}
+                  className={cn('px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all',
+                    meuTier === '3' ? 'bg-amber-500 text-white' : 'text-cw-muted hover:text-cw-text')}>
+                  Tier 3
+                </button>
+              </div>
+              <span className="text-xs font-bold text-cw-purple bg-cw-elevated border border-cw-border rounded-xl px-2.5 py-1.5">
+                {meuTier === '3' ? CONV_TIER3 : CONV_TIER12}% conv.
+              </span>
             </div>
           </div>
 
@@ -525,8 +628,9 @@ function PersonalMetaView() {
               { label: 'Mega Meta 3', value: mega3, star: false, mega: true },
             ].map(({ label, value, star, mega }) => {
               if (!value) return null;
+              const convAtual = meuTier === '3' ? CONV_TIER3 : CONV_TIER12;
               const fechDia = diasRestantes > 0 ? Math.ceil(Math.max(0, value - totalGanhos) / diasRestantes) : 0;
-              const agendDia = conversao > 0 ? Math.ceil(fechDia / (conversao / 100)) : 0;
+              const agendDia = convAtual > 0 ? Math.ceil(fechDia / (convAtual / 100)) : 0;
               const batida = totalGanhos >= value;
               return (
                 <div key={label} className={cn(
@@ -560,6 +664,7 @@ function PersonalMetaView() {
                       <div className="text-right">
                         <p className="text-lg font-black text-cw-purple leading-none">{agendDia}</p>
                         <p className="text-[10px] text-cw-muted">agend/dia</p>
+                        <p className="text-[8px] text-cw-muted/60">{convAtual}% conv.</p>
                       </div>
                     </div>
                   )}

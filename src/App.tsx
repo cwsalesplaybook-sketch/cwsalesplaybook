@@ -37,6 +37,7 @@ import Ranking from '@/components/ranking/Ranking';
 import MetaMes from '@/components/meta/MetaMes';
 import MetaMesReps from '@/components/meta/MetaMesReps';
 import Promocoes from '@/pages/Promocoes';
+import Kanban from '@/pages/Kanban';
 import Start from '@/pages/Start';
 import BadgesPage from '@/pages/Badges';
 import FaqPage from '@/pages/Faq';
@@ -215,6 +216,7 @@ function AnimatedRoutes() {
           <Route path="/berserker" element={<Berserker />} />
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/meta" element={<MetaRoute />} />
+          <Route path="/kanban" element={<Kanban />} />
           <Route path="/promocoes" element={<Promocoes />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/ajuda" element={<CentralAjuda />} />

@@ -14,6 +14,7 @@ const GESTOR_EMAILS = new Set([
   'antonio.anderson@cardapioweb.com',
   'ana.clara@cardapioweb.com',
   'joelma.vieira@cardapioweb.com',
+  'vithoria.pinheiro@cardapioweb.com',
   'gabrielly.oliveira@cardapioweb.com',
   'vanessa.alencar@cardapioweb.com',
   'beatriz.magalhaes@cardapioweb.com',
@@ -24,6 +25,7 @@ const MASTER_EMAILS = new Set([
   'ana.clara@cardapioweb.com',
   'vanessa.alencar@cardapioweb.com',
   'gabrielly.oliveira@cardapioweb.com',
+  'johnnyalves@cardapioweb.com',
 ]);
 
 interface EditorCtx {

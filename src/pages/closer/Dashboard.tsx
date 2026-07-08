@@ -5,7 +5,7 @@ export default function CloserDashboard() {
   return (
     <div className="p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-cw-text">Dashboard</h1>
+        <h1 className="text-2xl font-black text-cw-text">Metas do Mês</h1>
         <p className="text-sm text-cw-muted mt-1">Sua central de operações: metas, templates e descontos num só lugar.</p>
       </div>
       <DashboardSection />
