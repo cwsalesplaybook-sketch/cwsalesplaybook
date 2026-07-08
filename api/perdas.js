@@ -27,6 +27,20 @@ export default async function handler(req, res) {
     return n.includes('no show') || n.includes('no-show');
   };
 
+  const maskPhone = (tel) => {
+    const digits = String(tel || '').replace(/\D/g, '');
+    if (digits.length < 4) return null;
+    return `${digits.slice(0, 3)}xxxx`;
+  };
+
+  const dadosPessoa = (deal) => {
+    const person = deal.person_id;
+    if (!person || typeof person !== 'object') return { nome: null, telefone: null };
+    const nome = person.name ? String(person.name).split(' ')[0] : null;
+    const telRaw = Array.isArray(person.phone) ? (person.phone.find(p => p.primary)?.value || person.phone[0]?.value) : null;
+    return { nome, telefone: maskPhone(telRaw) };
+  };
+
   try {
     while (true) {
       const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=lost&limit=200&start=${start}&sort=lost_time%20DESC`;
@@ -50,7 +64,8 @@ export default async function handler(req, res) {
 
         motivos[motivo] = (motivos[motivo] || 0) + 1;
         total++;
-        leads.push({ titulo: deal.title || 'Sem título', motivo, data: lt.slice(0, 10) });
+        const { nome, telefone } = dadosPessoa(deal);
+        leads.push({ titulo: deal.title || 'Sem título', nome, telefone, motivo, data: lt.slice(0, 10) });
       }
 
       if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
