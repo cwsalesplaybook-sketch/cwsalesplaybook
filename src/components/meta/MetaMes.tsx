@@ -186,20 +186,22 @@ function PersonalMetaView() {
   const [userId, setUserId]       = useState('');
   const [mes, setMes]             = useState('');
   // Conversão fixa por tier de carreira: Meta 1/2 converte mais fácil que Meta 3.
+  // Parcerias converte melhor ainda (leads mais qualificados).
   // Cada SDR ativa o próprio tier (salvo por pessoa) pra ver a conversão que se aplica a ele.
   const CONV_TIER12 = 62;
   const CONV_TIER3  = 48;
-  const [meuTier, setMeuTier] = useState<'1-2' | '3'>('1-2');
+  const CONV_PARCERIAS = 80;
+  const [meuTier, setMeuTier] = useState<'1-2' | '3' | 'parcerias'>('1-2');
 
   useEffect(() => {
     if (!userId) return;
     try {
       const salvo = localStorage.getItem(`cw-sdr-tier:${userId}`);
-      if (salvo === '1-2' || salvo === '3') setMeuTier(salvo);
+      if (salvo === '1-2' || salvo === '3' || salvo === 'parcerias') setMeuTier(salvo);
     } catch { /* ignore */ }
   }, [userId]);
 
-  const selecionarTier = (t: '1-2' | '3') => {
+  const selecionarTier = (t: '1-2' | '3' | 'parcerias') => {
     setMeuTier(t);
     try { localStorage.setItem(`cw-sdr-tier:${userId}`, t); } catch { /* ignore */ }
   };
@@ -626,9 +628,14 @@ function PersonalMetaView() {
                     meuTier === '3' ? 'bg-amber-500 text-white' : 'text-cw-muted hover:text-cw-text')}>
                   Tier 3
                 </button>
+                <button onClick={() => selecionarTier('parcerias')}
+                  className={cn('px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all',
+                    meuTier === 'parcerias' ? 'bg-emerald-500 text-white' : 'text-cw-muted hover:text-cw-text')}>
+                  Parcerias
+                </button>
               </div>
               <span className="text-xs font-bold text-cw-purple bg-cw-elevated border border-cw-border rounded-xl px-2.5 py-1.5">
-                {meuTier === '3' ? CONV_TIER3 : CONV_TIER12}% conv.
+                {meuTier === '3' ? CONV_TIER3 : meuTier === 'parcerias' ? CONV_PARCERIAS : CONV_TIER12}% conv.
               </span>
             </div>
           </div>
@@ -643,7 +650,7 @@ function PersonalMetaView() {
               { label: 'Mega Meta 3', value: mega3, star: false, mega: true },
             ].map(({ label, value, star, mega }) => {
               if (!value) return null;
-              const convAtual = meuTier === '3' ? CONV_TIER3 : CONV_TIER12;
+              const convAtual = meuTier === '3' ? CONV_TIER3 : meuTier === 'parcerias' ? CONV_PARCERIAS : CONV_TIER12;
               const fechDia = diasRestantes > 0 ? Math.ceil(Math.max(0, value - totalGanhos) / diasRestantes) : 0;
               const agendDia = convAtual > 0 ? Math.ceil(fechDia / (convAtual / 100)) : 0;
               const batida = totalGanhos >= value;
