@@ -690,7 +690,7 @@ function PersonalMetaView() {
             ) : (
               <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                 {perdas.leads.map((lead, i) => (
-                  <div key={i} className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl border border-cw-border bg-cw-elevated">
+                  <div key={i} className="flex items-start justify-between gap-3 px-3 py-2.5 rounded-xl border border-cw-border bg-white shadow-sm">
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-cw-text truncate">{lead.titulo}</p>
                       {(lead.nome || lead.telefone) && (
@@ -698,7 +698,9 @@ function PersonalMetaView() {
                           {lead.nome || 'Contato'}{lead.telefone ? ` - ${lead.telefone}` : ''}
                         </p>
                       )}
-                      <p className="text-[11px] text-cw-muted truncate">{lead.motivo}</p>
+                      <span className="inline-block mt-1.5 max-w-full truncate text-[10px] font-medium text-red-500 bg-red-50 border border-red-200 rounded-md px-1.5 py-0.5">
+                        {lead.motivo}
+                      </span>
                     </div>
                     <span className="text-[11px] text-cw-muted shrink-0">
                       {new Date(lead.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
@@ -724,21 +726,11 @@ function PersonalMetaView() {
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           {/* Como funciona a aba — sempre visível, independente de ter dados */}
-          <div className="flex items-start gap-3 px-4 py-3 rounded-xl border text-cw-purple bg-cw-purple/5 border-cw-purple/20">
-            <RefreshCw className="h-4 w-4 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold leading-snug">Essa aba é conectada ao Pipedrive</p>
-              <p className="text-xs opacity-70 mt-0.5">Os ganhos são atualizados em tempo real. Se algum ganho não aparecer, favor sinalizar a Gabi.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3 px-4 py-3 rounded-xl border text-red-500 bg-red-50 border-red-200">
-            <XCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold leading-snug">O que é o card de Leads Perdidos</p>
-              <p className="text-xs opacity-70 mt-0.5">Mostra os leads perdidos pelo closer após irem para a reunião e, por algum motivo, não fecharem — com nome, número e motivo da perda. Use pra fazer follow-up e tentar reativar esses leads.</p>
-            </div>
+          <div className="flex items-start gap-2 px-3 py-2 rounded-lg border text-cw-purple bg-cw-purple/5 border-cw-purple/20">
+            <RefreshCw className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+            <p className="text-[11px] leading-snug"><span className="font-semibold">Conectado ao Pipedrive:</span> os ganhos são atualizados em tempo real. Se algum não aparecer, sinalize a Gabi.</p>
           </div>
 
           {(() => {
@@ -785,15 +777,21 @@ function PersonalMetaView() {
             }
 
             return insights.map((ins, i) => (
-              <div key={i} className={cn('flex items-start gap-3 px-4 py-3 rounded-xl border', ins.cor)}>
+              <div key={i} className={cn('flex items-start gap-2 px-3 py-2 rounded-lg border', ins.cor)}>
                 <span className="shrink-0 mt-0.5">{ins.icon}</span>
                 <div>
-                  <p className="text-sm font-semibold leading-snug">{ins.texto}</p>
-                  {ins.sub && <p className="text-xs opacity-70 mt-0.5">{ins.sub}</p>}
+                  <p className="text-[11px] font-semibold leading-snug">{ins.texto}</p>
+                  {ins.sub && <p className="text-[10px] opacity-70 mt-0.5">{ins.sub}</p>}
                 </div>
               </div>
             ));
           })()}
+
+          {/* O que é o card de Leads Perdidos — nota fixa, sempre por último */}
+          <div className="flex items-start gap-2 px-3 py-2 rounded-lg border text-red-500 bg-red-50 border-red-200">
+            <XCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+            <p className="text-[11px] leading-snug"><span className="font-semibold">Leads Perdidos:</span> leads perdidos pelo closer após a reunião — nome, número e motivo. Use pra fazer follow-up e tentar reativar.</p>
+          </div>
         </div>
       </div>
     </div>
