@@ -1,5 +1,5 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, XCircle, User, Users, LayoutGrid } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -209,6 +209,19 @@ function PersonalMetaView() {
   const [ajusteQtd, setAjusteQtd]   = useState('1');
   const [ajusteMot, setAjusteMot]   = useState('');
   const [perdas, setPerdas] = useState<{ total: number; leads: { titulo: string; nome: string | null; telefone: string | null; motivo: string; data: string }[] } | null>(null);
+
+  // Leads Perdidos acompanha a altura real do card Ritmo Diário (medida via ResizeObserver)
+  // em vez de depender do stretch do grid — evita tanto o vão em branco quanto o card estourando
+  // de tamanho quando há muitos leads.
+  const ritmoCardRef = useRef<HTMLDivElement>(null);
+  const [ritmoHeight, setRitmoHeight] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    const el = ritmoCardRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => setRitmoHeight(entry.contentRect.height));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const carregarPerfil = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -587,7 +600,7 @@ function PersonalMetaView() {
       <div className="grid grid-cols-2 gap-4">
 
         {/* Ritmo Diário por Meta */}
-        <div className="cw-card p-6 space-y-4">
+        <div ref={ritmoCardRef} className="cw-card p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-cw-purple/10 flex items-center justify-center">
@@ -676,7 +689,7 @@ function PersonalMetaView() {
 
         {/* Leads Perdidos */}
         {metaData.sdrId && (
-          <div className="cw-card p-6 space-y-4 self-start">
+          <div className="cw-card p-6 space-y-4 flex flex-col" style={ritmoHeight ? { height: ritmoHeight } : undefined}>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
                 <XCircle className="h-4 w-4 text-red-400" />
@@ -694,12 +707,12 @@ function PersonalMetaView() {
                 {[1, 2, 3].map(i => <div key={i} className="h-10 rounded-xl cw-shimmer" />)}
               </div>
             ) : perdas.total === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-6 text-center">
+              <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-2 text-center">
                 <Check className="h-8 w-8 text-emerald-400" />
                 <p className="text-sm font-semibold text-cw-text">Nenhuma perda registrada este mês!</p>
               </div>
             ) : (
-              <div className="max-h-52 space-y-2 overflow-y-auto pr-1">
+              <div className="flex-1 min-h-0 space-y-2 overflow-y-auto pr-1">
                 {perdas.leads.map((lead, i) => (
                   <div key={i} className="flex items-start justify-between gap-3 px-3 py-2.5 rounded-xl border border-cw-border bg-white shadow-sm">
                     <div className="min-w-0">
