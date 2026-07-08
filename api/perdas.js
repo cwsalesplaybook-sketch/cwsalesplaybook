@@ -42,9 +42,12 @@ export default async function handler(req, res) {
     const personId = person && typeof person === 'object' ? person.value : person;
     if (!personId) return false;
     try {
-      const r = await fetch(`https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&person_id=${personId}&status=won&limit=1`);
+      const r = await fetch(`https://api.pipedrive.com/v1/persons/${personId}?api_token=${TOKEN}`);
       const j = await r.json();
-      return j.success && Array.isArray(j.data) && j.data.length > 0;
+      if (!j.success || !j.data) return false;
+      // Default seguro: se o campo não vier na resposta, NÃO exclui o lead
+      // (evita repetir o bug anterior de esconder tudo por engano).
+      return Number(j.data.won_deals_count || 0) > 0;
     } catch {
       return false;
     }
