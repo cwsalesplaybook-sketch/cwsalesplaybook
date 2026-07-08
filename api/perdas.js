@@ -27,18 +27,12 @@ export default async function handler(req, res) {
     return n.includes('no show') || n.includes('no-show');
   };
 
-  const maskPhone = (tel) => {
-    const digits = String(tel || '').replace(/\D/g, '');
-    if (digits.length < 4) return null;
-    return `${digits.slice(0, 3)}xxxx`;
-  };
-
   const dadosPessoa = (deal) => {
     const person = deal.person_id;
     if (!person || typeof person !== 'object') return { nome: null, telefone: null };
     const nome = person.name ? String(person.name).split(' ')[0] : null;
     const telRaw = Array.isArray(person.phone) ? (person.phone.find(p => p.primary)?.value || person.phone[0]?.value) : null;
-    return { nome, telefone: maskPhone(telRaw) };
+    return { nome, telefone: telRaw || null };
   };
 
   try {
@@ -58,6 +52,10 @@ export default async function handler(req, res) {
 
         const id = deal[SDR_FIELD] != null ? String(deal[SDR_FIELD]) : null;
         if (id !== String(sdrId)) continue;
+
+        // Só mostra perdas dadas pelo Closer (dono atual do negócio), não pela própria SDR
+        const donoAtual = deal.user_id && typeof deal.user_id === 'object' ? deal.user_id.value : deal.user_id;
+        if (donoAtual != null && String(donoAtual) === String(sdrId)) continue;
 
         const motivo = deal.lost_reason?.trim() || 'Sem motivo registrado';
         if (isNoShow(motivo)) continue; // SDR não vê perdas por "No show"
