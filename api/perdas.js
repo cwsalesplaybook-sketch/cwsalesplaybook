@@ -42,7 +42,7 @@ export default async function handler(req, res) {
     const personId = person && typeof person === 'object' ? person.value : person;
     if (!personId) return false;
     try {
-      const r = await fetch(`https://api.pipedrive.com/v1/persons/${personId}/deals?api_token=${TOKEN}&status=won&limit=1`);
+      const r = await fetch(`https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&person_id=${personId}&status=won&limit=1`);
       const j = await r.json();
       return j.success && Array.isArray(j.data) && j.data.length > 0;
     } catch {
