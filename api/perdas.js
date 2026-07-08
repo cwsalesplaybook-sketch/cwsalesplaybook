@@ -53,6 +53,10 @@ export default async function handler(req, res) {
         const id = deal[SDR_FIELD] != null ? String(deal[SDR_FIELD]) : null;
         if (id !== String(sdrId)) continue;
 
+        // Só mostra perdas dadas pelo Closer (dono atual do negócio), não pela própria SDR
+        const donoAtual = deal.user_id && typeof deal.user_id === 'object' ? deal.user_id.value : deal.user_id;
+        if (donoAtual != null && String(donoAtual) === String(sdrId)) continue;
+
         const motivo = deal.lost_reason?.trim() || 'Sem motivo registrado';
         if (isNoShow(motivo)) continue; // SDR não vê perdas por "No show"
 
