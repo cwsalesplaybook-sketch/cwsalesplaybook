@@ -810,16 +810,16 @@ function PersonalMetaView() {
 }
 
 /** Wrapper: quem tem squads_lideradas (líderes, ou acesso equivalente
- *  concedido manualmente) vê o toggle Meta do Time / Minha Meta — não
+ *  concedido manualmente) vê o toggle Meta do Mês / Meta dos Squads — não
  *  depende do papel do dashboard, então dá pra dar essa visão sem trocar
  *  o dashboard principal da pessoa (ex: um Representante que também
- *  acompanha o time todo).
+ *  acompanha os squads). Abre por padrão na visão individual (Meta do Mês).
  *  Demais usuários veem direto a visão individual.
  *  A celebração de promoção aparece no topo para quem tiver uma pendente. */
 export default function MetaMes() {
   const { squadsLideradas } = useSidebarContext();
   const isLider = squadsLideradas.length > 0;
-  const [vista, setVista] = useState<'time' | 'individual'>('time');
+  const [vista, setVista] = useState<'time' | 'individual'>('individual');
 
   if (!isLider) {
     return (
@@ -836,15 +836,15 @@ export default function MetaMes() {
       {/* Toggle de visão */}
       <div className="px-6 pt-6">
         <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-cw-elevated border border-cw-border">
-          <button onClick={() => setVista('time')}
-            className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
-              vista === 'time' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
-            <Users className="h-3.5 w-3.5" /> Meta do Time
-          </button>
           <button onClick={() => setVista('individual')}
             className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
               vista === 'individual' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
-            <User className="h-3.5 w-3.5" /> Minha Meta
+            <User className="h-3.5 w-3.5" /> Meta do Mês
+          </button>
+          <button onClick={() => setVista('time')}
+            className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
+              vista === 'time' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
+            <Users className="h-3.5 w-3.5" /> Meta dos Squads
           </button>
         </div>
       </div>
