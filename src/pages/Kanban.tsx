@@ -5,9 +5,10 @@
  *  e a sincronização por etapa com o Pipedrive ficam para uma fase futura. */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Trash2, Clock, CalendarClock } from 'lucide-react';
+import { ArrowLeft, Plus, X, Trash2, Clock, CalendarClock, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ETAPAS, ETAPA_LABEL, useKanbanReunioes, type Etapa, type KanbanCard } from '@/hooks/useKanbanReunioes';
+import { useGoogleCalendarConnection } from '@/hooks/useGoogleCalendarConnection';
 
 const COLUNA_COR: Record<Etapa, string> = {
   reuniao_marcada: 'border-t-cw-purple',
@@ -110,8 +111,63 @@ function KanbanCardEl({ card, onMover, onRemover }: {
   );
 }
 
+function formatDataHora(iso: string | null) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function GoogleCalendarBar({ onSincronizado }: { onSincronizado: () => void }) {
+  const { connected, lastSyncedAt, connecting, syncing, error, conectar, sincronizar } = useGoogleCalendarConnection();
+  const [resultado, setResultado] = useState<string | null>(null);
+
+  const handleSincronizar = async () => {
+    setResultado(null);
+    const r = await sincronizar();
+    if (r) {
+      setResultado(`${r.criados} nova${r.criados === 1 ? '' : 's'}, ${r.atualizados} atualizada${r.atualizados === 1 ? '' : 's'}`);
+      onSincronizado();
+    }
+  };
+
+  if (connected === null) return null;
+
+  return (
+    <div className="flex items-center justify-between flex-wrap gap-3 bg-cw-elevated/60 border border-cw-border rounded-xl px-4 py-3">
+      <div className="text-xs text-cw-muted">
+        {connected ? (
+          <>
+            <span className="font-bold text-cw-text">Google Calendar conectado.</span>{' '}
+            {lastSyncedAt ? `Última sincronização: ${formatDataHora(lastSyncedAt)}` : 'Ainda não sincronizado.'}
+            {resultado && <span className="ml-2 text-cw-purple font-semibold">{resultado}</span>}
+          </>
+        ) : (
+          'Conecte seu Google Calendar pra puxar as reuniões marcadas automaticamente.'
+        )}
+        {error && <p className="text-red-500 mt-1">{error}</p>}
+      </div>
+      {connected ? (
+        <button
+          onClick={handleSincronizar}
+          disabled={syncing}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs text-cw-purple border border-cw-purple/40 hover:bg-cw-purple/10 disabled:opacity-50 transition-colors"
+        >
+          <RefreshCw className={cn('h-3.5 w-3.5', syncing && 'animate-spin')} /> {syncing ? 'Sincronizando...' : 'Sincronizar agora'}
+        </button>
+      ) : (
+        <button
+          onClick={conectar}
+          disabled={connecting}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs text-white gradient-primary hover:opacity-90 disabled:opacity-50 transition-opacity"
+        >
+          <CalendarClock className="h-3.5 w-3.5" /> {connecting ? 'Conectando...' : 'Conectar Google Calendar'}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function Kanban() {
-  const { cards, loading, criar, moverEtapa, remover } = useKanbanReunioes();
+  const { cards, loading, criar, moverEtapa, remover, recarregar } = useKanbanReunioes();
   const [showNova, setShowNova] = useState(false);
 
   return (
@@ -132,7 +188,7 @@ export default function Kanban() {
             <CalendarClock className="h-5 w-5 text-cw-purple" />
             <h1 className="text-2xl font-black text-cw-text">Kanban de Reuniões</h1>
           </div>
-          <p className="text-sm text-cw-muted mt-1">Acompanhe cada reunião marcada até virar cliente (ou não). Hoje é manual — em breve puxa direto do seu Google Calendar.</p>
+          <p className="text-sm text-cw-muted mt-1">Acompanhe cada reunião marcada até virar cliente (ou não).</p>
         </div>
         <button
           onClick={() => setShowNova(true)}
@@ -141,6 +197,8 @@ export default function Kanban() {
           <Plus className="h-4 w-4" /> Nova reunião
         </button>
       </div>
+
+      <GoogleCalendarBar onSincronizado={recarregar} />
 
       {loading ? (
         <p className="text-sm text-cw-muted">Carregando board...</p>
