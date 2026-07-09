@@ -3,9 +3,9 @@
  *  Acesso opcional via ícone na Meta do Mês (não fica no menu principal).
  *  Hoje é 100% manual; a leitura automática do Google Calendar de cada SDR
  *  e a sincronização por etapa com o Pipedrive ficam para uma fase futura. */
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Trash2, Clock, CalendarClock, RefreshCw, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { ArrowLeft, Plus, X, Trash2, Clock, CalendarClock, RefreshCw, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ETAPAS, ETAPA_LABEL, useKanbanReunioes, type Etapa, type KanbanCard } from '@/hooks/useKanbanReunioes';
 import { useGoogleCalendarConnection } from '@/hooks/useGoogleCalendarConnection';
@@ -28,6 +28,17 @@ const COLUNA_COR: Record<Etapa, string> = {
   link_pagamento: 'border-t-amber-400',
   contratou: 'border-t-green-500',
   nao_contratou: 'border-t-red-400',
+};
+
+const COLUNA_DOT: Record<Etapa, string> = {
+  reuniao_marcada: 'bg-cw-purple',
+  confirmacao_1: 'bg-cw-purple',
+  confirmacao_2: 'bg-cw-purple',
+  no_show: 'bg-red-400',
+  em_atendimento: 'bg-amber-400',
+  link_pagamento: 'bg-amber-400',
+  contratou: 'bg-green-500',
+  nao_contratou: 'bg-red-400',
 };
 
 function formatHorario(iso: string | null) {
@@ -175,53 +186,43 @@ function GoogleCalendarBar({ onSincronizado }: { onSincronizado: () => void }) {
   );
 }
 
-function formatDiaCurto(chave: string) {
-  const [ano, mes, dia] = chave.split('-').map(Number);
-  return new Date(ano, mes - 1, dia).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-}
-
-function FiltroDiaPopover({ selecionado, onSelecionar }: {
-  selecionado: string | null;
-  onSelecionar: (chave: string | null) => void;
+function FiltrosPainel({ busca, onBusca, etapasVisiveis, onToggleEtapa }: {
+  busca: string;
+  onBusca: (v: string) => void;
+  etapasVisiveis: Record<Etapa, boolean>;
+  onToggleEtapa: (etapa: Etapa) => void;
 }) {
-  const [aberto, setAberto] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!aberto) return;
-    const aoClicarFora = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setAberto(false);
-    };
-    document.addEventListener('mousedown', aoClicarFora);
-    return () => document.removeEventListener('mousedown', aoClicarFora);
-  }, [aberto]);
-
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setAberto((v) => !v)}
-        className={cn(
-          'flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs border transition-colors',
-          selecionado ? 'bg-cw-purple text-white border-cw-purple' : 'text-cw-muted border-cw-border hover:text-cw-purple hover:border-cw-purple/40',
-        )}
-      >
-        <CalendarDays className="h-3.5 w-3.5" />
-        {selecionado ? formatDiaCurto(selecionado) : 'Filtrar por dia'}
-        {selecionado && (
-          <X
-            className="h-3.5 w-3.5 ml-0.5 hover:opacity-70"
-            onClick={(e) => { e.stopPropagation(); onSelecionar(null); }}
-          />
-        )}
-      </button>
-      {aberto && (
-        <div className="absolute z-20 mt-2 right-0">
-          <MiniCalendario
-            selecionado={selecionado}
-            onSelecionar={(chave) => { onSelecionar(chave); setAberto(false); }}
+    <div className="bg-white border border-cw-border rounded-xl p-3 w-56 space-y-3">
+      <div>
+        <label className="text-[10px] font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Buscar closer / lead</label>
+        <div className="relative">
+          <Search className="h-3.5 w-3.5 text-cw-muted absolute left-2 top-1/2 -translate-y-1/2" />
+          <input
+            value={busca}
+            onChange={(e) => onBusca(e.target.value)}
+            placeholder="Reunião com..."
+            className="w-full bg-cw-elevated border border-cw-border rounded-lg pl-7 pr-2.5 py-1.5 text-xs text-cw-text focus:outline-none focus:border-cw-purple"
           />
         </div>
-      )}
+      </div>
+      <div>
+        <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider mb-1.5">Etapas do Kanban</p>
+        <div className="space-y-1.5">
+          {ETAPAS.map((etapa) => (
+            <label key={etapa} className="flex items-center gap-2 text-xs text-cw-text cursor-pointer">
+              <input
+                type="checkbox"
+                checked={etapasVisiveis[etapa]}
+                onChange={() => onToggleEtapa(etapa)}
+                className="accent-cw-purple h-3.5 w-3.5 rounded"
+              />
+              <span className={cn('h-2.5 w-2.5 rounded-full shrink-0', COLUNA_DOT[etapa])} />
+              {ETAPA_LABEL[etapa]}
+            </label>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -300,11 +301,25 @@ function MiniCalendario({ selecionado, onSelecionar }: {
   );
 }
 
+function etapasIniciais(): Record<Etapa, boolean> {
+  return Object.fromEntries(ETAPAS.map((e) => [e, true])) as Record<Etapa, boolean>;
+}
+
 export default function Kanban() {
   const { cards, loading, criar, moverEtapa, remover, recarregar } = useKanbanReunioes();
   const [diaFiltro, setDiaFiltro] = useState<string | null>(null);
-  const cardsFiltrados = diaFiltro ? cards.filter((c) => chaveDia(c.horario) === diaFiltro) : cards;
+  const [busca, setBusca] = useState('');
+  const [etapasVisiveis, setEtapasVisiveis] = useState<Record<Etapa, boolean>>(etapasIniciais);
   const [showNova, setShowNova] = useState(false);
+
+  const buscaNormalizada = busca.trim().toLowerCase();
+  const cardsFiltrados = cards.filter((c) => {
+    if (diaFiltro && chaveDia(c.horario) !== diaFiltro) return false;
+    if (buscaNormalizada && !c.contato.toLowerCase().includes(buscaNormalizada)) return false;
+    return true;
+  });
+  const toggleEtapa = (etapa: Etapa) => setEtapasVisiveis((prev) => ({ ...prev, [etapa]: !prev[etapa] }));
+  const etapasParaMostrar = ETAPAS.filter((e) => etapasVisiveis[e]);
 
   return (
     <div className="p-8 space-y-6">
@@ -326,47 +341,56 @@ export default function Kanban() {
           </div>
           <p className="text-sm text-cw-muted mt-1">Acompanhe cada reunião marcada até virar cliente (ou não).</p>
         </div>
-        <div className="flex items-center gap-2">
-          <FiltroDiaPopover selecionado={diaFiltro} onSelecionar={setDiaFiltro} />
-          <button
-            onClick={() => setShowNova(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white gradient-primary hover:opacity-90 transition-opacity"
-          >
-            <Plus className="h-4 w-4" /> Nova reunião
-          </button>
-        </div>
+        <button
+          onClick={() => setShowNova(true)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white gradient-primary hover:opacity-90 transition-opacity"
+        >
+          <Plus className="h-4 w-4" /> Nova reunião
+        </button>
       </div>
 
       <GoogleCalendarBar onSincronizado={recarregar} />
 
-      {loading ? (
-        <p className="text-sm text-cw-muted">Carregando board...</p>
-      ) : (
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {ETAPAS.map((etapa) => {
-            const cardsDaEtapa = cardsFiltrados.filter((c) => c.etapa === etapa);
-            return (
-              <div key={etapa} className="shrink-0 w-64">
-                <div className={cn('rounded-t-xl border-t-4 bg-cw-elevated px-3 py-2.5', COLUNA_COR[etapa])}>
-                  <p className="text-xs font-black text-cw-text uppercase tracking-wide">{ETAPA_LABEL[etapa]}</p>
-                  <p className="text-[11px] text-cw-muted font-semibold">{cardsDaEtapa.length} card{cardsDaEtapa.length === 1 ? '' : 's'}</p>
-                </div>
-                <div className="bg-cw-elevated/40 border border-t-0 border-cw-border rounded-b-xl p-2 space-y-2 min-h-[120px]">
-                  {cardsDaEtapa.length === 0 && <p className="text-[11px] text-cw-muted/60 text-center py-4">Vazio</p>}
-                  {cardsDaEtapa.map((card) => (
-                    <KanbanCardEl
-                      key={card.id}
-                      card={card}
-                      onMover={(et) => moverEtapa(card.id, et)}
-                      onRemover={() => remover(card.id)}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+      <div className="flex gap-6 items-stretch">
+        <div className="flex flex-col gap-4 shrink-0">
+          <MiniCalendario selecionado={diaFiltro} onSelecionar={setDiaFiltro} />
+          <FiltrosPainel
+            busca={busca}
+            onBusca={setBusca}
+            etapasVisiveis={etapasVisiveis}
+            onToggleEtapa={toggleEtapa}
+          />
         </div>
-      )}
+
+        {loading ? (
+          <p className="text-sm text-cw-muted">Carregando board...</p>
+        ) : (
+          <div className="flex gap-4 overflow-x-auto pb-4 flex-1 min-w-0">
+            {etapasParaMostrar.map((etapa) => {
+              const cardsDaEtapa = cardsFiltrados.filter((c) => c.etapa === etapa);
+              return (
+                <div key={etapa} className="shrink-0 w-64 flex flex-col">
+                  <div className={cn('rounded-t-xl border-t-4 bg-cw-elevated px-3 py-2.5', COLUNA_COR[etapa])}>
+                    <p className="text-xs font-black text-cw-text uppercase tracking-wide">{ETAPA_LABEL[etapa]}</p>
+                    <p className="text-[11px] text-cw-muted font-semibold">{cardsDaEtapa.length} card{cardsDaEtapa.length === 1 ? '' : 's'}</p>
+                  </div>
+                  <div className="bg-cw-elevated/40 border border-t-0 border-cw-border rounded-b-xl p-2 space-y-2 flex-1 min-h-[120px]">
+                    {cardsDaEtapa.length === 0 && <p className="text-[11px] text-cw-muted/60 text-center py-4">Vazio</p>}
+                    {cardsDaEtapa.map((card) => (
+                      <KanbanCardEl
+                        key={card.id}
+                        card={card}
+                        onMover={(et) => moverEtapa(card.id, et)}
+                        onRemover={() => remover(card.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
