@@ -26,6 +26,7 @@ export interface KanbanCard {
   horario: string | null;
   etapa: Etapa;
   notas: string | null;
+  closer: string | null;
   googleEventId: string | null;
 }
 
@@ -36,6 +37,7 @@ function fromRow(row: any): KanbanCard {
     horario: row.horario,
     etapa: row.etapa,
     notas: row.notas,
+    closer: row.closer,
     googleEventId: row.google_event_id,
   };
 }
@@ -59,12 +61,12 @@ export function useKanbanReunioes() {
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  const criar = useCallback(async (contato: string, horario: string | null, notas: string) => {
+  const criar = useCallback(async (contato: string, horario: string | null, notas: string, closer: string) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
     const { data, error: err } = await supabase
       .from('kanban_reunioes')
-      .insert({ user_id: session.user.id, contato, horario, notas: notas || null })
+      .insert({ user_id: session.user.id, contato, horario, notas: notas || null, closer: closer.trim() || null })
       .select()
       .single();
     if (err) { setError(err.message); return; }
@@ -80,11 +82,21 @@ export function useKanbanReunioes() {
     if (err) { setError(err.message); carregar(); }
   }, [carregar]);
 
+  const atualizarCloser = useCallback(async (id: string, closer: string) => {
+    const valor = closer.trim() || null;
+    setCards((prev) => prev.map((c) => (c.id === id ? { ...c, closer: valor } : c)));
+    const { error: err } = await supabase
+      .from('kanban_reunioes')
+      .update({ closer: valor, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (err) { setError(err.message); carregar(); }
+  }, [carregar]);
+
   const remover = useCallback(async (id: string) => {
     setCards((prev) => prev.filter((c) => c.id !== id));
     const { error: err } = await supabase.from('kanban_reunioes').delete().eq('id', id);
     if (err) { setError(err.message); carregar(); }
   }, [carregar]);
 
-  return { cards, loading, error, criar, moverEtapa, remover, recarregar: carregar };
+  return { cards, loading, error, criar, moverEtapa, atualizarCloser, remover, recarregar: carregar };
 }
