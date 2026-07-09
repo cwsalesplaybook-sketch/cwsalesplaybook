@@ -12,7 +12,7 @@ const SDRS_ATIVOS: Record<string, string> = {
   '1708': 'Kailane Carvalho',   '1407': 'Lara Stefanny',      '1727': 'Raquel Alves',
   '1710': 'José Guilherme',     '1728': 'Fabíola Azevedo',    '1729': 'Enizia Evangelista',
   '1607': 'Caique Silva',       '1555': 'Ana Alice',          '1608': 'Ryan Felipe',
-  '1730': 'Maria Gabriela',     '1707': 'Karoline Santos',    '1685': 'Dayana Ferreira',
+  '1730': 'Maria Gabriela',     '1685': 'Dayana Ferreira',
   '1738': 'Clara Rodrigues',    '1706': 'Raissa Fonseca',     '1335': 'João Paulo',
 };
 

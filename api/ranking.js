@@ -10,7 +10,7 @@ const EXCLUIR_NOMES = [
   'Gustavo Rebouças', 'Bruno França', 'Igor Silva', 'Vítor Matihara',
   'Eric Amaral', 'Ana Debora', 'Aloísio Vasconcelos', 'Beatriz Magalhães',
   'Vanessa Alencar', 'Leonardo Costa', 'Layza Batista', 'Hyorranes Souza',
-  'Wanessa Gomes', 'Victória Viana', 'Eduarda Costa',
+  'Wanessa Gomes', 'Victória Viana', 'Eduarda Costa', 'Karoline Santos',
 ].map(n => n.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase());
 
 function norm(s) {
