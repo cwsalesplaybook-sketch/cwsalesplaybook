@@ -2,6 +2,23 @@ const TOKEN = process.env.PIPEDRIVE_API_TOKEN;
 const SDR_FIELD = 'ce39d035fad6c74095053ffe04bdb9bbc9ae2a53'; // campo "[QUAL] SDR/BDR"
 const PIPELINE_VENDAS = 2; // "Funil de Vendas" — única pipeline que conta como fechamento
 
+// Pipedrive devolve datas em UTC, mas o time opera em horário de Brasília
+// (UTC-3, sem horário de verão desde 2019). Sem esse ajuste, um negócio
+// ganho às 21h-23h59 (Brasília) vira "dia seguinte" em UTC — e se isso
+// acontecer no fim do mês, o fechamento é contado no mês errado.
+const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
+
+/** Desloca um instante UTC pra que os getters getUTC* devolvam o horário de Brasília. */
+function paraBR(dataUtc) {
+  return new Date(dataUtc.getTime() - TZ_OFFSET_MS);
+}
+
+/** Converte string 'YYYY-MM-DD HH:MM:SS' (UTC, formato do Pipedrive) pro mesmo formato em horário de Brasília. */
+function wonTimeLocal(utcStr) {
+  const instante = paraBR(new Date(utcStr.replace(' ', 'T') + 'Z'));
+  return instante.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=300');
@@ -11,7 +28,7 @@ export default async function handler(req, res) {
   const { sdrId } = req.query;
   if (!sdrId) return res.status(400).json({ ok: false, erro: 'sdrId obrigatório' });
 
-  const agora = new Date();
+  const agora = paraBR(new Date());
   const ano = agora.getUTCFullYear();
   const mesNum = agora.getUTCMonth();
   const mes = String(mesNum + 1).padStart(2, '0');
@@ -32,15 +49,16 @@ export default async function handler(req, res) {
       if (!json.success || !Array.isArray(json.data) || json.data.length === 0) break;
       let parar = false;
       for (const deal of json.data) {
-        const wt = deal.won_time || '';
-        if (!wt) continue;
+        const wtRaw = deal.won_time || '';
+        if (!wtRaw) continue;
+        const wt = wonTimeLocal(wtRaw); // ajustado pro horário de Brasília
         if (wt < iniciaMes) { parar = true; break; } // ordenado por won_time DESC → para no mês anterior
         if (!wt.startsWith(prefixo)) continue;
         if (Number(deal.pipeline_id) !== PIPELINE_VENDAS) continue; // só Funil de Vendas
         const id = (deal[SDR_FIELD] != null && deal[SDR_FIELD] !== '') ? String(deal[SDR_FIELD]) : null;
         if (id === String(sdrId)) {
           ganhos++;
-          const dia = wt.slice(0, 10); // 'YYYY-MM-DD' (data do ganho)
+          const dia = wt.slice(0, 10); // 'YYYY-MM-DD' (data do ganho, já em horário de Brasília)
           porDia[dia] = (porDia[dia] || 0) + 1;
         }
       }
@@ -51,7 +69,7 @@ export default async function handler(req, res) {
     // Calcular dias úteis
     const primeiroDia = new Date(Date.UTC(ano, mesNum, 1));
     const ultimoDia   = new Date(Date.UTC(ano, mesNum + 1, 0));
-    const hoje        = new Date();
+    const hoje        = agora;
 
     let diasUteisTotal = 0, diasPassados = 0, diasRestantes = 0;
     for (let d = new Date(primeiroDia); d <= ultimoDia; d.setUTCDate(d.getUTCDate() + 1)) {
