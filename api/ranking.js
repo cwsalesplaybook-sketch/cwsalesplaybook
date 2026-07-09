@@ -26,6 +26,23 @@ function iniciais(nome) {
   return nome.split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
 }
 
+// Pipedrive devolve datas em UTC, mas o time opera em horário de Brasília
+// (UTC-3, sem horário de verão desde 2019). Sem esse ajuste, um negócio
+// fechado entre 21h-23h59 (Brasília) vira "dia seguinte" em UTC — e se
+// isso acontecer no fim do mês, o fechamento entra no mês errado.
+const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
+
+function paraBR(dataUtc) {
+  return new Date(dataUtc.getTime() - TZ_OFFSET_MS);
+}
+
+/** Converte string 'YYYY-MM-DD HH:MM:SS' (UTC, formato do Pipedrive) pro mesmo formato em horário de Brasília. */
+function dataLocal(utcStr) {
+  if (!utcStr) return '';
+  const instante = paraBR(new Date(utcStr.replace(' ', 'T') + 'Z'));
+  return instante.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 async function getUsers() {
   const url = `https://api.pipedrive.com/v1/users?api_token=${TOKEN}&limit=200`;
   const r   = await fetch(url);
@@ -44,7 +61,7 @@ export default async function handler(req, res) {
   try {
     if (!TOKEN) return res.status(500).json({ ok: false, erro: 'PIPEDRIVE_API_TOKEN não configurado' });
 
-    const agora    = new Date();
+    const agora    = paraBR(new Date());
     const ano      = agora.getUTCFullYear();
     const mesNum   = agora.getUTCMonth();
     const mes      = String(mesNum + 1).padStart(2, '0');
@@ -66,8 +83,8 @@ export default async function handler(req, res) {
 
       let parar = false;
       for (const deal of paginaAtual.data) {
-        const ct = deal.close_time || '';
-        const wt = deal.won_time   || '';
+        const ct = dataLocal(deal.close_time); // ajustado pro horário de Brasília
+        const wt = dataLocal(deal.won_time);
         if (!ct) continue;
         if (ct < iniciaMes) { parar = true; break; }           // todos os próximos são mais antigos
         if (!ct.startsWith(prefixo)) continue;                 // fora do mês atual
