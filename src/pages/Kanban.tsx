@@ -5,7 +5,7 @@
  *  e a sincronização por etapa com o Pipedrive ficam para uma fase futura. */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Trash2, Clock, CalendarClock, RefreshCw, LayoutGrid, CalendarDays } from 'lucide-react';
+import { ArrowLeft, Plus, X, Trash2, Clock, CalendarClock, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ETAPAS, ETAPA_LABEL, useKanbanReunioes, type Etapa, type KanbanCard } from '@/hooks/useKanbanReunioes';
 import { useGoogleCalendarConnection } from '@/hooks/useGoogleCalendarConnection';
@@ -20,36 +20,6 @@ const COLUNA_COR: Record<Etapa, string> = {
   contratou: 'border-t-green-500',
   nao_contratou: 'border-t-red-400',
 };
-
-const ETAPA_BADGE_COR: Record<Etapa, string> = {
-  reuniao_marcada: 'bg-cw-purple/10 text-cw-purple',
-  confirmacao_1: 'bg-cw-purple/10 text-cw-purple',
-  confirmacao_2: 'bg-cw-purple/10 text-cw-purple',
-  no_show: 'bg-red-50 text-red-500',
-  em_atendimento: 'bg-amber-50 text-amber-600',
-  link_pagamento: 'bg-amber-50 text-amber-600',
-  contratou: 'bg-green-50 text-green-600',
-  nao_contratou: 'bg-red-50 text-red-500',
-};
-
-/** Chave 'YYYY-MM-DD' local (não UTC) pra agrupar cards por dia da agenda. */
-function chaveDia(iso: string | null): string {
-  if (!iso) return 'sem-data';
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function labelDia(chave: string): string {
-  if (chave === 'sem-data') return 'Sem data marcada';
-  const hoje = new Date();
-  const amanha = new Date(hoje); amanha.setDate(hoje.getDate() + 1);
-  if (chave === chaveDia(hoje.toISOString())) return 'Hoje';
-  if (chave === chaveDia(amanha.toISOString())) return 'Amanhã';
-  const [ano, mes, dia] = chave.split('-').map(Number);
-  const data = new Date(ano, mes - 1, dia);
-  const texto = data.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
-  return texto.charAt(0).toUpperCase() + texto.slice(1);
-}
 
 function formatHorario(iso: string | null) {
   if (!iso) return null;
@@ -196,72 +166,9 @@ function GoogleCalendarBar({ onSincronizado }: { onSincronizado: () => void }) {
   );
 }
 
-function AgendaView({ cards, onMover, onRemover }: {
-  cards: KanbanCard[];
-  onMover: (id: string, etapa: Etapa) => void;
-  onRemover: (id: string) => void;
-}) {
-  const grupos = new Map<string, KanbanCard[]>();
-  for (const card of cards) {
-    const chave = chaveDia(card.horario);
-    if (!grupos.has(chave)) grupos.set(chave, []);
-    grupos.get(chave)!.push(card);
-  }
-  const chaves = [...grupos.keys()].sort((a, b) => {
-    if (a === 'sem-data') return 1;
-    if (b === 'sem-data') return -1;
-    return a.localeCompare(b);
-  });
-
-  if (chaves.length === 0) {
-    return <p className="text-sm text-cw-muted text-center py-8">Nenhuma reunião marcada ainda.</p>;
-  }
-
-  return (
-    <div className="space-y-5 max-w-2xl">
-      {chaves.map((chave) => (
-        <div key={chave}>
-          <p className="text-xs font-black text-cw-purple uppercase tracking-wider mb-2">{labelDia(chave)}</p>
-          <div className="space-y-2">
-            {grupos.get(chave)!.map((card) => {
-              const horarioFmt = card.horario
-                ? new Date(card.horario).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-                : null;
-              return (
-                <div key={card.id} className="group/row flex items-center gap-3 bg-white border border-cw-border rounded-xl px-3 py-2.5 shadow-sm hover:shadow-md transition-shadow">
-                  <span className="text-xs font-bold text-cw-muted w-12 shrink-0">{horarioFmt ?? '--:--'}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-cw-text truncate">{card.contato}</p>
-                    {card.notas && <p className="text-[11px] text-cw-muted line-clamp-1">{card.notas}</p>}
-                  </div>
-                  <select
-                    value={card.etapa}
-                    onChange={(e) => onMover(card.id, e.target.value as Etapa)}
-                    className={cn('text-[11px] font-semibold rounded-lg px-2 py-1.5 border-0 shrink-0 focus:outline-none focus:ring-1 focus:ring-cw-purple', ETAPA_BADGE_COR[card.etapa])}
-                  >
-                    {ETAPAS.map((et) => <option key={et} value={et}>{ETAPA_LABEL[et]}</option>)}
-                  </select>
-                  <button
-                    onClick={() => onRemover(card.id)}
-                    title="Remover card"
-                    className="opacity-0 group-hover/row:opacity-100 text-cw-muted/60 hover:text-red-500 transition-opacity shrink-0"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default function Kanban() {
   const { cards, loading, criar, moverEtapa, remover, recarregar } = useKanbanReunioes();
   const [showNova, setShowNova] = useState(false);
-  const [visao, setVisao] = useState<'board' | 'agenda'>('agenda');
 
   return (
     <div className="p-8 space-y-6">
@@ -293,25 +200,8 @@ export default function Kanban() {
 
       <GoogleCalendarBar onSincronizado={recarregar} />
 
-      <div className="flex items-center gap-1 bg-cw-elevated/60 border border-cw-border rounded-lg p-1 w-fit">
-        <button
-          onClick={() => setVisao('agenda')}
-          className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-colors', visao === 'agenda' ? 'bg-white text-cw-purple shadow-sm' : 'text-cw-muted hover:text-cw-text')}
-        >
-          <CalendarDays className="h-3.5 w-3.5" /> Agenda por dia
-        </button>
-        <button
-          onClick={() => setVisao('board')}
-          className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-colors', visao === 'board' ? 'bg-white text-cw-purple shadow-sm' : 'text-cw-muted hover:text-cw-text')}
-        >
-          <LayoutGrid className="h-3.5 w-3.5" /> Board por etapa
-        </button>
-      </div>
-
       {loading ? (
         <p className="text-sm text-cw-muted">Carregando board...</p>
-      ) : visao === 'agenda' ? (
-        <AgendaView cards={cards} onMover={moverEtapa} onRemover={remover} />
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-4">
           {ETAPAS.map((etapa) => {
