@@ -1,6 +1,6 @@
 /** Biblioteca de Estudos — livros, podcasts, vídeos, artigos e cursos recomendados. */
 import { useState } from 'react';
-import { BookOpen, Headphones, Play, FileText, GraduationCap, ExternalLink } from 'lucide-react';
+import { BookOpen, Headphones, Play, FileText, GraduationCap, ExternalLink, FileDown } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { cn } from '@/lib/utils';
 
@@ -14,31 +14,33 @@ const ABAS: { key: Aba; label: string; Icon: React.ElementType }[] = [
   { key: 'cursos',   label: 'Cursos',    Icon: GraduationCap  },
 ];
 
-interface Livro { titulo: string; autor: string; resumo: string }
+interface Livro { titulo: string; autor: string; resumo: string; pdf?: string }
 interface Secao { categoria: string; livros: Livro[] }
 
 const LIVROS: Secao[] = [
   {
     categoria: 'Vendas',
     livros: [
-      { titulo: 'A Bíblia de Vendas', autor: 'Jeffrey Gitomer', resumo: 'Manual completo de técnicas de vendas, prospecção e relacionamento com clientes.' },
-      { titulo: 'Prospecção Fanática', autor: 'Jeb Blount', resumo: 'Guia definitivo para preencher o pipeline e manter uma cadência de prospecção consistente.' },
-      { titulo: 'SPIN Selling', autor: 'Neil Rackham', resumo: 'Metodologia baseada em perguntas de Situação, Problema, Implicação e Necessidade para grandes vendas.' },
-      { titulo: 'A Venda Desafiadora', autor: 'Matthew Dixon e Brent Adamson', resumo: 'Como SDRs de alta performance ensinam, personalizam e controlam a conversa de vendas.' },
+      { titulo: 'A Bíblia de Vendas', autor: 'Jeffrey Gitomer', resumo: 'Manual completo de técnicas de vendas, prospecção e relacionamento com clientes.', pdf: '/livros/a-biblia-de-vendas.pdf' },
+      { titulo: 'Prospecção Fanática', autor: 'Jeb Blount', resumo: 'Guia definitivo para preencher o pipeline e manter uma cadência de prospecção consistente.', pdf: '/livros/prospeccao-fanatica.pdf' },
+      { titulo: 'SPIN Selling', autor: 'Neil Rackham', resumo: 'Metodologia baseada em perguntas de Situação, Problema, Implicação e Necessidade para grandes vendas.', pdf: '/livros/spin-selling.pdf' },
+      { titulo: 'A Venda Desafiadora', autor: 'Matthew Dixon e Brent Adamson', resumo: 'Como SDRs de alta performance ensinam, personalizam e controlam a conversa de vendas.', pdf: '/livros/a-venda-desafiadora.pdf' },
+      { titulo: 'Objeções', autor: 'Jeb Blount', resumo: 'Guia definitivo para dominar a arte e a ciência de superar o não em cada etapa do processo de vendas.', pdf: '/livros/objecoes.pdf' },
+      { titulo: 'Inteligência Emocional em Vendas', autor: 'Jeb Blount', resumo: 'Como os vendedores de alta performance usam a inteligência emocional para fechar negócios complexos.', pdf: '/livros/inteligencia-emocional-em-vendas.pdf' },
     ],
   },
   {
     categoria: 'Gestão de Vendas',
     livros: [
-      { titulo: 'Receita Previsível', autor: 'Aaron Ross', resumo: 'O livro que criou o modelo de SDR. Como construir um motor de geração de leads previsível.' },
-      { titulo: 'Gestão de Alta Performance', autor: 'Andrew Grove', resumo: 'Fundamentos de gestão para líderes que querem extrair o máximo de seus times.' },
+      { titulo: 'Receita Previsível', autor: 'Aaron Ross', resumo: 'O livro que criou o modelo de SDR. Como construir um motor de geração de leads previsível.', pdf: '/livros/receita-previsivel.pdf' },
+      { titulo: 'Gestão de Alta Performance', autor: 'Andrew Grove', resumo: 'Fundamentos de gestão para líderes que querem extrair o máximo de seus times.', pdf: '/livros/gestao-de-alta-performance.pdf' },
       { titulo: 'O Pipeline de Vendas', autor: 'Mike Weinberg', resumo: 'Como criar, gerenciar e maximizar o pipeline para bater metas consistentemente.' },
     ],
   },
   {
     categoria: 'Técnicas de Negociação',
     livros: [
-      { titulo: 'Nunca Divida a Diferença', autor: 'Chris Voss', resumo: 'Técnicas de negociação do FBI aplicadas em vendas, baseadas em empatia e inteligência tática.' },
+      { titulo: 'Nunca Divida a Diferença', autor: 'Chris Voss', resumo: 'Técnicas de negociação do FBI aplicadas em vendas, baseadas em empatia e inteligência tática.', pdf: '/livros/nunca-divida-a-diferenca.pdf' },
       { titulo: 'Como Chegar ao Sim', autor: 'Roger Fisher e William Ury', resumo: 'Método de Harvard para negociação baseada em princípios, não em posições.' },
     ],
   },
@@ -125,13 +127,26 @@ export default function Biblioteca() {
               <div key={categoria} className="space-y-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-cw-purple-light">{categoria}</h3>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {livros.map(({ titulo, autor, resumo }) => (
-                    <div key={titulo} className="cw-card p-4 flex gap-3 hover:border-cw-purple/30 transition-colors">
+                  {livros.map(({ titulo, autor, resumo, pdf }) => (
+                    <div
+                      key={titulo}
+                      role={pdf ? 'button' : undefined}
+                      tabIndex={pdf ? 0 : undefined}
+                      onClick={pdf ? () => window.open(pdf, '_blank', 'noopener,noreferrer') : undefined}
+                      onKeyDown={pdf ? (e) => { if (e.key === 'Enter') window.open(pdf, '_blank', 'noopener,noreferrer'); } : undefined}
+                      className={cn(
+                        'cw-card p-4 flex gap-3 transition-colors',
+                        pdf ? 'hover:border-cw-purple/50 cursor-pointer' : 'hover:border-cw-purple/30'
+                      )}
+                    >
                       <div className="h-10 w-10 rounded bg-cw-purple/15 flex items-center justify-center shrink-0">
                         <BookOpen className="h-5 w-5 text-cw-purple-light" />
                       </div>
-                      <div className="space-y-1">
-                        <p className="font-semibold text-sm text-cw-text">{titulo}</p>
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="font-semibold text-sm text-cw-text">{titulo}</p>
+                          {pdf && <FileDown className="h-4 w-4 text-cw-purple-light/60 shrink-0 mt-0.5" />}
+                        </div>
                         <p className="text-xs text-cw-purple-light/80 font-medium">{autor}</p>
                         <p className="text-xs text-cw-muted leading-relaxed">{resumo}</p>
                       </div>
