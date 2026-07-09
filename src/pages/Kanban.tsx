@@ -3,9 +3,9 @@
  *  Acesso opcional via ícone na Meta do Mês (não fica no menu principal).
  *  Hoje é 100% manual; a leitura automática do Google Calendar de cada SDR
  *  e a sincronização por etapa com o Pipedrive ficam para uma fase futura. */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Trash2, Clock, CalendarClock, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Plus, X, Trash2, Clock, CalendarClock, RefreshCw, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ETAPAS, ETAPA_LABEL, useKanbanReunioes, type Etapa, type KanbanCard } from '@/hooks/useKanbanReunioes';
 import { useGoogleCalendarConnection } from '@/hooks/useGoogleCalendarConnection';
@@ -175,6 +175,57 @@ function GoogleCalendarBar({ onSincronizado }: { onSincronizado: () => void }) {
   );
 }
 
+function formatDiaCurto(chave: string) {
+  const [ano, mes, dia] = chave.split('-').map(Number);
+  return new Date(ano, mes - 1, dia).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+
+function FiltroDiaPopover({ selecionado, onSelecionar }: {
+  selecionado: string | null;
+  onSelecionar: (chave: string | null) => void;
+}) {
+  const [aberto, setAberto] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!aberto) return;
+    const aoClicarFora = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setAberto(false);
+    };
+    document.addEventListener('mousedown', aoClicarFora);
+    return () => document.removeEventListener('mousedown', aoClicarFora);
+  }, [aberto]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setAberto((v) => !v)}
+        className={cn(
+          'flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs border transition-colors',
+          selecionado ? 'bg-cw-purple text-white border-cw-purple' : 'text-cw-muted border-cw-border hover:text-cw-purple hover:border-cw-purple/40',
+        )}
+      >
+        <CalendarDays className="h-3.5 w-3.5" />
+        {selecionado ? formatDiaCurto(selecionado) : 'Filtrar por dia'}
+        {selecionado && (
+          <X
+            className="h-3.5 w-3.5 ml-0.5 hover:opacity-70"
+            onClick={(e) => { e.stopPropagation(); onSelecionar(null); }}
+          />
+        )}
+      </button>
+      {aberto && (
+        <div className="absolute z-20 mt-2 right-0">
+          <MiniCalendario
+            selecionado={selecionado}
+            onSelecionar={(chave) => { onSelecionar(chave); setAberto(false); }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MiniCalendario({ selecionado, onSelecionar }: {
   selecionado: string | null;
   onSelecionar: (chave: string | null) => void;
@@ -275,48 +326,47 @@ export default function Kanban() {
           </div>
           <p className="text-sm text-cw-muted mt-1">Acompanhe cada reunião marcada até virar cliente (ou não).</p>
         </div>
-        <button
-          onClick={() => setShowNova(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white gradient-primary hover:opacity-90 transition-opacity"
-        >
-          <Plus className="h-4 w-4" /> Nova reunião
-        </button>
+        <div className="flex items-center gap-2">
+          <FiltroDiaPopover selecionado={diaFiltro} onSelecionar={setDiaFiltro} />
+          <button
+            onClick={() => setShowNova(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white gradient-primary hover:opacity-90 transition-opacity"
+          >
+            <Plus className="h-4 w-4" /> Nova reunião
+          </button>
+        </div>
       </div>
 
       <GoogleCalendarBar onSincronizado={recarregar} />
 
-      <div className="flex gap-6 items-start">
-        <MiniCalendario selecionado={diaFiltro} onSelecionar={setDiaFiltro} />
-
-        {loading ? (
-          <p className="text-sm text-cw-muted">Carregando board...</p>
-        ) : (
-          <div className="flex gap-4 overflow-x-auto pb-4 flex-1 min-w-0">
-            {ETAPAS.map((etapa) => {
-              const cardsDaEtapa = cardsFiltrados.filter((c) => c.etapa === etapa);
-              return (
-                <div key={etapa} className="shrink-0 w-64">
-                  <div className={cn('rounded-t-xl border-t-4 bg-cw-elevated px-3 py-2.5', COLUNA_COR[etapa])}>
-                    <p className="text-xs font-black text-cw-text uppercase tracking-wide">{ETAPA_LABEL[etapa]}</p>
-                    <p className="text-[11px] text-cw-muted font-semibold">{cardsDaEtapa.length} card{cardsDaEtapa.length === 1 ? '' : 's'}</p>
-                  </div>
-                  <div className="bg-cw-elevated/40 border border-t-0 border-cw-border rounded-b-xl p-2 space-y-2 min-h-[120px]">
-                    {cardsDaEtapa.length === 0 && <p className="text-[11px] text-cw-muted/60 text-center py-4">Vazio</p>}
-                    {cardsDaEtapa.map((card) => (
-                      <KanbanCardEl
-                        key={card.id}
-                        card={card}
-                        onMover={(et) => moverEtapa(card.id, et)}
-                        onRemover={() => remover(card.id)}
-                      />
-                    ))}
-                  </div>
+      {loading ? (
+        <p className="text-sm text-cw-muted">Carregando board...</p>
+      ) : (
+        <div className="flex gap-4 overflow-x-auto pb-4">
+          {ETAPAS.map((etapa) => {
+            const cardsDaEtapa = cardsFiltrados.filter((c) => c.etapa === etapa);
+            return (
+              <div key={etapa} className="shrink-0 w-64">
+                <div className={cn('rounded-t-xl border-t-4 bg-cw-elevated px-3 py-2.5', COLUNA_COR[etapa])}>
+                  <p className="text-xs font-black text-cw-text uppercase tracking-wide">{ETAPA_LABEL[etapa]}</p>
+                  <p className="text-[11px] text-cw-muted font-semibold">{cardsDaEtapa.length} card{cardsDaEtapa.length === 1 ? '' : 's'}</p>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                <div className="bg-cw-elevated/40 border border-t-0 border-cw-border rounded-b-xl p-2 space-y-2 min-h-[120px]">
+                  {cardsDaEtapa.length === 0 && <p className="text-[11px] text-cw-muted/60 text-center py-4">Vazio</p>}
+                  {cardsDaEtapa.map((card) => (
+                    <KanbanCardEl
+                      key={card.id}
+                      card={card}
+                      onMover={(et) => moverEtapa(card.id, et)}
+                      onRemover={() => remover(card.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
