@@ -809,12 +809,16 @@ function PersonalMetaView() {
   );
 }
 
-/** Wrapper: lideranças com squad veem o toggle Meta do Time / Minha Meta.
+/** Wrapper: quem tem squads_lideradas (líderes, ou acesso equivalente
+ *  concedido manualmente) vê o toggle Meta do Time / Minha Meta — não
+ *  depende do papel do dashboard, então dá pra dar essa visão sem trocar
+ *  o dashboard principal da pessoa (ex: um Representante que também
+ *  acompanha o time todo).
  *  Demais usuários veem direto a visão individual.
  *  A celebração de promoção aparece no topo para quem tiver uma pendente. */
 export default function MetaMes() {
-  const { papel, squadsLideradas } = useSidebarContext();
-  const isLider = papel === 'Liderança' && squadsLideradas.length > 0;
+  const { squadsLideradas } = useSidebarContext();
+  const isLider = squadsLideradas.length > 0;
   const [vista, setVista] = useState<'time' | 'individual'>('time');
 
   if (!isLider) {
