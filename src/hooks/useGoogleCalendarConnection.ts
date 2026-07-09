@@ -9,6 +9,20 @@ const GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
 const REDIRECT_PARAM = 'gcal';
 const REDIRECT_VALUE = 'connect';
 
+/** supabase.functions.invoke() só devolve "Edge Function returned a non-2xx
+ *  status code" em err.message — a mensagem real fica no corpo da resposta
+ *  (err.context), que precisa ser lido separadamente. */
+async function mensagemDeErro(err: unknown): Promise<string> {
+  const context = (err as { context?: Response } | null)?.context;
+  if (context && typeof context.json === 'function') {
+    try {
+      const body = await context.clone().json();
+      if (typeof body?.error === 'string') return body.error;
+    } catch { /* corpo não era JSON */ }
+  }
+  return err instanceof Error ? err.message : 'Erro desconhecido';
+}
+
 export function useGoogleCalendarConnection() {
   const [connected, setConnected] = useState<boolean | null>(null);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
@@ -18,7 +32,7 @@ export function useGoogleCalendarConnection() {
 
   const checarStatus = useCallback(async () => {
     const { data, error: err } = await supabase.functions.invoke('calendar-status');
-    if (err) { setError(err.message); return; }
+    if (err) { setError(await mensagemDeErro(err)); return; }
     setConnected(!!(data as { connected?: boolean })?.connected);
     setLastSyncedAt((data as { lastSyncedAt?: string | null })?.lastSyncedAt ?? null);
   }, []);
@@ -42,7 +56,7 @@ export function useGoogleCalendarConnection() {
         const { error: err } = await supabase.functions.invoke('calendar-connect', {
           body: { refresh_token: refreshToken },
         });
-        if (err) setError(err.message);
+        if (err) setError(await mensagemDeErro(err));
       } else {
         setError('Google não devolveu permissão de acesso ao calendário — tente conectar de novo.');
       }
@@ -69,8 +83,12 @@ export function useGoogleCalendarConnection() {
     setError(null);
     const { data, error: err } = await supabase.functions.invoke('calendar-sync');
     setSyncing(false);
-    if (err || (data as { error?: string })?.error) {
-      setError(err?.message || (data as { error?: string })?.error || 'Falha ao sincronizar');
+    if (err) {
+      setError(await mensagemDeErro(err));
+      return null;
+    }
+    if ((data as { error?: string })?.error) {
+      setError((data as { error?: string }).error!);
       return null;
     }
     await checarStatus();
