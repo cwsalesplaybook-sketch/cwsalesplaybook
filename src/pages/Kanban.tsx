@@ -48,12 +48,13 @@ function formatHorario(iso: string | null) {
 }
 
 function NovaReuniaoModal({ onSave, onClose }: {
-  onSave: (contato: string, horario: string | null, notas: string) => void;
+  onSave: (contato: string, horario: string | null, notas: string, closer: string) => void;
   onClose: () => void;
 }) {
   const [contato, setContato] = useState('');
   const [horario, setHorario] = useState('');
   const [notas, setNotas] = useState('');
+  const [closer, setCloser] = useState('');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -68,6 +69,14 @@ function NovaReuniaoModal({ onSave, onClose }: {
             <input
               value={contato} onChange={(e) => setContato(e.target.value)}
               placeholder="Nome do lead ou empresa"
+              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Closer responsável (opcional)</label>
+            <input
+              value={closer} onChange={(e) => setCloser(e.target.value)}
+              placeholder="Nome ou e-mail do closer"
               className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple"
             />
           </div>
@@ -87,7 +96,7 @@ function NovaReuniaoModal({ onSave, onClose }: {
           </div>
         </div>
         <button
-          onClick={() => contato.trim() && onSave(contato.trim(), horario ? new Date(horario).toISOString() : null, notas)}
+          onClick={() => contato.trim() && onSave(contato.trim(), horario ? new Date(horario).toISOString() : null, notas, closer)}
           disabled={!contato.trim()}
           className="w-full mt-5 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white gradient-primary hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
@@ -98,10 +107,12 @@ function NovaReuniaoModal({ onSave, onClose }: {
   );
 }
 
-function KanbanCardEl({ card, onMover, onRemover }: {
-  card: KanbanCard; onMover: (etapa: Etapa) => void; onRemover: () => void;
+function KanbanCardEl({ card, onMover, onRemover, onCloser }: {
+  card: KanbanCard; onMover: (etapa: Etapa) => void; onRemover: () => void; onCloser: (closer: string) => void;
 }) {
   const horarioFmt = formatHorario(card.horario);
+  const [closerEdit, setCloserEdit] = useState(card.closer ?? '');
+
   return (
     <div className="group/card bg-white border border-cw-border rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-2">
@@ -120,6 +131,13 @@ function KanbanCardEl({ card, onMover, onRemover }: {
         </p>
       )}
       {card.notas && <p className="text-[11px] text-cw-muted mt-1.5 line-clamp-2">{card.notas}</p>}
+      <input
+        value={closerEdit}
+        onChange={(e) => setCloserEdit(e.target.value)}
+        onBlur={() => closerEdit.trim() !== (card.closer ?? '') && onCloser(closerEdit)}
+        placeholder="Closer responsável..."
+        className="w-full mt-2 text-[11px] bg-transparent border-b border-dashed border-cw-border px-0.5 py-1 text-cw-purple font-semibold focus:outline-none focus:border-cw-purple"
+      />
       <select
         value={card.etapa}
         onChange={(e) => onMover(e.target.value as Etapa)}
@@ -306,8 +324,8 @@ function etapasIniciais(): Record<Etapa, boolean> {
 }
 
 export default function Kanban() {
-  const { cards, loading, criar, moverEtapa, remover, recarregar } = useKanbanReunioes();
-  const [diaFiltro, setDiaFiltro] = useState<string | null>(null);
+  const { cards, loading, criar, moverEtapa, atualizarCloser, remover, recarregar } = useKanbanReunioes();
+  const [diaFiltro, setDiaFiltro] = useState<string | null>(() => chaveDia(new Date().toISOString()));
   const [busca, setBusca] = useState('');
   const [etapasVisiveis, setEtapasVisiveis] = useState<Record<Etapa, boolean>>(etapasIniciais);
   const [showNova, setShowNova] = useState(false);
@@ -315,7 +333,11 @@ export default function Kanban() {
   const buscaNormalizada = busca.trim().toLowerCase();
   const cardsFiltrados = cards.filter((c) => {
     if (diaFiltro && chaveDia(c.horario) !== diaFiltro) return false;
-    if (buscaNormalizada && !c.contato.toLowerCase().includes(buscaNormalizada)) return false;
+    if (buscaNormalizada) {
+      const noContato = c.contato.toLowerCase().includes(buscaNormalizada);
+      const noCloser = (c.closer ?? '').toLowerCase().includes(buscaNormalizada);
+      if (!noContato && !noCloser) return false;
+    }
     return true;
   });
   const toggleEtapa = (etapa: Etapa) => setEtapasVisiveis((prev) => ({ ...prev, [etapa]: !prev[etapa] }));
@@ -325,7 +347,7 @@ export default function Kanban() {
     <div className="p-8 space-y-6">
       {showNova && (
         <NovaReuniaoModal
-          onSave={(contato, horario, notas) => { criar(contato, horario, notas); setShowNova(false); }}
+          onSave={(contato, horario, notas, closer) => { criar(contato, horario, notas, closer); setShowNova(false); }}
           onClose={() => setShowNova(false)}
         />
       )}
@@ -382,6 +404,7 @@ export default function Kanban() {
                         card={card}
                         onMover={(et) => moverEtapa(card.id, et)}
                         onRemover={() => remover(card.id)}
+                        onCloser={(closer) => atualizarCloser(card.id, closer)}
                       />
                     ))}
                   </div>
