@@ -7,7 +7,7 @@ import {
   ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
   Loader2, Users, Library, GraduationCap, FileText, Percent, Star,
-  PartyPopper, Puzzle,
+  PartyPopper, Puzzle, Package,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,7 @@ interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users, Puzzle,
+  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users, Puzzle, Package,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
@@ -33,6 +33,10 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/meta',       label: 'Meta do Mês',             icon: 'Target',         end: false },
   { to: '/playbook',   label: 'Playbook',                icon: 'BookOpen',       end: false },
   { to: '/',           label: 'Sales Enablement',        icon: 'LayoutDashboard',end: true  },
+  { to: '/planos',     label: 'Planos e Módulos',        icon: 'Package',        end: false },
+  { to: '/calculadora',label: 'Calculadora',             icon: 'Calculator',     end: false },
+  { to: '/faq',        label: 'FAQ',                     icon: 'HelpCircle',     end: false },
+  { to: '/changelog',  label: 'Changelog',               icon: 'Zap',            end: false },
   { to: '/pipeline',    label: 'Pipeline',                icon: 'BarChart2',       end: false },
   { to: '/automacoes',  label: 'Automações',             icon: 'Zap',             end: false },
   { to: '/historias',   label: 'Histórias de Sucesso',   icon: 'Trophy',          end: false },
@@ -44,7 +48,7 @@ const NAV_PADRAO: NavItem[] = [
 ];
 
 const SECTIONS = [
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/pipeline', '/automacoes'] },
+  { label: 'Comercial',      routes: ['/meta', '/playbook', '/', '/planos', '/calculadora', '/faq', '/changelog', '/pipeline', '/automacoes'] },
   { label: 'Cultura e Time', routes: ['/historias', '/biblioteca', '/regras', '/onboarding', '/carreira'] },
 ];
 
