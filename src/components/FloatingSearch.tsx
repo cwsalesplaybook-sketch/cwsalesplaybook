@@ -29,7 +29,7 @@ const DESTINOS_SDR: Destino[] = [
     tags: ['calculadora', 'calcular', 'calcula', 'proposta', 'simular', 'simulação'],
     label: 'Calculadora',
     descricao: 'Monte e compare propostas de planos',
-    path: '/', tab: 'calculadora',
+    path: '/calculadora',
     cor: 'bg-cw-purple/20 text-cw-purple-light border-cw-purple/30',
   },
   {
@@ -37,7 +37,7 @@ const DESTINOS_SDR: Destino[] = [
     tags: ['totem', 'autoatendimento', 'dispositivo', 'quiosque'],
     label: 'Totem — FAQ',
     descricao: 'Dúvidas sobre o Totem de Autoatendimento',
-    path: '/', tab: 'faq',
+    path: '/faq',
     cor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
   },
   {
@@ -45,7 +45,7 @@ const DESTINOS_SDR: Destino[] = [
     tags: ['faq', 'dúvida', 'duvida', 'pergunta frequente', 'perguntas'],
     label: 'FAQ',
     descricao: 'Perguntas frequentes sobre produto e planos',
-    path: '/', tab: 'faq',
+    path: '/faq',
     cor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
   },
   {
@@ -53,7 +53,7 @@ const DESTINOS_SDR: Destino[] = [
     tags: ['changelog', 'novidade', 'atualização', 'atualizacao', 'update', 'mudança'],
     label: 'Changelog',
     descricao: 'Últimas atualizações da plataforma',
-    path: '/', tab: 'changelog',
+    path: '/changelog',
     cor: 'bg-cw-yellow/20 text-cw-yellow border-cw-yellow/30',
   },
   {
@@ -61,7 +61,7 @@ const DESTINOS_SDR: Destino[] = [
     tags: ['aviso', 'avisos', 'mural', 'comunicado'],
     label: 'Mural de Avisos',
     descricao: 'Comunicados e atualizações do time',
-    path: '/', tab: 'inicio',
+    path: '/',
     cor: 'bg-cw-red/20 text-cw-red border-cw-red/30',
   },
   {
