@@ -18,6 +18,11 @@ const SDRS_ATIVOS: Record<string, string> = {
   '1738': 'Clara Rodrigues', '1706': 'Raissa Fonseca', '1335': 'João Paulo',
 };
 
+// Remove acentos e normaliza caixa/espaços pra comparar nomes sem depender de digitação exata.
+function norm(s: string) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
 interface MetaData { meta1: number; meta2: number; meta3: number; mega1: number; mega2: number; mega3: number; ajuste: number; sdrId: string; }
 interface EvolucaoPonto { dia: string; noDia: number; acumulado: number; }
 interface ApiData  { ganhos: number; mes: string; diasUteisTotal: number; diasPassados: number; diasRestantes: number; diasUteisSemanais: number; evolucao?: EvolucaoPonto[]; }
@@ -48,10 +53,11 @@ function getMensagemStatus(ganhos: number, metas: { label: string; value: number
   return { texto: `Você está no forecast da ${proxima.label}`, nivel: 0 };
 }
 
-function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose }: {
+function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, vinculoConfirmado, onSave, onClose }: {
   metaData: MetaData;
   nomeDetectado?: string;
   pipedriveUsers: { id: string; name: string }[];
+  vinculoConfirmado?: boolean;
   onSave: (d: MetaData) => void;
   onClose: () => void;
 }) {
@@ -60,9 +66,8 @@ function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose 
   const [nomeSelecionado, setNomeSelecionado] = useState(nomeDetectado || SDRS_ATIVOS[metaData.sdrId] || '');
   const [aberto, setAberto] = useState(false);
 
-  // Mescla a lista ao vivo do Pipedrive com a lista fixa de SDRs — a live pode
-  // não trazer todo mundo (conta inativa, paginação), mas o time mantém
-  // SDRS_ATIVOS como fonte de verdade dos IDs válidos pro campo "[QUAL] SDR/BDR".
+  // Mescla a lista ao vivo das opções do campo SDR/BDR com a lista fixa —
+  // só entra em jogo se a chamada a /api/sdr-options falhar (pipedriveUsers vazio).
   const idsVivos = new Set(pipedriveUsers.map(u => u.id));
   const lista = [
     ...pipedriveUsers,
@@ -105,39 +110,49 @@ function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose 
           <button onClick={onClose} className="text-cw-muted hover:text-cw-text transition-colors"><X className="h-5 w-5" /></button>
         </div>
         <div className="space-y-4">
-          <div className="relative">
-            <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Seu nome (SDR)</label>
+          {vinculoConfirmado ? (
+            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-green-200 bg-green-50">
+              <Check className="h-4 w-4 text-green-600 shrink-0" />
+              <div>
+                <p className="text-xs font-bold text-green-700">Vinculado como {nomeDetectado}</p>
+                <p className="text-[10px] text-green-600/80">Identificamos você automaticamente pelo seu e-mail de login</p>
+              </div>
+            </div>
+          ) : (
             <div className="relative">
-              <input
-                type="text"
-                value={busca}
-                onChange={e => { setBusca(e.target.value); setNomeSelecionado(''); setAberto(true); }}
-                onFocus={() => setAberto(true)}
-                placeholder="Digite seu nome..."
-                className={cn(
-                  'w-full bg-cw-elevated border rounded-xl px-3 py-2.5 pr-8 text-sm text-cw-text placeholder:text-cw-muted focus:outline-none',
-                  nomeSelecionado ? 'border-green-400 bg-green-50' : 'border-cw-border focus:border-cw-purple'
+              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Seu nome (SDR)</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={busca}
+                  onChange={e => { setBusca(e.target.value); setNomeSelecionado(''); setAberto(true); }}
+                  onFocus={() => setAberto(true)}
+                  placeholder="Digite seu nome..."
+                  className={cn(
+                    'w-full bg-cw-elevated border rounded-xl px-3 py-2.5 pr-8 text-sm text-cw-text placeholder:text-cw-muted focus:outline-none',
+                    nomeSelecionado ? 'border-green-400 bg-green-50' : 'border-cw-border focus:border-cw-purple'
+                  )}
+                />
+                {nomeSelecionado && (
+                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600 pointer-events-none" />
                 )}
-              />
-              {nomeSelecionado && (
-                <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600 pointer-events-none" />
+              </div>
+              {aberto && filtrados.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-cw-border rounded-xl shadow-lg overflow-hidden">
+                  {filtrados.map(u => (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => selecionarUsuario(u)}
+                      className="w-full text-left px-3 py-2.5 text-sm text-cw-text hover:bg-cw-purple/5 hover:text-cw-purple transition-colors"
+                    >
+                      {u.name}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-            {aberto && filtrados.length > 0 && (
-              <div className="absolute z-10 mt-1 w-full bg-white border border-cw-border rounded-xl shadow-lg overflow-hidden">
-                {filtrados.map(u => (
-                  <button
-                    key={u.id}
-                    type="button"
-                    onClick={() => selecionarUsuario(u)}
-                    className="w-full text-left px-3 py-2.5 text-sm text-cw-text hover:bg-cw-purple/5 hover:text-cw-purple transition-colors"
-                  >
-                    {u.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
           {[1, 2, 3].map(n => (
             <div key={n}>
               <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta {n} {n === 3 && '⭐'}</label>
@@ -163,6 +178,7 @@ function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, onSave, onClose 
         </div>
         <button
           onClick={() => {
+            if (vinculoConfirmado) { onSave(form); return; }
             const resolvido = resolverUsuario();
             if (resolvido) { onSave({ ...form, sdrId: resolvido.id }); return; }
             if (!form.sdrId) { alert('Não encontrei esse SDR pelo nome digitado. Selecione um nome na lista.'); return; }
@@ -206,6 +222,7 @@ function PersonalMetaView() {
     try { localStorage.setItem(`cw-sdr-tier:${userId}`, t); } catch { /* ignore */ }
   };
   const [autoNome, setAutoNome]   = useState('');
+  const [vinculoConfirmado, setVinculoConfirmado] = useState(false);
   const [pipedriveUsers, setPipedriveUsers] = useState<{ id: string; name: string }[]>([]);
   const [ajusteModal, setAjusteModal] = useState<'add' | 'sub' | null>(null);
   const [ajusteQtd, setAjusteQtd]   = useState('1');
@@ -237,54 +254,71 @@ function PersonalMetaView() {
     if (data) {
       setMetaData({ meta1: data.meta1, meta2: data.meta2, meta3: data.meta3, mega1: data.mega1 ?? 0, mega2: data.mega2 ?? 0, mega3: data.mega3 ?? 0, ajuste: data.ajuste, sdrId: data.sdr_id });
     } else {
-      // Auto-detecta o SDR pelo e-mail do login — sem precisar selecionar manualmente
+      // Auto-detecta o SDR pelo nome do login — sem precisar buscar manualmente.
+      // O "sdrId" do app não é a conta de usuário do Pipedrive, é o id de uma
+      // opção do campo do negócio "[QUAL] SDR/BDR" (só tem nome, sem e-mail),
+      // por isso o match é sempre por nome, nunca por e-mail. Ver /api/sdr-options.
       let autoSdrId = '';
       let autoSdrNome = '';
+      let confiavel = false; // match exato ou "contém" — confiável o bastante pra auto-salvar
       try {
-        const r = await fetch('/api/pipedrive-users');
+        const r = await fetch('/api/sdr-options');
         const json = await r.json();
         if (json.ok) {
-          const users = json.users as { id: string; name: string; email: string }[];
-          setPipedriveUsers(users.map(u => ({ id: u.id, name: u.name })));
-          if (session.user.email) {
-            // 1º: e-mail exato
-            const byEmail = users.find(u => u.email?.toLowerCase() === session.user.email!.toLowerCase());
-            if (byEmail) { autoSdrId = byEmail.id; autoSdrNome = byEmail.name; }
-            else {
-              const fullName = (session.user.user_metadata?.full_name ?? '').toLowerCase().trim();
-              if (fullName) {
-                // 2º: nome completo contém ou é contido pelo nome do Pipedrive
-                let match = users.find(u => {
-                  const pn = u.name.toLowerCase();
-                  return pn.includes(fullName) || fullName.includes(pn);
+          const options = json.options as { id: string; name: string }[];
+          setPipedriveUsers(options);
+          const fullName = norm(session.user.user_metadata?.full_name ?? '');
+          if (fullName) {
+            // 1º: nome exatamente igual (ignorando acento/caixa)
+            let match = options.find(u => norm(u.name) === fullName);
+            if (match) confiavel = true;
+            // 2º: nome completo contém ou é contido pelo nome da opção
+            if (!match) {
+              match = options.find(u => {
+                const pn = norm(u.name);
+                return pn.includes(fullName) || fullName.includes(pn);
+              });
+              if (match) confiavel = true;
+            }
+            // 3º: 2+ partes do nome (≥3 chars) aparecem na opção
+            if (!match) {
+              const parts = fullName.split(' ').filter(p => p.length >= 3);
+              if (parts.length >= 2) {
+                match = options.find(u => {
+                  const pn = norm(u.name);
+                  return parts.filter(p => pn.includes(p)).length >= 2;
                 });
-                // 3º: 2+ partes do nome (≥3 chars) aparecem no nome do Pipedrive
-                if (!match) {
-                  const parts = fullName.split(' ').filter(p => p.length >= 3);
-                  if (parts.length >= 2) {
-                    match = users.find(u => {
-                      const pn = u.name.toLowerCase();
-                      return parts.filter(p => pn.includes(p)).length >= 2;
-                    });
-                  }
-                }
-                // 4º: primeiro nome único (≥4 chars) — só usa se não há ambiguidade
-                if (!match) {
-                  const first = fullName.split(' ')[0];
-                  if (first.length >= 4) {
-                    const candidates = users.filter(u => u.name.toLowerCase().startsWith(first));
-                    if (candidates.length === 1) match = candidates[0];
-                  }
-                }
-                if (match) { autoSdrId = match.id; autoSdrNome = match.name; }
               }
             }
+            // 4º: primeiro nome único (≥4 chars) — só usa se não há ambiguidade
+            if (!match) {
+              const first = fullName.split(' ')[0];
+              if (first.length >= 4) {
+                const candidates = options.filter(u => norm(u.name).startsWith(first));
+                if (candidates.length === 1) match = candidates[0];
+              }
+            }
+            if (match) { autoSdrId = match.id; autoSdrNome = match.name; }
           }
         }
       } catch { /* ignora falha — usuário digita o nome manualmente */ }
 
       setAutoNome(autoSdrNome);
       setMetaData(m => ({ ...m, sdrId: autoSdrId }));
+      setVinculoConfirmado(confiavel);
+
+      // Match confiável (nome exato ou "contém") já salva o vínculo sem esperar
+      // o clique em "Salvar" — assim a liderança já acompanha os ganhos do squad
+      // mesmo antes da pessoa configurar as próprias metas.
+      if (confiavel) {
+        await supabase.from('user_metas').upsert({
+          user_id: session.user.id, sdr_id: autoSdrId,
+          meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0,
+          mes: mesAtual, updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,mes' });
+        // metaData.sdrId muda acima e o useEffect de busca de ganhos já dispara sozinho.
+      }
+
       setConfig(true);
     }
   }, []);
@@ -358,7 +392,7 @@ function PersonalMetaView() {
 
   return (
     <div className="p-6  space-y-4">
-      {config && <ConfigModal metaData={metaData} nomeDetectado={autoNome} pipedriveUsers={pipedriveUsers} onSave={salvarConfig} onClose={() => setConfig(false)} />}
+      {config && <ConfigModal metaData={metaData} nomeDetectado={autoNome} pipedriveUsers={pipedriveUsers} vinculoConfirmado={vinculoConfirmado} onSave={salvarConfig} onClose={() => setConfig(false)} />}
 
       {/* Card principal — status */}
       <div className="relative rounded-2xl border border-cw-border bg-white shadow-sm">
