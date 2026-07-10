@@ -12,11 +12,14 @@ export default async function handler(req, res) {
   if (!TOKEN) return res.status(500).json({ ok: false, erro: 'PIPEDRIVE_API_TOKEN não configurado' });
 
   try {
-    const r = await fetch(`https://api.pipedrive.com/v1/dealFields/find?key=${SDR_FIELD}&api_token=${TOKEN}`);
+    const r = await fetch(`https://api.pipedrive.com/v1/dealFields?api_token=${TOKEN}`);
     const json = await r.json();
-    if (!json.success || !json.data) return res.status(500).json({ ok: false, erro: 'Campo SDR/BDR não encontrado no Pipedrive' });
+    if (!json.success) return res.status(500).json({ ok: false, erro: 'Pipedrive retornou erro ao listar dealFields' });
 
-    const options = (json.data.options || []).map(o => ({ id: String(o.id), name: o.label }));
+    const campo = (json.data || []).find(f => f.key === SDR_FIELD);
+    if (!campo) return res.status(500).json({ ok: false, erro: 'Campo SDR/BDR não encontrado no Pipedrive', chavesDisponiveis: (json.data || []).map(f => f.key) });
+
+    const options = (campo.options || []).map(o => ({ id: String(o.id), name: o.label }));
     res.status(200).json({ ok: true, options });
   } catch (e) {
     res.status(500).json({ ok: false, erro: String(e) });
