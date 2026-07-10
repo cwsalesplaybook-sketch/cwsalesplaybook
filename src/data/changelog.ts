@@ -11,6 +11,46 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG_PADRAO: ChangelogEntry[] = [
+  // ── 13/07/2026 ──────────────────────────────────────────────────────────────
+  {
+    id: 'cw-130726-a',
+    version: '—',
+    date: '13/07/2026',
+    title: 'Resgate de pontos de fidelidade e cashback em mesas e comandas',
+    description: `Agora o operador pode fazer resgates de fidelidade do cliente durante o atendimento em mesa ou comanda, da mesma forma que já era possível em pedidos de delivery e retirada.
+
+Para isso, basta associar um cliente à mesa/comanda. Com a mesa aberta, o operador pode resgatar uma recompensa de fidelidade ou aplicar saldo de cashback no pedido — as ações ficam disponíveis quando a empresa tem o programa correspondente ativo. Se ainda não existe cliente vinculado, o sistema orienta o operador a fazer essa associação antes de continuar. O valor da conta passa a considerar todos os descontos aplicados, incluindo desconto da própria mesa, fidelidade e cashback.
+
+Regras: cada pedido permite apenas um resgate de fidelidade, e pontos e cashback não podem ser usados juntos na mesma conta. Depois que um benefício é aplicado, não é mais possível trocar ou remover o cliente vinculado à sessão. Itens resgatados com pontos ficam identificados na lista e não podem ser cancelados ou transferidos individualmente — só são cancelados quando a sessão inteira é cancelada.
+
+Ao fechar a mesa, o resgate é confirmado e o cliente pode ganhar novos pontos ou cashback conforme a configuração da empresa. Se a sessão for cancelada, os benefícios aplicados são estornados.`,
+    postedBy: 'Cardápio Web',
+    type: 'update',
+  },
+  {
+    id: 'cw-130726-b',
+    version: '—',
+    date: '13/07/2026',
+    title: 'Cupom de desconto na gestão de pedidos, mesas e comandas',
+    description: `Agora o operador pode adicionar cupom de desconto durante o fluxo de pagamento na gestão de pedidos e em mesas ou comandas, da mesma forma que já era possível em pedidos feitos pelo cardápio digital.
+
+Na gestão de pedidos, ao abrir a opção "Descontos, acréscimos e cupons", já é possível adicionar o cupom cadastrado — ao salvar, o sistema faz o cálculo automático e mostra o cupom aplicado nos detalhes da compra. Para excluir, é preciso reabrir a mesma modal; uma confirmação aparece antes da exclusão.
+
+No pagamento de mesas e comandas, surge uma nova seção "Cupom" ao lado de descontos — clique no lápis para abrir a modal e adicionar o cupom. Excluir também pede confirmação.`,
+    postedBy: 'Cardápio Web',
+    type: 'update',
+  },
+  {
+    id: 'cw-130726-c',
+    version: '—',
+    date: '13/07/2026',
+    title: 'Análise por atendente no relatório de produtos',
+    description: `Adicionada a opção "Atendente" no card "Análise do produto por" (e equivalentes de categoria e opção), permitindo visualizar as vendas agrupadas pelo atendente que registrou cada item.
+
+Disponível nas abas de análise de categorias, produtos e opções do relatório de catálogo. Produtos lançados pelo cardápio digital ficam sem usuário atribuído.`,
+    postedBy: 'Cardápio Web',
+    type: 'update',
+  },
   // ── 24/06/2026 ──────────────────────────────────────────────────────────────
   {
     id: 'cw-240626-a',
