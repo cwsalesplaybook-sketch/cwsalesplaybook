@@ -29,22 +29,23 @@ const ICON_MAP = {
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
 // Grupo "Comercial": Meta do Mês e Playbook são os favoritos, ficam fixos no
-// topo; o resto segue ordenado do nome mais curto pro mais longo (por isso o
-// FAQ vem primeiro e Planos e Módulos por último).
+// topo; o resto segue ordenado do nome mais curto pro mais longo, com FAQ
+// deslocado pro fim (depois de Planos e Módulos) a pedido da Gabi.
+// Grupo "Cultura e Time" também ordenado do nome mais curto pro mais longo.
 const NAV_PADRAO: NavItem[] = [
   { to: '/start',      label: 'Comece Aqui',             icon: 'Sparkles',       end: false },
   { to: '/meta',       label: 'Meta do Mês',             icon: 'Target',         end: false },
   { to: '/playbook',   label: 'Playbook',                icon: 'BookOpen',       end: false },
-  { to: '/faq',        label: 'FAQ',                     icon: 'HelpCircle',     end: false },
   { to: '/pipeline',    label: 'Pipeline',                icon: 'BarChart2',       end: false },
   { to: '/changelog',  label: 'Changelog',               icon: 'Zap',            end: false },
   { to: '/automacoes',  label: 'Automações',             icon: 'Zap',             end: false },
   { to: '/calculadora',label: 'Calculadora',             icon: 'Calculator',     end: false },
   { to: '/planos',     label: 'Planos e Módulos',        icon: 'Package',        end: false },
-  { to: '/historias',   label: 'Histórias de Sucesso',   icon: 'Trophy',          end: false },
+  { to: '/faq',        label: 'FAQ',                     icon: 'HelpCircle',     end: false },
   { to: '/biblioteca',  label: 'Biblioteca',             icon: 'Library',         end: false },
-  { to: '/regras',      label: 'Regras de Conduta',      icon: 'ShieldCheck',     end: false },
   { to: '/onboarding',  label: 'Onboarding',             icon: 'MapIcon',         end: false },
+  { to: '/regras',      label: 'Regras de Conduta',      icon: 'ShieldCheck',     end: false },
+  { to: '/historias',   label: 'Histórias de Sucesso',   icon: 'Trophy',          end: false },
   { to: '/carreira',    label: 'Progressão de Carreira', icon: 'TrendingUp',      end: false },
   { to: '/ajuda',       label: 'Central de Ajuda',        icon: 'HelpCircle',     end: false },
 ];
