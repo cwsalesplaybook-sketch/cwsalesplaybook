@@ -1,7 +1,7 @@
-/** Calculadora de Planos CW — multi-loja, descontos e proposta copiável.
+/** Calculadora de Planos CW — multi-loja e proposta copiável.
  *  Portada da calculadora avançada (calculad0racw) para o visual do playbook. */
 import { useMemo, useState } from 'react';
-import { Plus, Minus, Copy, Check, Trash2, Percent, CopyPlus, PiggyBank } from 'lucide-react';
+import { Plus, Minus, Copy, Check, Trash2, CopyPlus, PiggyBank } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /* ----------------------------- Dados ----------------------------- */
@@ -51,7 +51,6 @@ interface StoreConfig {
   period: Period;
   modules: Record<string, boolean>;
   selfModules: Record<string, number>;
-  customDiscount: number;
 }
 
 function newStore(name: string): StoreConfig {
@@ -62,7 +61,6 @@ function newStore(name: string): StoreConfig {
     period: 'Mensal',
     modules: Object.fromEntries(MODULES.map(m => [m.id, false])),
     selfModules: Object.fromEntries(SELF_MODULES.map(m => [m.id, 0])),
-    customDiscount: 0,
   };
 }
 
@@ -73,10 +71,8 @@ function calcStore(s: StoreConfig) {
   const selfMonthly = SELF_MODULES.reduce((a, m) => a + m.val * (s.selfModules[m.id] || 0), 0);
   const addonsMonthly = modulesMonthly + selfMonthly;
   const addonsTotal = addonsMonthly * mult;
-  const custom = s.customDiscount || 0;
-  const factor = 1 - custom / 100;
-  const planTotal = base.t * factor;
-  const planMonthlyEffective = s.period === 'Mensal' ? base.m * factor : planTotal / mult;
+  const planTotal = base.t;
+  const planMonthlyEffective = s.period === 'Mensal' ? base.m : planTotal / mult;
   // Economia vs. pagar o valor mensal cheio pelo mesmo nº de meses (só o plano).
   const economiaVsMensal = Math.max(0, PLANOS[s.planType].Mensal.m * mult - planTotal);
   return {
@@ -84,7 +80,7 @@ function calcStore(s: StoreConfig) {
     planTotal, planMonthlyEffective,
     total: planTotal + addonsTotal,
     monthly: planMonthlyEffective + addonsMonthly,
-    custom, economiaVsMensal,
+    economiaVsMensal,
   };
 }
 
@@ -96,8 +92,7 @@ function buildProposta(calcs: { s: StoreConfig; c: Calc }[], consolidated: { tot
   for (const { s, c } of calcs) {
     if (multi) out.push(`🏪 *${s.name}* — Plano ${s.planType} · ${s.period}`);
     else out.push(`*Plano ${s.planType} · ${s.period}*`);
-    const desc = c.custom;
-    out.push(`• Plano: ${BRL(c.planTotal)}${desc > 0 ? ` (−${desc.toFixed(0)}% de desconto)` : ''}`);
+    out.push(`• Plano: ${BRL(c.planTotal)}`);
     MODULES.filter(m => s.modules[m.id]).forEach(m => out.push(`• ${m.name}: ${BRL(m.val)}/mês`));
     SELF_MODULES.forEach(m => {
       const q = s.selfModules[m.id] || 0;
@@ -118,7 +113,6 @@ function buildProposta(calcs: { s: StoreConfig; c: Calc }[], consolidated: { tot
 export default function Calculadora() {
   const [stores, setStores] = useState<StoreConfig[]>([newStore('Loja 1')]);
   const [activeId, setActiveId] = useState(stores[0].id);
-  const [showDiscounts, setShowDiscounts] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const active = stores.find(s => s.id === activeId) ?? stores[0];
@@ -163,7 +157,6 @@ export default function Calculadora() {
     { total: 0, monthly: 0 },
   );
   const ac = calcStore(active);
-  const temDesconto = active.customDiscount > 0;
 
   const copiarProposta = () => {
     const texto = buildProposta(calcs, consolidated);
@@ -197,18 +190,6 @@ export default function Calculadora() {
           <button onClick={addStore} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg gradient-primary text-white text-sm font-semibold">
             <Plus className="h-3.5 w-3.5" /> Adicionar loja
           </button>
-          <button
-            onClick={() => setShowDiscounts(v => !v)}
-            className={cn(
-              'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border text-sm font-semibold transition-all',
-              temDesconto
-                ? 'border-emerald-500 text-emerald-600 bg-emerald-500/10'
-                : 'border-cw-border text-cw-text hover:bg-cw-elevated',
-            )}
-          >
-            {temDesconto && <Check className="h-3.5 w-3.5" />}
-            <Percent className="h-3.5 w-3.5" /> Desconto {showDiscounts ? '▲' : '▼'}
-          </button>
           <button onClick={() => duplicateStore(active.id)} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-cw-border text-cw-text text-sm font-semibold hover:bg-cw-elevated">
             <CopyPlus className="h-3.5 w-3.5" /> Duplicar
           </button>
@@ -219,25 +200,6 @@ export default function Calculadora() {
           )}
         </div>
       </div>
-
-      {/* Painel de desconto */}
-      {showDiscounts && (
-        <div className="cw-card p-4 space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-cw-purple">Desconto — aplicado sobre o valor do plano</p>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-semibold text-cw-text">Desconto no plano (%)</span>
-            <div className="flex items-center gap-1.5">
-              <input
-                type="number" min={0} max={100} value={active.customDiscount || ''}
-                placeholder="0"
-                onChange={e => update({ customDiscount: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) })}
-                className="w-24 bg-cw-bg border border-cw-border rounded-lg px-2.5 py-2 text-sm text-center font-bold text-cw-text focus:outline-none focus:border-cw-purple"
-              />
-              <span className="text-sm font-bold text-cw-muted">%</span>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* ── Configuração ── */}
@@ -351,15 +313,7 @@ export default function Calculadora() {
             <p className="text-[10px] font-bold uppercase tracking-widest text-cw-muted mb-3">Resumo desta loja</p>
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between"><span className="text-cw-muted">Plano</span><span className="font-bold text-cw-text">{active.planType.toUpperCase()} · {active.period.toUpperCase()}</span></div>
-              {temDesconto ? (
-                <>
-                  <div className="flex justify-between"><span className="text-cw-muted">Valor do plano</span><span className="font-semibold text-cw-muted line-through">{BRL(ac.base.t)}</span></div>
-                  <div className="flex justify-between text-emerald-600"><span>Desconto −{ac.custom}% (sobre o plano)</span><span className="font-bold">−{BRL(ac.base.t - ac.planTotal)}</span></div>
-                  <div className="flex justify-between"><span className="text-cw-muted">Plano com desconto</span><span className="font-bold text-cw-text">{BRL(ac.planTotal)}</span></div>
-                </>
-              ) : (
-                <div className="flex justify-between"><span className="text-cw-muted">Valor do plano</span><span className="font-bold text-cw-text">{BRL(ac.planTotal)}</span></div>
-              )}
+              <div className="flex justify-between"><span className="text-cw-muted">Valor do plano</span><span className="font-bold text-cw-text">{BRL(ac.planTotal)}</span></div>
               <div className="flex justify-between"><span className="text-cw-muted">Módulos adicionais</span><span className="font-bold text-cw-text">{BRL(ac.modulesMonthly * ac.mult)}</span></div>
               <div className="flex justify-between"><span className="text-cw-muted">Autoatendimento</span><span className="font-bold text-cw-text">{BRL(ac.selfMonthly * ac.mult)}</span></div>
               <div className="h-px bg-cw-border my-2.5" />
@@ -387,7 +341,7 @@ export default function Calculadora() {
                   <div>
                     <p className="font-bold text-sm text-cw-text">{s.name}</p>
                     <p className="text-[11px] text-cw-muted">
-                      {s.planType.toUpperCase()} · {s.period.toUpperCase()}{c.custom > 0 && ` · −${c.custom}% desc`}
+                      {s.planType.toUpperCase()} · {s.period.toUpperCase()}
                     </p>
                   </div>
                   <div className="text-right">
