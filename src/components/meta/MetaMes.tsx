@@ -843,17 +843,27 @@ function PersonalMetaView() {
   );
 }
 
-/** Wrapper: quem tem squads_lideradas (líderes, ou acesso equivalente
- *  concedido manualmente) vê o toggle Meta do Mês / Meta dos Squads — não
- *  depende do papel do dashboard, então dá pra dar essa visão sem trocar
- *  o dashboard principal da pessoa (ex: um Representante que também
- *  acompanha os squads). Abre por padrão na visão individual (Meta do Mês).
- *  Demais usuários veem direto a visão individual.
- *  A celebração de promoção aparece no topo para quem tiver uma pendente. */
+/** Wrapper: quem tem papel "Liderança" vê direto a Meta do Squad — sem toggle,
+ *  já que pra esse papel a meta que importa é a do time, não a individual.
+ *  Quem tem squads_lideradas mas não é papel "Liderança" (ex: um Representante
+ *  que também acompanha squads) continua vendo o toggle Meta do Mês / Meta
+ *  dos Squads, abrindo por padrão na visão individual. Demais usuários veem
+ *  direto a visão individual. A celebração de promoção aparece no topo para
+ *  quem tiver uma pendente. */
 export default function MetaMes() {
-  const { squadsLideradas } = useSidebarContext();
+  const { papel, squadsLideradas } = useSidebarContext();
   const isLider = squadsLideradas.length > 0;
+  const isPapelLideranca = papel === 'Liderança' && isLider;
   const [vista, setVista] = useState<'time' | 'individual'>('individual');
+
+  if (isPapelLideranca) {
+    return (
+      <>
+        <PromocaoCelebration />
+        <TeamMetaView squads={squadsLideradas} />
+      </>
+    );
+  }
 
   if (!isLider) {
     return (
