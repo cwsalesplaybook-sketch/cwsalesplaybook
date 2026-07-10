@@ -114,7 +114,7 @@ export default function Promocoes() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-5">
+    <div className="p-6 max-w-4xl mx-auto space-y-5">
       {promover && <PromoverModal membro={promover} onConfirm={(p) => liberarPromocao(promover, p)} onClose={() => setPromover(null)} />}
 
       <div className="flex items-center gap-3">
@@ -139,7 +139,7 @@ export default function Promocoes() {
         ) : membros.length === 0 ? (
           <p className="py-8 text-center text-sm text-cw-muted">Nenhum membro no(s) seu(s) squad(s) ainda.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {membros.map(m => (
               <div key={m.userId} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-cw-border bg-cw-elevated">
                 <div className="flex-1 min-w-0">
