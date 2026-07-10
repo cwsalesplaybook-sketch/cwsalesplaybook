@@ -28,16 +28,17 @@ const ICON_MAP = {
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
-// Grupo "Comercial" ordenado do nome mais longo pro mais curto — por isso o
-// FAQ (o mais curto) acaba por último, depois de Automações.
+// Grupo "Comercial": Meta do Mês e Playbook são os favoritos, ficam fixos no
+// topo; o resto segue ordenado do nome mais longo pro mais curto (por isso o
+// FAQ acaba por último, depois de Automações).
 const NAV_PADRAO: NavItem[] = [
   { to: '/start',      label: 'Comece Aqui',             icon: 'Sparkles',       end: false },
-  { to: '/planos',     label: 'Planos e Módulos',        icon: 'Package',        end: false },
   { to: '/meta',       label: 'Meta do Mês',             icon: 'Target',         end: false },
+  { to: '/playbook',   label: 'Playbook',                icon: 'BookOpen',       end: false },
+  { to: '/planos',     label: 'Planos e Módulos',        icon: 'Package',        end: false },
   { to: '/calculadora',label: 'Calculadora',             icon: 'Calculator',     end: false },
   { to: '/automacoes',  label: 'Automações',             icon: 'Zap',             end: false },
   { to: '/changelog',  label: 'Changelog',               icon: 'Zap',            end: false },
-  { to: '/playbook',   label: 'Playbook',                icon: 'BookOpen',       end: false },
   { to: '/pipeline',    label: 'Pipeline',                icon: 'BarChart2',       end: false },
   { to: '/faq',        label: 'FAQ',                     icon: 'HelpCircle',     end: false },
   { to: '/historias',   label: 'Histórias de Sucesso',   icon: 'Trophy',          end: false },
