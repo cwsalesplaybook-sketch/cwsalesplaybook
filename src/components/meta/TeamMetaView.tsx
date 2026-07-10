@@ -1,10 +1,12 @@
 /** Meta do Time — visão de liderança por squad.
- *  Mostra a meta agregada do squad (editável pelo líder), os KPIs do squad
- *  (clientes, clientes/dia, LTR, no-show) e o dashboard de cada membro
- *  (ganhos do Pipedrive × meta individual). O líder também pode ajustar a
- *  meta individual de quem já configurou o perfil.
+ *  Bloco único com a meta agregada do squad (fechamentos) e os KPIs do squad
+ *  (clientes, clientes/dia, LTR, no-show), todos editáveis pelo líder num só
+ *  modal, e o dashboard de cada membro (ganhos do Pipedrive × meta
+ *  individual). O líder também pode ajustar a meta individual de quem já
+ *  configurou o perfil.
  *  Acesso é garantido pela RLS (squads_que_lidero / lidero_o_usuario).
- *  Squads só trabalham com Meta 1 e Meta 2 (sem Meta 3 nem Mega Metas). */
+ *  Squads só trabalham com Meta 1 e Meta 2 (sem Meta 3 nem Mega Metas).
+ *  LTR e no-show ainda não têm dado real integrado — mostram só a meta. */
 import { useCallback, useEffect, useState } from 'react';
 import { Settings, RefreshCw, X, Users, Target, TrendingUp, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,74 +27,60 @@ interface Membro {
 const META_VAZIA: TeamMeta = { meta1: 0, meta2: 0 };
 const KPIS_VAZIO: SquadKpis = { clientes: 0, clientesDia: 0, ltr: 0, noShow: 0 };
 
-function TeamMetaModal({ meta, squad, onSave, onClose }: {
-  meta: TeamMeta; squad: string; onSave: (m: TeamMeta) => void; onClose: () => void;
+function MetaSquadModal({ meta, kpis, squad, onSave, onClose }: {
+  meta: TeamMeta; kpis: SquadKpis; squad: string;
+  onSave: (m: TeamMeta, k: SquadKpis) => void; onClose: () => void;
 }) {
-  const [form, setForm] = useState(meta);
+  const [formMeta, setFormMeta] = useState(meta);
+  const [formKpis, setFormKpis] = useState(kpis);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
+      <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-bold text-cw-text">Meta do time · {squad}</h3>
+          <h3 className="text-lg font-bold text-cw-text">Meta do squad · {squad}</h3>
           <button onClick={onClose} className="text-cw-muted hover:text-cw-text"><X className="h-5 w-5" /></button>
         </div>
         <div className="space-y-4">
+          <p className="text-xs font-bold text-cw-purple uppercase tracking-wider">Fechamentos</p>
           {[1, 2].map(n => (
             <div key={n}>
               <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta {n}</label>
-              <input type="number" min={0} value={(form as any)[`meta${n}`]}
-                onChange={e => setForm(f => ({ ...f, [`meta${n}`]: Number(e.target.value) }))}
+              <input type="number" min={0} value={(formMeta as any)[`meta${n}`]}
+                onChange={e => setFormMeta(f => ({ ...f, [`meta${n}`]: Number(e.target.value) }))}
                 className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
             </div>
           ))}
-        </div>
-        <button onClick={() => onSave(form)} className="w-full mt-6 py-3 rounded-xl font-bold text-sm text-white gradient-primary hover:opacity-90 transition-opacity">
-          Salvar meta do time
-        </button>
-      </div>
-    </div>
-  );
-}
 
-function SquadKpisModal({ kpis, squad, onSave, onClose }: {
-  kpis: SquadKpis; squad: string; onSave: (k: SquadKpis) => void; onClose: () => void;
-}) {
-  const [form, setForm] = useState(kpis);
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-bold text-cw-text">KPIs do squad · {squad}</h3>
-          <button onClick={onClose} className="text-cw-muted hover:text-cw-text"><X className="h-5 w-5" /></button>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta de clientes</label>
-            <input type="number" min={0} value={form.clientes}
-              onChange={e => setForm(f => ({ ...f, clientes: Number(e.target.value) }))}
-              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta de clientes diário</label>
-            <input type="number" min={0} value={form.clientesDia}
-              onChange={e => setForm(f => ({ ...f, clientesDia: Number(e.target.value) }))}
-              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta de LTR (%)</label>
-            <input type="number" min={0} max={100} step="0.1" value={form.ltr}
-              onChange={e => setForm(f => ({ ...f, ltr: Number(e.target.value) }))}
-              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta de no-show (%)</label>
-            <input type="number" min={0} max={100} step="0.1" value={form.noShow}
-              onChange={e => setForm(f => ({ ...f, noShow: Number(e.target.value) }))}
-              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
+          <div className="border-t border-cw-border pt-4 space-y-4">
+            <p className="text-xs font-bold text-cw-purple uppercase tracking-wider">KPIs do squad</p>
+            <div>
+              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta de clientes</label>
+              <input type="number" min={0} value={formKpis.clientes}
+                onChange={e => setFormKpis(f => ({ ...f, clientes: Number(e.target.value) }))}
+                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta de clientes diário</label>
+              <input type="number" min={0} value={formKpis.clientesDia}
+                onChange={e => setFormKpis(f => ({ ...f, clientesDia: Number(e.target.value) }))}
+                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta de LTR (%)</label>
+              <input type="number" min={0} max={100} step="0.1" value={formKpis.ltr}
+                onChange={e => setFormKpis(f => ({ ...f, ltr: Number(e.target.value) }))}
+                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta de no-show (%)</label>
+              <input type="number" min={0} max={100} step="0.1" value={formKpis.noShow}
+                onChange={e => setFormKpis(f => ({ ...f, noShow: Number(e.target.value) }))}
+                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
+            </div>
           </div>
         </div>
-        <button onClick={() => onSave(form)} className="w-full mt-6 py-3 rounded-xl font-bold text-sm text-white gradient-primary hover:opacity-90 transition-opacity">
-          Salvar KPIs do squad
+        <button onClick={() => onSave(formMeta, formKpis)} className="w-full mt-6 py-3 rounded-xl font-bold text-sm text-white gradient-primary hover:opacity-90 transition-opacity">
+          Salvar meta do squad
         </button>
       </div>
     </div>
@@ -133,10 +121,10 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
   const [mes, setMes]           = useState('');
   const [teamMeta, setTeamMeta] = useState<TeamMeta>(META_VAZIA);
   const [squadKpis, setSquadKpis] = useState<SquadKpis>(KPIS_VAZIO);
+  const [diasPassados, setDiasPassados] = useState(0);
   const [membros, setMembros]   = useState<Membro[]>([]);
   const [loading, setLoading]   = useState(false);
-  const [editTime, setEditTime] = useState(false);
-  const [editKpis, setEditKpis] = useState(false);
+  const [editMeta, setEditMeta] = useState(false);
   const [editMembro, setEditMembro] = useState<Membro | null>(null);
 
   const carregar = useCallback(async (sq: string, forceRefresh = false) => {
@@ -181,39 +169,42 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
       });
       setMembros(base);
 
+      // diasPassados vem igual em toda resposta do /api/meta nesse mês —
+      // guarda a primeira que chegar pra calcular o ritmo de clientes/dia.
+      let diasPassadosCapturado = 0;
       const comGanhos = await Promise.all(base.map(async (mem) => {
         if (!mem.sdrId) return mem;
         try {
           const r = await fetch(`/api/meta?sdrId=${mem.sdrId}${bust}`);
           const j = await r.json();
+          if (j.ok && !diasPassadosCapturado) diasPassadosCapturado = j.diasPassados || 0;
           return { ...mem, ganhos: j.ok ? j.ganhos : 0 };
         } catch { return { ...mem, ganhos: 0 }; }
       }));
       setMembros(comGanhos);
+      setDiasPassados(diasPassadosCapturado);
     } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { carregar(squad); }, [squad, carregar]);
 
-  const salvarTeamMeta = async (m: TeamMeta) => {
+  const salvarMetaSquad = async (m: TeamMeta, k: SquadKpis) => {
     const { data: { session } } = await supabase.auth.getSession();
-    await supabase.from('team_metas').upsert({
-      squad, mes, meta1: m.meta1, meta2: m.meta2, meta3: 0, mega1: 0, mega2: 0, mega3: 0,
-      updated_by: session?.user?.email ?? null, updated_at: new Date().toISOString(),
-    }, { onConflict: 'squad,mes' });
+    const email = session?.user?.email ?? null;
+    const agora = new Date().toISOString();
+    await Promise.all([
+      supabase.from('team_metas').upsert({
+        squad, mes, meta1: m.meta1, meta2: m.meta2, meta3: 0, mega1: 0, mega2: 0, mega3: 0,
+        updated_by: email, updated_at: agora,
+      }, { onConflict: 'squad,mes' }),
+      supabase.from('squad_kpis').upsert({
+        squad, mes, meta_clientes: k.clientes, meta_clientes_dia: k.clientesDia,
+        meta_ltr: k.ltr, meta_no_show: k.noShow, updated_by: email, updated_at: agora,
+      }, { onConflict: 'squad,mes' }),
+    ]);
     setTeamMeta(m);
-    setEditTime(false);
-  };
-
-  const salvarSquadKpis = async (k: SquadKpis) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    await supabase.from('squad_kpis').upsert({
-      squad, mes, meta_clientes: k.clientes, meta_clientes_dia: k.clientesDia,
-      meta_ltr: k.ltr, meta_no_show: k.noShow,
-      updated_by: session?.user?.email ?? null, updated_at: new Date().toISOString(),
-    }, { onConflict: 'squad,mes' });
     setSquadKpis(k);
-    setEditKpis(false);
+    setEditMeta(false);
   };
 
   const salvarMembroMeta = async (mem: Membro, novo: { meta1: number; meta2: number; meta3: number }) => {
@@ -231,11 +222,12 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
   const pctBarra = metaRef > 0 ? Math.min(100, (totalGanhos / metaRef) * 100) : 0;
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
   const temKpis = squadKpis.clientes > 0 || squadKpis.clientesDia > 0 || squadKpis.ltr > 0 || squadKpis.noShow > 0;
+  // Ritmo real de clientes/dia = fechamentos acumulados ÷ dias úteis já passados no mês.
+  const clientesDiaAtual = diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * 10) / 10 : null;
 
   return (
     <div className="p-6 space-y-4">
-      {editTime && <TeamMetaModal meta={teamMeta} squad={squad} onSave={salvarTeamMeta} onClose={() => setEditTime(false)} />}
-      {editKpis && <SquadKpisModal kpis={squadKpis} squad={squad} onSave={salvarSquadKpis} onClose={() => setEditKpis(false)} />}
+      {editMeta && <MetaSquadModal meta={teamMeta} kpis={squadKpis} squad={squad} onSave={salvarMetaSquad} onClose={() => setEditMeta(false)} />}
       {editMembro && <MembroMetaModal membro={editMembro} onSave={(m) => salvarMembroMeta(editMembro, m)} onClose={() => setEditMembro(null)} />}
 
       {/* Seletor de squad (se lidera mais de um) */}
@@ -251,16 +243,16 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
         </div>
       )}
 
-      {/* Card agregado do time */}
+      {/* Bloco único: meta do squad + KPIs */}
       <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
-            <Target className="h-4 w-4" /> Meta do Time · {squad} {nomeMes && <span className="text-cw-muted/70 normal-case font-medium">— {nomeMes}</span>}
+            <Target className="h-4 w-4" /> Meta do Squad · {squad} {nomeMes && <span className="text-cw-muted/70 normal-case font-medium">— {nomeMes}</span>}
             <button onClick={() => carregar(squad, true)} disabled={loading} className="ml-1">
               <RefreshCw className={cn('h-3.5 w-3.5 text-cw-muted hover:text-cw-purple', loading && 'animate-spin')} />
             </button>
           </div>
-          <button onClick={() => setEditTime(true)} title="Definir meta do time"
+          <button onClick={() => setEditMeta(true)} title="Definir meta do squad"
             className="h-7 w-7 rounded-lg bg-white/60 border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-all">
             <Settings className="h-3.5 w-3.5" />
           </button>
@@ -290,42 +282,41 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
             );
           })}
         </div>
-      </div>
 
-      {/* KPIs do squad */}
-      <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
-            <BarChart3 className="h-4 w-4" /> KPIs do Squad · {squad}
-          </div>
-          <button onClick={() => setEditKpis(true)} title="Definir KPIs do squad"
-            className="h-7 w-7 rounded-lg bg-white/60 border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-all">
-            <Settings className="h-3.5 w-3.5" />
-          </button>
+        {/* KPIs do squad */}
+        <div className="border-t border-cw-border pt-5">
+          <p className="flex items-center gap-1.5 text-[10px] font-black text-cw-purple uppercase tracking-widest mb-3">
+            <BarChart3 className="h-3.5 w-3.5" /> KPIs do Squad
+          </p>
+          {temKpis ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
+                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Clientes</p>
+                <p className="text-lg font-black text-cw-text mt-0.5">
+                  {totalGanhos}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.clientes || '?'}</span>
+                </p>
+              </div>
+              <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
+                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Clientes/dia</p>
+                <p className="text-lg font-black text-cw-text mt-0.5">
+                  {clientesDiaAtual === null ? '…' : clientesDiaAtual}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.clientesDia || '?'}</span>
+                </p>
+              </div>
+              <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
+                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">LTR</p>
+                <p className="text-lg font-black text-cw-text mt-0.5">{squadKpis.ltr || '?'}%</p>
+                <p className="text-[9px] text-cw-muted/70 mt-0.5">meta — sem dado real ainda</p>
+              </div>
+              <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
+                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">No-show</p>
+                <p className="text-lg font-black text-cw-text mt-0.5">{squadKpis.noShow || '?'}%</p>
+                <p className="text-[9px] text-cw-muted/70 mt-0.5">meta — sem dado real ainda</p>
+              </div>
+            </div>
+          ) : (
+            <p className="py-4 text-center text-sm text-cw-muted">KPIs ainda não definidos pra este squad este mês.</p>
+          )}
         </div>
-
-        {temKpis ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
-              <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Clientes</p>
-              <p className="text-lg font-black text-cw-text mt-0.5">{squadKpis.clientes || '?'}</p>
-            </div>
-            <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
-              <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Clientes/dia</p>
-              <p className="text-lg font-black text-cw-text mt-0.5">{squadKpis.clientesDia || '?'}</p>
-            </div>
-            <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
-              <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">LTR</p>
-              <p className="text-lg font-black text-cw-text mt-0.5">{squadKpis.ltr || '?'}%</p>
-            </div>
-            <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
-              <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">No-show</p>
-              <p className="text-lg font-black text-cw-text mt-0.5">{squadKpis.noShow || '?'}%</p>
-            </div>
-          </div>
-        ) : (
-          <p className="py-4 text-center text-sm text-cw-muted">KPIs ainda não definidos pra este squad este mês.</p>
-        )}
       </div>
 
       {/* Lista de membros */}
