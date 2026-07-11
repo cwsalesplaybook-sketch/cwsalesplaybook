@@ -10,7 +10,6 @@ type PlanType = 'Mesas' | 'Delivery' | 'Premium';
 
 const PERIODOS: Period[] = ['Mensal', 'Trimestral', 'Semestral', 'Anual'];
 const MULT: Record<Period, number> = { Mensal: 1, Trimestral: 3, Semestral: 6, Anual: 12 };
-const PARTNER_DISCOUNT: Record<Period, number> = { Mensal: 15, Trimestral: 9, Semestral: 7, Anual: 5 };
 
 const PLANOS: Record<PlanType, Record<Period, { t: number; m: number }>> = {
   Mesas: {
@@ -233,7 +232,6 @@ export default function Calculadora() {
                     <p className="text-[10px] font-black uppercase tracking-widest text-cw-muted">{p}</p>
                     <p className="text-base font-black text-[#5b21b6] mt-1.5">{BRL(d.t)}</p>
                     <p className="text-[11px] text-cw-muted">({BRL(d.m)}/mês)</p>
-                    <p className="text-[10px] font-semibold text-emerald-600 mt-1">−{PARTNER_DISCOUNT[p]}% parceria</p>
                   </button>
                 );
               })}
