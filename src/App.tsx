@@ -181,7 +181,7 @@ function AnimatedRoutes() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="min-h-full"
+        className="h-full"
       >
         <Routes location={location}>
           <Route path="/" element={<HomeRoute />} />
