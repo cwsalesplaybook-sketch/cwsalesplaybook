@@ -177,6 +177,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'crown',    valor: 'Consultora → PSM', label: 'JORNADA' },
     ],
   },
+  {
+    id: 'gabrielly', nome: 'Gabrielly Oliveira', foto: '/hall/GabriellyOliveira.jpeg',
+    cargo: 'PSM JR III', jornada: ['SDR JR I', 'Referência do Comercial', 'Criadora do Playbook', 'PSM JR III'],
+    frase: '',
+    historia: 'Gabrielly entrou na Cardápio Web como SDR JR I e desde o início se manteve batendo Meta 3 mês após mês, sendo uma referência de resultado consistente dentro do time. Mas o que a diferenciou não foi só o número: ela virou o ponto central do comercial, a pessoa que todo mundo procurava quando surgia uma dúvida, um problema pra resolver ou algo novo pra criar. Foi enxergando essa necessidade que ela criou o Playbook Comercial, hoje o guia de referência que auxilia SDRs, Closers e outros setores do comercial no dia a dia. Não foi um projeto pedido, foi ela vendo o buraco e indo lá resolver. Enquanto seguia entregando resultado e construindo ferramentas pro time inteiro, foi se preparando pra dar o próximo passo: virar liderança. Esse processo culminou na promoção a PSM JR III, ao lado da Beatriz Andrade, somando forças no time do Hyorranes Alencar. Hoje, olhando pra trás, ela enxerga a própria trajetória como algo emocionante: a prova de que é possível virar referência não só pelos números que entrega, mas pela profissional que se tornou.',
+    stats: [
+      { icon: 'trending', valor: 'Playbook Comercial', label: 'CRIAÇÃO' },
+      { icon: 'star',     valor: 'PSM JR III', label: 'CARGO ATUAL' },
+      { icon: 'crown',    valor: 'SDR → PSM', label: 'JORNADA' },
+    ],
+  },
 ];
 
 function StatIcon({ type }: { type: Stat['icon'] }) {
