@@ -168,7 +168,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
   },
   {
     id: 'beatriz', nome: 'Beatriz Andrade', foto: '/hall/BeatrizAndrade.jpg',
-    cargo: 'PSM Pleno I', jornada: ['Consultora de Implementação', 'Capitã de Squad', 'Jr II', 'Jr III', 'PSM Pleno I'],
+    cargo: 'PSM de Representantes', jornada: ['Consultora de Implementação', 'Capitã de Squad', 'Jr II', 'Jr III', 'PSM Pleno I'],
     frase: '',
     historia: 'Beatriz chegou na CW em agosto de 2024 direto como consultora de implementação. Poucos meses depois, foi convidada a ser capitã de um squad formado por dois consultores, um ativador e um assistente de implementação. Enquanto liderava esse time, foi sendo desenvolvida para a liderança e viu o próprio squad evoluir até se tornar o squad de Parcerias, focado exclusivamente em indicações de parceiros. Nesse período, subiu para Jr II. Com o tempo, o squad de Parcerias virou Tier Parcerias em 2025, e em 2026 ela subiu para Jr III, se tornando a pessoa mais procurada do time para resolver problemas e tirar dúvidas sobre implementação. Em junho de 2026, foi promovida a PSM (Partner Success Manager) e hoje encara um novo desafio ao lado de Hyorranes Alencar e da parceira Gabrielly Oliveira.',
     stats: [
@@ -179,7 +179,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
   },
   {
     id: 'gabrielly', nome: 'Gabrielly Oliveira', foto: '/hall/GabriellyOliveira.jpeg',
-    cargo: 'PSM JR III', jornada: ['SDR JR I', 'Referência do Comercial', 'Criadora do Playbook', 'PSM JR III'],
+    cargo: 'PSM de Representantes', jornada: ['SDR JR I', 'Referência do Comercial', 'Criadora do Playbook', 'PSM JR III'],
     frase: '',
     historia: 'Gabrielly entrou na Cardápio Web como SDR JR I e desde o início se manteve batendo Meta 3 mês após mês, uma referência de resultado consistente no time. Mas o que mais chamou atenção foi virar o ponto central do comercial: a pessoa que todo mundo procurava quando surgia uma dúvida, um problema pra resolver ou algo novo pra criar. Foi enxergando essa necessidade que ela criou o Playbook Comercial, hoje o guia de referência de SDRs, Closers e outros setores. Enquanto entregava resultado e construía ferramentas pro time inteiro, foi se preparando pro próximo passo: virar liderança. Foi promovida a PSM JR III ao lado da Beatriz, somando forças no time do Hyorranes, uma trajetória que ela mesma vê como prova de que dá pra virar referência não só pelos números, mas pela profissional que se tornou.',
     stats: [
