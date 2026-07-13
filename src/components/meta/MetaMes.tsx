@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
 import TeamMetaView from './TeamMetaView';
+import MeuSquadMetaView from './MeuSquadMetaView';
 import PromocaoCelebration from './PromocaoCelebration';
 
 const SDRS_ATIVOS: Record<string, string> = {
@@ -845,13 +846,15 @@ function PersonalMetaView() {
 
 /** Wrapper: quem tem papel "Liderança" vê direto a Meta do Squad — sem toggle,
  *  já que pra esse papel a meta que importa é a do time, não a individual.
- *  Quem tem squads_lideradas mas não é papel "Liderança" (ex: um Representante
- *  que também acompanha squads) continua vendo o toggle Meta do Mês / Meta
- *  dos Squads, abrindo por padrão na visão individual. Demais usuários veem
- *  direto a visão individual. A celebração de promoção aparece no topo para
- *  quem tiver uma pendente. */
+ *  Todo mundo mais vê o toggle Meta do Mês / Meta dos Squads, abrindo por
+ *  padrão na visão individual: quem lidera squad(s) sem ser papel Liderança
+ *  vê o time completo (membro a membro, TeamMetaView); quem só integra um
+ *  squad (closer comum) vê a versão agregada (MeuSquadMetaView) — dá pra
+ *  acompanhar o andamento da meta do time mesmo sem liderar. Só some o
+ *  toggle se a pessoa ainda não tem squad definido (onboarding incompleto).
+ *  A celebração de promoção aparece no topo para quem tiver uma pendente. */
 export default function MetaMes() {
-  const { papel, squadsLideradas } = useSidebarContext();
+  const { papel, squad, squadsLideradas } = useSidebarContext();
   const isLider = squadsLideradas.length > 0;
   const isPapelLideranca = papel === 'Liderança' && isLider;
   const [vista, setVista] = useState<'time' | 'individual'>('individual');
@@ -865,7 +868,13 @@ export default function MetaMes() {
     );
   }
 
-  if (!isLider) {
+  const squadView = isLider
+    ? <TeamMetaView squads={squadsLideradas} />
+    : squad
+      ? <MeuSquadMetaView squad={squad} />
+      : null;
+
+  if (!squadView) {
     return (
       <>
         <PromocaoCelebration />
@@ -893,7 +902,7 @@ export default function MetaMes() {
         </div>
       </div>
 
-      {vista === 'time' ? <TeamMetaView squads={squadsLideradas} /> : <PersonalMetaView />}
+      {vista === 'time' ? squadView : <PersonalMetaView />}
     </div>
   );
 }

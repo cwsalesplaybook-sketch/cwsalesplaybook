@@ -1,19 +1,20 @@
 /** Meta do Time — visão de liderança por squad.
- *  Bloco único com a meta agregada do squad (fechamentos) e os KPIs do squad
- *  (clientes, clientes/dia, LTR, no-show), todos editáveis pelo líder num só
- *  modal, e o dashboard de cada membro (ganhos do Pipedrive × meta
- *  individual). O líder também pode ajustar a meta individual de quem já
- *  configurou o perfil.
+ *  Bloco único com a meta agregada do squad (fechamentos, meta única) e os
+ *  KPIs do squad (clientes, clientes/dia, agendamentos/dia, LTR, no-show),
+ *  todos editáveis pelo líder num só modal, e o dashboard de cada membro
+ *  (ganhos do Pipedrive × meta individual). O líder também pode ajustar a
+ *  meta individual de quem já configurou o perfil.
  *  Acesso é garantido pela RLS (squads_que_lidero / lidero_o_usuario).
- *  Squads só trabalham com Meta 1 e Meta 2 (sem Meta 3 nem Mega Metas).
+ *  Squads trabalham com uma única meta de fechamentos (sem Meta 2/3 nem
+ *  Mega Metas) — o líder sempre define o valor completo do mês.
  *  LTR e no-show ainda não têm dado real integrado — mostram só a meta. */
 import { useCallback, useEffect, useState } from 'react';
 import { Settings, RefreshCw, X, Users, Target, TrendingUp, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
-interface TeamMeta { meta1: number; meta2: number; }
-interface SquadKpis { clientes: number; clientesDia: number; ltr: number; noShow: number; }
+interface TeamMeta { meta1: number; }
+interface SquadKpis { clientes: number; clientesDia: number; agendamentosDia: number; ltr: number; noShow: number; }
 interface Membro {
   userId: string;
   apelido: string;
@@ -24,8 +25,8 @@ interface Membro {
   configurado: boolean;        // tem linha em user_metas
 }
 
-const META_VAZIA: TeamMeta = { meta1: 0, meta2: 0 };
-const KPIS_VAZIO: SquadKpis = { clientes: 0, clientesDia: 0, ltr: 0, noShow: 0 };
+const META_VAZIA: TeamMeta = { meta1: 0 };
+const KPIS_VAZIO: SquadKpis = { clientes: 0, clientesDia: 0, agendamentosDia: 0, ltr: 0, noShow: 0 };
 
 function MetaSquadModal({ meta, kpis, squad, onSave, onClose }: {
   meta: TeamMeta; kpis: SquadKpis; squad: string;
@@ -42,14 +43,12 @@ function MetaSquadModal({ meta, kpis, squad, onSave, onClose }: {
         </div>
         <div className="space-y-4">
           <p className="text-xs font-bold text-cw-purple uppercase tracking-wider">Fechamentos</p>
-          {[1, 2].map(n => (
-            <div key={n}>
-              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta {n}</label>
-              <input type="number" min={0} value={(formMeta as any)[`meta${n}`]}
-                onChange={e => setFormMeta(f => ({ ...f, [`meta${n}`]: Number(e.target.value) }))}
-                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
-            </div>
-          ))}
+          <div>
+            <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta</label>
+            <input type="number" min={0} value={formMeta.meta1}
+              onChange={e => setFormMeta(f => ({ ...f, meta1: Number(e.target.value) }))}
+              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
+          </div>
 
           <div className="border-t border-cw-border pt-4 space-y-4">
             <p className="text-xs font-bold text-cw-purple uppercase tracking-wider">KPIs do squad</p>
@@ -63,6 +62,12 @@ function MetaSquadModal({ meta, kpis, squad, onSave, onClose }: {
               <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta de clientes diário</label>
               <input type="number" min={0} value={formKpis.clientesDia}
                 onChange={e => setFormKpis(f => ({ ...f, clientesDia: Number(e.target.value) }))}
+                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta de agendamentos diário</label>
+              <input type="number" min={0} value={formKpis.agendamentosDia}
+                onChange={e => setFormKpis(f => ({ ...f, agendamentosDia: Number(e.target.value) }))}
                 className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
             </div>
             <div>
@@ -139,9 +144,9 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
         supabase.from('team_metas').select('*').eq('squad', sq).eq('mes', mesAtual).maybeSingle(),
         supabase.from('squad_kpis').select('*').eq('squad', sq).eq('mes', mesAtual).maybeSingle(),
       ]);
-      setTeamMeta(tMeta ? { meta1: tMeta.meta1, meta2: tMeta.meta2 } : META_VAZIA);
+      setTeamMeta(tMeta ? { meta1: tMeta.meta1 } : META_VAZIA);
       setSquadKpis(kpis
-        ? { clientes: kpis.meta_clientes, clientesDia: kpis.meta_clientes_dia, ltr: Number(kpis.meta_ltr), noShow: Number(kpis.meta_no_show) }
+        ? { clientes: kpis.meta_clientes, clientesDia: kpis.meta_clientes_dia, agendamentosDia: kpis.meta_agendamentos_dia ?? 0, ltr: Number(kpis.meta_ltr), noShow: Number(kpis.meta_no_show) }
         : KPIS_VAZIO);
 
       const lista = perfis ?? [];
@@ -194,11 +199,12 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
     const agora = new Date().toISOString();
     await Promise.all([
       supabase.from('team_metas').upsert({
-        squad, mes, meta1: m.meta1, meta2: m.meta2, meta3: 0, mega1: 0, mega2: 0, mega3: 0,
+        squad, mes, meta1: m.meta1, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0,
         updated_by: email, updated_at: agora,
       }, { onConflict: 'squad,mes' }),
       supabase.from('squad_kpis').upsert({
         squad, mes, meta_clientes: k.clientes, meta_clientes_dia: k.clientesDia,
+        meta_agendamentos_dia: k.agendamentosDia,
         meta_ltr: k.ltr, meta_no_show: k.noShow, updated_by: email, updated_at: agora,
       }, { onConflict: 'squad,mes' }),
     ]);
@@ -218,10 +224,10 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
   };
 
   const totalGanhos = membros.reduce((s, m) => s + (m.ganhos ?? 0) + m.ajuste, 0);
-  const metaRef = teamMeta.meta2 || teamMeta.meta1;
+  const metaRef = teamMeta.meta1;
   const pctBarra = metaRef > 0 ? Math.min(100, (totalGanhos / metaRef) * 100) : 0;
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
-  const temKpis = squadKpis.clientes > 0 || squadKpis.clientesDia > 0 || squadKpis.ltr > 0 || squadKpis.noShow > 0;
+  const temKpis = squadKpis.clientes > 0 || squadKpis.clientesDia > 0 || squadKpis.agendamentosDia > 0 || squadKpis.ltr > 0 || squadKpis.noShow > 0;
   // Ritmo real de clientes/dia = fechamentos acumulados ÷ dias úteis já passados no mês.
   const clientesDiaAtual = diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * 10) / 10 : null;
 
@@ -271,16 +277,9 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          {[{ label: 'META 1', value: teamMeta.meta1 }, { label: 'META 2', value: teamMeta.meta2 }].map(({ label, value }, i) => {
-            const batida = value > 0 && totalGanhos >= value;
-            return (
-              <div key={i} className={cn('rounded-xl border p-3', batida ? 'border-green-200 bg-green-50' : 'border-cw-border bg-cw-elevated')}>
-                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">{label}</p>
-                <p className="text-xs text-cw-muted mt-0.5">{value > 0 ? `${value} fechamentos` : 'Não definida'}</p>
-              </div>
-            );
-          })}
+        <div className={cn('rounded-xl border p-3', metaRef > 0 && totalGanhos >= metaRef ? 'border-green-200 bg-green-50' : 'border-cw-border bg-cw-elevated')}>
+          <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">META</p>
+          <p className="text-xs text-cw-muted mt-0.5">{metaRef > 0 ? `${metaRef} fechamentos` : 'Não definida'}</p>
         </div>
 
         {/* KPIs do squad */}
@@ -289,7 +288,7 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
             <BarChart3 className="h-3.5 w-3.5" /> KPIs do Squad
           </p>
           {temKpis ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
                 <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Clientes</p>
                 <p className="text-lg font-black text-cw-text mt-0.5">
@@ -301,6 +300,11 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
                 <p className="text-lg font-black text-cw-text mt-0.5">
                   {clientesDiaAtual === null ? '…' : clientesDiaAtual}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.clientesDia || '?'}</span>
                 </p>
+              </div>
+              <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
+                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Agendamentos/dia</p>
+                <p className="text-lg font-black text-cw-text mt-0.5">{squadKpis.agendamentosDia || '?'}</p>
+                <p className="text-[9px] text-cw-muted/70 mt-0.5">meta diária</p>
               </div>
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
                 <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">LTR</p>
