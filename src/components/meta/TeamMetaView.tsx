@@ -236,19 +236,6 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
       {editMeta && <MetaSquadModal meta={teamMeta} kpis={squadKpis} squad={squad} onSave={salvarMetaSquad} onClose={() => setEditMeta(false)} />}
       {editMembro && <MembroMetaModal membro={editMembro} onSave={(m) => salvarMembroMeta(editMembro, m)} onClose={() => setEditMembro(null)} />}
 
-      {/* Seletor de squad (se lidera mais de um) */}
-      {squads.length > 1 && (
-        <div className="flex items-center gap-2">
-          {squads.map(s => (
-            <button key={s} onClick={() => setSquad(s)}
-              className={cn('px-4 py-1.5 rounded-full text-sm font-bold border transition-all',
-                s === squad ? 'bg-cw-purple text-white border-cw-purple' : 'bg-white text-cw-muted border-cw-border hover:border-cw-purple/40')}>
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* Bloco único: meta do squad + KPIs */}
       <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-6 space-y-5">
         <div className="flex items-center justify-between">
@@ -265,9 +252,23 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
         </div>
 
         <div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-6xl font-black text-cw-purple">{totalGanhos}</span>
-            <span className="text-xl text-cw-muted font-bold">/ {metaRef || '?'}</span>
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-6xl font-black text-cw-purple">{totalGanhos}</span>
+              <span className="text-xl text-cw-muted font-bold">/ {metaRef || '?'}</span>
+            </div>
+            {/* Seletor de squad (se lidera mais de um) — troca a visão sem sair do bloco */}
+            {squads.length > 1 && (
+              <div className="flex items-center gap-1.5 shrink-0 mt-1.5">
+                {squads.map(s => (
+                  <button key={s} onClick={() => setSquad(s)}
+                    className={cn('px-3 py-1 rounded-full text-xs font-bold border transition-all',
+                      s === squad ? 'bg-cw-purple text-white border-cw-purple' : 'bg-white text-cw-muted border-cw-border hover:border-cw-purple/40')}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <p className="text-sm text-cw-muted mt-1">Soma dos fechamentos do squad neste mês</p>
           {metaRef > 0 && (
