@@ -251,9 +251,24 @@ function PersonalMetaView() {
     setUserId(session.user.id);
     const mesAtual = new Date().toISOString().slice(0, 7);
     setMes(mesAtual);
+    // Busca as opções do campo SDR/BDR uma vez — usada tanto pra detectar o SDR
+    // na primeira vez quanto pra exibir o nome de quem já está vinculado.
+    let options: { id: string; name: string }[] = [];
+    try {
+      const r = await fetch('/api/sdr-options');
+      const json = await r.json();
+      if (json.ok) { options = json.options; setPipedriveUsers(options); }
+    } catch { /* ignora falha — usuário digita o nome manualmente */ }
+
     const { data } = await supabase.from('user_metas').select('*').eq('user_id', session.user.id).eq('mes', mesAtual).single();
     if (data) {
       setMetaData({ meta1: data.meta1, meta2: data.meta2, meta3: data.meta3, mega1: data.mega1 ?? 0, mega2: data.mega2 ?? 0, mega3: data.mega3 ?? 0, ajuste: data.ajuste, sdrId: data.sdr_id });
+      // Já tem um vínculo salvo (desta sessão ou de antes) — trata como confirmado
+      // pra não pedir o nome de novo toda vez que reabrir "Configurar Metas".
+      if (data.sdr_id) {
+        setAutoNome(options.find(u => u.id === String(data.sdr_id))?.name || SDRS_ATIVOS[data.sdr_id] || '');
+        setVinculoConfirmado(true);
+      }
     } else {
       // Auto-detecta o SDR pelo nome do login — sem precisar buscar manualmente.
       // O "sdrId" do app não é a conta de usuário do Pipedrive, é o id de uma
@@ -262,47 +277,39 @@ function PersonalMetaView() {
       let autoSdrId = '';
       let autoSdrNome = '';
       let confiavel = false; // match exato ou "contém" — confiável o bastante pra auto-salvar
-      try {
-        const r = await fetch('/api/sdr-options');
-        const json = await r.json();
-        if (json.ok) {
-          const options = json.options as { id: string; name: string }[];
-          setPipedriveUsers(options);
-          const fullName = norm(session.user.user_metadata?.full_name ?? '');
-          if (fullName) {
-            // 1º: nome exatamente igual (ignorando acento/caixa)
-            let match = options.find(u => norm(u.name) === fullName);
-            if (match) confiavel = true;
-            // 2º: nome completo contém ou é contido pelo nome da opção
-            if (!match) {
-              match = options.find(u => {
-                const pn = norm(u.name);
-                return pn.includes(fullName) || fullName.includes(pn);
-              });
-              if (match) confiavel = true;
-            }
-            // 3º: 2+ partes do nome (≥3 chars) aparecem na opção
-            if (!match) {
-              const parts = fullName.split(' ').filter(p => p.length >= 3);
-              if (parts.length >= 2) {
-                match = options.find(u => {
-                  const pn = norm(u.name);
-                  return parts.filter(p => pn.includes(p)).length >= 2;
-                });
-              }
-            }
-            // 4º: primeiro nome único (≥4 chars) — só usa se não há ambiguidade
-            if (!match) {
-              const first = fullName.split(' ')[0];
-              if (first.length >= 4) {
-                const candidates = options.filter(u => norm(u.name).startsWith(first));
-                if (candidates.length === 1) match = candidates[0];
-              }
-            }
-            if (match) { autoSdrId = match.id; autoSdrNome = match.name; }
+      const fullName = norm(session.user.user_metadata?.full_name ?? '');
+      if (fullName) {
+        // 1º: nome exatamente igual (ignorando acento/caixa)
+        let match = options.find(u => norm(u.name) === fullName);
+        if (match) confiavel = true;
+        // 2º: nome completo contém ou é contido pelo nome da opção
+        if (!match) {
+          match = options.find(u => {
+            const pn = norm(u.name);
+            return pn.includes(fullName) || fullName.includes(pn);
+          });
+          if (match) confiavel = true;
+        }
+        // 3º: 2+ partes do nome (≥3 chars) aparecem na opção
+        if (!match) {
+          const parts = fullName.split(' ').filter(p => p.length >= 3);
+          if (parts.length >= 2) {
+            match = options.find(u => {
+              const pn = norm(u.name);
+              return parts.filter(p => pn.includes(p)).length >= 2;
+            });
           }
         }
-      } catch { /* ignora falha — usuário digita o nome manualmente */ }
+        // 4º: primeiro nome único (≥4 chars) — só usa se não há ambiguidade
+        if (!match) {
+          const first = fullName.split(' ')[0];
+          if (first.length >= 4) {
+            const candidates = options.filter(u => norm(u.name).startsWith(first));
+            if (candidates.length === 1) match = candidates[0];
+          }
+        }
+        if (match) { autoSdrId = match.id; autoSdrNome = match.name; }
+      }
 
       setAutoNome(autoSdrNome);
       setMetaData(m => ({ ...m, sdrId: autoSdrId }));

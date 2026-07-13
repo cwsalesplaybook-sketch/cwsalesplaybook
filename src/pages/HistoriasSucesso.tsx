@@ -35,17 +35,6 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
-    id: 'joelma', nome: 'Joelma Vieira', foto: '/hall/Joelma.jpeg',
-    cargo: 'Liderança Pré-Vendas', jornada: ['SDR', 'Closer', 'Liderança'],
-    frase: 'Quem tem canal próprio, bate mais forte.',
-    historia: 'Joelma começou como SDR, mostrou consistência e fome de resultado, foi promovida a Closer e hoje lidera o time comercial. É exemplo vivo de força, foco e cultura, prova de que quem se entrega ao processo, vai longe aqui dentro.',
-    stats: [
-      { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
-      { icon: 'star',     valor: 'Liderança', label: 'CARGO' },
-      { icon: 'crown',    valor: 'Top performer', label: 'STATUS' },
-    ],
-  },
-  {
     id: 'anaclara', nome: 'Ana Clara', foto: '/hall/AnaClara.jpeg',
     cargo: 'Coordenadora Comercial', jornada: ['SDR', 'Liderança', 'Coordenação'],
     frase: 'Quem lidera pelo exemplo não precisa pedir silêncio, o resultado fala.',
@@ -54,6 +43,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
       { icon: 'star',     valor: 'Coordenação', label: 'CARGO' },
       { icon: 'crown',    valor: 'Referência', label: 'STATUS' },
+    ],
+  },
+  {
+    id: 'joelma', nome: 'Joelma Vieira', foto: '/hall/Joelma.jpeg',
+    cargo: 'Liderança Pré-Vendas', jornada: ['SDR', 'Closer', 'Liderança'],
+    frase: 'Quem tem canal próprio, bate mais forte.',
+    historia: 'Joelma começou como SDR, mostrou consistência e fome de resultado, foi promovida a Closer e hoje lidera o time comercial. É exemplo vivo de força, foco e cultura, prova de que quem se entrega ao processo, vai longe aqui dentro.',
+    stats: [
+      { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
+      { icon: 'star',     valor: 'Liderança', label: 'CARGO' },
+      { icon: 'crown',    valor: 'Top performer', label: 'STATUS' },
     ],
   },
   {
@@ -101,6 +101,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
+    id: 'felipe', nome: 'Felipe Alexandrino', foto: '/hall/FelipeAlexandrino.jpeg',
+    cargo: 'Diretor do CW Cast', jornada: ['Todos os setores', 'CW Cast'],
+    frase: 'Passou por todos os setores para ter a autoridade de liderar o maior podcast da América Latina.',
+    historia: 'Um dos pilares da nossa história. O Felipe Alexandrino acompanhou nosso crescimento desde o início e sua trajetória se confunde com a da própria empresa, tendo deixado sua marca em praticamente todos os setores da operação. Hoje, ele usa toda essa bagagem e domínio de mercado para comandar o CW Cast, consolidando o nosso programa como o maior podcast da América Latina.',
+    stats: [
+      { icon: 'trending', valor: 'Todos', label: 'SETORES' },
+      { icon: 'star',     valor: 'Diretor', label: 'CW CAST' },
+      { icon: 'crown',    valor: 'Master', label: 'STATUS' },
+    ],
+  },
+  {
     id: 'joaopablo', nome: 'João Paulo', foto: '/hall/JoaoPaulo.jpeg',
     cargo: 'Closer', jornada: ['SDR JR I', 'SDR JR II', 'SDR JR III', 'Closer'],
     frase: 'Cada "não" que recebi como SDR foi o treino que me fez fechar como Closer.',
@@ -120,17 +131,6 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'trending', valor: '1.135',      label: 'CLIENTES COMO SDR' },
       { icon: 'star',     valor: '19 anos',    label: 'PRIMEIRO CLOSER' },
       { icon: 'crown',    valor: '< 1 ano',    label: 'TEMPO PRA PROMOÇÃO' },
-    ],
-  },
-  {
-    id: 'felipe', nome: 'Felipe Alexandrino', foto: '/hall/FelipeAlexandrino.jpeg',
-    cargo: 'Diretor do CW Cast', jornada: ['Todos os setores', 'CW Cast'],
-    frase: 'Passou por todos os setores para ter a autoridade de liderar o maior podcast da América Latina.',
-    historia: 'Um dos pilares da nossa história. O Felipe Alexandrino acompanhou nosso crescimento desde o início e sua trajetória se confunde com a da própria empresa, tendo deixado sua marca em praticamente todos os setores da operação. Hoje, ele usa toda essa bagagem e domínio de mercado para comandar o CW Cast, consolidando o nosso programa como o maior podcast da América Latina.',
-    stats: [
-      { icon: 'trending', valor: 'Todos', label: 'SETORES' },
-      { icon: 'star',     valor: 'Diretor', label: 'CW CAST' },
-      { icon: 'crown',    valor: 'Master', label: 'STATUS' },
     ],
   },
   {
@@ -164,6 +164,28 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'trending', valor: '7 meses', label: 'META BATIDA SEGUIDA' },
       { icon: 'star',     valor: 'Closer', label: 'CARGO ATUAL' },
       { icon: 'crown',    valor: 'SDR → Closer', label: 'JORNADA' },
+    ],
+  },
+  {
+    id: 'beatriz', nome: 'Beatriz Andrade', foto: '/hall/BeatrizAndrade.jpg',
+    cargo: 'PSM de Representantes', jornada: ['Consultora de Implementação', 'Capitã de Squad', 'Jr II', 'Jr III', 'PSM Pleno I'],
+    frase: '',
+    historia: 'Beatriz chegou na CW em agosto de 2024 direto como consultora de implementação. Poucos meses depois, foi convidada a ser capitã de um squad formado por dois consultores, um ativador e um assistente de implementação. Enquanto liderava esse time, foi sendo desenvolvida para a liderança e viu o próprio squad evoluir até se tornar o squad de Parcerias, focado exclusivamente em indicações de parceiros. Nesse período, subiu para Jr II. Com o tempo, o squad de Parcerias virou Tier Parcerias em 2025, e em 2026 ela subiu para Jr III, se tornando a pessoa mais procurada do time para resolver problemas e tirar dúvidas sobre implementação. Em junho de 2026, foi promovida a PSM (Partner Success Manager) e hoje encara um novo desafio ao lado de Hyorranes Alencar e da parceira Gabrielly Oliveira.',
+    stats: [
+      { icon: 'trending', valor: '3', label: 'PROMOÇÕES' },
+      { icon: 'star',     valor: 'PSM Pleno I', label: 'CARGO ATUAL' },
+      { icon: 'crown',    valor: 'Consultora → PSM', label: 'JORNADA' },
+    ],
+  },
+  {
+    id: 'gabrielly', nome: 'Gabrielly Oliveira', foto: '/hall/GabriellyOliveira.jpeg',
+    cargo: 'PSM de Representantes', jornada: ['SDR JR I', 'Referência do Comercial', 'Criadora do Playbook', 'PSM JR III'],
+    frase: '',
+    historia: 'Gabrielly entrou na Cardápio Web como SDR JR I e desde o início se manteve batendo Meta 3 mês após mês, uma referência de resultado consistente no time. Mas o que mais chamou atenção foi virar o ponto central do comercial: a pessoa que todo mundo procurava quando surgia uma dúvida, um problema pra resolver ou algo novo pra criar. Foi enxergando essa necessidade que ela criou o Playbook Comercial, hoje o guia de referência de SDRs, Closers e outros setores. Enquanto entregava resultado e construía ferramentas pro time inteiro, foi se preparando pro próximo passo: virar liderança. Foi promovida a PSM JR III ao lado da Beatriz, somando forças no time do Hyorranes, uma trajetória que ela mesma vê como prova de que dá pra virar referência não só pelos números, mas pela profissional que se tornou.',
+    stats: [
+      { icon: 'trending', valor: 'Playbook Comercial', label: 'CRIAÇÃO' },
+      { icon: 'star',     valor: 'PSM JR III', label: 'CARGO ATUAL' },
+      { icon: 'crown',    valor: 'SDR → PSM', label: 'JORNADA' },
     ],
   },
 ];
