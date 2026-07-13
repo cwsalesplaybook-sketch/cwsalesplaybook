@@ -1,5 +1,5 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, XCircle, User, Users, LayoutGrid } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -194,7 +194,7 @@ function ConfigModal({ metaData, nomeDetectado, pipedriveUsers, vinculoConfirmad
   );
 }
 
-function PersonalMetaView() {
+function PersonalMetaView({ toggle }: { toggle?: ReactNode }) {
   const navigate = useNavigate();
   const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, sdrId: '' });
   const [apiData, setApiData]     = useState<ApiData | null>(null);
@@ -408,6 +408,7 @@ function PersonalMetaView() {
         <img src="/cardapinho-viking.png" alt="" className="absolute right-0 bottom-0 h-52 object-contain pointer-events-none select-none" style={{ zIndex: 10 }} />
 
         <div className="relative p-6 space-y-5" style={{ zIndex: 1 }}>
+          {toggle}
           {/* Topo */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
@@ -877,13 +878,9 @@ export default function MetaMes() {
     );
   }
 
-  const squadView = isLider
-    ? <TeamMetaView squads={squadsLideradas} />
-    : squad
-      ? <MeuSquadMetaView squad={squad} />
-      : null;
+  const temSquadView = isLider || !!squad;
 
-  if (!squadView) {
+  if (!temSquadView) {
     return (
       <>
         <PromocaoCelebration />
@@ -892,26 +889,29 @@ export default function MetaMes() {
     );
   }
 
+  // Toggle vai DENTRO do card ativo (não numa faixa solta acima) — cada view
+  // recebe esse mesmo nó e renderiza no topo do próprio bloco branco.
+  const toggle = (
+    <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-cw-elevated border border-cw-border mb-1">
+      <button onClick={() => setVista('individual')}
+        className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
+          vista === 'individual' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
+        <User className="h-3.5 w-3.5" /> Meta do Mês
+      </button>
+      <button onClick={() => setVista('time')}
+        className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
+          vista === 'time' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
+        <Users className="h-3.5 w-3.5" /> Meta dos Squads
+      </button>
+    </div>
+  );
+
   return (
     <div className="space-y-2">
       <PromocaoCelebration />
-      {/* Toggle de visão */}
-      <div className="px-6 pt-6">
-        <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-cw-elevated border border-cw-border">
-          <button onClick={() => setVista('individual')}
-            className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
-              vista === 'individual' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
-            <User className="h-3.5 w-3.5" /> Meta do Mês
-          </button>
-          <button onClick={() => setVista('time')}
-            className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
-              vista === 'time' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
-            <Users className="h-3.5 w-3.5" /> Meta dos Squads
-          </button>
-        </div>
-      </div>
-
-      {vista === 'time' ? squadView : <PersonalMetaView />}
+      {vista === 'time'
+        ? (isLider ? <TeamMetaView squads={squadsLideradas} toggle={toggle} /> : <MeuSquadMetaView squad={squad!} toggle={toggle} />)
+        : <PersonalMetaView toggle={toggle} />}
     </div>
   );
 }
