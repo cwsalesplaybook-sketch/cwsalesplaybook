@@ -1,4 +1,4 @@
-/** Meta do Squad — visão do closer comum (somente leitura).
+/** Meta do Squad — visão do SDR que não lidera (somente leitura).
  *  Mostra só o agregado do squad (fechamentos totais e KPIs), pra dar noção
  *  do andamento da meta do time sem detalhar membro a membro — a lista de
  *  colegas e os botões de edição ficam só na visão de liderança

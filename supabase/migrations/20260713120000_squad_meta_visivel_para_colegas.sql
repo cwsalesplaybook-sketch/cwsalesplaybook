@@ -1,9 +1,10 @@
 -- Meta do Squad passa a ser visível (leitura) pra qualquer membro do squad,
--- não só pra quem lidera — closer comum passa a acompanhar o andamento da
--- meta do time. A UI (MeuSquadMetaView) só exibe o agregado do squad, nunca
--- o detalhe individual dos colegas, mas a policy libera leitura de linha
--- porque o total real (fechamentos vindos do Pipedrive) só é calculável
--- no cliente somando o sdr_id de cada colega.
+-- não só pra quem lidera — SDR que não lidera passa a acompanhar o andamento
+-- da meta do time (squad só existe pra papel SDR; Closer/Parcerias nunca têm
+-- squad, então nunca disparam essa visão). A UI (MeuSquadMetaView) só exibe
+-- o agregado do squad, nunca o detalhe individual dos colegas, mas a policy
+-- libera leitura de linha porque o total real (fechamentos vindos do
+-- Pipedrive) só é calculável no cliente somando o sdr_id de cada colega.
 
 -- KPI novo: meta de agendamentos por dia (mesmo padrão de "clientes/dia").
 ALTER TABLE public.squad_kpis
