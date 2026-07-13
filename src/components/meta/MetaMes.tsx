@@ -856,9 +856,11 @@ function PersonalMetaView() {
  *  Todo mundo mais vê o toggle Meta do Mês / Meta dos Squads, abrindo por
  *  padrão na visão individual: quem lidera squad(s) sem ser papel Liderança
  *  vê o time completo (membro a membro, TeamMetaView); quem só integra um
- *  squad (closer comum) vê a versão agregada (MeuSquadMetaView) — dá pra
+ *  squad (SDR sem liderar) vê a versão agregada (MeuSquadMetaView) — dá pra
  *  acompanhar o andamento da meta do time mesmo sem liderar. Só some o
- *  toggle se a pessoa ainda não tem squad definido (onboarding incompleto).
+ *  toggle se a pessoa ainda não tem squad definido (onboarding incompleto) —
+ *  na prática só SDR tem squad; Closer/Parcerias sempre caem na visão
+ *  individual, sem toggle.
  *  A celebração de promoção aparece no topo para quem tiver uma pendente. */
 export default function MetaMes() {
   const { papel, squad, squadsLideradas } = useSidebarContext();
