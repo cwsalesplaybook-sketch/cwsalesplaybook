@@ -7,10 +7,11 @@
  *  Acesso é garantido pela RLS (squads_que_lidero / lidero_o_usuario).
  *  Squads trabalham com uma única meta de fechamentos (sem Meta 2/3 nem
  *  Mega Metas) — o líder sempre define o valor completo do mês.
- *  Agendamentos/dia tem dado real: soma de `agendamentosVideo` (ganhos com
- *  campo [QUAL] Canal de preferência = Vídeo chamada, vindo de /api/meta,
- *  replicando o relatório "SDR | Canais de preferência por SDR"). LTR e
- *  no-show ainda não têm dado real integrado — mostram só a meta. */
+ *  Agendamentos hoje tem dado real vindo de /api/meetime-agendamentos: conta
+ *  as prospecções que viraram Ganho no Meetime hoje (cadências Standard,
+ *  foco Inbound Ativo/Passivo) com [QUAL] Canal de preferência = Vídeo
+ *  chamada — mesmo filtro do dashboard de metas do Meetime. LTR e no-show
+ *  ainda não têm dado real integrado — mostram só a meta. */
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Settings, RefreshCw, X, Users, Target, TrendingUp, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,7 +26,6 @@ interface Membro {
   meta1: number; meta2: number; meta3: number;
   ajuste: number;
   ganhos: number | null;       // null = ainda carregando / sem Pipedrive
-  agendamentosVideo: number;   // ganhos com canal de preferência = Vídeo chamada (só usado no agregado do squad)
   configurado: boolean;        // tem linha em user_metas
 }
 
@@ -131,6 +131,7 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
   const [teamMeta, setTeamMeta] = useState<TeamMeta>(META_VAZIA);
   const [squadKpis, setSquadKpis] = useState<SquadKpis>(KPIS_VAZIO);
   const [diasPassados, setDiasPassados] = useState(0);
+  const [agendamentosHoje, setAgendamentosHoje] = useState<number | null>(null);
   const [membros, setMembros]   = useState<Membro[]>([]);
   const [loading, setLoading]   = useState(false);
   const [editMeta, setEditMeta] = useState(false);
@@ -173,7 +174,6 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
           meta1: m?.meta1 ?? 0, meta2: m?.meta2 ?? 0, meta3: m?.meta3 ?? 0,
           ajuste: m?.ajuste ?? 0,
           ganhos: m?.sdr_id ? null : 0,
-          agendamentosVideo: 0,
           configurado: !!m,
         };
       });
@@ -182,15 +182,24 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
       // diasPassados vem igual em toda resposta do /api/meta nesse mês —
       // guarda a primeira que chegar pra calcular o ritmo de clientes/dia.
       let diasPassadosCapturado = 0;
-      const comGanhos = await Promise.all(base.map(async (mem) => {
-        if (!mem.sdrId) return mem;
-        try {
-          const r = await fetch(`/api/meta?sdrId=${mem.sdrId}${bust}`);
-          const j = await r.json();
-          if (j.ok && !diasPassadosCapturado) diasPassadosCapturado = j.diasPassados || 0;
-          return { ...mem, ganhos: j.ok ? j.ganhos : 0, agendamentosVideo: j.ok ? (j.agendamentosVideo || 0) : 0 };
-        } catch { return { ...mem, ganhos: 0 }; }
-      }));
+      const [comGanhos] = await Promise.all([
+        Promise.all(base.map(async (mem) => {
+          if (!mem.sdrId) return mem;
+          try {
+            const r = await fetch(`/api/meta?sdrId=${mem.sdrId}${bust}`);
+            const j = await r.json();
+            if (j.ok && !diasPassadosCapturado) diasPassadosCapturado = j.diasPassados || 0;
+            return { ...mem, ganhos: j.ok ? j.ganhos : 0 };
+          } catch { return { ...mem, ganhos: 0 }; }
+        })),
+        (async () => {
+          try {
+            const r = await fetch(`/api/meetime-agendamentos?squad=${encodeURIComponent(sq)}${bust}`);
+            const j = await r.json();
+            setAgendamentosHoje(j.ok ? j.agendamentosHoje : null);
+          } catch { setAgendamentosHoje(null); }
+        })(),
+      ]);
       setMembros(comGanhos);
       setDiasPassados(diasPassadosCapturado);
     } finally { setLoading(false); }
@@ -229,15 +238,12 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
   };
 
   const totalGanhos = membros.reduce((s, m) => s + (m.ganhos ?? 0) + m.ajuste, 0);
-  const totalAgendamentos = membros.reduce((s, m) => s + (m.agendamentosVideo ?? 0), 0);
   const metaRef = teamMeta.meta1;
   const pctBarra = metaRef > 0 ? Math.min(100, (totalGanhos / metaRef) * 100) : 0;
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
   const temKpis = squadKpis.clientes > 0 || squadKpis.clientesDia > 0 || squadKpis.agendamentosDia > 0 || squadKpis.ltr > 0 || squadKpis.noShow > 0;
   // Ritmo real de clientes/dia = fechamentos acumulados ÷ dias úteis já passados no mês.
   const clientesDiaAtual = diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * 10) / 10 : null;
-  // Agendamentos = ganhos com [QUAL] Canal de preferência = Vídeo chamada (replica "SDR | Canais de preferência por SDR").
-  const agendamentosDiaAtual = diasPassados > 0 ? Math.round((totalAgendamentos / diasPassados) * 10) / 10 : null;
 
   return (
     <div className="p-6 space-y-4">
@@ -312,11 +318,11 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
                 </p>
               </div>
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
-                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Agendamentos/dia</p>
+                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Agendamentos hoje</p>
                 <p className="text-lg font-black text-cw-text mt-0.5">
-                  {agendamentosDiaAtual === null ? '…' : agendamentosDiaAtual}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.agendamentosDia || '?'}</span>
+                  {agendamentosHoje === null ? '…' : agendamentosHoje}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.agendamentosDia || '?'}</span>
                 </p>
-                <p className="text-[9px] text-cw-muted/70 mt-0.5">vídeo chamada, via Pipedrive</p>
+                <p className="text-[9px] text-cw-muted/70 mt-0.5">vídeo chamada, via Meetime</p>
               </div>
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
                 <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">LTR</p>

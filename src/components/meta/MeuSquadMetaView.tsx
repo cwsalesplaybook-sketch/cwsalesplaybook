@@ -5,9 +5,10 @@
  *  (TeamMetaView). A leitura de sdr_profiles/user_metas dos colegas é
  *  liberada por RLS (mesmo_squad), mas essa tela nunca expõe nome ou meta
  *  individual de ninguém, só a soma.
- *  Agendamentos/dia tem dado real: soma de `agendamentosVideo` vindo de
- *  /api/meta (ganhos com campo [QUAL] Canal de preferência = Vídeo chamada,
- *  replicando o relatório "SDR | Canais de preferência por SDR"). */
+ *  Agendamentos/dia tem dado real vindo de /api/meetime-agendamentos: conta,
+ *  pro squad de hoje, as prospecções que viraram Ganho no Meetime (cadências
+ *  Standard, foco Inbound Ativo/Passivo) com [QUAL] Canal de preferência =
+ *  Vídeo chamada — mesmo filtro do dashboard de metas do Meetime. */
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { RefreshCw, Target, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,7 +22,7 @@ export default function MeuSquadMetaView({ squad, toggle }: { squad: string; tog
   const [meta, setMeta] = useState(0);
   const [squadKpis, setSquadKpis] = useState<SquadKpis>(KPIS_VAZIO);
   const [totalGanhos, setTotalGanhos] = useState<number | null>(null);
-  const [totalAgendamentos, setTotalAgendamentos] = useState<number | null>(null);
+  const [agendamentosHoje, setAgendamentosHoje] = useState<number | null>(null);
   const [diasPassados, setDiasPassados] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -49,23 +50,29 @@ export default function MeuSquadMetaView({ squad, toggle }: { squad: string; tog
 
       const bust = forceRefresh ? `&_t=${Date.now()}` : '';
       let soma = 0;
-      let somaAgendamentos = 0;
       let diasPassadosCapturado = 0;
-      await Promise.all((metas ?? []).map(async (m) => {
-        soma += m.ajuste ?? 0;
-        if (!m.sdr_id) return;
-        try {
-          const r = await fetch(`/api/meta?sdrId=${m.sdr_id}${bust}`);
-          const j = await r.json();
-          if (j.ok) {
-            soma += j.ganhos;
-            somaAgendamentos += j.agendamentosVideo || 0;
-            if (!diasPassadosCapturado) diasPassadosCapturado = j.diasPassados || 0;
-          }
-        } catch { /* ignora falha de um colega, não trava o total */ }
-      }));
+      await Promise.all([
+        ...(metas ?? []).map(async (m) => {
+          soma += m.ajuste ?? 0;
+          if (!m.sdr_id) return;
+          try {
+            const r = await fetch(`/api/meta?sdrId=${m.sdr_id}${bust}`);
+            const j = await r.json();
+            if (j.ok) {
+              soma += j.ganhos;
+              if (!diasPassadosCapturado) diasPassadosCapturado = j.diasPassados || 0;
+            }
+          } catch { /* ignora falha de um colega, não trava o total */ }
+        }),
+        (async () => {
+          try {
+            const r = await fetch(`/api/meetime-agendamentos?squad=${encodeURIComponent(squad)}${bust}`);
+            const j = await r.json();
+            setAgendamentosHoje(j.ok ? j.agendamentosHoje : null);
+          } catch { setAgendamentosHoje(null); }
+        })(),
+      ]);
       setTotalGanhos(soma);
-      setTotalAgendamentos(somaAgendamentos);
       setDiasPassados(diasPassadosCapturado);
     } finally { setLoading(false); }
   }, [squad]);
@@ -76,8 +83,6 @@ export default function MeuSquadMetaView({ squad, toggle }: { squad: string; tog
   const pctBarra = meta > 0 && totalGanhos !== null ? Math.min(100, (totalGanhos / meta) * 100) : 0;
   const temKpis = squadKpis.clientes > 0 || squadKpis.clientesDia > 0 || squadKpis.agendamentosDia > 0 || squadKpis.ltr > 0 || squadKpis.noShow > 0;
   const clientesDiaAtual = diasPassados > 0 && totalGanhos !== null ? Math.round((totalGanhos / diasPassados) * 10) / 10 : null;
-  // Agendamentos = ganhos com [QUAL] Canal de preferência = Vídeo chamada (replica "SDR | Canais de preferência por SDR").
-  const agendamentosDiaAtual = diasPassados > 0 && totalAgendamentos !== null ? Math.round((totalAgendamentos / diasPassados) * 10) / 10 : null;
 
   return (
     <div className="p-6 space-y-4">
@@ -125,11 +130,11 @@ export default function MeuSquadMetaView({ squad, toggle }: { squad: string; tog
                 </p>
               </div>
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
-                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Agendamentos/dia</p>
+                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Agendamentos hoje</p>
                 <p className="text-lg font-black text-cw-text mt-0.5">
-                  {agendamentosDiaAtual === null ? '…' : agendamentosDiaAtual}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.agendamentosDia || '?'}</span>
+                  {agendamentosHoje === null ? '…' : agendamentosHoje}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.agendamentosDia || '?'}</span>
                 </p>
-                <p className="text-[9px] text-cw-muted/70 mt-0.5">vídeo chamada, via Pipedrive</p>
+                <p className="text-[9px] text-cw-muted/70 mt-0.5">vídeo chamada, via Meetime</p>
               </div>
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
                 <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">LTR</p>
