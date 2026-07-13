@@ -181,7 +181,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     id: 'gerardo', nome: 'Gerardo Magalhães', foto: '/hall/GerardoMagalhaes.png',
     cargo: 'Coordenador de Growth', jornada: ['RevOps', 'Clara IA', 'Coordenador de Growth'],
     frase: '',
-    historia: 'Gerardo entrou na CW pelo RevOps, com a missão de colocar dado e tecnologia no centro do funil comercial. Construiu a Clara IA — SDR autônoma que qualifica e agenda leads no WhatsApp — e foi provando, projeto a projeto, que dado bem usado vira crescimento. Em maio de 2026 foi promovido a Coordenador de Growth, assumindo o time e a geração de demanda da CW. À frente do Growth, estruturou a máquina de experimentos que roda hipóteses e criativos novos a cada sprint — sempre com a mesma lógica: transformar dado em decisão e decisão em crescimento.',
+    historia: 'Gerardo entrou na CW pelo RevOps, com a missão de colocar dado e tecnologia no centro do funil comercial. Construiu a Clara IA, SDR autônoma que qualifica e agenda leads no WhatsApp, e foi provando, projeto a projeto, que dado bem usado vira crescimento. Em maio de 2026 foi promovido a Coordenador de Growth, assumindo o time e a geração de demanda da CW. À frente do Growth, estruturou a máquina de experimentos que roda hipóteses e criativos novos a cada sprint, sempre com a mesma lógica: transformar dado em decisão e decisão em crescimento.',
     stats: [
       { icon: 'trending', valor: 'Clara IA', label: 'CRIAÇÃO' },
       { icon: 'star',     valor: 'Coordenador de Growth', label: 'CARGO ATUAL' },

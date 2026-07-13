@@ -9,6 +9,7 @@ export const TIME: Pessoa[] = [
   // ── COORDENAÇÃO ─────────────────────────────────────────────────
   { id: 'ana-clara-lobo',  nome: 'Ana Clara Lobo',                 cargo: 'Coordenadora Comercial',              slack: '@anaclara',  email: 'ana.clara@cardapioweb.com'        },
   { id: 'vanessa',         nome: 'Vanessa Alencar',                cargo: 'Coordenadora de Parcerias',           slack: '@vanessa'                                                                    },
+  { id: 'gerardo',         nome: 'Gerardo Magalhães',              cargo: 'Coordenador de Growth',               slack: '@gerardo'   },
 
   // ── LIDERANÇA (continuação) ─────────────────────────────────────
   { id: 'beatriz',         nome: 'Beatriz Magalhães',              cargo: 'Liderança de Parcerias',              slack: '@beatriz'                                                                    },
@@ -27,7 +28,6 @@ export const TIME: Pessoa[] = [
   { id: 'gregory',         nome: 'Gregory Lavor',                  cargo: 'Liderança de Closer',                 slack: '@gregory'   },
 
   // ── ANALISTAS / ASSESSORES ──────────────────────────────────────
-  { id: 'gerardo',         nome: 'Gerardo Magalhães',              cargo: 'Analista de RevOps',                  slack: '@gerardo'   },
   { id: 'antonio-carlos',  nome: 'Antonio Carlos',                 cargo: 'Assessor de Growth Jr II',            slack: '@antoniocarlos' },
 
   // ── CLOSERS ─────────────────────────────────────────────────────
