@@ -10,7 +10,6 @@ type PlanType = 'Mesas' | 'Delivery' | 'Premium';
 
 const PERIODOS: Period[] = ['Mensal', 'Trimestral', 'Semestral', 'Anual'];
 const MULT: Record<Period, number> = { Mensal: 1, Trimestral: 3, Semestral: 6, Anual: 12 };
-const PARTNER_DISCOUNT: Record<Period, number> = { Mensal: 15, Trimestral: 9, Semestral: 7, Anual: 5 };
 
 const PLANOS: Record<PlanType, Record<Period, { t: number; m: number }>> = {
   Mesas: {
@@ -167,9 +166,9 @@ export default function Calculadora() {
   };
 
   return (
-    <div className="p-8 space-y-4">
+    <div className="p-8 space-y-4 h-full flex flex-col">
       {/* Barra de ações */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 shrink-0">
         <div className="flex flex-wrap gap-1.5">
           {stores.map(s => (
             <button
@@ -201,9 +200,9 @@ export default function Calculadora() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 flex-1 min-h-0">
         {/* ── Configuração ── */}
-        <div className="cw-card p-6 space-y-6">
+        <div className="cw-card p-6 space-y-6 h-full overflow-y-auto">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-cw-muted mb-2">Plano base</p>
             <select
@@ -233,7 +232,6 @@ export default function Calculadora() {
                     <p className="text-[10px] font-black uppercase tracking-widest text-cw-muted">{p}</p>
                     <p className="text-base font-black text-[#5b21b6] mt-1.5">{BRL(d.t)}</p>
                     <p className="text-[11px] text-cw-muted">({BRL(d.m)}/mês)</p>
-                    <p className="text-[10px] font-semibold text-emerald-600 mt-1">−{PARTNER_DISCOUNT[p]}% parceria</p>
                   </button>
                 );
               })}
@@ -308,8 +306,8 @@ export default function Calculadora() {
         </div>
 
         {/* ── Resumo + consolidado ── */}
-        <div className="space-y-4">
-          <div className="cw-card p-6">
+        <div className="h-full flex flex-col gap-4">
+          <div className="cw-card p-6 shrink-0">
             <p className="text-[10px] font-bold uppercase tracking-widest text-cw-muted mb-3">Resumo desta loja</p>
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between"><span className="text-cw-muted">Plano</span><span className="font-bold text-cw-text">{active.planType.toUpperCase()} · {active.period.toUpperCase()}</span></div>
@@ -331,7 +329,7 @@ export default function Calculadora() {
             )}
           </div>
 
-          <div className="cw-card p-6">
+          <div className="cw-card p-6 flex-1 min-h-0 overflow-y-auto">
             <p className="text-[10px] font-bold uppercase tracking-widest text-cw-muted mb-3">
               Consolidado — {stores.length} {stores.length === 1 ? 'loja' : 'lojas'}
             </p>
@@ -360,14 +358,14 @@ export default function Calculadora() {
           <button
             onClick={copiarProposta}
             className={cn(
-              'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all',
+              'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shrink-0',
               copied ? 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/40' : 'gradient-primary text-white',
             )}
           >
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             {copied ? 'Proposta copiada!' : 'Copiar proposta para enviar'}
           </button>
-          <p className="text-[10px] text-cw-muted leading-relaxed text-center">
+          <p className="text-[10px] text-cw-muted leading-relaxed text-center shrink-0">
             Gera um texto pronto pra colar no WhatsApp — sem precisar de print. * Módulo Fiscal e Roteirização podem ter valores excedentes; consulte o CSM.
           </p>
         </div>
