@@ -5,7 +5,7 @@
  *  (TeamMetaView). A leitura de sdr_profiles/user_metas dos colegas é
  *  liberada por RLS (mesmo_squad), mas essa tela nunca expõe nome ou meta
  *  individual de ninguém, só a soma. */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { RefreshCw, Target, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 interface SquadKpis { clientes: number; clientesDia: number; agendamentosDia: number; ltr: number; noShow: number; }
 const KPIS_VAZIO: SquadKpis = { clientes: 0, clientesDia: 0, agendamentosDia: 0, ltr: 0, noShow: 0 };
 
-export default function MeuSquadMetaView({ squad }: { squad: string }) {
+export default function MeuSquadMetaView({ squad, toggle }: { squad: string; toggle?: ReactNode }) {
   const [mes, setMes] = useState('');
   const [meta, setMeta] = useState(0);
   const [squadKpis, setSquadKpis] = useState<SquadKpis>(KPIS_VAZIO);
@@ -73,6 +73,7 @@ export default function MeuSquadMetaView({ squad }: { squad: string }) {
   return (
     <div className="p-6 space-y-4">
       <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-6 space-y-5">
+        {toggle}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
             <Target className="h-4 w-4" /> Meta do Squad · {squad} {nomeMes && <span className="text-cw-muted/70 normal-case font-medium">— {nomeMes}</span>}

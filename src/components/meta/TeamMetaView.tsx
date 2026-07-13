@@ -8,7 +8,7 @@
  *  Squads trabalham com uma única meta de fechamentos (sem Meta 2/3 nem
  *  Mega Metas) — o líder sempre define o valor completo do mês.
  *  LTR e no-show ainda não têm dado real integrado — mostram só a meta. */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Settings, RefreshCw, X, Users, Target, TrendingUp, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -121,7 +121,7 @@ function MembroMetaModal({ membro, onSave, onClose }: {
   );
 }
 
-export default function TeamMetaView({ squads }: { squads: string[] }) {
+export default function TeamMetaView({ squads, toggle }: { squads: string[]; toggle?: ReactNode }) {
   const [squad, setSquad]       = useState(squads[0] ?? '');
   const [mes, setMes]           = useState('');
   const [teamMeta, setTeamMeta] = useState<TeamMeta>(META_VAZIA);
@@ -238,6 +238,7 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
 
       {/* Bloco único: meta do squad + KPIs */}
       <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-6 space-y-5">
+        {toggle}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
             <Target className="h-4 w-4" /> Meta do Squad · {squad} {nomeMes && <span className="text-cw-muted/70 normal-case font-medium">— {nomeMes}</span>}
