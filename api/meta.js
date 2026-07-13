@@ -1,6 +1,8 @@
 const TOKEN = process.env.PIPEDRIVE_API_TOKEN;
 const SDR_FIELD = 'ce39d035fad6c74095053ffe04bdb9bbc9ae2a53'; // campo "[QUAL] SDR/BDR"
 const PIPELINE_VENDAS = 2; // "Funil de Vendas" — única pipeline que conta como fechamento
+const CANAL_PREF_FIELD = '988a960a4d34327c21a8dbff22170ca27ed05a6e'; // campo "[QUAL] Canal de preferência"
+const CANAL_VIDEO_CHAMADA = '599'; // opção "Vídeo chamada" — replica "SDR | Canais de preferência por SDR"
 
 // Pipedrive devolve datas em UTC, mas o time opera em horário de Brasília
 // (UTC-3, sem horário de verão desde 2019). Sem esse ajuste, um negócio
@@ -36,6 +38,7 @@ export default async function handler(req, res) {
   const iniciaMes = `${ano}-${mes}-01`;
 
   let ganhos = 0;
+  let agendamentosVideo = 0; // ganhos com [QUAL] Canal de preferência = Vídeo chamada
   const porDia = {}; // { 'YYYY-MM-DD': count }
   let start = 0;
 
@@ -60,6 +63,7 @@ export default async function handler(req, res) {
           ganhos++;
           const dia = wt.slice(0, 10); // 'YYYY-MM-DD' (data do ganho, já em horário de Brasília)
           porDia[dia] = (porDia[dia] || 0) + 1;
+          if (String(deal[CANAL_PREF_FIELD]) === CANAL_VIDEO_CHAMADA) agendamentosVideo++;
         }
       }
       if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
@@ -106,7 +110,7 @@ export default async function handler(req, res) {
     }
 
     res.status(200).json({
-      ok: true, ganhos, mes: prefixo,
+      ok: true, ganhos, agendamentosVideo, mes: prefixo,
       diasUteisTotal, diasPassados, diasRestantes, diasUteisSemanais,
       evolucao,
       ts: new Date().toISOString(),
