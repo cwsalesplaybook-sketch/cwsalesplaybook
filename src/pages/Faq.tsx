@@ -1,11 +1,14 @@
 /** Página FAQ — cards por categoria, accordion de perguntas. */
 import { useState } from 'react';
-import { Monitor, DollarSign, Package, ChevronLeft, ChevronRight, HelpCircle, MessageCircle, Store } from 'lucide-react';
+import { Monitor, DollarSign, Package, ChevronLeft, ChevronRight, HelpCircle, MessageCircle, Store, Heart } from 'lucide-react';
 import { FAQ } from '@/data/playbook';
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
+import ImpactoDelivery from '@/components/faq/ImpactoDelivery';
 import { cn } from '@/lib/utils';
+
+const CAT_IMPACTO_DELIVERY = 'Impacto no Delivery';
 
 interface Categoria {
   id: string;
@@ -37,6 +40,16 @@ const CATEGORIAS: Categoria[] = [
     cor: 'text-emerald-400',
     bg: 'bg-emerald-500/8',
     borda: 'border-emerald-500/30',
+  },
+  {
+    id: CAT_IMPACTO_DELIVERY,
+    label: 'Impacto no Delivery',
+    icon: Heart,
+    descricao: 'Como cada plano muda a realidade de quem toca um delivery ou restaurante.',
+    cor: 'text-pink-400',
+    bg: 'bg-pink-500/8',
+    borda: 'border-pink-500/30',
+    badge: 'Novo',
   },
   {
     id: 'Produto',
@@ -100,6 +113,7 @@ export default function Faq() {
                   : 'hover:scale-[1.01] hover:shadow-md',
                 isActive && cat.id === 'Totem de Autoatendimento' && 'ring-cw-purple',
                 isActive && cat.id === 'Planos & Preços' && 'ring-emerald-500',
+                isActive && cat.id === CAT_IMPACTO_DELIVERY && 'ring-pink-500',
                 isActive && cat.id === 'Produto' && 'ring-blue-500',
                 isActive && cat.id === 'Integração WhatsApp (Meta)' && 'ring-green-500',
                 isActive && cat.id === 'CW App Store' && 'ring-orange-500',
@@ -117,7 +131,7 @@ export default function Faq() {
               <p className="text-xs text-cw-muted leading-relaxed mb-3">{cat.descricao}</p>
               <div className="flex items-center justify-between">
                 <span className={cn('text-[10px] font-bold uppercase tracking-wider', cat.cor)}>
-                  {count} {count === 1 ? 'pergunta' : 'perguntas'}
+                  {cat.id === CAT_IMPACTO_DELIVERY ? 'Ver cards' : `${count} ${count === 1 ? 'pergunta' : 'perguntas'}`}
                 </span>
                 <ChevronRight className={cn('h-4 w-4 transition-transform', cat.cor, isActive && 'rotate-90')} />
               </div>
@@ -126,8 +140,27 @@ export default function Faq() {
         })}
       </div>
 
+      {/* Impacto no Delivery — cards de impacto em vez de perguntas em accordion */}
+      {catAtual && catAtual.id === CAT_IMPACTO_DELIVERY && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSelectedCat(null)}
+              className="h-8 w-8 rounded-lg border border-cw-border flex items-center justify-center hover:bg-cw-elevated transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4 text-cw-muted" />
+            </button>
+            <div className="flex items-center gap-2">
+              <Heart className={cn('h-4 w-4', catAtual.cor)} />
+              <h2 className="text-base font-bold text-cw-text">{catAtual.label}</h2>
+            </div>
+          </div>
+          <ImpactoDelivery />
+        </div>
+      )}
+
       {/* Perguntas da categoria selecionada */}
-      {catAtual && perguntasCat.length > 0 && (
+      {catAtual && catAtual.id !== CAT_IMPACTO_DELIVERY && perguntasCat.length > 0 && (
         <div className="cw-card p-6 space-y-4">
           <div className="flex items-center gap-3">
             <button
