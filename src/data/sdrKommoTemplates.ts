@@ -17,7 +17,6 @@ export const KOMMO_TEMPLATE_CATEGORIAS = [
   'Fluxo Kommo',
   'Confirmação',
   'Reengajamento',
-  'Parcerias',
   'Planos',
 ] as const;
 
@@ -38,8 +37,6 @@ export const SEED_KOMMO_TEMPLATES: KommoTemplate[] = [
 
   { id: 'ret-continuar',     titulo: 'Vamos continuar nosso bate-papo?', categoria: 'Reengajamento', atalho: '/[SDR][RET] Vamos continuar nosso bate-papo?' },
   { id: 'ret-por-ai',        titulo: 'Você tá por aí?',                  categoria: 'Reengajamento', atalho: '/[SDR][RET] Você tá por aí?' },
-
-  { id: 'par-breakup',       titulo: 'Break-up', categoria: 'Parcerias', atalho: '/[SDR][PAR] Break-up' },
 
   { id: 'plano-mesas',       titulo: 'Mesas atualizado',    categoria: 'Planos', atalho: '/[SDR][PLANO] Mesas atualizado' },
   { id: 'plano-delivery',    titulo: 'Delivery atualizado', categoria: 'Planos', atalho: '/[SDR][PLANO] Delivery atualizado' },
