@@ -60,11 +60,16 @@ export default async function handler(req, res) {
 
     // 2. Cadências "Standard" + foco Inbound Ativo/Passivo — mesmo filtro do
     //    dashboard de metas do Meetime (Tipo de cadência: Standard; Cadências:
-    //    Inbound Passivo + Inbound Ativo, sem Outbound/Outro).
+    //    Inbound Passivo + Inbound Ativo, sem Outbound/Outro). Exclui também
+    //    cadências de "no-show" (ex: id 24257 "[NO-SHOW] Fluxo de leads que
+    //    não apareceram na reunião com closer") — Ganho nessas não é um
+    //    agendamento novo, é reagendamento de quem já tinha faltado.
     const cadencias = await buscarTudo(`${BASE}/cadences?`);
     const cadenciasValidas = new Set(
       cadencias
-        .filter(c => c.type === 'STANDARD' && (c.cadence_focus === 'ACTIVE_INBOUND' || c.cadence_focus === 'PASSIVE_INBOUND'))
+        .filter(c => c.type === 'STANDARD'
+          && (c.cadence_focus === 'ACTIVE_INBOUND' || c.cadence_focus === 'PASSIVE_INBOUND')
+          && !/no.?show/i.test(c.name || ''))
         .map(c => c.id)
     );
 
@@ -75,14 +80,6 @@ export default async function handler(req, res) {
       `${BASE}/prospections?status=WON&end_after=${encodeURIComponent(inicioHojeUtc)}&end_before=${encodeURIComponent(fimHojeUtc)}`
     );
     const agendamentosHoje = prospeccoes.filter(p => idsDoTime.has(p.owner_id) && cadenciasValidas.has(p.cadence_id)).length;
-
-    // DEBUG TEMP: lista nome + id de cada cadência que está passando no
-    // filtro, pra achar a cadência de "no show" que não devia contar.
-    if (req.query.debug) {
-      console.log('[meetime-debug-cadencias]', JSON.stringify(
-        cadencias.filter(c => cadenciasValidas.has(c.id)).map(c => ({ id: c.id, name: c.name || c.title }))
-      ));
-    }
 
     res.status(200).json({
       ok: true, agendamentosHoje,
