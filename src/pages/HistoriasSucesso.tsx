@@ -57,7 +57,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
-    id: 'natasha', nome: 'Natasha Freitas', foto: '/hall/NatashaFreitas.png',
+    id: 'natasha', nome: 'Natasha Freitas', foto: '/hall/NatashaFreitas.jpg',
     cargo: 'Coordenadora de Marketing (Branding)', jornada: ['Estágio em Marketing', 'Designer', 'Supervisora de Marketing', 'Supervisora de Branding', 'Coordenadora de Branding'],
     frase: '',
     historia: 'Natasha foi a primeira funcionária da Cardápio Web, entrando como estagiária de Marketing quando a empresa ainda dava seus primeiros passos. Encontrou no design sua principal área de atuação e passou a construir soluções que fortaleciam a comunicação, a identidade da marca e a experiência dos clientes. Participou de momentos marcantes da história da empresa, como o processo de rebranding, e foi a criadora do Cardapinho, personagem que hoje faz parte da identidade da CW. Com o crescimento da organização, assumiu a Supervisão de Marketing, estruturando a área e seus processos, e depois passou a Supervisora de Branding e Chapter de Design, consolidando a estratégia de marca e garantindo consistência em cada ponto de contato. Agora inicia um novo capítulo como Coordenadora de Branding, ampliando ainda mais o impacto de uma área que ajudou a construir desde o primeiro dia.',
@@ -90,7 +90,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
-    id: 'hyorranes', nome: 'Hyorranes Souza', foto: '/hall/Hyorranes.jpeg',
+    id: 'hyorranes', nome: 'Hyorranes Souza', foto: '/hall/Hyorranes.png',
     cargo: 'Liderança de Representantes', jornada: ['Estágio BDR', 'Liderança BDR', 'Liderança Rep.'],
     frase: 'Estagiário é só o ponto de partida, o destino você escolhe.',
     historia: 'Entrou como estagiário de BDR quando muita gente ainda estava aprendendo o que era prospecção. Enquanto outros esperavam a oportunidade chegar, ele foi construindo a própria. Virou liderança de BDR antes do esperado e hoje comanda os Representantes sendo liderança de representantes.',
