@@ -58,7 +58,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
   },
   {
     id: 'natasha', nome: 'Natasha Freitas', foto: '/hall/NatashaFreitas.jpg',
-    cargo: 'Coordenadora de Marketing (Branding)', jornada: ['Estágio', 'Designer', 'Supervisora de Marketing', 'Supervisora de Branding', 'Coordenadora de Branding'],
+    cargo: 'Coordenadora de Marketing (Branding)', jornada: ['Estágio', 'Designer', 'Supervisão', 'Branding', 'Coordenação'],
     frase: '',
     historia: 'Natasha foi a primeira funcionária da Cardápio Web, começando como estagiária de Marketing quando tudo ainda estava no início. Ela se encontrou no design, onde construiu soluções que fortaleceram a comunicação e a identidade da marca, sendo inclusive a criadora do Cardapinho, personagem que hoje é a cara da CW, além de participar ativamente do processo de rebranding da empresa. Com o crescimento da operação, Natasha assumiu a Supervisão de Marketing para estruturar a área e seus processos, passando depois a Supervisora de Branding e Chapter de Design. Agora, ela inicia um novo capítulo como Coordenadora de Branding, liderando a estratégia de marca e ampliando o impacto de uma área que ela mesma ajudou a construir desde o primeiro dia.',
     stats: [
