@@ -276,7 +276,7 @@ function DetailModal({ membro, onClose }: { membro: MembroHall; onClose: () => v
           </div>
 
           {/* Jornada */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-2">
             {membro.jornada.map((etapa, i) => (
               <div key={etapa} className="flex items-center gap-2">
                 <span className="px-3 py-1 rounded-full text-xs font-bold"
