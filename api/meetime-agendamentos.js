@@ -9,6 +9,16 @@ const SQUAD_PARA_TIME_MEETIME = {
   'Lobo':    'Time Joelma',
 };
 
+// Cadências de reagendamento/no-show — Ganho nelas não é um agendamento
+// novo, é recuperação de quem já tinha faltado ou ainda não confirmou,
+// então não conta pra "Agendamentos hoje" mesmo sendo Standard+Inbound.
+const CADENCIAS_EXCLUIDAS = new Set([
+  '[NO-SHOW] Fluxo de leads que não apareceram na reunião com closer',
+  '[NO-SHOW][BDR][ON] Fluxo de leads que não apareceram na reunião com a agente de parcerias',
+  '[PROSPECTS] Follow-up para garantir reunião',
+  '[SETUP] Correção de problemas de no-show de WhatsApp',
+]);
+
 // Pipedrive/Meetime operam em horário de Brasília (UTC-3, sem horário de
 // verão desde 2019) — mesmo ajuste usado em api/meta.js.
 const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
@@ -60,16 +70,14 @@ export default async function handler(req, res) {
 
     // 2. Cadências "Standard" + foco Inbound Ativo/Passivo — mesmo filtro do
     //    dashboard de metas do Meetime (Tipo de cadência: Standard; Cadências:
-    //    Inbound Passivo + Inbound Ativo, sem Outbound/Outro). Exclui também
-    //    cadências de "no-show" (ex: id 24257 "[NO-SHOW] Fluxo de leads que
-    //    não apareceram na reunião com closer") — Ganho nessas não é um
-    //    agendamento novo, é reagendamento de quem já tinha faltado.
+    //    Inbound Passivo + Inbound Ativo, sem Outbound/Outro) — menos as 4
+    //    cadências de reagendamento/no-show em CADENCIAS_EXCLUIDAS.
     const cadencias = await buscarTudo(`${BASE}/cadences?`);
     const cadenciasValidas = new Set(
       cadencias
         .filter(c => c.type === 'STANDARD'
           && (c.cadence_focus === 'ACTIVE_INBOUND' || c.cadence_focus === 'PASSIVE_INBOUND')
-          && !/no.?show/i.test(c.name || ''))
+          && !CADENCIAS_EXCLUIDAS.has(c.name))
         .map(c => c.id)
     );
 
