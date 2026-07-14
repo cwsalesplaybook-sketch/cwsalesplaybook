@@ -8,10 +8,10 @@
  *  Squads trabalham com uma única meta de fechamentos (sem Meta 2/3 nem
  *  Mega Metas) — o líder sempre define o valor completo do mês.
  *  Agendamentos hoje tem dado real vindo de /api/meetime-agendamentos: conta
- *  as prospecções que viraram Ganho no Meetime hoje (cadências Standard,
- *  foco Inbound Ativo/Passivo) com [QUAL] Canal de preferência = Vídeo
- *  chamada — mesmo filtro do dashboard de metas do Meetime. LTR e no-show
- *  ainda não têm dado real integrado — mostram só a meta. */
+ *  todo Ganho no Meetime hoje (cadências Standard, foco Inbound
+ *  Ativo/Passivo — mesmo filtro do dashboard de metas do Meetime), qualquer
+ *  canal (vídeo chamada, WhatsApp, ligação). LTR e no-show ainda não têm
+ *  dado real integrado — mostram só a meta. */
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Settings, RefreshCw, X, Users, Target, TrendingUp, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -322,7 +322,7 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
                 <p className="text-lg font-black text-cw-text mt-0.5">
                   {agendamentosHoje === null ? '…' : agendamentosHoje}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.agendamentosDia || '?'}</span>
                 </p>
-                <p className="text-[9px] text-cw-muted/70 mt-0.5">vídeo chamada, via Meetime</p>
+                <p className="text-[9px] text-cw-muted/70 mt-0.5">todos os canais, via Meetime</p>
               </div>
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
                 <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">LTR</p>

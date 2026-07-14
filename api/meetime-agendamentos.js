@@ -68,53 +68,16 @@ export default async function handler(req, res) {
         .map(c => c.id)
     );
 
-    // 3. Prospecções que viraram Ganho hoje — "SDR deu ganho" é o próprio ato
-    //    de agendar a reunião com o lead.
+    // 3. Todo Ganho hoje do time nessas cadências conta como agendamento —
+    //    "SDR deu ganho" é o próprio ato de agendar a reunião, independente
+    //    do canal (vídeo chamada, WhatsApp, ligação etc.).
     const prospeccoes = await buscarTudo(
       `${BASE}/prospections?status=WON&end_after=${encodeURIComponent(inicioHojeUtc)}&end_before=${encodeURIComponent(fimHojeUtc)}`
     );
-    const doTimeHoje = prospeccoes.filter(p => idsDoTime.has(p.owner_id));
-    const doSquadHoje = doTimeHoje.filter(p => cadenciasValidas.has(p.cadence_id));
-
-    // 4. Só conta os leads que marcaram [QUAL] Canal de preferência = Vídeo chamada.
-    const leadsBrutos = await Promise.all(doSquadHoje.map(async (p) => {
-      try {
-        const r = await fetch(`${BASE}/leads?id=${p.lead_id}`, { headers: { Authorization: TOKEN } });
-        const j = await r.json();
-        return { p, lead: (j.data || [])[0] };
-      } catch { return { p, lead: null }; }
-    }));
-    const resultados = leadsBrutos.map(({ lead }) => lead?.qualCanalDePreferencia === 'Vídeo chamada');
-    const agendamentosHoje = resultados.filter(Boolean).length;
-
-    // DEBUG TEMP: só nos logs do servidor (não na resposta), pra investigar
-    // por que a contagem do squad Águia bateu 32 vs 37 reais em 2026-07-13.
-    // Nenhum dado de lead é logado — só contadores e IDs internos.
-    if (req.query.debug) {
-      console.log('[meetime-debug]', JSON.stringify({
-        squad, timeNome,
-        totalUsuarios: usuarios.length,
-        tamanhoDoTime: idsDoTime.size,
-        totalCadencias: cadencias.length,
-        tamanhoCadenciasValidas: cadenciasValidas.size,
-        cadenciaFocusValoresUnicos: [...new Set(cadencias.map(c => c.cadence_focus))],
-        cadenciaTypeValoresUnicos: [...new Set(cadencias.map(c => c.type))],
-        janela: { inicioHojeUtc, fimHojeUtc },
-        totalProspeccoesWonNaJanela: prospeccoes.length,
-        prospeccoesDoTime: doTimeHoje.length,
-        prospeccoesDoTimeForaDaCadenciaValida: doTimeHoje.length - doSquadHoje.length,
-        leadsComCampoAusente: leadsBrutos.filter(({ lead }) => lead && !('qualCanalDePreferencia' in lead)).length,
-        valoresCanalPreferencia: leadsBrutos.reduce((acc, { lead }) => {
-          const v = JSON.stringify(lead?.qualCanalDePreferencia);
-          acc[v] = (acc[v] || 0) + 1;
-          return acc;
-        }, {}),
-        agendamentosHoje, ganhosNoDia: doSquadHoje.length,
-      }));
-    }
+    const agendamentosHoje = prospeccoes.filter(p => idsDoTime.has(p.owner_id) && cadenciasValidas.has(p.cadence_id)).length;
 
     res.status(200).json({
-      ok: true, agendamentosHoje, ganhosNoDia: doSquadHoje.length,
+      ok: true, agendamentosHoje,
       ts: new Date().toISOString(),
     });
   } catch (e) {
