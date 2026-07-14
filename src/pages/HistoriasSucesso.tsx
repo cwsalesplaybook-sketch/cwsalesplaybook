@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Trophy, TrendingUp, Star, Crown, ArrowRight, Plus, X, Trash2 } from 'lucide-react';
 import { useEditor } from '@/admin/EditorContext';
 import { useEditableContent, useContentStore } from '@/store/contentStore';
+import { cn } from '@/lib/utils';
 
 /* ─── Paleta oficial CW (espelha index.css) ─── */
 const CW = {
@@ -276,7 +277,7 @@ function DetailModal({ membro, onClose }: { membro: MembroHall; onClose: () => v
           </div>
 
           {/* Jornada */}
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className={cn('flex flex-wrap items-center gap-2', membro.id === 'natasha' && 'justify-center')}>
             {membro.jornada.map((etapa, i) => (
               <div key={etapa} className="flex items-center gap-2">
                 <span className="px-3 py-1 rounded-full text-xs font-bold"
