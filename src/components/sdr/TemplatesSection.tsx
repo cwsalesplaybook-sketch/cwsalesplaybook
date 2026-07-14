@@ -2,7 +2,7 @@
  *  Lista compartilhada (seed em código ou override `sdr.kommoTemplates`,
  *  editável pelo gestor). Favoritos são pessoais (localStorage). */
 import { useState } from 'react';
-import { Copy, Check, Star, Pencil, Trash2, Plus, X, FileText } from 'lucide-react';
+import { Copy, Check, Star, Pencil, Trash2, Plus, X, FileText, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useContentStore } from '@/store/contentStore';
 import { useEditor } from '@/admin/EditorContext';
@@ -201,6 +201,15 @@ export function TemplatesSection() {
           <Star className={cn('h-3 w-3', soFav && 'fill-current')} /> Favoritos
         </button>
       </div>
+
+      {cat === 'UTI' && (
+        <div className="cw-card p-4 flex items-start gap-3 border-amber-400/30 bg-amber-400/10">
+          <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-sm text-cw-text">
+            <span className="font-bold">Atalhos de UTI são pra forçar o envio.</span> Se a mensagem padrão (Kommo) der erro e não enviar, use o atalho de UTI correspondente como alternativa.
+          </p>
+        </div>
+      )}
 
       {filtrados.length === 0 ? (
         <div className="cw-card p-10 flex flex-col items-center gap-2 text-center">
