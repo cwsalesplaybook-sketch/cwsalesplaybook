@@ -104,7 +104,11 @@ export default async function handler(req, res) {
         prospeccoesDoTime: doTimeHoje.length,
         prospeccoesDoTimeForaDaCadenciaValida: doTimeHoje.length - doSquadHoje.length,
         leadsComCampoAusente: leadsBrutos.filter(({ lead }) => lead && !('qualCanalDePreferencia' in lead)).length,
-        leadKeysAmostra: leadsBrutos[0]?.lead ? Object.keys(leadsBrutos[0].lead) : null,
+        valoresCanalPreferencia: leadsBrutos.reduce((acc, { lead }) => {
+          const v = JSON.stringify(lead?.qualCanalDePreferencia);
+          acc[v] = (acc[v] || 0) + 1;
+          return acc;
+        }, {}),
         agendamentosHoje, ganhosNoDia: doSquadHoje.length,
       }));
     }
