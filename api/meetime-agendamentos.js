@@ -1,12 +1,12 @@
 const TOKEN = process.env.MEETIME_API_TOKEN;
 const BASE = 'https://api.meetime.com.br/v2';
 
-// Squad nosso -> "team_name" do Meetime. Squad "Serpentes" (Vithoria Rodrigues,
-// liderança nova) ainda não tem time formado no Meetime — sem mapeamento ainda.
+// Squad nosso -> "team_name" do Meetime.
 const SQUAD_PARA_TIME_MEETIME = {
-  'Águia':   'Time Pedro',
-  'Tubarão': 'Time Anderson',
-  'Lobo':    'Time Joelma',
+  'Águia':     'Time Pedro',
+  'Tubarão':   'Time Anderson',
+  'Lobo':      'Time Joelma',
+  'Serpentes': 'Time Vithoria',
 };
 
 // Cadências de reagendamento/no-show — Ganho nelas não é um agendamento

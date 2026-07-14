@@ -20,7 +20,7 @@ const TABS_OVERVIEW = [
   { icon: Zap,      label: 'Changelog',   desc: 'Últimas atualizações da plataforma' },
 ];
 
-const SQUADS_SDR = ['Lobo', 'Águia', 'Tubarão'];
+const SQUADS_SDR = ['Lobo', 'Águia', 'Tubarão', 'Serpentes'];
 
 /** Emails com permissão para selecionar Liderança + cargo específico */
 const EMAILS_LIDERANCA: Record<string, string> = {
