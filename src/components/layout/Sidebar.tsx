@@ -37,6 +37,7 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/meta',       label: 'Meta do Mês',             icon: 'Target',         end: false },
   { to: '/playbook',   label: 'Playbook',                icon: 'BookOpen',       end: false },
   { to: '/pipeline',    label: 'Pipeline',                icon: 'BarChart2',       end: false },
+  { to: '/sdr/templates', label: 'Templates',             icon: 'FileText',       end: false },
   { to: '/changelog',  label: 'Changelog',               icon: 'Zap',            end: false },
   { to: '/automacoes',  label: 'Automações',             icon: 'Zap',             end: false },
   { to: '/calculadora',label: 'Calculadora',             icon: 'Calculator',     end: false },
@@ -51,7 +52,7 @@ const NAV_PADRAO: NavItem[] = [
 ];
 
 const SECTIONS = [
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/planos', '/calculadora', '/faq', '/changelog', '/pipeline', '/automacoes'] },
+  { label: 'Comercial',      routes: ['/meta', '/playbook', '/planos', '/calculadora', '/faq', '/changelog', '/pipeline', '/automacoes', '/sdr/templates'] },
   { label: 'Cultura e Time', routes: ['/historias', '/biblioteca', '/regras', '/onboarding', '/carreira'] },
 ];
 

@@ -51,6 +51,7 @@ import CloserPlanos from '@/pages/closer/Planos';
 import CloserObjecoes from '@/pages/closer/Objecoes';
 import CloserDashboard from '@/pages/closer/Dashboard';
 import CloserTemplates from '@/pages/closer/Templates';
+import SdrTemplates from '@/pages/sdr/Templates';
 import CloserDescontos from '@/pages/closer/Descontos';
 import CloserMetas from '@/pages/closer/Metas';
 import CloserProcesso from '@/pages/closer/Processo';
@@ -189,6 +190,7 @@ function AnimatedRoutes() {
               dashboards: ForcePapel="SDR" faz lerem o conteúdo global (sem prefixo). */}
           <Route path="/start" element={<ForcePapel papel="SDR"><Start /></ForcePapel>} />
           <Route path="/playbook" element={<Playbook />} />
+          <Route path="/sdr/templates" element={<SdrTemplates />} />
           <Route path="/playbook/closer" element={<PlaybookCloser />} />
           <Route path="/playbook/parcerias" element={<PlaybookParcerias />} />
           <Route path="/playbook/representantes" element={<PlaybookRepresentantes />} />
