@@ -76,6 +76,14 @@ export default async function handler(req, res) {
     );
     const agendamentosHoje = prospeccoes.filter(p => idsDoTime.has(p.owner_id) && cadenciasValidas.has(p.cadence_id)).length;
 
+    // DEBUG TEMP: lista nome + id de cada cadência que está passando no
+    // filtro, pra achar a cadência de "no show" que não devia contar.
+    if (req.query.debug) {
+      console.log('[meetime-debug-cadencias]', JSON.stringify(
+        cadencias.filter(c => cadenciasValidas.has(c.id)).map(c => ({ id: c.id, name: c.name || c.title }))
+      ));
+    }
+
     res.status(200).json({
       ok: true, agendamentosHoje,
       ts: new Date().toISOString(),
