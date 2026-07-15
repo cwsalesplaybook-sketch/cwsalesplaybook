@@ -69,6 +69,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
+    id: 'victormuniz', nome: 'Victor Muniz', foto: '/hall/VictorMuniz.jpeg',
+    cargo: 'Coordenador de Suporte', jornada: ['Helpdesk', 'Supervisor de Atendimento', 'Coordenador de Suporte'],
+    frase: 'Não precisa falar muito quando o resultado fala por você.',
+    historia: 'Victor entrou na Cardápio Web em 2023 como Helpdesk no time de Suporte. Chegou a pedir o próprio desligamento por outras prioridades que exigiam uma remuneração maior naquele momento, mas a vontade de continuar era tanta que o Johnny pediu pra ele ficar, mesmo que fosse só à noite. Por exatamente 1 ano, Victor trabalhou em outra empresa em horário comercial e, sem folga entre os dois, voltava pra CW das 19h às 23h. Foi um ano de rotina pesada, sustentado por uma certeza que ele nunca precisou dizer em voz alta: aqui era onde ele queria estar. A aposta valeu a pena. Surgiu a oportunidade de virar Supervisor de Atendimento (Suporte) e Victor montou um time de 10 a 12 pessoas, boa parte delas crescendo tão rápido quanto ele, algumas sob sua liderança direta até hoje, como Karen Lethycia e Gabriel Barbosa. Depois de 1 ano como Supervisor e dois processos seletivos, foi nomeado Coordenador de Atendimento, o primeiro coordenador do pós-venda. Hoje seu foco é elevar a régua do Suporte inteiro pra ser um diferencial competitivo cada vez maior pra Cardápio Web, além de cuidar da reputação da empresa no Reclame Aqui e nas redes sociais sempre que o assunto é atendimento. Victor é homem de poucas palavras, mas quem trabalhou ao lado dele nas noites daquele ano sabe: por trás do jeito quieto tem alguém que carrega o time no ombro e nunca soltou.',
+    stats: [
+      { icon: 'trending', valor: '1 ano', label: 'DUPLA JORNADA' },
+      { icon: 'star',     valor: 'Coordenador de Suporte', label: 'CARGO ATUAL' },
+      { icon: 'crown',    valor: 'Helpdesk → Coordenador', label: 'JORNADA' },
+    ],
+  },
+  {
     id: 'joelma', nome: 'Joelma Vieira', foto: '/hall/Joelma.jpeg',
     cargo: 'Liderança Pré-Vendas', jornada: ['SDR', 'Closer', 'Liderança'],
     frase: 'Quem tem canal próprio, bate mais forte.',
