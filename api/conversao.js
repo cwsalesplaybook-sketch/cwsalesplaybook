@@ -4,10 +4,12 @@ const MEETIME_BASE = 'https://api.meetime.com.br/v2';
 const PIPELINE_VENDAS = 2; // "Funil de Vendas" — mesmo critério de api/meta.js
 
 // Grupos de tier que o SDR escolhe no filtro (mapeiam pro nome da cadência no Meetime).
+// 'manual' casa pelo texto "ADIÇÃO MANUAL" da cadência em vez de um número de tier.
 const GRUPOS_TIER = {
-  '1-2': [1, 2],
-  '3': [3],
-  '4-5': [4, 5],
+  '1-2': { tiers: [1, 2] },
+  '3': { tiers: [3] },
+  '4-5': { tiers: [4, 5] },
+  'manual': { regex: /ADI[ÇC][ÃA]O MANUAL/i },
 };
 
 // Pipedrive/Meetime operam em horário de Brasília (UTC-3, sem horário de
@@ -41,8 +43,8 @@ export default async function handler(req, res) {
 
   const { email, grupo } = req.query;
   if (!email) return res.status(400).json({ ok: false, erro: 'email obrigatório' });
-  const tiers = GRUPOS_TIER[grupo];
-  if (!tiers) return res.status(400).json({ ok: false, erro: 'grupo inválido' });
+  const grupoConfig = GRUPOS_TIER[grupo];
+  if (!grupoConfig) return res.status(400).json({ ok: false, erro: 'grupo inválido' });
 
   try {
     // 1. Acha o usuário do Meetime pelo e-mail de login (mesmo domínio da conta).
@@ -56,7 +58,12 @@ export default async function handler(req, res) {
     const cadencias = await buscarTudoMeetime(`${MEETIME_BASE}/cadences?`);
     const cadenciasDoGrupo = new Set(
       cadencias
-        .filter(c => tiers.some(t => new RegExp(`\\bTIER ${t}\\b`, 'i').test(c.name)) && !/TESTE/i.test(c.name))
+        .filter(c => {
+          if (/TESTE/i.test(c.name)) return false;
+          return grupoConfig.regex
+            ? grupoConfig.regex.test(c.name)
+            : grupoConfig.tiers.some(t => new RegExp(`\\bTIER ${t}\\b`, 'i').test(c.name));
+        })
         .map(c => c.id)
     );
 

@@ -8,11 +8,12 @@ import { RefreshCw, Percent } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
-type Grupo = '1-2' | '3' | '4-5';
+type Grupo = '1-2' | '3' | '4-5' | 'manual';
 const GRUPOS: { id: Grupo; label: string }[] = [
-  { id: '1-2', label: 'Tier 1 e 2' },
-  { id: '3',   label: 'Tier 3' },
-  { id: '4-5', label: 'Tier 4 e 5' },
+  { id: '1-2',    label: 'Tier 1 e 2' },
+  { id: '3',      label: 'Tier 3' },
+  { id: '4-5',    label: 'Tier 4 e 5' },
+  { id: 'manual', label: 'Adição Manual' },
 ];
 
 export default function Conversao({ toggle }: { toggle?: ReactNode }) {
@@ -83,12 +84,20 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
         </div>
 
         <div>
-          <span className="text-6xl font-black text-cw-purple">{pct === null ? '…' : `${pct}%`}</span>
-          <p className="text-sm text-cw-muted mt-1">
-            {convertidos === null || agendamentos === null
-              ? 'Carregando...'
-              : `${convertidos} de ${agendamentos} reuniões viraram cliente`}
-          </p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
+              <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Reuniões</p>
+              <p className="text-lg font-black text-cw-text mt-0.5">{agendamentos === null ? '…' : agendamentos}</p>
+            </div>
+            <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
+              <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Convertidos</p>
+              <p className="text-lg font-black text-cw-text mt-0.5">{convertidos === null ? '…' : convertidos}</p>
+            </div>
+            <div className="rounded-xl border border-cw-purple bg-cw-purple/10 p-3">
+              <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Conversão</p>
+              <p className="text-lg font-black text-cw-purple mt-0.5">{pct === null ? '…' : `${pct}%`}</p>
+            </div>
+          </div>
           {aviso && <p className="text-xs text-amber-500 mt-2">{aviso}</p>}
         </div>
 
