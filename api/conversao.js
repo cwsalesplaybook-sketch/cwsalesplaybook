@@ -4,12 +4,15 @@ const MEETIME_BASE = 'https://api.meetime.com.br/v2';
 const PIPELINE_VENDAS = 2; // "Funil de Vendas" — mesmo critério de api/meta.js
 
 // Grupos de tier que o SDR escolhe no filtro (mapeiam pro nome da cadência no Meetime).
-// 'manual' casa pelo texto "ADIÇÃO MANUAL" da cadência em vez de um número de tier.
+// 'manual' casa pelo texto "ADIÇÃO MANUAL" da cadência; 'parcerias' casa pela
+// cadência "[AG. PARCERIA]" (agendamento vindo do time de Parcerias) — ambos
+// em vez de um número de tier.
 const GRUPOS_TIER = {
   '1-2': { tiers: [1, 2] },
   '3': { tiers: [3] },
   '4-5': { tiers: [4, 5] },
   'manual': { regex: /ADI[ÇC][ÃA]O MANUAL/i },
+  'parcerias': { regex: /AG\.?\s*PARCERIA/i },
 };
 
 // Pipedrive/Meetime operam em horário de Brasília (UTC-3, sem horário de
