@@ -5,10 +5,11 @@
  *  de venda) e a apresentação do Glauton Santos na Burger Expo Pizzaria 2026
  *  (a visão de "Sistema Operacional do Food Service", o modelo de revenue
  *  share pros parceiros e os apps de prova de conceito construídos com IA). */
+import { useState } from 'react';
 import {
   Store, ExternalLink, Mail, ShieldCheck, Boxes, Workflow, Users, Rocket,
   DollarSign, CheckCircle2, AlertTriangle, Sparkles, Package, ListChecks,
-  Tags, CalendarCheck, ArrowRight, Building2,
+  Tags, CalendarCheck, ArrowRight, Building2, MessageCircle, Copy, Check,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { cn } from '@/lib/utils';
@@ -94,6 +95,65 @@ const APPS_EXEMPLO = [
   { icon: Tags, t: 'Etiquetas', tempo: '3 dias' },
   { icon: CalendarCheck, t: 'Reserva de Mesas', tempo: '2 semanas' },
 ];
+
+// Não é um produto pra "vender" (a maioria dos apps é de graça pro
+// restaurante) — é um diferencial que já vem incluso. As frases refletem
+// isso: mostram valor, não pressionam fechamento.
+const FRASES = [
+  {
+    momento: 'Durante a demonstração',
+    itens: [
+      'Além do que você já tá vendo aqui, a gente tem uma loja de aplicativos dentro do sistema — a CW Store. São soluções de parceiros que se conectam direto no seu cardápio: fidelidade, IA, fiscal, o que fizer sentido pro seu negócio.',
+      'Você não fica preso só no que a Cardápio Web já oferece. A CW Store é tipo uma loja de apps: você instala o que precisar, quando precisar, sem trocar de sistema.',
+    ],
+  },
+  {
+    momento: 'Diferencial frente à concorrência',
+    itens: [
+      'A diferença é que aqui você não troca de plataforma pra crescer — você adiciona funcionalidades por dentro, sem perder histórico nem reconfigurar tudo de novo.',
+      'Muita gente troca de sistema porque o antigo não faz mais X. Com a CW Store isso tende a não acontecer: se surgir uma necessidade nova, é bem provável que já exista (ou vá existir) um app pra isso, plugado direto no seu cardápio.',
+    ],
+  },
+  {
+    momento: 'Quebra de objeção (custo)',
+    itens: [
+      'Não é uma cobrança extra da Cardápio Web — cada app tem o preço definido pelo próprio parceiro que criou, e muitos são gratuitos.',
+      'Você só instala o que quiser. Não é obrigatório, é uma opção a mais que já vem disponível dentro da sua conta.',
+    ],
+  },
+  {
+    momento: 'Reforço pós-fechamento',
+    itens: [
+      'Vale a pena dar uma olhada na CW Store de tempos em tempos — o catálogo de apps só cresce, e pode aparecer uma solução que resolve exatamente uma dor que você tem hoje.',
+      'Se você (ou alguém que você conhece) constrói ou já tem um sistema pronto pro food service, a CW Store também é um canal de distribuição — cadastra o app e a Cardápio Web coloca na frente da nossa base inteira.',
+    ],
+  },
+];
+
+function FraseCard({ texto }: { texto: string }) {
+  const [copiado, setCopiado] = useState(false);
+  const copiar = () => {
+    navigator.clipboard?.writeText(texto).then(() => {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 1500);
+    });
+  };
+  return (
+    <div className="rounded-xl border border-cw-border bg-cw-elevated p-4 flex items-start gap-3">
+      <p className="flex-1 text-sm text-cw-text leading-relaxed">"{texto}"</p>
+      <button
+        onClick={copiar}
+        title="Copiar frase"
+        className={cn(
+          'shrink-0 h-8 w-8 rounded-lg border flex items-center justify-center transition-colors',
+          copiado ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400' : 'bg-cw-bg border-cw-border text-cw-muted hover:text-cw-purple-light hover:border-cw-purple/30',
+        )}
+      >
+        {copiado ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+      </button>
+    </div>
+  );
+}
 
 export default function CwStore() {
   return (
@@ -360,6 +420,28 @@ export default function CwStore() {
               </li>
             </ul>
           </div>
+        </div>
+
+        {/* Frases prontas — não é uma venda tradicional (a maioria dos apps
+            é de graça), é mostrar um diferencial que já vem incluso. */}
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-lg font-bold text-cw-text flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-cw-purple-light" />
+              Como falar sobre a CW Store na conversa
+            </h2>
+            <p className="text-sm text-cw-muted mt-1">
+              Isso não é uma venda tradicional — a maioria dos apps é gratuita pro restaurante. É um diferencial que já vem incluso na conta, então a ideia é mostrar valor, não empurrar fechamento. Frases prontas pra usar (ou adaptar) em cada momento:
+            </p>
+          </div>
+          {FRASES.map((f) => (
+            <div key={f.momento} className="cw-card p-5 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-cw-purple-light">{f.momento}</p>
+              <div className="space-y-2">
+                {f.itens.map((texto, i) => <FraseCard key={i} texto={texto} />)}
+              </div>
+            </div>
+          ))}
         </div>
 
       </div>
