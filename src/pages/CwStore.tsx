@@ -158,7 +158,7 @@ function FraseCard({ texto }: { texto: string }) {
 export default function CwStore() {
   return (
     <>
-      <Header titulo="CW Store" subtitulo="O marketplace de apps parceiros da Cardápio Web — o que é, como funciona e como vender" />
+      <Header titulo="CW Store" subtitulo="O lançamento que transforma a Cardápio Web em plataforma para um mercado inteiro construir" />
       <div className="p-8 space-y-8">
 
         {/* Links de referência — sempre no topo */}
