@@ -37,6 +37,41 @@ async function buscarTudoMeetime(url) {
   return tudo;
 }
 
+function esperar(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+/** Fetch com retry/backoff — necessário porque o Meetime/Pipedrive tem rate
+ *  limit e a Conversão agora carrega vários grupos em paralelo (um bloco por
+ *  tier). Sem isso, um 429 esporádico virava silenciosamente "não converteu"
+ *  no catch abaixo, deixando o resultado flutuar a cada refresh. */
+async function fetchComRetry(url, headers, tentativas = 4) {
+  let ultimoErro;
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      const r = await fetch(url, headers ? { headers } : undefined);
+      if (r.ok) return r.json();
+      if (r.status === 429 || r.status >= 500) { ultimoErro = new Error(`HTTP ${r.status}`); }
+      else throw new Error(`HTTP ${r.status}`);
+    } catch (e) { ultimoErro = e; }
+    if (i < tentativas - 1) await esperar(300 * (i + 1));
+  }
+  throw ultimoErro;
+}
+
+/** Roda fn sobre items com no máximo `limite` execuções em paralelo por vez —
+ *  evita rajada de chamadas simultâneas que estoura o rate limit do Pipedrive. */
+async function mapComLimite(items, limite, fn) {
+  const resultados = new Array(items.length);
+  let cursor = 0;
+  async function worker() {
+    while (cursor < items.length) {
+      const i = cursor++;
+      resultados[i] = await fn(items[i]);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limite, items.length) }, worker));
+  return resultados;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=300');
@@ -84,28 +119,28 @@ export default async function handler(req, res) {
     // 4. Pra cada reunião, pega o telefone do lead no Meetime e procura a
     //    mesma pessoa no Pipedrive pelo telefone — se ela tem deal Ganho no
     //    Funil de Vendas, o cliente pagou (converteu).
-    const resultados = await Promise.all(doGrupo.map(async (p) => {
+    const resultados = await mapComLimite(doGrupo, 4, async (p) => {
       try {
-        const r = await fetch(`${MEETIME_BASE}/leads?id=${p.lead_id}`, { headers: { Authorization: TOKEN_MEETIME } });
-        const j = await r.json();
+        const j = await fetchComRetry(`${MEETIME_BASE}/leads?id=${p.lead_id}`, { Authorization: TOKEN_MEETIME });
         const lead = (j.data || [])[0];
         const digitos = String(lead?.primaryPhoneString || '').replace(/\D/g, '');
         if (digitos.length < 8) return false;
         const termo = digitos.slice(-9); // número local, sem DDI, evita ambiguidade de formatação
 
-        const rs = await fetch(`https://api.pipedrive.com/v1/persons/search?term=${encodeURIComponent(termo)}&fields=phone&api_token=${TOKEN_PIPEDRIVE}`);
-        const js = await rs.json();
+        const js = await fetchComRetry(`https://api.pipedrive.com/v1/persons/search?term=${encodeURIComponent(termo)}&fields=phone&api_token=${TOKEN_PIPEDRIVE}`);
         const pessoas = js.data?.items || [];
 
         for (const item of pessoas) {
-          const rd = await fetch(`https://api.pipedrive.com/v1/persons/${item.item.id}/deals?api_token=${TOKEN_PIPEDRIVE}`);
-          const jd = await rd.json();
+          const jd = await fetchComRetry(`https://api.pipedrive.com/v1/persons/${item.item.id}/deals?api_token=${TOKEN_PIPEDRIVE}`);
           const deals = jd.data || [];
           if (deals.some(d => d.status === 'won' && Number(d.pipeline_id) === PIPELINE_VENDAS)) return true;
         }
         return false;
-      } catch { return false; }
-    }));
+      } catch (e) {
+        console.error('conversao: falha ao resolver lead', p.lead_id, e);
+        return false;
+      }
+    });
 
     const convertidos = resultados.filter(Boolean).length;
     res.status(200).json({

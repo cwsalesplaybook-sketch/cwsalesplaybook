@@ -23,7 +23,7 @@ const GRUPOS: { id: Grupo; label: string }[] = [
 // Abaixo de que % de conversão mostrar o aviso pro SDR mandar mais oportunidades.
 const LIMIAR_CONVERSAO_BAIXA = 20;
 
-function BlocoConversao({ grupo, label, email }: { grupo: Grupo; label: string; email: string }) {
+function BlocoConversao({ grupo, label, email, indice }: { grupo: Grupo; label: string; email: string; indice: number }) {
   const [agendamentos, setAgendamentos] = useState<number | null>(null);
   const [convertidos, setConvertidos] = useState<number | null>(null);
   const [aviso, setAviso] = useState('');
@@ -51,7 +51,13 @@ function BlocoConversao({ grupo, label, email }: { grupo: Grupo; label: string; 
     } finally { setLoading(false); }
   }, [email, grupo]);
 
-  useEffect(() => { carregar(); }, [carregar]);
+  // Escalona a carga inicial dos blocos (um por tier) — todos batendo no
+  // Meetime/Pipedrive ao mesmo tempo estourava o rate limit e fazia
+  // "convertidos" flutuar a cada refresh (ver commit de correção).
+  useEffect(() => {
+    const t = setTimeout(() => carregar(), indice * 350);
+    return () => clearTimeout(t);
+  }, [carregar, indice]);
 
   const pct = agendamentos !== null && agendamentos > 0 && convertidos !== null
     ? Math.round((convertidos / agendamentos) * 1000) / 10
@@ -113,8 +119,8 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
       </div>
 
       <div className="space-y-4">
-        {GRUPOS.map(g => (
-          <BlocoConversao key={g.id} grupo={g.id} label={g.label} email={email} />
+        {GRUPOS.map((g, i) => (
+          <BlocoConversao key={g.id} grupo={g.id} label={g.label} email={email} indice={i} />
         ))}
       </div>
 
