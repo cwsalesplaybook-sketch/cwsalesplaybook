@@ -1,12 +1,13 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useRef, useState, useCallback, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, XCircle, User, Users, LayoutGrid } from 'lucide-react';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, XCircle, User, Users, LayoutGrid, Percent } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
 import TeamMetaView from './TeamMetaView';
 import MeuSquadMetaView from './MeuSquadMetaView';
+import Conversao from './Conversao';
 import PromocaoCelebration from './PromocaoCelebration';
 
 const SDRS_ATIVOS: Record<string, string> = {
@@ -854,20 +855,22 @@ function PersonalMetaView({ toggle }: { toggle?: ReactNode }) {
 
 /** Wrapper: quem tem papel "Liderança" vê direto a Meta do Squad — sem toggle,
  *  já que pra esse papel a meta que importa é a do time, não a individual.
- *  Todo mundo mais vê o toggle Meta do Mês / Meta dos Squads, abrindo por
- *  padrão na visão individual: quem lidera squad(s) sem ser papel Liderança
- *  vê o time completo (membro a membro, TeamMetaView); quem só integra um
- *  squad (SDR sem liderar) vê a versão agregada (MeuSquadMetaView) — dá pra
- *  acompanhar o andamento da meta do time mesmo sem liderar. Só some o
- *  toggle se a pessoa ainda não tem squad definido (onboarding incompleto) —
- *  na prática só SDR tem squad; Closer/Parcerias sempre caem na visão
- *  individual, sem toggle.
+ *  Todo mundo mais vê o toggle Meta do Mês / Meta dos Squads / Conversão,
+ *  abrindo por padrão na visão individual: quem lidera squad(s) sem ser papel
+ *  Liderança vê o time completo (membro a membro, TeamMetaView); quem só
+ *  integra um squad (SDR sem liderar) vê a versão agregada
+ *  (MeuSquadMetaView) — dá pra acompanhar o andamento da meta do time mesmo
+ *  sem liderar. Conversão (individual, todo mundo vê) mostra, das reuniões
+ *  que o próprio SDR deu Ganho no Meetime por grupo de tier, quantas viraram
+ *  cliente pagante no Pipedrive. Só some o toggle se a pessoa ainda não tem
+ *  squad definido (onboarding incompleto) — na prática só SDR tem squad;
+ *  Closer/Parcerias sempre caem na visão individual, sem toggle.
  *  A celebração de promoção aparece no topo para quem tiver uma pendente. */
 export default function MetaMes() {
   const { papel, squad, squadsLideradas } = useSidebarContext();
   const isLider = squadsLideradas.length > 0;
   const isPapelLideranca = papel === 'Liderança' && isLider;
-  const [vista, setVista] = useState<'time' | 'individual'>('individual');
+  const [vista, setVista] = useState<'time' | 'individual' | 'conversao'>('individual');
 
   if (isPapelLideranca) {
     return (
@@ -903,15 +906,20 @@ export default function MetaMes() {
           vista === 'time' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
         <Users className="h-3.5 w-3.5" /> Meta dos Squads
       </button>
+      <button onClick={() => setVista('conversao')}
+        className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
+          vista === 'conversao' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
+        <Percent className="h-3.5 w-3.5" /> Conversão
+      </button>
     </div>
   );
 
   return (
     <div className="space-y-2">
       <PromocaoCelebration />
-      {vista === 'time'
-        ? (isLider ? <TeamMetaView squads={squadsLideradas} toggle={toggle} /> : <MeuSquadMetaView squad={squad!} toggle={toggle} />)
-        : <PersonalMetaView toggle={toggle} />}
+      {vista === 'time' && (isLider ? <TeamMetaView squads={squadsLideradas} toggle={toggle} /> : <MeuSquadMetaView squad={squad!} toggle={toggle} />)}
+      {vista === 'individual' && <PersonalMetaView toggle={toggle} />}
+      {vista === 'conversao' && <Conversao toggle={toggle} />}
     </div>
   );
 }
