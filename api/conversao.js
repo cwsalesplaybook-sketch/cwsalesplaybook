@@ -42,8 +42,10 @@ function esperar(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 /** Fetch com retry/backoff — necessário porque o Meetime/Pipedrive tem rate
  *  limit e a Conversão agora carrega vários grupos em paralelo (um bloco por
  *  tier). Sem isso, um 429 esporádico virava silenciosamente "não converteu"
- *  no catch abaixo, deixando o resultado flutuar a cada refresh. */
-async function fetchComRetry(url, headers, tentativas = 4) {
+ *  no catch abaixo, deixando o resultado flutuar a cada refresh. Backoff mais
+ *  longo (com jitter) porque 5 requisições da Conversão batem no Pipedrive
+ *  quase ao mesmo tempo — um retry curto reencontra o mesmo rate limit. */
+async function fetchComRetry(url, headers, tentativas = 6) {
   let ultimoErro;
   for (let i = 0; i < tentativas; i++) {
     try {
@@ -52,7 +54,7 @@ async function fetchComRetry(url, headers, tentativas = 4) {
       if (r.status === 429 || r.status >= 500) { ultimoErro = new Error(`HTTP ${r.status}`); }
       else throw new Error(`HTTP ${r.status}`);
     } catch (e) { ultimoErro = e; }
-    if (i < tentativas - 1) await esperar(300 * (i + 1));
+    if (i < tentativas - 1) await esperar(500 * (i + 1) + Math.random() * 300);
   }
   throw ultimoErro;
 }
@@ -119,7 +121,10 @@ export default async function handler(req, res) {
     // 4. Pra cada reunião, pega o telefone do lead no Meetime e procura a
     //    mesma pessoa no Pipedrive pelo telefone — se ela tem deal Ganho no
     //    Funil de Vendas, o cliente pagou (converteu).
-    const resultados = await mapComLimite(doGrupo, 4, async (p) => {
+    // Concorrência 2 (não sequencial puro, pra não ficar lento demais, mas
+    // baixa o bastante pra somado aos outros 4 grupos não estourar o rate
+    // limit do Pipedrive — 4 já se provou insuficiente na prática).
+    const resultados = await mapComLimite(doGrupo, 2, async (p) => {
       try {
         const j = await fetchComRetry(`${MEETIME_BASE}/leads?id=${p.lead_id}`, { Authorization: TOKEN_MEETIME });
         const lead = (j.data || [])[0];

@@ -55,7 +55,7 @@ function BlocoConversao({ grupo, label, email, indice }: { grupo: Grupo; label: 
   // Meetime/Pipedrive ao mesmo tempo estourava o rate limit e fazia
   // "convertidos" flutuar a cada refresh (ver commit de correção).
   useEffect(() => {
-    const t = setTimeout(() => carregar(), indice * 350);
+    const t = setTimeout(() => carregar(), indice * 900);
     return () => clearTimeout(t);
   }, [carregar, indice]);
 
