@@ -132,12 +132,12 @@ export default async function handler(req, res) {
     const usuarios = await buscarTudoMeetime(`${MEETIME_BASE}/users?`);
     const usuario = usuarios.find(u => (u.email || '').toLowerCase() === String(email).toLowerCase());
     if (!usuario) {
-      const vazio = Object.fromEntries(gruposAlvo.map(g => [g, { agendamentos: 0, convertidos: 0 }]));
+      const vazio = Object.fromEntries(gruposAlvo.map(g => [g, { agendamentos: 0, convertidos: 0, projecaoGanhos: 0 }]));
       const aviso = 'SDR não encontrado no Meetime (confira o e-mail de login)';
       return res.status(200).json(
         grupo === 'todos'
           ? { ok: true, grupos: vazio, aviso }
-          : { ok: true, agendamentos: 0, convertidos: 0, aviso }
+          : { ok: true, agendamentos: 0, convertidos: 0, projecaoGanhos: 0, aviso }
       );
     }
 
@@ -154,6 +154,19 @@ export default async function handler(req, res) {
     const prospeccoes = await buscarTudoMeetime(
       `${MEETIME_BASE}/prospections?status=WON&user_id=${usuario.id}&end_after=${encodeURIComponent(inicioMesUtc)}&end_before=${encodeURIComponent(agoraUtc)}`
     );
+
+    // Dias úteis do mês (mesmo critério de api/meta.js) — usados pra projetar,
+    // a partir do ritmo de reuniões até agora, quantos ganhos (fechamentos)
+    // devem sair até o fim do mês na taxa de conversão observada.
+    const primeiroDia = new Date(Date.UTC(agora.getUTCFullYear(), agora.getUTCMonth(), 1));
+    const ultimoDia = new Date(Date.UTC(agora.getUTCFullYear(), agora.getUTCMonth() + 1, 0));
+    let diasUteisTotal = 0, diasPassados = 0;
+    for (let d = new Date(primeiroDia); d <= ultimoDia; d.setUTCDate(d.getUTCDate() + 1)) {
+      const dow = d.getUTCDay();
+      if (dow === 0 || dow === 6) continue;
+      diasUteisTotal++;
+      if (d < agora) diasPassados++;
+    }
 
     const porGrupo = {};
     for (const g of gruposAlvo) {
@@ -181,12 +194,23 @@ export default async function handler(req, res) {
     const contagem = Object.fromEntries(gruposAlvo.map(g => [g, { agendamentos: porGrupo[g].length, convertidos: 0 }]));
     todasComGrupo.forEach(({ g }, i) => { if (resolvidos[i]) contagem[g].convertidos++; });
 
+    // Projeção de ganhos até o fim do mês: pega o ritmo de reuniões por dia
+    // útil até agora e estica pros dias úteis totais do mês, depois aplica a
+    // taxa de conversão observada (convertidos/agendamentos) em cima disso.
+    for (const g of gruposAlvo) {
+      const { agendamentos, convertidos } = contagem[g];
+      const ritmoReunioesPorDia = diasPassados > 0 ? agendamentos / diasPassados : 0;
+      const projecaoReunioes = Math.round(ritmoReunioesPorDia * diasUteisTotal);
+      const taxaConversao = agendamentos > 0 ? convertidos / agendamentos : 0;
+      contagem[g].projecaoGanhos = Math.round(projecaoReunioes * taxaConversao);
+    }
+
     const ts = new Date().toISOString();
     if (grupo === 'todos') {
       return res.status(200).json({ ok: true, grupos: contagem, ts });
     }
     const unico = contagem[grupo];
-    res.status(200).json({ ok: true, agendamentos: unico.agendamentos, convertidos: unico.convertidos, ts });
+    res.status(200).json({ ok: true, agendamentos: unico.agendamentos, convertidos: unico.convertidos, projecaoGanhos: unico.projecaoGanhos, ts });
   } catch (e) {
     res.status(500).json({ ok: false, erro: String(e) });
   }

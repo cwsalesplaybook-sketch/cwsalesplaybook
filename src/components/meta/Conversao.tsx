@@ -25,11 +25,12 @@ const GRUPOS: { id: Grupo; label: string }[] = [
 // Abaixo de que % de conversão mostrar o aviso pro SDR mandar mais oportunidades.
 const LIMIAR_CONVERSAO_BAIXA = 20;
 
-interface DadosGrupo { agendamentos: number; convertidos: number; }
+interface DadosGrupo { agendamentos: number; convertidos: number; projecaoGanhos: number; }
 
 function BlocoConversao({ label, dados }: { label: string; dados: DadosGrupo | null }) {
   const agendamentos = dados?.agendamentos ?? null;
   const convertidos = dados?.convertidos ?? null;
+  const projecaoGanhos = dados?.projecaoGanhos ?? null;
   const pct = agendamentos !== null && agendamentos > 0 && convertidos !== null
     ? Math.round((convertidos / agendamentos) * 1000) / 10
     : null;
@@ -39,7 +40,7 @@ function BlocoConversao({ label, dados }: { label: string; dados: DadosGrupo | n
     <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-5 space-y-4">
       <span className="text-xs font-bold text-cw-purple uppercase tracking-widest">{label}</span>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
           <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Reuniões</p>
           <p className="text-lg font-black text-cw-text mt-0.5">{agendamentos === null ? '…' : agendamentos}</p>
@@ -51,6 +52,11 @@ function BlocoConversao({ label, dados }: { label: string; dados: DadosGrupo | n
         <div className="rounded-xl border border-cw-purple bg-cw-purple/10 p-3">
           <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Conversão</p>
           <p className="text-lg font-black text-cw-purple mt-0.5">{pct === null ? '…' : `${pct}%`}</p>
+        </div>
+        <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-3">
+          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Projeção</p>
+          <p className="text-lg font-black text-emerald-600 mt-0.5">{projecaoGanhos === null ? '…' : projecaoGanhos}</p>
+          <p className="text-[8px] text-emerald-600/60">ganhos até o fim do mês</p>
         </div>
       </div>
 
@@ -121,6 +127,7 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
 
       <p className="text-[11px] text-cw-muted/70 px-1">
         Reuniões = Ganho no Meetime nesse grupo, no mês inteiro. Conversão = quantas delas viraram cliente pagante (Ganho no Pipedrive).
+        Projeção = estica o ritmo de reuniões até agora pros dias úteis restantes do mês e aplica a taxa de conversão observada.
       </p>
     </div>
   );
