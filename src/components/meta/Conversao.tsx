@@ -126,7 +126,7 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
             <span>"Convertidos" aqui é diferente do total de <strong className="text-cw-text">Ganhos</strong> da Meta do Mês: conta só reuniões <strong className="text-cw-text">deste mês</strong> que eu consegui rastrear até um fechamento (pelo tier do negócio no Pipedrive, ou por telefone na Adição Manual).</span>
           </p>
         </div>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 mt-3">
           <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest shrink-0">
             <Percent className="h-4 w-4" /> Conversão · {nomeMes}
             <button onClick={() => carregar(true)} disabled={loading} className="ml-1">
