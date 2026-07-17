@@ -1,13 +1,16 @@
 /** Conversão — visão individual do SDR: das reuniões que ele deu Ganho no
  *  Meetime (por grupo de tier), quantas viraram cliente pagante no Pipedrive
- *  (telefone do lead casado com a pessoa no Pipedrive, deal Ganho no Funil de
- *  Vendas). Sempre o mês inteiro corrente.
+ *  (deal Ganho no Funil de Vendas). Sempre o mês inteiro corrente.
+ *  O match com o Pipedrive é feito pelo campo "Tipo de tier" do próprio
+ *  negócio pra Tier1/2, Tier3, Tier4/5 e Parcerias (rápido e confiável); só
+ *  Adição Manual ainda usa telefone, porque um negócio reativado carrega o
+ *  tier ORIGINAL do lead, não "Adição manual" — ver api/conversao.js.
  *  Cada grupo aparece como um bloco visualmente separado, mas os dados dos 5
  *  vêm de UMA chamada só (`grupo=todos`) — tentamos cada bloco com fetch
  *  próprio antes, e 5 requisições concorrentes (uma invocação serverless
  *  cada) não conseguem coordenar rate limit entre si contra o Pipedrive, o
  *  que fazia "convertidos" flutuar a cada refresh. Uma chamada só resolve
- *  todos os grupos internamente com concorrência única e controlada. */
+ *  todos os grupos internamente. */
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { RefreshCw, Percent, AlertTriangle, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -71,13 +74,21 @@ function BlocoConversao({ label, dados }: { label: string; dados: DadosGrupo | n
 
 export default function Conversao({ toggle }: { toggle?: ReactNode }) {
   const [email, setEmail] = useState('');
+  const [sdrId, setSdrId] = useState('');
   const [dados, setDados] = useState<Record<Grupo, DadosGrupo> | null>(null);
   const [aviso, setAviso] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setEmail(session?.user?.email ?? '');
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) return;
+      setEmail(session.user.email ?? '');
+      // Mesmo id do "[QUAL] SDR/BDR" do Pipedrive, salvo em user_metas quando
+      // a pessoa configura a própria Meta do Mês — dá pra buscar os ganhos
+      // direto pelo tier do negócio, sem precisar casar por telefone.
+      const mesAtual = new Date().toISOString().slice(0, 7);
+      const { data } = await supabase.from('user_metas').select('sdr_id').eq('user_id', session.user.id).eq('mes', mesAtual).maybeSingle();
+      if (data?.sdr_id) setSdrId(String(data.sdr_id));
     });
   }, []);
 
@@ -87,7 +98,8 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
     setAviso('');
     try {
       const bust = forceRefresh ? `&_t=${Date.now()}` : '';
-      const r = await fetch(`/api/conversao?email=${encodeURIComponent(email)}&grupo=todos${bust}`);
+      const sdrParam = sdrId ? `&sdrId=${encodeURIComponent(sdrId)}` : '';
+      const r = await fetch(`/api/conversao?email=${encodeURIComponent(email)}&grupo=todos${sdrParam}${bust}`);
       const j = await r.json();
       if (j.ok) {
         setDados(j.grupos);
@@ -98,7 +110,7 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
     } catch {
       setDados(null);
     } finally { setLoading(false); }
-  }, [email]);
+  }, [email, sdrId]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
@@ -117,7 +129,7 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
           </div>
           <p className="flex items-start gap-1.5 text-[11px] leading-snug text-cw-muted bg-cw-elevated border border-cw-border rounded-xl px-3 py-2 max-w-md">
             <Info className="h-3.5 w-3.5 text-cw-purple shrink-0 mt-0.5" />
-            <span>"Convertidos" aqui é diferente do total de <strong className="text-cw-text">Ganhos</strong> da Meta do Mês: conta só reuniões <strong className="text-cw-text">deste mês</strong> que eu consegui casar <strong className="text-cw-text">por telefone</strong> com o Pipedrive.</span>
+            <span>"Convertidos" aqui é diferente do total de <strong className="text-cw-text">Ganhos</strong> da Meta do Mês: conta só reuniões <strong className="text-cw-text">deste mês</strong> que eu consegui rastrear até um fechamento (pelo tier do negócio no Pipedrive, ou por telefone na Adição Manual).</span>
           </p>
         </div>
         {aviso && <p className="text-xs text-amber-500 mt-2">{aviso}</p>}

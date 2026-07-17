@@ -2,6 +2,8 @@ const TOKEN_MEETIME = process.env.MEETIME_API_TOKEN;
 const TOKEN_PIPEDRIVE = process.env.PIPEDRIVE_API_TOKEN;
 const MEETIME_BASE = 'https://api.meetime.com.br/v2';
 const PIPELINE_VENDAS = 2; // "Funil de Vendas" — mesmo critério de api/meta.js
+const SDR_FIELD = 'ce39d035fad6c74095053ffe04bdb9bbc9ae2a53'; // "[QUAL] SDR/BDR" — mesmo campo de api/meta.js
+const TIER_FIELD = '346353ade45adcb68850667587de1da11b3bdadd'; // "Tipo de tier", no próprio negócio
 
 // Grupos de tier que o SDR escolhe no filtro (mapeiam pro nome da cadência no Meetime).
 // 'manual' casa pelo texto "ADIÇÃO MANUAL" da cadência; 'parcerias' casa pela
@@ -15,6 +17,19 @@ const GRUPOS_TIER = {
   'parcerias': { regex: /AG\.?\s*PARCERIA/i },
 };
 const NOMES_GRUPOS = Object.keys(GRUPOS_TIER);
+
+// Pra esses grupos, "convertidos" vem direto do campo "Tipo de tier" do
+// negócio no Pipedrive (validado ao vivo: bate com o match por telefone) —
+// não precisa mais de telefone nem de bater no rate limit do Pipedrive lead
+// por lead. 'manual' fica de fora: validei que os negócios reativados via
+// Adição Manual carregam o tier ORIGINAL do lead (de antes da reativação),
+// não "Adição manual" — não dá pra confiar nesse campo pra esse grupo.
+const TIERS_PIPEDRIVE = {
+  '1-2': [1438, 1439],       // Tier 1, Tier 2
+  '3': [1440, 1441],         // Tier 3.1, Tier 3.2
+  '4-5': [1442, 1443],       // Tier 4, Tier 5
+  'parcerias': [1568],       // Agentes
+};
 
 // Pipedrive/Meetime operam em horário de Brasília (UTC-3, sem horário de
 // verão desde 2019) — mesmo ajuste usado em api/meta.js.
@@ -85,6 +100,39 @@ async function fetchPipedrive(url) {
   return fetchComRetry(url);
 }
 
+/** Converte 'YYYY-MM-DD HH:MM:SS' (UTC, formato do won_time do Pipedrive)
+ *  pro mesmo formato em horário de Brasília — mesma lógica de api/meta.js. */
+function wonTimeLocal(utcStr) {
+  const instante = paraBR(new Date(utcStr.replace(' ', 'T') + 'Z'));
+  return instante.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+/** Busca todos os negócios Ganho deste SDR no mês, direto no Pipedrive (sem
+ *  passar pelo Meetime nem por telefone) — mesma paginação de api/meta.js. */
+async function buscarGanhosDiretoPipedrive(sdrId, iniciaMesStr) {
+  const encontrados = [];
+  let start = 0;
+  while (true) {
+    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN_PIPEDRIVE}&status=won&limit=200&start=${start}&sort=won_time%20DESC`;
+    const json = await fetchComRetry(url);
+    const pagina = json.data || [];
+    if (pagina.length === 0) break;
+    let parar = false;
+    for (const deal of pagina) {
+      const wtRaw = deal.won_time || '';
+      if (!wtRaw) continue;
+      const wt = wonTimeLocal(wtRaw);
+      if (wt < iniciaMesStr) { parar = true; break; }
+      if (String(deal[SDR_FIELD]) === String(sdrId) && Number(deal.pipeline_id) === PIPELINE_VENDAS) {
+        encontrados.push(deal);
+      }
+    }
+    if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
+    start += 200;
+  }
+  return encontrados;
+}
+
 /** Pra uma reunião (prospecção Ganho no Meetime), pega o telefone do lead e
  *  procura a mesma pessoa no Pipedrive — se ela tem deal Ganho no Funil de
  *  Vendas, o cliente pagou (converteu). */
@@ -118,7 +166,7 @@ export default async function handler(req, res) {
   if (!TOKEN_MEETIME) return res.status(500).json({ ok: false, erro: 'MEETIME_API_TOKEN não configurado' });
   if (!TOKEN_PIPEDRIVE) return res.status(500).json({ ok: false, erro: 'PIPEDRIVE_API_TOKEN não configurado' });
 
-  const { email, grupo } = req.query;
+  const { email, grupo, sdrId } = req.query;
   if (!email) return res.status(400).json({ ok: false, erro: 'email obrigatório' });
   // 'todos' resolve os 5 grupos numa invocação só — é o que o frontend usa,
   // pra ter um único ponto batendo no Pipedrive em vez de 5 requisições
@@ -184,15 +232,32 @@ export default async function handler(req, res) {
       porGrupo[g] = prospeccoes.filter(p => cadenciasDoGrupo.has(p.cadence_id));
     }
 
-    // 4. Resolve TODAS as reuniões de TODOS os grupos alvo numa lista só.
-    //    Concorrência 1: o espaçamento de fetchPipedrive só é confiável se as
-    //    chamadas forem sequenciais (concorrência >1 faria duas chamadas lerem
-    //    o mesmo "última chamada" antes de qualquer uma atualizar).
-    const todasComGrupo = gruposAlvo.flatMap(g => porGrupo[g].map(p => ({ p, g })));
-    const resolvidos = await mapComLimite(todasComGrupo, 1, ({ p }) => resolverConversao(p));
-
+    // 4. "Convertidos": grupos com tier direto no Pipedrive usam o campo
+    //    "Tipo de tier" do próprio negócio (sem telefone, sem rate limit por
+    //    lead) — só precisa de UMA busca paginada de todos os Ganho do SDR
+    //    no mês. Sem sdrId (SDR ainda não configurou o próprio perfil) cai
+    //    pro telefone em tudo, como antes. 'manual' sempre usa telefone.
     const contagem = Object.fromEntries(gruposAlvo.map(g => [g, { agendamentos: porGrupo[g].length, convertidos: 0 }]));
-    todasComGrupo.forEach(({ g }, i) => { if (resolvidos[i]) contagem[g].convertidos++; });
+    const gruposViaPipedrive = sdrId ? gruposAlvo.filter(g => TIERS_PIPEDRIVE[g]) : [];
+    const gruposViaTelefone = gruposAlvo.filter(g => !gruposViaPipedrive.includes(g));
+
+    if (gruposViaPipedrive.length > 0) {
+      const iniciaMesStr = `${agora.getUTCFullYear()}-${String(agora.getUTCMonth() + 1).padStart(2, '0')}-01`;
+      const ganhosDoSdr = await buscarGanhosDiretoPipedrive(sdrId, iniciaMesStr);
+      for (const g of gruposViaPipedrive) {
+        const idsDoTier = TIERS_PIPEDRIVE[g];
+        contagem[g].convertidos = ganhosDoSdr.filter(d => idsDoTier.includes(Number(d[TIER_FIELD]))).length;
+      }
+    }
+
+    if (gruposViaTelefone.length > 0) {
+      // Concorrência 1: o espaçamento de fetchPipedrive só é confiável se as
+      // chamadas forem sequenciais (concorrência >1 faria duas chamadas lerem
+      // o mesmo "última chamada" antes de qualquer uma atualizar).
+      const todasComGrupo = gruposViaTelefone.flatMap(g => porGrupo[g].map(p => ({ p, g })));
+      const resolvidos = await mapComLimite(todasComGrupo, 1, ({ p }) => resolverConversao(p));
+      todasComGrupo.forEach(({ g }, i) => { if (resolvidos[i]) contagem[g].convertidos++; });
+    }
 
     // Projeção de ganhos até o fim do mês: pega o ritmo de reuniões por dia
     // útil até agora e estica pros dias úteis totais do mês, depois aplica a
