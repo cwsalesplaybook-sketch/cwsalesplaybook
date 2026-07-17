@@ -119,7 +119,13 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
   return (
     <div className="p-6 space-y-4">
       <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-6 space-y-1">
-        {toggle}
+        <div className="flex items-center justify-between gap-4">
+          {toggle}
+          <p className="flex items-start gap-2 text-sm leading-relaxed text-cw-muted bg-cw-elevated border border-cw-border rounded-xl px-4 py-3 flex-1">
+            <Info className="h-5 w-5 text-cw-purple shrink-0 mt-0.5" />
+            <span>"Convertidos" aqui é diferente do total de <strong className="text-cw-text">Ganhos</strong> da Meta do Mês: conta só reuniões <strong className="text-cw-text">deste mês</strong> que eu consegui rastrear até um fechamento (pelo tier do negócio no Pipedrive, ou por telefone na Adição Manual).</span>
+          </p>
+        </div>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest shrink-0">
             <Percent className="h-4 w-4" /> Conversão · {nomeMes}
@@ -127,10 +133,6 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
               <RefreshCw className={cn('h-3.5 w-3.5 text-cw-muted hover:text-cw-purple', loading && 'animate-spin')} />
             </button>
           </div>
-          <p className="flex items-start gap-2 text-sm leading-relaxed text-cw-muted bg-cw-elevated border border-cw-border rounded-xl px-4 py-3 flex-1">
-            <Info className="h-5 w-5 text-cw-purple shrink-0 mt-0.5" />
-            <span>"Convertidos" aqui é diferente do total de <strong className="text-cw-text">Ganhos</strong> da Meta do Mês: conta só reuniões <strong className="text-cw-text">deste mês</strong> que eu consegui rastrear até um fechamento (pelo tier do negócio no Pipedrive, ou por telefone na Adição Manual).</span>
-          </p>
         </div>
         {aviso && <p className="text-xs text-amber-500 mt-2">{aviso}</p>}
       </div>
