@@ -45,6 +45,7 @@ import ChangelogPage from '@/pages/ChangelogPage';
 import HistoriasSucesso from '@/pages/HistoriasSucesso';
 import Calculadora from '@/pages/Calculadora';
 import Planos from '@/pages/Planos';
+import CwStore from '@/pages/CwStore';
 import GestorAdminPage from '@/pages/GestorAdminPage';
 import PainelControle from '@/pages/PainelControle';
 import CloserPlanos from '@/pages/closer/Planos';
@@ -226,6 +227,7 @@ function AnimatedRoutes() {
           <Route path="/changelog" element={<ChangelogPage />} />
           <Route path="/calculadora" element={<Calculadora />} />
           <Route path="/planos" element={<Planos />} />
+          <Route path="/cw-store" element={<CwStore />} />
           <Route path="/admin" element={<GestorAdminPage />} />
           <Route path="/painel" element={<PainelControle />} />
           <Route path="/automacoes" element={<Automacoes />} />

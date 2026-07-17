@@ -7,7 +7,7 @@ import {
   ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
   Loader2, Users, Library, GraduationCap, FileText, Percent, Star,
-  PartyPopper, Puzzle, Package,
+  PartyPopper, Puzzle, Package, Store,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,13 +24,13 @@ interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users, Puzzle, Package,
+  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users, Puzzle, Package, Store,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
 // Grupo "Comercial": Meta do Mês e Playbook são os favoritos, ficam fixos no
-// topo; o resto segue ordenado do nome mais curto pro mais longo, com FAQ
-// deslocado pro fim (depois de Planos e Módulos) a pedido da Gabi.
+// topo; o resto segue ordenado do nome mais curto pro mais longo, com CW Store
+// e FAQ deslocados pro fim (depois de Planos e Módulos) a pedido da Gabi.
 // Grupo "Cultura e Time" também ordenado do nome mais curto pro mais longo.
 const NAV_PADRAO: NavItem[] = [
   { to: '/start',      label: 'Comece Aqui',             icon: 'Sparkles',       end: false },
@@ -42,6 +42,7 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/automacoes',  label: 'Automações',             icon: 'Zap',             end: false },
   { to: '/calculadora',label: 'Calculadora',             icon: 'Calculator',     end: false },
   { to: '/planos',     label: 'Planos e Módulos',        icon: 'Package',        end: false },
+  { to: '/cw-store',   label: 'CW Store',                icon: 'Store',          end: false },
   { to: '/faq',        label: 'FAQ',                     icon: 'HelpCircle',     end: false },
   { to: '/biblioteca',  label: 'Biblioteca',             icon: 'Library',         end: false },
   { to: '/onboarding',  label: 'Onboarding',             icon: 'MapIcon',         end: false },
@@ -52,7 +53,7 @@ const NAV_PADRAO: NavItem[] = [
 ];
 
 const SECTIONS = [
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/planos', '/calculadora', '/faq', '/changelog', '/pipeline', '/automacoes', '/sdr/templates'] },
+  { label: 'Comercial',      routes: ['/meta', '/playbook', '/planos', '/cw-store', '/calculadora', '/faq', '/changelog', '/pipeline', '/automacoes', '/sdr/templates'] },
   { label: 'Cultura e Time', routes: ['/historias', '/biblioteca', '/regras', '/onboarding', '/carreira'] },
 ];
 
