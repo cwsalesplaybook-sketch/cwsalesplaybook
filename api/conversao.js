@@ -70,6 +70,21 @@ async function mapComLimite(items, limite, fn) {
   return resultados;
 }
 
+// Espaçamento mínimo entre chamadas ao Pipedrive — proativo, não reativo.
+// Confirmado nos logs do Vercel: mesmo com concorrência baixa e 6 tentativas
+// de retry/backoff, uma fração dos leads batia 429 em TODAS as tentativas —
+// o limite do Pipedrive é sustentado, não só de rajada, então só retry não
+// resolve. Serializar as chamadas com esse intervalo evita bater no limite
+// em vez de tentar se recuperar depois de já ter estourado.
+const INTERVALO_PIPEDRIVE_MS = 300;
+let ultimaChamadaPipedrive = 0;
+async function fetchPipedrive(url) {
+  const espera = ultimaChamadaPipedrive + INTERVALO_PIPEDRIVE_MS - Date.now();
+  if (espera > 0) await esperar(espera);
+  ultimaChamadaPipedrive = Date.now();
+  return fetchComRetry(url);
+}
+
 /** Pra uma reunião (prospecção Ganho no Meetime), pega o telefone do lead e
  *  procura a mesma pessoa no Pipedrive — se ela tem deal Ganho no Funil de
  *  Vendas, o cliente pagou (converteu). */
@@ -81,11 +96,11 @@ async function resolverConversao(p) {
     if (digitos.length < 8) return false;
     const termo = digitos.slice(-9); // número local, sem DDI, evita ambiguidade de formatação
 
-    const js = await fetchComRetry(`https://api.pipedrive.com/v1/persons/search?term=${encodeURIComponent(termo)}&fields=phone&api_token=${TOKEN_PIPEDRIVE}`);
+    const js = await fetchPipedrive(`https://api.pipedrive.com/v1/persons/search?term=${encodeURIComponent(termo)}&fields=phone&api_token=${TOKEN_PIPEDRIVE}`);
     const pessoas = js.data?.items || [];
 
     for (const item of pessoas) {
-      const jd = await fetchComRetry(`https://api.pipedrive.com/v1/persons/${item.item.id}/deals?api_token=${TOKEN_PIPEDRIVE}`);
+      const jd = await fetchPipedrive(`https://api.pipedrive.com/v1/persons/${item.item.id}/deals?api_token=${TOKEN_PIPEDRIVE}`);
       const deals = jd.data || [];
       if (deals.some(d => d.status === 'won' && Number(d.pipeline_id) === PIPELINE_VENDAS)) return true;
     }
@@ -156,11 +171,12 @@ export default async function handler(req, res) {
       porGrupo[g] = prospeccoes.filter(p => cadenciasDoGrupo.has(p.cadence_id));
     }
 
-    // 4. Resolve TODAS as reuniões de TODOS os grupos alvo numa lista só, com
-    //    concorrência única e baixa — é essa consolidação que evita estourar
-    //    o rate limit do Pipedrive.
+    // 4. Resolve TODAS as reuniões de TODOS os grupos alvo numa lista só.
+    //    Concorrência 1: o espaçamento de fetchPipedrive só é confiável se as
+    //    chamadas forem sequenciais (concorrência >1 faria duas chamadas lerem
+    //    o mesmo "última chamada" antes de qualquer uma atualizar).
     const todasComGrupo = gruposAlvo.flatMap(g => porGrupo[g].map(p => ({ p, g })));
-    const resolvidos = await mapComLimite(todasComGrupo, 3, ({ p }) => resolverConversao(p));
+    const resolvidos = await mapComLimite(todasComGrupo, 1, ({ p }) => resolverConversao(p));
 
     const contagem = Object.fromEntries(gruposAlvo.map(g => [g, { agendamentos: porGrupo[g].length, convertidos: 0 }]));
     todasComGrupo.forEach(({ g }, i) => { if (resolvidos[i]) contagem[g].convertidos++; });
