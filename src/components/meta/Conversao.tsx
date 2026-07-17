@@ -2,11 +2,13 @@
  *  Meetime (por grupo de tier), quantas viraram cliente pagante no Pipedrive
  *  (telefone do lead casado com a pessoa no Pipedrive, deal Ganho no Funil de
  *  Vendas). Sempre o mês inteiro corrente.
- *  Cada grupo é um bloco separado que carrega os próprios dados de forma
- *  independente (fetch próprio) — assim um grupo lento não trava os outros,
- *  e dá pra ver todos de uma vez sem precisar clicar em aba. */
-import { useCallback, useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
+ *  Cada grupo aparece como um bloco visualmente separado, mas os dados dos 5
+ *  vêm de UMA chamada só (`grupo=todos`) — tentamos cada bloco com fetch
+ *  próprio antes, e 5 requisições concorrentes (uma invocação serverless
+ *  cada) não conseguem coordenar rate limit entre si contra o Pipedrive, o
+ *  que fazia "convertidos" flutuar a cada refresh. Uma chamada só resolve
+ *  todos os grupos internamente com concorrência única e controlada. */
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { RefreshCw, Percent, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -23,42 +25,11 @@ const GRUPOS: { id: Grupo; label: string }[] = [
 // Abaixo de que % de conversão mostrar o aviso pro SDR mandar mais oportunidades.
 const LIMIAR_CONVERSAO_BAIXA = 20;
 
-function BlocoConversao({ grupo, label, email, indice }: { grupo: Grupo; label: string; email: string; indice: number }) {
-  const [agendamentos, setAgendamentos] = useState<number | null>(null);
-  const [convertidos, setConvertidos] = useState<number | null>(null);
-  const [aviso, setAviso] = useState('');
-  const [loading, setLoading] = useState(false);
+interface DadosGrupo { agendamentos: number; convertidos: number; }
 
-  const carregar = useCallback(async (forceRefresh = false) => {
-    if (!email) return;
-    setLoading(true);
-    setAviso('');
-    try {
-      const bust = forceRefresh ? `&_t=${Date.now()}` : '';
-      const r = await fetch(`/api/conversao?email=${encodeURIComponent(email)}&grupo=${grupo}${bust}`);
-      const j = await r.json();
-      if (j.ok) {
-        setAgendamentos(j.agendamentos);
-        setConvertidos(j.convertidos);
-        setAviso(j.aviso || '');
-      } else {
-        setAgendamentos(null);
-        setConvertidos(null);
-      }
-    } catch {
-      setAgendamentos(null);
-      setConvertidos(null);
-    } finally { setLoading(false); }
-  }, [email, grupo]);
-
-  // Escalona a carga inicial dos blocos (um por tier) — todos batendo no
-  // Meetime/Pipedrive ao mesmo tempo estourava o rate limit e fazia
-  // "convertidos" flutuar a cada refresh (ver commit de correção).
-  useEffect(() => {
-    const t = setTimeout(() => carregar(), indice * 900);
-    return () => clearTimeout(t);
-  }, [carregar, indice]);
-
+function BlocoConversao({ label, dados }: { label: string; dados: DadosGrupo | null }) {
+  const agendamentos = dados?.agendamentos ?? null;
+  const convertidos = dados?.convertidos ?? null;
   const pct = agendamentos !== null && agendamentos > 0 && convertidos !== null
     ? Math.round((convertidos / agendamentos) * 1000) / 10
     : null;
@@ -66,12 +37,7 @@ function BlocoConversao({ grupo, label, email, indice }: { grupo: Grupo; label: 
 
   return (
     <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-5 space-y-4">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-bold text-cw-purple uppercase tracking-widest">{label}</span>
-        <button onClick={() => carregar(true)} disabled={loading}>
-          <RefreshCw className={cn('h-3.5 w-3.5 text-cw-muted hover:text-cw-purple', loading && 'animate-spin')} />
-        </button>
-      </div>
+      <span className="text-xs font-bold text-cw-purple uppercase tracking-widest">{label}</span>
 
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
@@ -88,7 +54,6 @@ function BlocoConversao({ grupo, label, email, indice }: { grupo: Grupo; label: 
         </div>
       </div>
 
-      {aviso && <p className="text-xs text-amber-500">{aviso}</p>}
       {conversaoBaixa && (
         <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Sua conversão está baixa, mande mais oportunidades
@@ -100,6 +65,9 @@ function BlocoConversao({ grupo, label, email, indice }: { grupo: Grupo; label: 
 
 export default function Conversao({ toggle }: { toggle?: ReactNode }) {
   const [email, setEmail] = useState('');
+  const [dados, setDados] = useState<Record<Grupo, DadosGrupo> | null>(null);
+  const [aviso, setAviso] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -107,20 +75,47 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
     });
   }, []);
 
+  const carregar = useCallback(async (forceRefresh = false) => {
+    if (!email) return;
+    setLoading(true);
+    setAviso('');
+    try {
+      const bust = forceRefresh ? `&_t=${Date.now()}` : '';
+      const r = await fetch(`/api/conversao?email=${encodeURIComponent(email)}&grupo=todos${bust}`);
+      const j = await r.json();
+      if (j.ok) {
+        setDados(j.grupos);
+        setAviso(j.aviso || '');
+      } else {
+        setDados(null);
+      }
+    } catch {
+      setDados(null);
+    } finally { setLoading(false); }
+  }, [email]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
   const nomeMes = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase());
 
   return (
     <div className="p-6 space-y-4">
       <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-6 space-y-1">
         {toggle}
-        <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
-          <Percent className="h-4 w-4" /> Conversão · {nomeMes}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
+            <Percent className="h-4 w-4" /> Conversão · {nomeMes}
+            <button onClick={() => carregar(true)} disabled={loading} className="ml-1">
+              <RefreshCw className={cn('h-3.5 w-3.5 text-cw-muted hover:text-cw-purple', loading && 'animate-spin')} />
+            </button>
+          </div>
         </div>
+        {aviso && <p className="text-xs text-amber-500 mt-2">{aviso}</p>}
       </div>
 
       <div className="space-y-4">
-        {GRUPOS.map((g, i) => (
-          <BlocoConversao key={g.id} grupo={g.id} label={g.label} email={email} indice={i} />
+        {GRUPOS.map(g => (
+          <BlocoConversao key={g.id} label={g.label} dados={dados?.[g.id] ?? null} />
         ))}
       </div>
 
