@@ -127,8 +127,8 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
               <RefreshCw className={cn('h-3.5 w-3.5 text-cw-muted hover:text-cw-purple', loading && 'animate-spin')} />
             </button>
           </div>
-          <p className="flex items-start gap-1.5 text-[11px] leading-snug text-cw-muted bg-cw-elevated border border-cw-border rounded-xl px-3 py-2 max-w-md">
-            <Info className="h-3.5 w-3.5 text-cw-purple shrink-0 mt-0.5" />
+          <p className="flex items-start gap-2 text-sm leading-relaxed text-cw-muted bg-cw-elevated border border-cw-border rounded-xl px-4 py-3 flex-1">
+            <Info className="h-5 w-5 text-cw-purple shrink-0 mt-0.5" />
             <span>"Convertidos" aqui é diferente do total de <strong className="text-cw-text">Ganhos</strong> da Meta do Mês: conta só reuniões <strong className="text-cw-text">deste mês</strong> que eu consegui rastrear até um fechamento (pelo tier do negócio no Pipedrive, ou por telefone na Adição Manual).</span>
           </p>
         </div>
