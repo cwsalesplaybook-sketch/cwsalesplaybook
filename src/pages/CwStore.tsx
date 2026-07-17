@@ -103,29 +103,29 @@ const FRASES = [
   {
     momento: 'Durante a demonstração',
     itens: [
-      'Além do que você já tá vendo aqui, a gente tem uma loja de aplicativos dentro do sistema — a CW Store. São soluções de parceiros que se conectam direto no seu cardápio: fidelidade, IA, fiscal, o que fizer sentido pro seu negócio.',
+      'Além do que você já tá vendo aqui, a gente tem uma loja de aplicativos dentro do sistema, a CW Store. São soluções de parceiros que se conectam direto no seu cardápio: fidelidade, IA, fiscal, o que fizer sentido pro seu negócio.',
       'Você não fica preso só no que a Cardápio Web já oferece. A CW Store é tipo uma loja de apps: você instala o que precisar, quando precisar, sem trocar de sistema.',
     ],
   },
   {
     momento: 'Diferencial frente à concorrência',
     itens: [
-      'A diferença é que aqui você não troca de plataforma pra crescer — você adiciona funcionalidades por dentro, sem perder histórico nem reconfigurar tudo de novo.',
+      'A diferença é que aqui você não troca de plataforma pra crescer, você adiciona funcionalidades por dentro, sem perder histórico nem reconfigurar tudo de novo.',
       'Muita gente troca de sistema porque o antigo não faz mais X. Com a CW Store isso tende a não acontecer: se surgir uma necessidade nova, é bem provável que já exista (ou vá existir) um app pra isso, plugado direto no seu cardápio.',
     ],
   },
   {
     momento: 'Quebra de objeção (custo)',
     itens: [
-      'Não é uma cobrança extra da Cardápio Web — cada app tem o preço definido pelo próprio parceiro que criou, e muitos são gratuitos.',
+      'Não é uma cobrança extra da Cardápio Web, cada app tem o preço definido pelo próprio parceiro que criou, e muitos são gratuitos.',
       'Você só instala o que quiser. Não é obrigatório, é uma opção a mais que já vem disponível dentro da sua conta.',
     ],
   },
   {
     momento: 'Reforço pós-fechamento',
     itens: [
-      'Vale a pena dar uma olhada na CW Store de tempos em tempos — o catálogo de apps só cresce, e pode aparecer uma solução que resolve exatamente uma dor que você tem hoje.',
-      'Se você (ou alguém que você conhece) constrói ou já tem um sistema pronto pro food service, a CW Store também é um canal de distribuição — cadastra o app e a Cardápio Web coloca na frente da nossa base inteira.',
+      'Vale a pena dar uma olhada na CW Store de tempos em tempos, o catálogo de apps só cresce, e pode aparecer uma solução que resolve exatamente uma dor que você tem hoje.',
+      'Se você (ou alguém que você conhece) constrói ou já tem um sistema pronto pro food service, a CW Store também é um canal de distribuição, cadastra o app e a Cardápio Web coloca na frente da nossa base inteira.',
     ],
   },
 ];
@@ -431,7 +431,7 @@ export default function CwStore() {
               Como falar sobre a CW Store na conversa
             </h2>
             <p className="text-sm text-cw-muted mt-1">
-              Isso não é uma venda tradicional — a maioria dos apps é gratuita pro restaurante. É um diferencial que já vem incluso na conta, então a ideia é mostrar valor, não empurrar fechamento. Frases prontas pra usar (ou adaptar) em cada momento:
+              Isso não é uma venda tradicional, a maioria dos apps é gratuita pro restaurante. É um diferencial que já vem incluso na conta, então a ideia é mostrar valor, não empurrar fechamento. Frases prontas pra usar (ou adaptar) em cada momento:
             </p>
           </div>
           {FRASES.map((f) => (
