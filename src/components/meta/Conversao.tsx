@@ -9,7 +9,7 @@
  *  que fazia "convertidos" flutuar a cada refresh. Uma chamada só resolve
  *  todos os grupos internamente com concorrência única e controlada. */
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { RefreshCw, Percent, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Percent, AlertTriangle, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -108,13 +108,17 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
     <div className="p-6 space-y-4">
       <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-6 space-y-1">
         {toggle}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest shrink-0">
             <Percent className="h-4 w-4" /> Conversão · {nomeMes}
             <button onClick={() => carregar(true)} disabled={loading} className="ml-1">
               <RefreshCw className={cn('h-3.5 w-3.5 text-cw-muted hover:text-cw-purple', loading && 'animate-spin')} />
             </button>
           </div>
+          <p className="flex items-start gap-1.5 text-[11px] leading-snug text-cw-muted bg-cw-elevated border border-cw-border rounded-xl px-3 py-2 max-w-md">
+            <Info className="h-3.5 w-3.5 text-cw-purple shrink-0 mt-0.5" />
+            <span>"Convertidos" aqui é diferente do total de <strong className="text-cw-text">Ganhos</strong> da Meta do Mês: conta só reuniões <strong className="text-cw-text">deste mês</strong> que eu consegui casar <strong className="text-cw-text">por telefone</strong> com o Pipedrive.</span>
+          </p>
         </div>
         {aviso && <p className="text-xs text-amber-500 mt-2">{aviso}</p>}
       </div>
