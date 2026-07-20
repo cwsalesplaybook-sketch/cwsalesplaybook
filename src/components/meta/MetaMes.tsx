@@ -1,12 +1,11 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
-import { useEffect, useState, useCallback, type ReactNode } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, User, LayoutGrid, Percent, Pencil } from 'lucide-react';
+import { Settings, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, LayoutGrid, Pencil } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
 import TeamMetaView from './TeamMetaView';
-import Conversao from './Conversao';
 import PromocaoCelebration from './PromocaoCelebration';
 
 const SDRS_ATIVOS: Record<string, string> = {
@@ -202,7 +201,7 @@ function ConfigModal({ metaData, nomeDetectado, vinculoConfirmado, onSave, onClo
   );
 }
 
-function PersonalMetaView({ toggle }: { toggle?: ReactNode }) {
+function PersonalMetaView() {
   const navigate = useNavigate();
   const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, sdrId: '' });
   const [config, setConfig]       = useState(false);
@@ -372,7 +371,6 @@ function PersonalMetaView({ toggle }: { toggle?: ReactNode }) {
         <img src="/cardapinho-viking.png" alt="" className="absolute right-0 bottom-0 h-52 object-contain pointer-events-none select-none" style={{ zIndex: 10 }} />
 
         <div className="relative p-6 space-y-5" style={{ zIndex: 1 }}>
-          {toggle}
           {/* Topo */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
@@ -784,63 +782,18 @@ function PersonalMetaView({ toggle }: { toggle?: ReactNode }) {
 }
 
 /** Wrapper: quem tem papel "Liderança" vê direto a Meta do Squad (TeamMetaView)
- *  — sem toggle, já que pra esse papel a meta que importa é a do time, não a
- *  individual. Essa é a única exceção que ainda usa a visão de squad.
- *  Todo mundo mais vê o toggle Meta do Mês / Conversão, abrindo por padrão na
- *  visão individual. Conversão (individual, todo mundo com squad vê) mostra
- *  quantas reuniões o próprio SDR deu Ganho no Meetime, por grupo de tier.
- *  Só some o toggle se a pessoa ainda não tem squad definido (onboarding
- *  incompleto) — na prática só SDR tem squad; Closer/Parcerias sempre caem
- *  na visão individual, sem toggle.
- *  A celebração de promoção aparece no topo para quem tiver uma pendente. */
+ *  — já que pra esse papel a meta que importa é a do time, não a individual.
+ *  Todo mundo mais vê a Meta do Mês individual direto, sem toggle (a Conversão
+ *  e a Meta do Squad pra SDR comum saíram do ar). */
 export default function MetaMes() {
-  const { papel, squad, squadsLideradas } = useSidebarContext();
+  const { papel, squadsLideradas } = useSidebarContext();
   const isLider = squadsLideradas.length > 0;
   const isPapelLideranca = papel === 'Liderança' && isLider;
-  const [vista, setVista] = useState<'individual' | 'conversao'>('individual');
-
-  if (isPapelLideranca) {
-    return (
-      <>
-        <PromocaoCelebration />
-        <TeamMetaView squads={squadsLideradas} />
-      </>
-    );
-  }
-
-  const temToggle = isLider || !!squad;
-
-  if (!temToggle) {
-    return (
-      <>
-        <PromocaoCelebration />
-        <PersonalMetaView />
-      </>
-    );
-  }
-
-  // Toggle vai DENTRO do card ativo (não numa faixa solta acima) — cada view
-  // recebe esse mesmo nó e renderiza no topo do próprio bloco branco.
-  const toggle = (
-    <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-cw-elevated border border-cw-border mb-1">
-      <button onClick={() => setVista('individual')}
-        className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
-          vista === 'individual' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
-        <User className="h-3.5 w-3.5" /> Meta do Mês
-      </button>
-      <button onClick={() => setVista('conversao')}
-        className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all',
-          vista === 'conversao' ? 'bg-cw-purple text-white shadow-sm' : 'text-cw-muted hover:text-cw-text')}>
-        <Percent className="h-3.5 w-3.5" /> Conversão
-      </button>
-    </div>
-  );
 
   return (
-    <div className="space-y-2">
+    <>
       <PromocaoCelebration />
-      {vista === 'individual' && <PersonalMetaView toggle={toggle} />}
-      {vista === 'conversao' && <Conversao toggle={toggle} />}
-    </div>
+      {isPapelLideranca ? <TeamMetaView squads={squadsLideradas} /> : <PersonalMetaView />}
+    </>
   );
 }

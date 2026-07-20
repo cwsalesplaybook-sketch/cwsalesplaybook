@@ -7,12 +7,8 @@
  *  Acesso é garantido pela RLS (squads_que_lidero / lidero_o_usuario).
  *  Squads trabalham com uma única meta de fechamentos (sem Meta 2/3 nem
  *  Mega Metas) — o líder sempre define o valor completo do mês.
- *  Agendamentos hoje tem dado real vindo de /api/meetime-agendamentos: conta
- *  todo Ganho no Meetime hoje (cadências Standard, foco Inbound
- *  Ativo/Passivo — mesmo filtro do dashboard de metas do Meetime), qualquer
- *  canal (vídeo chamada, WhatsApp, ligação). LTR e no-show ainda não têm
- *  dado real integrado — mostram só a meta. */
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+ *  LTR e no-show ainda não têm dado real integrado — mostram só a meta. */
+import { useCallback, useEffect, useState } from 'react';
 import { Settings, RefreshCw, X, Users, Target, TrendingUp, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -138,19 +134,18 @@ function MembroMetaModal({ membro, onSave, onClose }: {
   );
 }
 
-export default function TeamMetaView({ squads, toggle }: { squads: string[]; toggle?: ReactNode }) {
+export default function TeamMetaView({ squads }: { squads: string[] }) {
   const [squad, setSquad]       = useState(squads[0] ?? '');
   const [mes, setMes]           = useState('');
   const [teamMeta, setTeamMeta] = useState<TeamMeta>(META_VAZIA);
   const [squadKpis, setSquadKpis] = useState<SquadKpis>(KPIS_VAZIO);
   const [diasPassados, setDiasPassados] = useState(0);
-  const [agendamentosHoje, setAgendamentosHoje] = useState<number | null>(null);
   const [membros, setMembros]   = useState<Membro[]>([]);
   const [loading, setLoading]   = useState(false);
   const [editMeta, setEditMeta] = useState(false);
   const [editMembro, setEditMembro] = useState<Membro | null>(null);
 
-  const carregar = useCallback(async (sq: string, forceRefresh = false) => {
+  const carregar = useCallback(async (sq: string) => {
     if (!sq) return;
     setLoading(true);
     const mesAtual = new Date().toISOString().slice(0, 7);
@@ -177,7 +172,6 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
       const metaPorUser = new Map((metas ?? []).map(m => [m.user_id, m]));
 
       // 3. Monta os membros — ganhos vêm só do ajuste manual (sem API externa).
-      const bust = forceRefresh ? `&_t=${Date.now()}` : '';
       const base: Membro[] = lista.map(p => {
         const m = metaPorUser.get(p.user_id);
         return {
@@ -191,12 +185,6 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
       });
       setMembros(base);
       setDiasPassados(calcularDiasPassados());
-
-      try {
-        const r = await fetch(`/api/meetime-agendamentos?squad=${encodeURIComponent(sq)}${bust}`);
-        const j = await r.json();
-        setAgendamentosHoje(j.ok ? j.agendamentosHoje : null);
-      } catch { setAgendamentosHoje(null); }
     } finally { setLoading(false); }
   }, []);
 
@@ -247,11 +235,10 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
 
       {/* Bloco único: meta do squad + KPIs */}
       <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-6 space-y-5">
-        {toggle}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
             <Target className="h-4 w-4" /> Meta do Squad · {squad} {nomeMes && <span className="text-cw-muted/70 normal-case font-medium">— {nomeMes}</span>}
-            <button onClick={() => carregar(squad, true)} disabled={loading} className="ml-1">
+            <button onClick={() => carregar(squad)} disabled={loading} className="ml-1">
               <RefreshCw className={cn('h-3.5 w-3.5 text-cw-muted hover:text-cw-purple', loading && 'animate-spin')} />
             </button>
           </div>
@@ -299,7 +286,7 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
             <BarChart3 className="h-3.5 w-3.5" /> KPIs do Squad
           </p>
           {temKpis ? (
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
                 <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Clientes</p>
                 <p className="text-lg font-black text-cw-text mt-0.5">
@@ -311,13 +298,6 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
                 <p className="text-lg font-black text-cw-text mt-0.5">
                   {clientesDiaAtual === null ? '…' : clientesDiaAtual}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.clientesDia || '?'}</span>
                 </p>
-              </div>
-              <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
-                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Agendamentos hoje</p>
-                <p className="text-lg font-black text-cw-text mt-0.5">
-                  {agendamentosHoje === null ? '…' : agendamentosHoje}
-                </p>
-                <p className="text-[9px] text-cw-muted/70 mt-0.5">todos os canais, via Meetime</p>
               </div>
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
                 <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">LTR</p>
