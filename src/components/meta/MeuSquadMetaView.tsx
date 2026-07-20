@@ -25,6 +25,7 @@ export default function MeuSquadMetaView({ squad, toggle }: { squad: string; tog
   const [agendamentosHoje, setAgendamentosHoje] = useState<number | null>(null);
   const [diasPassados, setDiasPassados] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [aviso, setAviso] = useState('');
 
   const carregar = useCallback(async (forceRefresh = false) => {
     if (!squad) return;
@@ -51,6 +52,7 @@ export default function MeuSquadMetaView({ squad, toggle }: { squad: string; tog
       const bust = forceRefresh ? `&_t=${Date.now()}` : '';
       let soma = 0;
       let diasPassadosCapturado = 0;
+      let falhouAlgum = false;
       await Promise.all([
         ...(metas ?? []).map(async (m) => {
           soma += m.ajuste ?? 0;
@@ -61,8 +63,10 @@ export default function MeuSquadMetaView({ squad, toggle }: { squad: string; tog
             if (j.ok) {
               soma += j.ganhos;
               if (!diasPassadosCapturado) diasPassadosCapturado = j.diasPassados || 0;
+            } else {
+              falhouAlgum = true;
             }
-          } catch { /* ignora falha de um colega, não trava o total */ }
+          } catch { falhouAlgum = true; }
         }),
         (async () => {
           try {
@@ -72,7 +76,11 @@ export default function MeuSquadMetaView({ squad, toggle }: { squad: string; tog
           } catch { setAgendamentosHoje(null); }
         })(),
       ]);
-      setTotalGanhos(soma);
+      // Se algum colega não carregou (ex: cota do Pipedrive estourada), a soma
+      // fica incompleta — melhor mostrar "…" do que um total errado com cara
+      // de definitivo.
+      setTotalGanhos(falhouAlgum ? null : soma);
+      setAviso(falhouAlgum ? 'Pipedrive indisponível agora — total temporariamente sem dado.' : '');
       setDiasPassados(diasPassadosCapturado);
     } finally { setLoading(false); }
   }, [squad]);
@@ -96,6 +104,7 @@ export default function MeuSquadMetaView({ squad, toggle }: { squad: string; tog
             </button>
           </div>
         </div>
+        {aviso && <p className="text-xs text-amber-500">{aviso}</p>}
 
         <div>
           <div className="flex items-baseline gap-2">

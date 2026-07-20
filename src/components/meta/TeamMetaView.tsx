@@ -189,8 +189,10 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
             const r = await fetch(`/api/meta?sdrId=${mem.sdrId}${bust}`);
             const j = await r.json();
             if (j.ok && !diasPassadosCapturado) diasPassadosCapturado = j.diasPassados || 0;
-            return { ...mem, ganhos: j.ok ? j.ganhos : 0 };
-          } catch { return { ...mem, ganhos: 0 }; }
+            // Falha do Pipedrive (ex: cota diária estourada) não pode virar "0
+            // ganhos" — mantém o último valor conhecido (ou null, se nunca carregou).
+            return j.ok ? { ...mem, ganhos: j.ganhos } : mem;
+          } catch { return mem; }
         })),
         (async () => {
           try {
@@ -237,13 +239,17 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
     setEditMembro(null);
   };
 
-  const totalGanhos = membros.reduce((s, m) => s + (m.ganhos ?? 0) + m.ajuste, 0);
+  // Se algum membro configurado não conseguiu carregar ganhos do Pipedrive
+  // (ex: cota diária estourada), a soma fica incompleta — melhor "…" do que
+  // um total errado com cara de definitivo.
+  const algumIndisponivel = membros.some(m => m.sdrId && m.ganhos === null);
+  const totalGanhos = algumIndisponivel ? null : membros.reduce((s, m) => s + (m.ganhos ?? 0) + m.ajuste, 0);
   const metaRef = teamMeta.meta1;
-  const pctBarra = metaRef > 0 ? Math.min(100, (totalGanhos / metaRef) * 100) : 0;
+  const pctBarra = metaRef > 0 && totalGanhos !== null ? Math.min(100, (totalGanhos / metaRef) * 100) : 0;
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
   const temKpis = squadKpis.clientes > 0 || squadKpis.clientesDia > 0 || squadKpis.agendamentosDia > 0 || squadKpis.ltr > 0 || squadKpis.noShow > 0;
   // Ritmo real de clientes/dia = fechamentos acumulados ÷ dias úteis já passados no mês.
-  const clientesDiaAtual = diasPassados > 0 ? Math.round(totalGanhos / diasPassados) : null;
+  const clientesDiaAtual = diasPassados > 0 && totalGanhos !== null ? Math.round(totalGanhos / diasPassados) : null;
 
   return (
     <div className="p-6 space-y-4">
@@ -265,11 +271,12 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
             <Settings className="h-3.5 w-3.5" />
           </button>
         </div>
+        {algumIndisponivel && <p className="text-xs text-amber-500">Pipedrive indisponível agora — total temporariamente sem dado.</p>}
 
         <div>
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-6xl font-black text-cw-purple">{totalGanhos}</span>
+              <span className="text-6xl font-black text-cw-purple">{totalGanhos === null ? '…' : totalGanhos}</span>
               <span className="text-xl text-cw-muted font-bold">/ {metaRef || '?'}</span>
             </div>
             {/* Seletor de squad (se lidera mais de um) — troca a visão sem sair do bloco */}
@@ -293,7 +300,7 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
           )}
         </div>
 
-        <div className={cn('rounded-xl border p-3', metaRef > 0 && totalGanhos >= metaRef ? 'border-green-200 bg-green-50' : 'border-cw-border bg-cw-elevated')}>
+        <div className={cn('rounded-xl border p-3', metaRef > 0 && totalGanhos !== null && totalGanhos >= metaRef ? 'border-green-200 bg-green-50' : 'border-cw-border bg-cw-elevated')}>
           <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">META</p>
           <p className="text-xs text-cw-muted mt-0.5">{metaRef > 0 ? `${metaRef} fechamentos` : 'Não definida'}</p>
         </div>
@@ -308,7 +315,7 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
                 <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Clientes</p>
                 <p className="text-lg font-black text-cw-text mt-0.5">
-                  {totalGanhos}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.clientes || '?'}</span>
+                  {totalGanhos === null ? '…' : totalGanhos}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.clientes || '?'}</span>
                 </p>
               </div>
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
