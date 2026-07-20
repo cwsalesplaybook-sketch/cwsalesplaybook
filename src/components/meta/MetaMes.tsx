@@ -342,19 +342,20 @@ function PersonalMetaView() {
     { label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 },
     { label: 'Mega Meta 1', value: mega1 }, { label: 'Mega Meta 2', value: mega2 }, { label: 'Mega Meta 3', value: mega3 },
   ]);
-  // Projeção só faz sentido depois que a pessoa configurou o perfil (tem sdrId).
-  const temPerfil = !!metaData.sdrId;
-  const projecao = temPerfil && diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * diasUteisTotal) : 0;
+  // Projeção só faz sentido depois que a pessoa definiu alguma meta — não depende
+  // mais de sdrId (vestígio de quando os ganhos vinham do Pipedrive).
+  const temMeta = metaReferencia > 0;
+  const projecao = temMeta && diasPassados > 0 ? Math.round((totalGanhos / diasPassados) * diasUteisTotal) : 0;
   const porDia   = (m: number) => diasRestantes > 0 ? Math.ceil(Math.max(0, m - totalGanhos) / diasRestantes) : 0;
   const falta    = (m: number) => Math.max(0, m - totalGanhos);
   const maxMeta  = meta3 || meta2 || meta1 || 1;
   const pctBarra = Math.min(100, (totalGanhos / maxMeta) * 100);
   // Ritmo de fechamentos vs. o necessário pra bater a Meta 1 — mostrado dentro do mini-bloco da Meta 1
-  const temRitmoM1 = temPerfil && diasPassados > 0 && meta1 > 0;
+  const temRitmoM1 = temMeta && diasPassados > 0 && meta1 > 0;
   const ritmoNecessarioM1 = diasUteisTotal > 0 && meta1 > 0 ? meta1 / diasUteisTotal : 0;
   const pctRitmoM1 = temRitmoM1 && ritmoNecessarioM1 > 0 ? (((totalGanhos / diasPassados) - ritmoNecessarioM1) / ritmoNecessarioM1) * 100 : 0;
   // Onde você deveria estar HOJE se estivesse no ritmo certo pra bater a meta de referência.
-  const ritmoHojeValor = temPerfil && diasPassados > 0 ? (diasPassados / diasUteisTotal) * maxMeta : 0;
+  const ritmoHojeValor = temMeta && diasPassados > 0 ? (diasPassados / diasUteisTotal) * maxMeta : 0;
   const ritmoHojePct   = Math.min(ritmoHojeValor / maxMeta * 100, 99);
   const noRitmoHoje     = totalGanhos >= ritmoHojeValor;
 
@@ -378,23 +379,23 @@ function PersonalMetaView() {
               META DO MÊS — STATUS
             </div>
             <div className="flex items-center gap-1.5">
-              {/* Controles manuais minimalistas */}
+              {/* Controles manuais — ação principal da tela, por isso maiores que os outros ícones */}
               <button onClick={() => { setAjusteQtd('1'); setAjusteMot(''); setAjusteModal('sub'); }}
                 title="Remover ganho"
-                className="h-6 w-6 rounded-md text-cw-muted/50 hover:text-red-400 hover:bg-red-50 flex items-center justify-center transition-all text-sm font-bold">
+                className="h-9 w-9 rounded-lg border border-cw-border bg-white/60 text-cw-muted hover:text-red-500 hover:bg-red-50 hover:border-red-200 flex items-center justify-center transition-all text-lg font-bold">
                 −
               </button>
               <button onClick={() => { setAjusteQtd('1'); setAjusteMot(''); setAjusteModal('add'); }}
                 title="Adicionar ganho"
-                className="h-6 w-6 rounded-md text-cw-muted/50 hover:text-cw-purple hover:bg-cw-purple/10 flex items-center justify-center transition-all text-sm font-bold">
+                className="h-9 w-9 rounded-lg border border-cw-border bg-white/60 text-cw-muted hover:text-cw-purple hover:bg-cw-purple/10 hover:border-cw-purple/40 flex items-center justify-center transition-all text-lg font-bold">
                 +
               </button>
               <button onClick={() => { setTotalValor(String(totalGanhos)); setTotalModal(true); }}
                 title="Definir total de ganhos manual"
-                className="h-6 w-6 rounded-md text-cw-muted/50 hover:text-cw-purple hover:bg-cw-purple/10 flex items-center justify-center transition-all">
-                <Pencil className="h-3 w-3" />
+                className="h-9 w-9 rounded-lg border border-cw-border bg-white/60 text-cw-muted hover:text-cw-purple hover:bg-cw-purple/10 hover:border-cw-purple/40 flex items-center justify-center transition-all">
+                <Pencil className="h-4 w-4" />
               </button>
-              <div className="w-px h-4 bg-cw-border mx-0.5" />
+              <div className="w-px h-6 bg-cw-border mx-0.5" />
               <span className={cn('text-xs font-black px-3 py-1 rounded-full border',
                 status === 'no-ritmo'
                   ? 'bg-green-50 text-green-600 border-green-200'
@@ -546,7 +547,7 @@ function PersonalMetaView() {
               <div>
                 <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Projeção Final</p>
                 <p className="text-base font-black text-cw-text">
-                  {temPerfil ? <>{projecao} <span className="text-sm text-cw-muted font-normal">/ {metaReferencia || '?'}</span></> : <span className="text-sm text-cw-muted font-normal">— configure seu perfil</span>}
+                  {temMeta ? <>{projecao} <span className="text-sm text-cw-muted font-normal">/ {metaReferencia || '?'}</span></> : <span className="text-sm text-cw-muted font-normal">— defina uma meta</span>}
                 </p>
               </div>
             </div>
@@ -745,11 +746,11 @@ function PersonalMetaView() {
           </div>
 
           {(() => {
-            // Insights só fazem sentido depois que a pessoa configurou o perfil
-            if (!temPerfil || diasPassados === 0) {
+            // Insights só fazem sentido depois que a pessoa definiu alguma meta
+            if (!temMeta || diasPassados === 0) {
               return (
                 <div className="flex items-center justify-center py-8 text-cw-muted text-sm">
-                  Configure seu perfil para ver os insights.
+                  Defina uma meta para ver os insights.
                 </div>
               );
             }
