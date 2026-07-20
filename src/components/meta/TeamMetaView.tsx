@@ -2,7 +2,7 @@
  *  Bloco único com a meta agregada do squad (fechamentos, meta única) e os
  *  KPIs do squad (clientes, clientes/dia, agendamentos/dia, LTR, no-show),
  *  todos editáveis pelo líder num só modal, e o dashboard de cada membro
- *  (ganhos do Pipedrive × meta individual). O líder também pode ajustar a
+ *  (ganhos manuais × meta individual). O líder também pode ajustar a
  *  meta individual de quem já configurou o perfil.
  *  Acesso é garantido pela RLS (squads_que_lidero / lidero_o_usuario).
  *  Squads trabalham com uma única meta de fechamentos (sem Meta 2/3 nem
@@ -24,9 +24,22 @@ interface Membro {
   apelido: string;
   sdrId: string | null;
   meta1: number; meta2: number; meta3: number;
-  ajuste: number;
-  ganhos: number | null;       // null = ainda carregando / sem Pipedrive
+  ajuste: number;              // ganhos do mês, lançado manualmente pelo próprio SDR
   configurado: boolean;        // tem linha em user_metas
+}
+
+/** Dias úteis (seg-sex) do mês corrente, já passados/restantes — usado só pra
+ *  ritmo de "clientes/dia", sem depender de nenhuma API externa. */
+function calcularDiasPassados() {
+  const hoje = new Date();
+  const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  let diasPassados = 0;
+  for (let d = new Date(primeiroDia); d <= hoje; d.setDate(d.getDate() + 1)) {
+    const dow = d.getDay();
+    if (dow === 0 || dow === 6) continue;
+    diasPassados++;
+  }
+  return diasPassados;
 }
 
 const META_VAZIA: TeamMeta = { meta1: 0 };
@@ -163,7 +176,7 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
         : { data: [] as any[] };
       const metaPorUser = new Map((metas ?? []).map(m => [m.user_id, m]));
 
-      // 3. Monta os membros e busca os ganhos no Pipedrive (em paralelo).
+      // 3. Monta os membros — ganhos vêm só do ajuste manual (sem API externa).
       const bust = forceRefresh ? `&_t=${Date.now()}` : '';
       const base: Membro[] = lista.map(p => {
         const m = metaPorUser.get(p.user_id);
@@ -173,37 +186,17 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
           sdrId: m?.sdr_id ?? null,
           meta1: m?.meta1 ?? 0, meta2: m?.meta2 ?? 0, meta3: m?.meta3 ?? 0,
           ajuste: m?.ajuste ?? 0,
-          ganhos: m?.sdr_id ? null : 0,
           configurado: !!m,
         };
       });
       setMembros(base);
+      setDiasPassados(calcularDiasPassados());
 
-      // diasPassados vem igual em toda resposta do /api/meta nesse mês —
-      // guarda a primeira que chegar pra calcular o ritmo de clientes/dia.
-      let diasPassadosCapturado = 0;
-      const [comGanhos] = await Promise.all([
-        Promise.all(base.map(async (mem) => {
-          if (!mem.sdrId) return mem;
-          try {
-            const r = await fetch(`/api/meta?sdrId=${mem.sdrId}${bust}`);
-            const j = await r.json();
-            if (j.ok && !diasPassadosCapturado) diasPassadosCapturado = j.diasPassados || 0;
-            // Falha do Pipedrive (ex: cota diária estourada) não pode virar "0
-            // ganhos" — mantém o último valor conhecido (ou null, se nunca carregou).
-            return j.ok ? { ...mem, ganhos: j.ganhos } : mem;
-          } catch { return mem; }
-        })),
-        (async () => {
-          try {
-            const r = await fetch(`/api/meetime-agendamentos?squad=${encodeURIComponent(sq)}${bust}`);
-            const j = await r.json();
-            setAgendamentosHoje(j.ok ? j.agendamentosHoje : null);
-          } catch { setAgendamentosHoje(null); }
-        })(),
-      ]);
-      setMembros(comGanhos);
-      setDiasPassados(diasPassadosCapturado);
+      try {
+        const r = await fetch(`/api/meetime-agendamentos?squad=${encodeURIComponent(sq)}${bust}`);
+        const j = await r.json();
+        setAgendamentosHoje(j.ok ? j.agendamentosHoje : null);
+      } catch { setAgendamentosHoje(null); }
     } finally { setLoading(false); }
   }, []);
 
@@ -239,17 +232,13 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
     setEditMembro(null);
   };
 
-  // Se algum membro configurado não conseguiu carregar ganhos do Pipedrive
-  // (ex: cota diária estourada), a soma fica incompleta — melhor "…" do que
-  // um total errado com cara de definitivo.
-  const algumIndisponivel = membros.some(m => m.sdrId && m.ganhos === null);
-  const totalGanhos = algumIndisponivel ? null : membros.reduce((s, m) => s + (m.ganhos ?? 0) + m.ajuste, 0);
+  const totalGanhos = membros.reduce((s, m) => s + m.ajuste, 0);
   const metaRef = teamMeta.meta1;
-  const pctBarra = metaRef > 0 && totalGanhos !== null ? Math.min(100, (totalGanhos / metaRef) * 100) : 0;
+  const pctBarra = metaRef > 0 ? Math.min(100, (totalGanhos / metaRef) * 100) : 0;
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
   const temKpis = squadKpis.clientes > 0 || squadKpis.clientesDia > 0 || squadKpis.agendamentosDia > 0 || squadKpis.ltr > 0 || squadKpis.noShow > 0;
   // Ritmo real de clientes/dia = fechamentos acumulados ÷ dias úteis já passados no mês.
-  const clientesDiaAtual = diasPassados > 0 && totalGanhos !== null ? Math.round(totalGanhos / diasPassados) : null;
+  const clientesDiaAtual = diasPassados > 0 ? Math.round(totalGanhos / diasPassados) : null;
 
   return (
     <div className="p-6 space-y-4">
@@ -271,12 +260,11 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
             <Settings className="h-3.5 w-3.5" />
           </button>
         </div>
-        {algumIndisponivel && <p className="text-xs text-amber-500">Pipedrive indisponível agora — total temporariamente sem dado.</p>}
 
         <div>
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-6xl font-black text-cw-purple">{totalGanhos === null ? '…' : totalGanhos}</span>
+              <span className="text-6xl font-black text-cw-purple">{totalGanhos}</span>
               <span className="text-xl text-cw-muted font-bold">/ {metaRef || '?'}</span>
             </div>
             {/* Seletor de squad (se lidera mais de um) — troca a visão sem sair do bloco */}
@@ -300,7 +288,7 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
           )}
         </div>
 
-        <div className={cn('rounded-xl border p-3', metaRef > 0 && totalGanhos !== null && totalGanhos >= metaRef ? 'border-green-200 bg-green-50' : 'border-cw-border bg-cw-elevated')}>
+        <div className={cn('rounded-xl border p-3', metaRef > 0 && totalGanhos >= metaRef ? 'border-green-200 bg-green-50' : 'border-cw-border bg-cw-elevated')}>
           <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">META</p>
           <p className="text-xs text-cw-muted mt-0.5">{metaRef > 0 ? `${metaRef} fechamentos` : 'Não definida'}</p>
         </div>
@@ -315,7 +303,7 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
                 <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Clientes</p>
                 <p className="text-lg font-black text-cw-text mt-0.5">
-                  {totalGanhos === null ? '…' : totalGanhos}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.clientes || '?'}</span>
+                  {totalGanhos}<span className="text-xs text-cw-muted font-normal"> / {squadKpis.clientes || '?'}</span>
                 </p>
               </div>
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
@@ -367,7 +355,7 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
         ) : (
           <div className="space-y-2">
             {membros.map(mem => {
-              const total = (mem.ganhos ?? 0) + mem.ajuste;
+              const total = mem.ajuste;
               const metaM = mem.meta1;
               const batida = metaM > 0 && total >= metaM;
               const pct = metaM > 0 ? Math.min(100, (total / metaM) * 100) : 0;
@@ -386,7 +374,7 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-lg font-black text-cw-text leading-none">
-                      {mem.ganhos === null ? '…' : total}
+                      {total}
                       <span className="text-xs text-cw-muted font-normal"> / {metaM || '?'}</span>
                     </p>
                     <p className="text-[10px] text-cw-muted mt-0.5">fechamentos</p>
@@ -403,7 +391,7 @@ export default function TeamMetaView({ squads, toggle }: { squads: string[]; tog
           </div>
         )}
         <p className="flex items-center gap-1.5 text-[11px] text-cw-muted/70 pt-1">
-          <TrendingUp className="h-3 w-3" /> Ganhos vêm do Pipedrive; cada SDR ainda define a própria meta no perfil — aqui você acompanha e pode ajustar.
+          <TrendingUp className="h-3 w-3" /> Ganhos são lançados manualmente por cada SDR na própria Meta do Mês — aqui você acompanha e pode ajustar a meta.
         </p>
       </div>
     </div>

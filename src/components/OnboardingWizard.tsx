@@ -1,7 +1,7 @@
 /** Wizard de onboarding — exibido na primeira entrada do usuário. */
 import { useState, useEffect } from 'react';
 import {
-  BookOpen, Target, Calendar, Trophy, HelpCircle, Zap,
+  BookOpen, Target, Calendar, HelpCircle, Zap,
   Sparkles, ArrowRight, Check, Bell, AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,6 @@ const TABS_OVERVIEW = [
   { icon: Target,   label: 'Meta do Mês',  desc: 'Acompanhe sua meta mensal em tempo real' },
   { icon: BookOpen, label: 'Playbook',     desc: 'Scripts, cadências e metodologia de vendas CW' },
   { icon: Calendar, label: 'Rituais',      desc: '1:1s, reuniões e treinamentos do seu squad' },
-  { icon: Trophy,   label: 'Ranking',      desc: 'Top guerreiros do mês' },
   { icon: HelpCircle, label: 'FAQ',        desc: 'Dúvidas sobre produto, planos e processos' },
   { icon: Bell,     label: 'Mural',        desc: 'Avisos e comunicados do time' },
   { icon: Zap,      label: 'Changelog',   desc: 'Últimas atualizações da plataforma' },

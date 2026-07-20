@@ -32,7 +32,6 @@ import PlaybookRepresentantes from '@/components/playbook/PlaybookRepresentantes
 import Pipeline from '@/components/pipeline/Pipeline';
 import PipelineReps from '@/components/pipeline/PipelineReps';
 import Gestao from '@/components/gestao/Gestao';
-import Ranking from '@/components/ranking/Ranking';
 import MetaMes from '@/components/meta/MetaMes';
 import MetaMesReps from '@/components/meta/MetaMesReps';
 import Promocoes from '@/pages/Promocoes';
@@ -217,7 +216,6 @@ function AnimatedRoutes() {
           <Route path="/carreira" element={<Carreira />} />
           <Route path="/gestao" element={<Gestao />} />
           <Route path="/berserker" element={<Berserker />} />
-          <Route path="/ranking" element={<Ranking />} />
           <Route path="/meta" element={<MetaRoute />} />
           <Route path="/kanban" element={<Kanban />} />
           <Route path="/promocoes" element={<Promocoes />} />
