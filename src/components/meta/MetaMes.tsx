@@ -1,7 +1,7 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useRef, useState, useCallback, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, XCircle, User, LayoutGrid, Percent } from 'lucide-react';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, XCircle, User, LayoutGrid, Percent, Pencil } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
@@ -228,6 +228,8 @@ function PersonalMetaView({ toggle }: { toggle?: ReactNode }) {
   const [ajusteModal, setAjusteModal] = useState<'add' | 'sub' | null>(null);
   const [ajusteQtd, setAjusteQtd]   = useState('1');
   const [ajusteMot, setAjusteMot]   = useState('');
+  const [totalModal, setTotalModal] = useState(false);
+  const [totalValor, setTotalValor] = useState('0');
   const [perdas, setPerdas] = useState<{ total: number; leads: { titulo: string; nome: string | null; telefone: string | null; motivo: string; data: string }[] } | null>(null);
 
   // Leads Perdidos acompanha a altura real do card Ritmo Diário (medida via ResizeObserver)
@@ -366,6 +368,15 @@ function PersonalMetaView({ toggle }: { toggle?: ReactNode }) {
     await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: metaData.sdrId, meta1: metaData.meta1, meta2: metaData.meta2, meta3: metaData.meta3, mega1: metaData.mega1, mega2: metaData.mega2, mega3: metaData.mega3, ajuste: novoAjuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
   };
 
+  // Define o total de ganhos direto (em vez de somar/subtrair) — reconstitui o
+  // ajuste a partir do que o Pipedrive já contou, pra "total" continuar
+  // fazendo sentido quando o Pipedrive voltar a responder.
+  const definirTotalManual = async (novoTotal: number) => {
+    const novoAjuste = novoTotal - (apiData?.ganhos ?? 0);
+    setMetaData(m => ({ ...m, ajuste: novoAjuste }));
+    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: metaData.sdrId, meta1: metaData.meta1, meta2: metaData.meta2, meta3: metaData.meta3, mega1: metaData.mega1, mega2: metaData.mega2, mega3: metaData.mega3, ajuste: novoAjuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
+  };
+
   const totalGanhos   = (apiData?.ganhos ?? 0) + metaData.ajuste;
   const { meta1, meta2, meta3, mega1, mega2, mega3 } = metaData;
   const temMega = mega1 > 0 || mega2 > 0 || mega3 > 0;
@@ -433,6 +444,11 @@ function PersonalMetaView({ toggle }: { toggle?: ReactNode }) {
                 title="Adicionar ganho"
                 className="h-6 w-6 rounded-md text-cw-muted/50 hover:text-cw-purple hover:bg-cw-purple/10 flex items-center justify-center transition-all text-sm font-bold">
                 +
+              </button>
+              <button onClick={() => { setTotalValor(String(totalGanhos)); setTotalModal(true); }}
+                title="Definir total de ganhos manual"
+                className="h-6 w-6 rounded-md text-cw-muted/50 hover:text-cw-purple hover:bg-cw-purple/10 flex items-center justify-center transition-all">
+                <Pencil className="h-3 w-3" />
               </button>
               <div className="w-px h-4 bg-cw-border mx-0.5" />
               <span className={cn('text-xs font-black px-3 py-1 rounded-full border',
@@ -642,6 +658,37 @@ function PersonalMetaView({ toggle }: { toggle?: ReactNode }) {
         </div>
       )}
 
+      {/* Modal de total manual — define o total direto em vez de somar/subtrair,
+          útil quando o Pipedrive está fora do ar e dá trabalho ir clicando +/-. */}
+      {totalModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-xs mx-4 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-cw-text">Definir total de ganhos</h3>
+              <button onClick={() => setTotalModal(false)} className="text-cw-muted hover:text-cw-text"><X className="h-4 w-4" /></button>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Total de fechamentos neste mês</label>
+              <input
+                type="number" min={0} value={totalValor}
+                onChange={e => setTotalValor(e.target.value)}
+                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple"
+                autoFocus
+              />
+              <p className="text-[10px] text-cw-muted mt-1.5">Substitui o ajuste manual atual (não soma) — o Pipedrive: {apiData?.ganhos ?? 0} continua contando à parte.</p>
+            </div>
+            <button
+              onClick={() => {
+                definirTotalManual(Math.max(0, Number(totalValor) || 0));
+                setTotalModal(false);
+              }}
+              className="w-full py-3 rounded-xl font-bold text-sm text-white gradient-primary hover:opacity-90 transition-opacity"
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Seção inferior — Ritmo Diário + Leads Perdidos (centralizados, sem precisar rolar) */}
       <div className="grid grid-cols-2 gap-4">
