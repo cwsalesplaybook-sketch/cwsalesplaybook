@@ -1,18 +1,11 @@
-/** Conversão — visão individual do SDR: das reuniões que ele deu Ganho no
- *  Meetime (por grupo de tier), quantas viraram cliente pagante no Pipedrive
- *  (deal Ganho no Funil de Vendas). Sempre o mês inteiro corrente.
- *  O match com o Pipedrive é feito pelo campo "Tipo de tier" do próprio
- *  negócio pra Tier1/2, Tier3, Tier4/5 e Parcerias (rápido e confiável); só
- *  Adição Manual ainda usa telefone, porque um negócio reativado carrega o
- *  tier ORIGINAL do lead, não "Adição manual" — ver api/conversao.js.
- *  Cada grupo aparece como um bloco visualmente separado, mas os dados dos 5
- *  vêm de UMA chamada só (`grupo=todos`) — tentamos cada bloco com fetch
- *  próprio antes, e 5 requisições concorrentes (uma invocação serverless
- *  cada) não conseguem coordenar rate limit entre si contra o Pipedrive, o
- *  que fazia "convertidos" flutuar a cada refresh. Uma chamada só resolve
- *  todos os grupos internamente. */
+/** Conversão — visão individual do SDR: quantas reuniões ele deu Ganho no
+ *  Meetime neste mês, por grupo de tier. Sempre o mês inteiro corrente.
+ *  Temporariamente só usa a API do Meetime (sem Pipedrive): a aba consumia
+ *  parte considerável da cota diária de chamadas do Pipedrive (sobretudo o
+ *  grupo Adição Manual, que casava telefone por telefone), então "Convertidos"
+ *  e "Projeção de Ganhos" ficam fora por ora — ver api/conversao.js. */
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { RefreshCw, Percent, AlertTriangle, Info } from 'lucide-react';
+import { RefreshCw, Percent, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -25,70 +18,32 @@ const GRUPOS: { id: Grupo; label: string }[] = [
   { id: 'parcerias', label: 'Parcerias' },
 ];
 
-// Abaixo de que % de conversão mostrar o aviso pro SDR mandar mais oportunidades.
-const LIMIAR_CONVERSAO_BAIXA = 20;
-
-interface DadosGrupo { agendamentos: number; convertidos: number; projecaoGanhos: number; }
+interface DadosGrupo { agendamentos: number; }
 
 function BlocoConversao({ label, dados }: { label: string; dados: DadosGrupo | null }) {
   const agendamentos = dados?.agendamentos ?? null;
-  const convertidos = dados?.convertidos ?? null;
-  const projecaoGanhos = dados?.projecaoGanhos ?? null;
-  const pct = agendamentos !== null && agendamentos > 0 && convertidos !== null
-    ? Math.round((convertidos / agendamentos) * 1000) / 10
-    : null;
-  const conversaoBaixa = pct !== null && agendamentos !== null && agendamentos > 0 && pct < LIMIAR_CONVERSAO_BAIXA;
 
   return (
-    <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-5 space-y-4">
+    <div className="rounded-2xl border border-cw-border bg-white shadow-sm p-5 flex items-center justify-between gap-4">
       <span className="text-xs font-bold text-cw-purple uppercase tracking-widest">{label}</span>
-
-      <div className="grid grid-cols-4 gap-3">
-        <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
-          <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Reuniões</p>
-          <p className="text-lg font-black text-cw-text mt-0.5">{agendamentos === null ? '…' : agendamentos}</p>
-        </div>
-        <div className="rounded-xl border border-cw-border bg-cw-elevated p-3">
-          <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Convertidos</p>
-          <p className="text-lg font-black text-cw-text mt-0.5">{convertidos === null ? '…' : convertidos}</p>
-        </div>
-        <div className="rounded-xl border border-cw-purple bg-cw-purple/10 p-3">
-          <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Conversão</p>
-          <p className="text-lg font-black text-cw-purple mt-0.5">{pct === null ? '…' : `${pct}%`}</p>
-        </div>
-        <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-3">
-          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Projeção</p>
-          <p className="text-lg font-black text-emerald-600 mt-0.5">{projecaoGanhos === null ? '…' : projecaoGanhos}</p>
-          <p className="text-[8px] text-emerald-600/60">ganhos até o fim do mês</p>
-        </div>
+      <div className="rounded-xl border border-cw-border bg-cw-elevated px-4 py-2 text-right">
+        <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">Reuniões</p>
+        <p className="text-lg font-black text-cw-text mt-0.5">{agendamentos === null ? '…' : agendamentos}</p>
       </div>
-
-      {conversaoBaixa && (
-        <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Sua conversão está baixa, mande mais oportunidades
-        </p>
-      )}
     </div>
   );
 }
 
 export default function Conversao({ toggle }: { toggle?: ReactNode }) {
   const [email, setEmail] = useState('');
-  const [sdrId, setSdrId] = useState('');
   const [dados, setDados] = useState<Record<Grupo, DadosGrupo> | null>(null);
   const [aviso, setAviso] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return;
       setEmail(session.user.email ?? '');
-      // Mesmo id do "[QUAL] SDR/BDR" do Pipedrive, salvo em user_metas quando
-      // a pessoa configura a própria Meta do Mês — dá pra buscar os ganhos
-      // direto pelo tier do negócio, sem precisar casar por telefone.
-      const mesAtual = new Date().toISOString().slice(0, 7);
-      const { data } = await supabase.from('user_metas').select('sdr_id').eq('user_id', session.user.id).eq('mes', mesAtual).maybeSingle();
-      if (data?.sdr_id) setSdrId(String(data.sdr_id));
     });
   }, []);
 
@@ -98,8 +53,7 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
     setAviso('');
     try {
       const bust = forceRefresh ? `&_t=${Date.now()}` : '';
-      const sdrParam = sdrId ? `&sdrId=${encodeURIComponent(sdrId)}` : '';
-      const r = await fetch(`/api/conversao?email=${encodeURIComponent(email)}&grupo=todos${sdrParam}${bust}`);
+      const r = await fetch(`/api/conversao?email=${encodeURIComponent(email)}&grupo=todos${bust}`);
       const j = await r.json();
       if (j.ok) {
         setDados(j.grupos);
@@ -110,7 +64,7 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
     } catch {
       setDados(null);
     } finally { setLoading(false); }
-  }, [email, sdrId]);
+  }, [email]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
@@ -123,7 +77,7 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
           {toggle}
           <p className="flex items-start gap-2 text-sm leading-relaxed text-cw-muted bg-cw-elevated border border-cw-border rounded-xl px-4 py-3 flex-1">
             <Info className="h-5 w-5 text-cw-purple shrink-0 mt-0.5" />
-            <span>"Convertidos" aqui é diferente do total de <strong className="text-cw-text">Ganhos</strong> da Meta do Mês: conta só reuniões <strong className="text-cw-text">deste mês</strong> que eu consegui rastrear até um fechamento (pelo tier do negócio no Pipedrive, ou por telefone na Adição Manual).</span>
+            <span>Por ora essa aba mostra só <strong className="text-cw-text">Reuniões</strong> (Ganho no Meetime, deste mês) — "Convertidos" e "Projeção" ficaram fora temporariamente pra não estourar a cota diária da API do Pipedrive.</span>
           </p>
         </div>
         <div className="flex items-center justify-between gap-4 mt-3">
@@ -144,8 +98,7 @@ export default function Conversao({ toggle }: { toggle?: ReactNode }) {
       </div>
 
       <p className="text-[11px] text-cw-muted/70 px-1">
-        Reuniões = Ganho no Meetime nesse grupo, no mês inteiro. Conversão = quantas delas viraram cliente pagante (Ganho no Pipedrive).
-        Projeção = estica o ritmo de reuniões até agora pros dias úteis restantes do mês e aplica a taxa de conversão observada.
+        Reuniões = Ganho no Meetime nesse grupo, no mês inteiro.
       </p>
     </div>
   );
