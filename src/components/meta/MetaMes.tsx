@@ -1,7 +1,7 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, LayoutGrid, Pencil } from 'lucide-react';
+import { Settings, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, LayoutGrid, Pencil, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
@@ -756,12 +756,45 @@ function PersonalMetaView() {
 
             const insights: { icon: React.ReactNode; texto: string; sub: string; cor: string }[] = [];
 
-            if (meta3 > 0 && totalGanhos >= meta3) {
+            // Metas e Mega Metas batidas — uma insight pra cada uma que já foi alcançada.
+            [
+              { label: 'Meta 1', value: meta1, mega: false },
+              { label: 'Meta 2', value: meta2, mega: false },
+              { label: 'Meta 3', value: meta3, mega: false },
+              { label: 'Mega Meta 1', value: mega1, mega: true },
+              { label: 'Mega Meta 2', value: mega2, mega: true },
+              { label: 'Mega Meta 3', value: mega3, mega: true },
+            ].forEach(({ label, value, mega }) => {
+              if (value > 0 && totalGanhos >= value) {
+                insights.push({
+                  icon: mega ? <Rocket className="h-4 w-4" /> : <Star className="h-4 w-4" />,
+                  texto: `${label} batida!`,
+                  sub: mega ? 'Performance de stretch — parabéns' : 'Performance excepcional este mês',
+                  cor: 'text-amber-600 bg-amber-50 border-amber-200',
+                });
+              }
+            });
+
+            // Fora do ritmo necessário pra bater a meta de referência.
+            if (status === 'atrasado') {
               insights.push({
-                icon: <Star className="h-4 w-4" />,
-                texto: 'Meta 3 batida!',
-                sub: 'Performance excepcional este mês',
-                cor: 'text-amber-600 bg-amber-50 border-amber-200',
+                icon: <AlertTriangle className="h-4 w-4" />,
+                texto: 'Você está abaixo do ritmo necessário',
+                sub: 'No ritmo atual, dificilmente bate a meta — vale acelerar os agendamentos',
+                cor: 'text-red-500 bg-red-50 border-red-200',
+              });
+            }
+
+            // Projeção final, com base no ritmo até agora.
+            if (metaReferencia > 0) {
+              const bateMeta = projecao >= metaReferencia;
+              insights.push({
+                icon: <TrendingUp className="h-4 w-4" />,
+                texto: `Na projeção atual, você fecha o mês em ${projecao}`,
+                sub: bateMeta
+                  ? `${projecao - metaReferencia} acima da meta de referência (${metaReferencia})`
+                  : `${metaReferencia - projecao} abaixo da meta de referência (${metaReferencia})`,
+                cor: bateMeta ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-cw-purple bg-cw-purple/5 border-cw-purple/20',
               });
             }
 
