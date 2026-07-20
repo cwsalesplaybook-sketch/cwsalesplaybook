@@ -91,7 +91,7 @@ async function mapComLimite(items, limite, fn) {
 // o limite do Pipedrive é sustentado, não só de rajada, então só retry não
 // resolve. Serializar as chamadas com esse intervalo evita bater no limite
 // em vez de tentar se recuperar depois de já ter estourado.
-const INTERVALO_PIPEDRIVE_MS = 300;
+const INTERVALO_PIPEDRIVE_MS = 550;
 let ultimaChamadaPipedrive = 0;
 async function fetchPipedrive(url) {
   const espera = ultimaChamadaPipedrive + INTERVALO_PIPEDRIVE_MS - Date.now();

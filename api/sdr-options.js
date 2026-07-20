@@ -1,6 +1,24 @@
 const TOKEN = process.env.PIPEDRIVE_API_TOKEN;
 const SDR_FIELD = 'ce39d035fad6c74095053ffe04bdb9bbc9ae2a53'; // campo "[QUAL] SDR/BDR"
 
+function esperar(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+/** Retry com backoff — absorve 429/5xx passageiro do Pipedrive em vez de
+ *  falhar na primeira tentativa. */
+async function fetchPipedriveComRetry(url, tentativas = 5) {
+  let ultimoErro;
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      const r = await fetch(url);
+      const json = await r.json();
+      if (json.success) return json;
+      ultimoErro = new Error(json.error || `Pipedrive retornou success:false (HTTP ${r.status})`);
+    } catch (e) { ultimoErro = e; }
+    if (i < tentativas - 1) await esperar(400 * (i + 1) + Math.random() * 300);
+  }
+  throw ultimoErro;
+}
+
 // O "sdrId" usado no app (metas, ranking, ganhos) é o id de uma opção deste
 // campo customizado do negócio — não é o id de usuário do Pipedrive. Por
 // isso pra descobrir quem é SDR/BDR precisamos das opções do campo, não da
@@ -12,9 +30,7 @@ export default async function handler(req, res) {
   if (!TOKEN) return res.status(500).json({ ok: false, erro: 'PIPEDRIVE_API_TOKEN não configurado' });
 
   try {
-    const r = await fetch(`https://api.pipedrive.com/v1/dealFields?api_token=${TOKEN}`);
-    const json = await r.json();
-    if (!json.success) return res.status(500).json({ ok: false, erro: 'Pipedrive retornou erro ao listar dealFields' });
+    const json = await fetchPipedriveComRetry(`https://api.pipedrive.com/v1/dealFields?api_token=${TOKEN}`);
 
     const campo = (json.data || []).find(f => f.key === SDR_FIELD);
     if (!campo) return res.status(500).json({ ok: false, erro: 'Campo SDR/BDR não encontrado no Pipedrive', chavesDisponiveis: (json.data || []).map(f => f.key) });

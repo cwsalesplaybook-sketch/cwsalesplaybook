@@ -43,10 +43,28 @@ function dataLocal(utcStr) {
   return instante.toISOString().slice(0, 19).replace('T', ' ');
 }
 
+function esperar(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+/** Retry com backoff — sem isso, um 429/5xx passageiro do Pipedrive
+ *  (json.success:false) era tratado igual a "acabaram as páginas" e o
+ *  endpoint respondia ok:true com ranking vazio, mascarando o erro real. */
+async function fetchPipedriveComRetry(url, tentativas = 5) {
+  let ultimoErro;
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      const r = await fetch(url);
+      const json = await r.json();
+      if (json.success) return json;
+      ultimoErro = new Error(json.error || `Pipedrive retornou success:false (HTTP ${r.status})`);
+    } catch (e) { ultimoErro = e; }
+    if (i < tentativas - 1) await esperar(400 * (i + 1) + Math.random() * 300);
+  }
+  throw ultimoErro;
+}
+
 async function getUsers() {
   const url = `https://api.pipedrive.com/v1/users?api_token=${TOKEN}&limit=200`;
-  const r   = await fetch(url);
-  const j   = await r.json();
+  const j   = await fetchPipedriveComRetry(url);
   const map = {};
   for (const u of (j.data || [])) {
     if (u.id && u.name) map[u.id] = u.name;
@@ -71,7 +89,7 @@ export default async function handler(req, res) {
     // Busca mapa de usuários em paralelo com a primeira página de deals
     const [userMap, primeiraPage] = await Promise.all([
       getUsers(),
-      fetch(`https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=200&start=0&sort=close_time%20DESC`).then(r => r.json()),
+      fetchPipedriveComRetry(`https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=200&start=0&sort=close_time%20DESC`),
     ]);
 
     const contagem = {}; // { userId: count }
@@ -79,7 +97,7 @@ export default async function handler(req, res) {
     let start = 0;
 
     while (true) {
-      if (!paginaAtual.success || !Array.isArray(paginaAtual.data) || paginaAtual.data.length === 0) break;
+      if (!Array.isArray(paginaAtual.data) || paginaAtual.data.length === 0) break;
 
       let parar = false;
       for (const deal of paginaAtual.data) {
@@ -107,8 +125,7 @@ export default async function handler(req, res) {
       if (parar || !paginaAtual.additional_data?.pagination?.more_items_in_collection) break;
 
       start += 200;
-      const r = await fetch(`https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=200&start=${start}&sort=close_time%20DESC`);
-      paginaAtual = await r.json();
+      paginaAtual = await fetchPipedriveComRetry(`https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=2&limit=200&start=${start}&sort=close_time%20DESC`);
     }
 
     const ranking = Object.entries(contagem)

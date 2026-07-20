@@ -19,6 +19,25 @@ function wonTimeLocal(utcStr) {
   return instante.toISOString().slice(0, 19).replace('T', ' ');
 }
 
+function esperar(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+/** Retry com backoff — sem isso, um 429/5xx passageiro do Pipedrive
+ *  (json.success:false) era tratado igual a "acabaram as páginas" e o
+ *  endpoint respondia ok:true com ganhos:0, mascarando o erro real. */
+async function fetchPipedriveComRetry(url, tentativas = 5) {
+  let ultimoErro;
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      const r = await fetch(url);
+      const json = await r.json();
+      if (json.success) return json;
+      ultimoErro = new Error(json.error || `Pipedrive retornou success:false (HTTP ${r.status})`);
+    } catch (e) { ultimoErro = e; }
+    if (i < tentativas - 1) await esperar(400 * (i + 1) + Math.random() * 300);
+  }
+  throw ultimoErro;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=300');
@@ -44,9 +63,8 @@ export default async function handler(req, res) {
       // Replica o relatório "Nº de neg ganhos dos SDRs": Funil de Vendas (pipeline 2),
       // status Ganho, "Ganho em" (won_time) no mês, agrupado por [QUAL] SDR/BDR.
       const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&limit=200&start=${start}&sort=won_time%20DESC`;
-      const r = await fetch(url);
-      const json = await r.json();
-      if (!json.success || !Array.isArray(json.data) || json.data.length === 0) break;
+      const json = await fetchPipedriveComRetry(url);
+      if (!Array.isArray(json.data) || json.data.length === 0) break;
       let parar = false;
       for (const deal of json.data) {
         const wtRaw = deal.won_time || '';
