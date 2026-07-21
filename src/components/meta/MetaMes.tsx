@@ -776,9 +776,13 @@ function PersonalMetaView() {
 
         <div className="space-y-2">
           {/* Como funciona a aba — sempre visível, independente de ter dados */}
+          <div className="flex items-start gap-2 px-3 py-2 rounded-lg border text-emerald-600 bg-emerald-50 border-emerald-200">
+            <RefreshCw className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+            <p className="text-[11px] leading-snug"><span className="font-semibold">Contagem automática:</span> os fechamentos do Pipedrive entram sozinhos, vinculados ao seu nome em "Configurar metas" — sem vínculo, o número fica zerado até você selecionar seu nome na lista.</p>
+          </div>
           <div className="flex items-start gap-2 px-3 py-2 rounded-lg border text-cw-purple bg-cw-purple/5 border-cw-purple/20">
             <Pencil className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-            <p className="text-[11px] leading-snug"><span className="font-semibold">Ganhos manuais:</span> use os botões +/− ou o lápis pra manter o total atualizado.</p>
+            <p className="text-[11px] leading-snug"><span className="font-semibold">Ganhos manuais:</span> use os botões +/− ou o lápis só pra ajustes extras — não para compensar Pipedrive, já que ele conta sozinho.</p>
           </div>
 
           {(() => {
