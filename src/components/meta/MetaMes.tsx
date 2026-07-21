@@ -1,7 +1,7 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, LayoutGrid, Pencil, AlertTriangle } from 'lucide-react';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, LayoutGrid, Pencil, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
@@ -24,8 +24,10 @@ function norm(s: string) {
 }
 
 interface MetaData { meta1: number; meta2: number; meta3: number; mega1: number; mega2: number; mega3: number; ajuste: number; sdrId: string; }
+interface ApiData { ganhos: number; mes: string; diasUteisTotal: number; diasPassados: number; diasRestantes: number; }
 
-/** Dias úteis (seg-sex) do mês corrente, já passados/restantes — pura conta de
+/** Dias úteis (seg-sex) do mês corrente, já passados/restantes — usado como
+ *  fallback enquanto /api/meta ainda não respondeu, pura conta de
  *  calendário, sem depender de nenhuma API externa. */
 function calcularDiasUteis() {
   const hoje = new Date();
@@ -204,6 +206,8 @@ function ConfigModal({ metaData, nomeDetectado, vinculoConfirmado, onSave, onClo
 function PersonalMetaView() {
   const navigate = useNavigate();
   const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, sdrId: '' });
+  const [apiData, setApiData]     = useState<ApiData | null>(null);
+  const [loading, setLoading]     = useState(false);
   const [config, setConfig]       = useState(false);
   const [userId, setUserId]       = useState('');
   const [mes, setMes]             = useState('');
@@ -312,12 +316,29 @@ function PersonalMetaView() {
     }
   }, []);
 
+  const buscarGanhos = useCallback(async (sdrId: string, forceRefresh = false) => {
+    if (!sdrId) return;
+    setLoading(true);
+    const bust = forceRefresh ? `&_t=${Date.now()}` : '';
+    try {
+      const r = await fetch(`/api/meta?sdrId=${sdrId}${bust}`);
+      const json = await r.json();
+      if (json.ok) setApiData(json);
+    } finally { setLoading(false); }
+  }, []);
+
   useEffect(() => { carregarPerfil(); }, [carregarPerfil]);
+  useEffect(() => { if (metaData.sdrId) buscarGanhos(metaData.sdrId); }, [metaData.sdrId, buscarGanhos]);
+  useEffect(() => {
+    const id = setInterval(() => { if (metaData.sdrId) buscarGanhos(metaData.sdrId); }, 5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [metaData.sdrId, buscarGanhos]);
 
   const salvarConfig = async (novosDados: MetaData) => {
     await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: novosDados.sdrId, meta1: novosDados.meta1, meta2: novosDados.meta2, meta3: novosDados.meta3, mega1: novosDados.mega1, mega2: novosDados.mega2, mega3: novosDados.mega3, ajuste: novosDados.ajuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
     setMetaData(novosDados);
     setConfig(false);
+    if (novosDados.sdrId) buscarGanhos(novosDados.sdrId, true);
   };
 
   const alterarAjuste = async (delta: number) => {
@@ -326,16 +347,24 @@ function PersonalMetaView() {
     await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: metaData.sdrId, meta1: metaData.meta1, meta2: metaData.meta2, meta3: metaData.meta3, mega1: metaData.mega1, mega2: metaData.mega2, mega3: metaData.mega3, ajuste: novoAjuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
   };
 
-  // Define o total de ganhos direto (em vez de somar/subtrair).
+  // Define o total de ganhos direto (em vez de somar/subtrair) — reconstitui o
+  // ajuste a partir do que o Pipedrive já contou, pra "total" continuar
+  // fazendo sentido quando o número automático mudar.
   const definirTotalManual = async (novoTotal: number) => {
-    setMetaData(m => ({ ...m, ajuste: novoTotal }));
-    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: metaData.sdrId, meta1: metaData.meta1, meta2: metaData.meta2, meta3: metaData.meta3, mega1: metaData.mega1, mega2: metaData.mega2, mega3: metaData.mega3, ajuste: novoTotal, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
+    const novoAjuste = novoTotal - (apiData?.ganhos ?? 0);
+    setMetaData(m => ({ ...m, ajuste: novoAjuste }));
+    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: metaData.sdrId, meta1: metaData.meta1, meta2: metaData.meta2, meta3: metaData.meta3, mega1: metaData.mega1, mega2: metaData.mega2, mega3: metaData.mega3, ajuste: novoAjuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
   };
 
-  const totalGanhos   = metaData.ajuste;
+  const totalGanhos   = (apiData?.ganhos ?? 0) + metaData.ajuste;
   const { meta1, meta2, meta3, mega1, mega2, mega3 } = metaData;
   const temMega = mega1 > 0 || mega2 > 0 || mega3 > 0;
-  const { diasUteisTotal, diasPassados, diasRestantes } = calcularDiasUteis();
+  // Usa os dias úteis do Pipedrive quando disponíveis; cai pro cálculo local de
+  // calendário enquanto a API ainda não respondeu (evita "22 dias" fixo/errado).
+  const diasLocal = calcularDiasUteis();
+  const diasUteisTotal = apiData?.diasUteisTotal ?? diasLocal.diasUteisTotal;
+  const diasPassados   = apiData?.diasPassados   ?? diasLocal.diasPassados;
+  const diasRestantes  = apiData?.diasRestantes  ?? diasLocal.diasRestantes;
   const metaReferencia = meta3 || meta2 || meta1;
   const status   = getStatus(totalGanhos, meta1, diasPassados, diasUteisTotal);
   const forecast = getMensagemStatus(totalGanhos, [
@@ -377,8 +406,15 @@ function PersonalMetaView() {
             <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
               <Target className="h-4 w-4" />
               META DO MÊS — STATUS
+              <button onClick={() => buscarGanhos(metaData.sdrId, true)} disabled={loading} className="ml-1">
+                <RefreshCw className={cn('h-3.5 w-3.5 text-cw-muted hover:text-cw-purple', loading && 'animate-spin')} />
+              </button>
             </div>
             <div className="flex items-center gap-1.5">
+              {/* Info Pipedrive/Manual */}
+              <span className="text-[10px] text-cw-muted/70 whitespace-nowrap hidden sm:inline">
+                Pipedrive: {apiData?.ganhos ?? '...'} · Manual: {metaData.ajuste >= 0 ? '+' : ''}{metaData.ajuste}
+              </span>
               {/* Controles manuais — ação principal da tela, por isso maiores que os outros ícones */}
               <button onClick={() => { setAjusteQtd('1'); setAjusteMot(''); setAjusteModal('sub'); }}
                 title="Remover ganho"
