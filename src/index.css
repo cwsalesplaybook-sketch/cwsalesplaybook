@@ -171,7 +171,4 @@
     background: #D8B8F7; border-radius: 3px;
   }
   .scrollbar-cw::-webkit-scrollbar-thumb:hover { background: #A543FA; }
-
-  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
-  .scrollbar-none::-webkit-scrollbar { display: none; }
 }
