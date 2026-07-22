@@ -135,7 +135,7 @@ const MEMBROS_PADRAO: MembroHall[] = [
   },
   {
     id: 'mateus', nome: 'Mateus Magalhães', foto: '/hall/MateusMagalhaes.png', cargo: 'Liderança de Implementação',
-    jornada: ['Assistente de Cadastro', 'Consultor de Implementação', 'Liderança de Implementação'],
+    jornada: ['Assistente', 'Consultor', 'Liderança'],
     frase: '',
     historia: 'Mateus começou na Cardápio Web como Assistente de Cadastro, num time que depois foi redirecionado para outro setor, mas nunca perdeu a vontade de crescer e assumir desafios maiores, com o incentivo constante da liderança, que acreditou no seu potencial. Movido por esse objetivo, passou a fazer acessos remotos e atendimentos a clientes, resultado que abriu as portas para a promoção a Consultor de Implementação, cargo que ocupou por um ano aprofundando o conhecimento do produto e as habilidades de atendimento e resolução de problemas. Nesse período, já se preparava para um objetivo antigo: assumir uma posição de liderança. Com o apoio do time e das lideranças, se desenvolveu até estar pronto pra dar esse passo. Hoje segue como gestor do time de Implementação, com o compromisso de fazer a equipe crescer e continuar evoluindo junto com a Cardápio Web.',
     stats: [
