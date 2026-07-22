@@ -222,6 +222,17 @@ const MEMBROS_PADRAO: MembroHall[] = [
       { icon: 'crown',    valor: 'SDR → PSM', label: 'JORNADA' },
     ],
   },
+  {
+    id: 'mateus', nome: 'Mateus Magalhães', foto: '/hall/MateusMagalhaes.png', cargo: 'Liderança de Implementação',
+    jornada: ['Assistente de Cadastro', 'Consultor de Implementação', 'Liderança de Implementação'],
+    frase: '',
+    historia: 'Mateus começou na Cardápio Web como Assistente de Cadastro, num time que depois foi redirecionado para outro setor. Mesmo assim, nunca perdeu a vontade de crescer, aprender e assumir desafios cada vez maiores, e contou com o incentivo constante da liderança, que acreditou no seu potencial. Movido por esse objetivo, passou a fazer acessos remotos e atendimentos a clientes, experiências que o ajudaram a desenvolver novas competências e mostrar resultado. Esse desempenho abriu as portas para a promoção a Consultor de Implementação, cargo que ocupou por um ano. Nesse período, aprofundou o conhecimento sobre o produto, aperfeiçoou o atendimento, o relacionamento com clientes e a resolução de problemas, sempre buscando entregar mais a cada mês, enquanto já se preparava para um objetivo antigo: assumir uma posição de liderança. Com o apoio do time e das lideranças, se desenvolveu até estar pronto pra dar esse próximo passo. Hoje segue como gestor do time de Implementação, com o compromisso de fazer a equipe crescer e continuar evoluindo junto com a Cardápio Web.',
+    stats: [
+      { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
+      { icon: 'star',     valor: 'Liderança de Implementação', label: 'CARGO ATUAL' },
+      { icon: 'crown',    valor: 'Assistente → Liderança', label: 'JORNADA' },
+    ],
+  },
 ];
 
 function StatIcon({ type }: { type: Stat['icon'] }) {
