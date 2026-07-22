@@ -299,7 +299,7 @@ function DetailModal({ membro, onClose }: { membro: MembroHall; onClose: () => v
           </div>
 
           {/* Jornada */}
-          <div className={cn('flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1', membro.id === 'natasha' && 'justify-center')}>
+          <div className={cn('flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1', membro.id === 'natasha' && 'justify-center')}>
             {membro.jornada.map((etapa, i) => (
               <div key={etapa} className="flex items-center gap-2 shrink-0 whitespace-nowrap">
                 <span className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap"
