@@ -145,13 +145,13 @@ const MEMBROS_PADRAO: MembroHall[] = [
     ],
   },
   {
-    id: 'samuel', nome: 'Samuel Morais', foto: '/hall/SamuelMorais.png', cargo: 'Liderança de Implementação JR II',
+    id: 'samuel', nome: 'Samuel Morais', foto: '/hall/SamuelMorais.png', cargo: 'Liderança de Implementação',
     jornada: ['Consultor', 'Liderança JR I', 'Liderança JR II'],
     frase: '',
     historia: 'Samuel entrou na Cardápio Web como Consultor de Implementação e, ainda na entrevista, já deixou claro que queria entrar de qualquer jeito, chegando a ser entrevistado até pra Closer. Assim que começou, percebeu que a cultura e os valores da empresa já faziam parte do seu dia a dia, o que só reforçou o foco em se desenvolver e crescer junto com a Cardápio Web. Evoluiu à base de trabalho duro, comprometimento e confiança nas lideranças, passando de Consultor JR I para Liderança de Implementação JR I e, na sequência, JR II. Hoje ele mesmo diz que não sabe se essa é uma trajetória de sucesso, porque ainda não terminou, mas garante que a Cardápio Web continua sendo um sucesso pra ele, principalmente por estar cercado de gente que compartilha o mesmo sonho todos os dias.',
     stats: [
       { icon: 'trending', valor: '2', label: 'PROMOÇÕES' },
-      { icon: 'star',     valor: 'Liderança Implementação JR II', label: 'CARGO ATUAL' },
+      { icon: 'star',     valor: 'Liderança de Implementação', label: 'CARGO ATUAL' },
       { icon: 'crown',    valor: 'Consultor → Liderança', label: 'JORNADA' },
     ],
   },
