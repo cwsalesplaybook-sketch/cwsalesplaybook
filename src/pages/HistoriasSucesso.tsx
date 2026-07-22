@@ -1,5 +1,5 @@
 /** Hall da Fama CW, branding oficial, grid wide-screen, modal de detalhe. */
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Trophy, TrendingUp, Star, Crown, ArrowRight, Plus, X, Trash2 } from 'lucide-react';
 import { useEditor } from '@/admin/EditorContext';
 import { useEditableContent, useContentStore } from '@/store/contentStore';
@@ -234,6 +234,51 @@ const MEMBROS_PADRAO: MembroHall[] = [
   },
 ];
 
+/* ─── Fileira da jornada: encolhe tudo (pills + setas) até caber numa linha só ─── */
+function JornadaRow({ etapas }: { etapas: string[] }) {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [height, setHeight] = useState<number>();
+
+  useLayoutEffect(() => {
+    const outer = outerRef.current;
+    const inner = innerRef.current;
+    if (!outer || !inner) return;
+    const fit = () => {
+      const naturalWidth = inner.scrollWidth;
+      const naturalHeight = inner.offsetHeight;
+      const available = outer.clientWidth;
+      const next = naturalWidth > available ? available / naturalWidth : 1;
+      setScale(next);
+      setHeight(naturalHeight * next);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(outer);
+    return () => ro.disconnect();
+  }, [etapas]);
+
+  return (
+    <div ref={outerRef} className="overflow-hidden" style={{ height }}>
+      <div ref={innerRef} className="flex items-center gap-1.5 w-max"
+        style={{ transform: `scale(${scale})`, transformOrigin: 'left center' }}>
+        {etapas.map((etapa, i) => (
+          <div key={etapa} className="flex items-center gap-1.5 shrink-0">
+            <span className="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap"
+              style={{ background: `${CW.purple}22`, border: `1px solid ${CW.purple}44`, color: '#D4A8FF' }}>
+              {etapa}
+            </span>
+            {i < etapas.length - 1 && (
+              <ArrowRight className="h-3 w-3 shrink-0" style={{ color: `${CW.purple}66` }} />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function StatIcon({ type }: { type: Stat['icon'] }) {
   if (type === 'trending') return <TrendingUp className="h-5 w-5" style={{ color: CW.gold }} />;
   if (type === 'star')     return <Star        className="h-5 w-5" style={{ color: CW.gold }} />;
@@ -298,20 +343,7 @@ function DetailModal({ membro, onClose }: { membro: MembroHall; onClose: () => v
           </div>
 
           {/* Jornada */}
-          <div className="flex items-center gap-1.5">
-            {membro.jornada.map((etapa, i) => (
-              <div key={etapa} className="flex items-center gap-1.5 min-w-0 flex-1">
-                <span title={etapa}
-                  className="block w-full truncate px-2 py-1 rounded-full text-center text-[10px] sm:text-xs font-bold"
-                  style={{ background: `${CW.purple}22`, border: `1px solid ${CW.purple}44`, color: '#D4A8FF' }}>
-                  {etapa}
-                </span>
-                {i < membro.jornada.length - 1 && (
-                  <ArrowRight className="h-3 w-3 shrink-0" style={{ color: `${CW.purple}66` }} />
-                )}
-              </div>
-            ))}
-          </div>
+          <JornadaRow etapas={membro.jornada} />
 
           {/* História */}
           <p className="text-sm leading-relaxed flex-1" style={{ color: 'rgba(212,168,255,0.7)' }}>
