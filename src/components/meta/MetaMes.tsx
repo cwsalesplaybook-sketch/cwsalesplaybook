@@ -23,7 +23,7 @@ function norm(s: string) {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
 
-interface MetaData { meta1: number; meta2: number; meta3: number; mega1: number; mega2: number; mega3: number; ajuste: number; sdrId: string; }
+interface MetaData { meta1: number; meta2: number; meta3: number; mega1: number; mega2: number; mega3: number; ajuste: number; sdrId: string; diasUteis: number | null; }
 interface ApiData { ganhos: number; mes: string; diasUteisTotal: number; diasPassados: number; diasRestantes: number; }
 
 /** Dias úteis (seg-sex) do mês corrente, já passados/restantes — usado como
@@ -185,6 +185,20 @@ function ConfigModal({ metaData, nomeDetectado, vinculoConfirmado, onSave, onClo
               </div>
             ))}
           </div>
+
+          <div className="border-t border-cw-border pt-4">
+            <label className="flex items-center gap-1.5 text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5">
+              <Calendar className="h-3.5 w-3.5" /> Dias Úteis Restantes <span className="font-normal text-cw-muted normal-case">(opcional)</span>
+            </label>
+            <input
+              type="number" min={0}
+              value={form.diasUteis ?? ''}
+              onChange={e => setForm(f => ({ ...f, diasUteis: e.target.value === '' ? null : Math.max(0, Number(e.target.value)) }))}
+              placeholder="Automático"
+              className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text placeholder:text-cw-muted focus:outline-none focus:border-cw-purple"
+            />
+            <p className="text-[10px] text-cw-muted mt-1">Por padrão conta os dias úteis do mês automaticamente. Preencha pra sobrepor, ou deixe em branco pra manter o automático.</p>
+          </div>
         </div>
         <button
           onClick={() => {
@@ -205,7 +219,7 @@ function ConfigModal({ metaData, nomeDetectado, vinculoConfirmado, onSave, onClo
 
 function PersonalMetaView() {
   const navigate = useNavigate();
-  const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, sdrId: '' });
+  const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, sdrId: '', diasUteis: null });
   const [apiData, setApiData]     = useState<ApiData | null>(null);
   const [loading, setLoading]     = useState(false);
   const [config, setConfig]       = useState(false);
@@ -251,7 +265,7 @@ function PersonalMetaView() {
 
     const { data } = await supabase.from('user_metas').select('*').eq('user_id', session.user.id).eq('mes', mesAtual).single();
     if (data) {
-      setMetaData({ meta1: data.meta1, meta2: data.meta2, meta3: data.meta3, mega1: data.mega1 ?? 0, mega2: data.mega2 ?? 0, mega3: data.mega3 ?? 0, ajuste: data.ajuste, sdrId: data.sdr_id });
+      setMetaData({ meta1: data.meta1, meta2: data.meta2, meta3: data.meta3, mega1: data.mega1 ?? 0, mega2: data.mega2 ?? 0, mega3: data.mega3 ?? 0, ajuste: data.ajuste, sdrId: data.sdr_id, diasUteis: data.dias_uteis ?? null });
       // Já tem um vínculo salvo (desta sessão ou de antes) — trata como confirmado
       // pra não pedir o nome de novo toda vez que reabrir "Configurar Metas".
       if (data.sdr_id) {
@@ -335,7 +349,7 @@ function PersonalMetaView() {
   }, [metaData.sdrId, buscarGanhos]);
 
   const salvarConfig = async (novosDados: MetaData) => {
-    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: novosDados.sdrId, meta1: novosDados.meta1, meta2: novosDados.meta2, meta3: novosDados.meta3, mega1: novosDados.mega1, mega2: novosDados.mega2, mega3: novosDados.mega3, ajuste: novosDados.ajuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
+    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: novosDados.sdrId, meta1: novosDados.meta1, meta2: novosDados.meta2, meta3: novosDados.meta3, mega1: novosDados.mega1, mega2: novosDados.mega2, mega3: novosDados.mega3, ajuste: novosDados.ajuste, dias_uteis: novosDados.diasUteis, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
     setMetaData(novosDados);
     setConfig(false);
     if (novosDados.sdrId) buscarGanhos(novosDados.sdrId, true);
@@ -364,7 +378,9 @@ function PersonalMetaView() {
   const diasLocal = calcularDiasUteis();
   const diasUteisTotal = apiData?.diasUteisTotal ?? diasLocal.diasUteisTotal;
   const diasPassados   = apiData?.diasPassados   ?? diasLocal.diasPassados;
-  const diasRestantes  = apiData?.diasRestantes  ?? diasLocal.diasRestantes;
+  // Por padrão conta os dias úteis automaticamente (API do backend, com fallback de
+  // calendário); o valor manual configurado em "Dias Úteis Restantes" sobrepõe os dois.
+  const diasRestantes  = metaData.diasUteis ?? apiData?.diasRestantes ?? diasLocal.diasRestantes;
   const metaReferencia = meta3 || meta2 || meta1;
   const status   = getStatus(totalGanhos, meta1, diasPassados, diasUteisTotal);
   const forecast = getMensagemStatus(totalGanhos, [
