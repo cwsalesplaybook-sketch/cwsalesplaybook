@@ -211,7 +211,7 @@ const GUIDE_SECTIONS = [
     bg: 'bg-teal-400/10',
     border: 'border-teal-400/20',
     items: [
-      { action: 'Faixas salariais e critérios', how: 'Todos os campos de cada nível são editáveis inline' },
+      { action: 'Base salarial e critérios', how: 'Todos os campos de cada nível são editáveis inline' },
       { action: 'Metas de comissão', how: 'Clique nos valores para editar diretamente' },
       { action: 'Critérios de elegibilidade', how: 'Texto clicável no Modo Gestor' },
     ],

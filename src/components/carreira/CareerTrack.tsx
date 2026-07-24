@@ -1,9 +1,9 @@
 /** Trilha de carreira com evolução salarial visual.
  *  Mostra: barras comparativas de OTE, cards expansíveis por nível,
  *  tabela de comissões por meta e critérios de elegibilidade.
- *  Tudo editável no Modo Gestor (níveis, faixas, valores, critérios). */
+ *  Tudo editável no Modo Gestor (níveis, valores, critérios). */
 import { useState } from 'react';
-import { Star, TrendingUp, Wallet, Target, ChevronDown, Trash2, Plus } from 'lucide-react';
+import { TrendingUp, Wallet, Target, ChevronDown, Trash2, Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { NIVEIS, NIVEL_ORDER, brl } from '@/data/carreira';
@@ -60,7 +60,7 @@ export function CareerTrack() {
     update([...niveis, {
       id, nome: 'NOVO', baseSalarial: 0,
       faixas: [{
-        nome: 'Faixa 1 — Base', criterioElegibilidade: 'Critério.',
+        nome: 'Metas', criterioElegibilidade: 'Critério.',
         meta1: { percentual: 0.2, valor: 0, ote: 0 },
         meta2: { percentual: 0.25, valor: 0, ote: 0 },
         meta3: { percentual: 0.3, valor: 0, ote: 0 },
@@ -242,22 +242,8 @@ export function CareerTrack() {
                     </div>
                   )}
                   {n.faixas.map((f, fIdx) => {
-                    const isEstrela = f.nome.toLowerCase().includes('estrela');
                     return (
-                      <div
-                        key={fIdx}
-                        className={cn(
-                          'rounded-lg border p-4',
-                          isEstrela ? 'bg-cw-yellow/5 border-cw-yellow/30' : 'bg-cw-bg border-cw-border',
-                        )}
-                      >
-                        <div className="flex items-center gap-2 mb-3">
-                          {isEstrela && <Star className="h-4 w-4 text-cw-yellow fill-cw-yellow" />}
-                          <h4 className={cn('font-bold', isEstrela ? 'text-cw-yellow' : 'text-cw-text')}>
-                            <EditableText storeKey={`${STORE_KEY}.${idxInList}.faixas.${fIdx}.nome`} defaultValue={f.nome} className="font-bold" />
-                          </h4>
-                        </div>
-
+                      <div key={fIdx} className="rounded-lg border p-4 bg-cw-bg border-cw-border">
                         {(f.meta1 || f.meta2 || f.meta3) && (
                           <div className="overflow-x-auto -mx-2 px-2 mb-3">
                             <table className="w-full text-sm">
@@ -353,21 +339,8 @@ export function CareerTrack() {
               </DialogHeader>
               <div className="space-y-4 mt-2">
                 {selected.faixas.map((f, fIdx) => {
-                  const isEstrela = f.nome.toLowerCase().includes('estrela');
                   return (
-                    <div
-                      key={fIdx}
-                      className={cn(
-                        'border rounded-lg p-4',
-                        isEstrela ? 'border-cw-yellow/40 bg-cw-yellow/5' : 'border-cw-border bg-cw-bg',
-                      )}
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        {isEstrela && <Star className="h-4 w-4 text-cw-yellow fill-cw-yellow" />}
-                        <h4 className={cn('font-bold', isEstrela ? 'text-cw-yellow' : 'text-cw-purple-light')}>
-                          {f.nome}
-                        </h4>
-                      </div>
+                    <div key={fIdx} className="border rounded-lg p-4 border-cw-border bg-cw-bg">
                       {f.meta3 && (
                         <div className="grid grid-cols-3 gap-2 mb-3 text-center">
                           {(['meta1', 'meta2', 'meta3'] as const).map((mk, i) => {

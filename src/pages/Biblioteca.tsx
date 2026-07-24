@@ -26,7 +26,9 @@ const LIVROS: Secao[] = [
       { titulo: 'SPIN Selling', autor: 'Neil Rackham', resumo: 'Metodologia baseada em perguntas de Situação, Problema, Implicação e Necessidade para grandes vendas.', pdf: '/livros/spin-selling.pdf' },
       { titulo: 'A Venda Desafiadora', autor: 'Matthew Dixon e Brent Adamson', resumo: 'Como SDRs de alta performance ensinam, personalizam e controlam a conversa de vendas.', pdf: '/livros/a-venda-desafiadora.pdf' },
       { titulo: 'Objeções', autor: 'Jeb Blount', resumo: 'Guia definitivo para dominar a arte e a ciência de superar o não em cada etapa do processo de vendas.', pdf: '/livros/objecoes.pdf' },
-      { titulo: 'Inteligência Emocional em Vendas', autor: 'Jeb Blount', resumo: 'Como os vendedores de alta performance usam a inteligência emocional para fechar negócios complexos.', pdf: '/livros/inteligencia-emocional-em-vendas.pdf' },
+      { titulo: 'Inteligência Emocional em Vendas', autor: 'Jeb Blount', resumo: 'Como os supervendedores usam a inteligência emocional para se conectar com os leads e fechar mais negócios.', pdf: '/livros/inteligencia-emocional-em-vendas.pdf' },
+      { titulo: 'Alcançando a Excelência em Vendas para Grandes Clientes', autor: 'Robert B. Miller e Stephen E. Heiman', resumo: 'Táticas e estratégias para chegar a quem decide a compra e vencer a concorrência em vendas para grandes clientes.' },
+      { titulo: 'Vendas Virtuais', autor: 'Jeb Blount', resumo: 'Como usar vídeo, telefone, mensagens e redes sociais para engajar clientes, avançar o pipeline e fechar negócios à distância.' },
     ],
   },
   {
@@ -35,37 +37,81 @@ const LIVROS: Secao[] = [
       { titulo: 'Receita Previsível', autor: 'Aaron Ross', resumo: 'O livro que criou o modelo de SDR. Como construir um motor de geração de leads previsível.', pdf: '/livros/receita-previsivel.pdf' },
       { titulo: 'Gestão de Alta Performance', autor: 'Andrew Grove', resumo: 'Fundamentos de gestão para líderes que querem extrair o máximo de seus times.', pdf: '/livros/gestao-de-alta-performance.pdf' },
       { titulo: 'O Pipeline de Vendas', autor: 'Mike Weinberg', resumo: 'Como criar, gerenciar e maximizar o pipeline para bater metas consistentemente.' },
+      { titulo: 'BE 2.0', autor: 'Jim Collins', resumo: 'Roteiro para líderes de pequenas e médias empresas construírem organizações sólidas e duradouras.' },
+      { titulo: 'Pipeline de Liderança', autor: 'Ram Charan, Stephen Drotter e James Noel', resumo: 'A arquitetura interna para desenvolver gestores capacitados em todos os níveis da organização.' },
+      { titulo: 'Hipercrescimento', autor: 'Aaron Ross e Jason Lemkin', resumo: 'Diagnóstico das razões pelas quais uma empresa não cresce mais rápido e como sair da estagnação.' },
+      { titulo: 'Comece Pelo Porquê', autor: 'Simon Sinek', resumo: 'Por que empresas e líderes mais admirados e influentes são movidos por um forte senso de propósito.' },
+      { titulo: 'A Meta', autor: 'Eliyahu M. Goldratt', resumo: 'Romance sobre melhoria contínua e como resolver gargalos de produção e receita numa organização.' },
+      { titulo: 'The Sales Acceleration Formula', autor: 'Mark Roberge', resumo: 'Abordagem escalável e previsível para crescer receita e construir um time de vendas vencedor.' },
+      { titulo: 'Scaling Up', autor: 'Verne Harnish', resumo: 'Guia para crescimento sustentável equilibrando Pessoas, Estratégia, Execução e Caixa.' },
+      { titulo: 'The Sales Development Playbook', autor: 'Trish Bertuzzi', resumo: 'Seis elementos para construir pipeline recorrente e acelerar o crescimento com inside sales.' },
+      { titulo: 'The SaaS Sales Method: Sales As a Science', autor: 'Jacco van der Kooij e Fernando Pizarro', resumo: 'Primeiro livro da série Sales Blueprints — a ciência por trás das vendas em receita recorrente.' },
+      { titulo: 'Blueprints for a SaaS Sales Organization', autor: 'Jacco van der Kooij e Fernando Pizarro', resumo: 'Como desenhar, construir e escalar uma organização de vendas centrada no cliente.' },
+      { titulo: 'The SaaS Sales Method Fundamentals', autor: 'Jacco van der Kooij e Fernando Pizarro', resumo: 'Como toda a organização se comunica com o cliente, em cada canal e interação.' },
+      { titulo: 'The SaaS Sales Method for SDRs', autor: 'Jacco van der Kooij e Fernando Pizarro', resumo: 'As técnicas mais avançadas de prospecção para Sales Development Representatives.' },
+      { titulo: 'The SaaS Sales Method for Account Executives', autor: 'Jacco van der Kooij e Fernando Pizarro', resumo: 'Como vencer clientes com ciclos de venda mais curtos, contratos menores e menos tempo de treinamento.' },
+      { titulo: 'The SaaS Sales Method for Customer Success & Account Managers', autor: 'Jacco van der Kooij e Fernando Pizarro', resumo: 'Como Customer Success e Account Managers aplicam as habilidades fundamentais de vendas para fazer o cliente crescer.' },
     ],
   },
   {
     categoria: 'Técnicas de Negociação',
     livros: [
-      { titulo: 'Nunca Divida a Diferença', autor: 'Chris Voss', resumo: 'Técnicas de negociação do FBI aplicadas em vendas, baseadas em empatia e inteligência tática.', pdf: '/livros/nunca-divida-a-diferenca.pdf' },
+      { titulo: 'Negocie Como Se Sua Vida Dependesse Disso', autor: 'Chris Voss', resumo: 'Nove princípios contraintuitivos de negociação de alto risco, do ex-negociador de reféns do FBI.', pdf: '/livros/nunca-divida-a-diferenca.pdf' },
       { titulo: 'Como Chegar ao Sim', autor: 'Roger Fisher e William Ury', resumo: 'Método de Harvard para negociação baseada em princípios, não em posições.' },
+      { titulo: 'Negocie Qualquer Coisa com Qualquer Pessoa', autor: 'Eduardo Ferraz', resumo: 'Técnicas práticas para obter ótimos resultados em pequenos e grandes acordos do dia a dia.' },
     ],
   },
   {
-    categoria: 'Persuasão',
+    categoria: 'Técnicas de Persuasão',
     livros: [
       { titulo: 'As Armas da Persuasão', autor: 'Robert Cialdini', resumo: 'Os 6 princípios da influência que todo vendedor precisa dominar: reciprocidade, compromisso, prova social, autoridade, afinidade e escassez.' },
       { titulo: 'Pré-suasão', autor: 'Robert Cialdini', resumo: 'Como o que acontece antes da sua mensagem de vendas determina se ela vai funcionar.' },
+      { titulo: 'Manual de Persuasão do FBI', autor: 'Jack Schafer', resumo: 'Estratégias do Programa de Análise Comportamental do FBI para entrevistar, detectar mentiras e influenciar no dia a dia.' },
+      { titulo: 'Como Fazer Amigos e Influenciar Pessoas', autor: 'Dale Carnegie', resumo: 'Clássico atemporal sobre relacionamentos humanos, empatia e comunicação eficaz.' },
     ],
   },
   {
     categoria: 'Comunicação',
     livros: [
-      { titulo: 'Como Fazer Amigos e Influenciar Pessoas', autor: 'Dale Carnegie', resumo: 'Clássico atemporal sobre relacionamentos humanos, empatia e comunicação eficaz.' },
       { titulo: 'Comunicação Não-Violenta', autor: 'Marshall Rosenberg', resumo: 'Técnicas para comunicar necessidades e ouvi-las no outro sem gerar conflito.' },
+      { titulo: 'Empatia Assertiva', autor: 'Kim Scott', resumo: 'Como se importar pessoalmente com as pessoas e ao mesmo tempo confrontá-las diretamente, sem cair na agressividade nem na insinceridade.' },
+      { titulo: 'Como Convencer Alguém em 90 Segundos', autor: 'Nicholas Boothman', resumo: 'Como usar rosto, corpo, atitude e voz para causar uma primeira impressão marcante e criar conexões duradouras.' },
     ],
   },
 ];
 
-interface PodcastItem { nome: string; descrição: string; plataforma: string }
-const PODCASTS: PodcastItem[] = [
-  { nome: 'Papo de Vendedor', descrição: 'Conversas profundas sobre técnicas, mentalidade e carreira em vendas no Brasil.', plataforma: 'Spotify / Apple Podcasts' },
-  { nome: 'Jornada do Herói das Vendas', descrição: 'Entrevistas com vendedores de alta performance sobre seus processos e histórias reais.', plataforma: 'Spotify' },
-  { nome: 'Café com ADM', descrição: 'Gestão comercial, estratégia e liderança de times de vendas.', plataforma: 'YouTube / Spotify' },
-  { nome: 'Venda Com Propósito', descrição: 'Técnicas consultivas, prospecção e construção de relacionamentos de longo prazo.', plataforma: 'Spotify' },
+interface PodcastItem { titulo: string; link: string }
+interface SecaoPodcast { categoria: string; podcasts: PodcastItem[] }
+
+const PODCASTS: SecaoPodcast[] = [
+  {
+    categoria: 'Vendas',
+    podcasts: [
+      { titulo: 'Transformando suas reuniões de vendas em espetáculo, com Maria Valadares', link: 'https://open.spotify.com/episode/3yt7gj5kIBvHWmXS6zraDy' },
+      { titulo: 'Mitos da prospecção por telefone e como diferenciar sua cold-call, com Myrian Mourão', link: 'https://open.spotify.com/episode/6zF7jQGJ4ShfaqDsV5q0Wl' },
+    ],
+  },
+  {
+    categoria: 'Gestão de Vendas',
+    podcasts: [
+      { titulo: 'Forecast e previsibilidade em vendas: quais são as melhores práticas?, com Carlos Campos', link: 'https://open.spotify.com/episode/5eDRJj1j9wnUSHPxeSTLlW' },
+      { titulo: 'O que não te contam sobre ser líder de vendas, com Eduardo Rodrigues', link: 'https://open.spotify.com/episode/5QUXF6uj25X2ZvsoviVuuF' },
+      { titulo: 'Análises de Marketing a Vendas para fazer antes do segundo semestre, com Diego Cordovez', link: 'https://open.spotify.com/episode/6Fys7BjviH1Tj9Kb35sPAy' },
+      { titulo: 'How to Scale a Billion Dollar Sales Team, com John McMahon (Board Member, Snowflake)', link: 'https://open.spotify.com/episode/1SeFv3BDwYPVvbwufi2Od0' },
+      { titulo: 'Recrutando SDRs: como atrair e selecionar em pré-vendas, com Gustavo Marques', link: 'https://open.spotify.com/episode/3VXQv6a4MEVYuCunUB8V27' },
+      { titulo: 'Gestão Ágil em time de vendas: como identificar e solucionar problemas, com Bárbara Silvério', link: 'https://open.spotify.com/episode/2dX8mOQaya7jw8Fk0eBXJz' },
+      { titulo: 'Treinamento e Carreira em Vendas', link: 'https://open.spotify.com/episode/62Hx4M69shY5TXFtK4GmWZ' },
+      { titulo: 'Inteligência Comercial: a estratégia além das listas de prospecção, com Roberta Kuzolitz', link: 'https://open.spotify.com/episode/2MU6IbzM2O9xnG1XfL1hCj' },
+    ],
+  },
+  {
+    categoria: 'Gestão de Pré-vendas',
+    podcasts: [
+      { titulo: 'Como avaliar e otimizar uma operação de prospecção, com Felipe Traina', link: 'https://open.spotify.com/episode/0zfJPQP1Hou7Lg7FZ38RNg' },
+      { titulo: 'Como dimensionar uma operação de prospecção outbound', link: 'https://open.spotify.com/episode/6Q4I6xvwCEqIGd2144xgUR' },
+      { titulo: 'Geração de listas e enriquecimento de dados na prospecção, com Paulo Krieser', link: 'https://open.spotify.com/episode/3BOFRHuKiD1vkaksaMMoSQ' },
+    ],
+  },
 ];
 
 interface VideoItem { titulo: string; canal: string; descricao: string }
@@ -160,19 +206,30 @@ export default function Biblioteca() {
 
         {/* Podcasts */}
         {aba === 'podcasts' && (
-          <div className="grid sm:grid-cols-2 gap-4">
-            {PODCASTS.map(({ nome, descrição, plataforma }) => (
-              <div key={nome} className="cw-card p-5 space-y-2 hover:border-cw-purple/30 transition-colors">
-                <div className="flex items-start gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-emerald-500/15 flex items-center justify-center shrink-0">
-                    <Headphones className="h-4 w-4 text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm text-cw-text">{nome}</p>
-                    <p className="text-[11px] text-cw-muted/60 font-medium">{plataforma}</p>
-                  </div>
+          <div className="space-y-6">
+            {PODCASTS.map(({ categoria, podcasts }) => (
+              <div key={categoria} className="space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-cw-purple-light">{categoria}</h3>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {podcasts.map(({ titulo, link }) => (
+                    <a
+                      key={titulo + link}
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="cw-card p-4 flex items-start gap-3 hover:border-cw-purple/50 transition-colors"
+                    >
+                      <div className="h-9 w-9 rounded-lg bg-emerald-500/15 flex items-center justify-center shrink-0">
+                        <Headphones className="h-4 w-4 text-emerald-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-cw-text leading-snug">{titulo}</p>
+                        <p className="text-[11px] text-cw-muted/60 font-medium mt-1">Spotify</p>
+                      </div>
+                      <ExternalLink className="h-4 w-4 text-cw-muted/40 shrink-0 mt-0.5" />
+                    </a>
+                  ))}
                 </div>
-                <p className="text-xs text-cw-muted leading-relaxed">{descrição}</p>
               </div>
             ))}
           </div>
