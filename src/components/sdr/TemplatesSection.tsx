@@ -53,34 +53,34 @@ function TemplateCard({ t, fav, onFav, editing, onEdit, onDelete }: {
     });
   };
   return (
-    <div className="cw-card p-3 flex flex-col gap-2">
+    <div className="cw-card p-4 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-bold text-xs text-cw-text leading-tight">{t.titulo}</p>
-          <p className="text-[10px] text-cw-muted mt-0.5">{t.categoria}</p>
+          <p className="font-bold text-sm text-cw-text leading-tight">{t.titulo}</p>
+          <p className="text-[11px] text-cw-muted mt-0.5">{t.categoria}</p>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button onClick={onFav} title="Favoritar" className={cn('transition-colors', fav ? 'text-cw-yellow' : 'text-cw-muted hover:text-cw-yellow')}>
-            <Star className={cn('h-3.5 w-3.5', fav && 'fill-current')} />
+            <Star className={cn('h-4 w-4', fav && 'fill-current')} />
           </button>
           {editing && (
             <>
-              <button onClick={onEdit} title="Editar" className="text-cw-muted hover:text-cw-purple-light"><Pencil className="h-3 w-3" /></button>
-              <button onClick={onDelete} title="Excluir" className="text-cw-muted hover:text-red-400"><Trash2 className="h-3 w-3" /></button>
+              <button onClick={onEdit} title="Editar" className="text-cw-muted hover:text-cw-purple-light"><Pencil className="h-3.5 w-3.5" /></button>
+              <button onClick={onDelete} title="Excluir" className="text-cw-muted hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
             </>
           )}
         </div>
       </div>
-      <p className="text-xs text-cw-text font-mono bg-cw-elevated border border-cw-border rounded-lg px-2 py-1.5 leading-relaxed flex-1 break-words">{t.atalho}</p>
-      {t.mensagem && <p className="text-[11px] text-cw-muted leading-relaxed whitespace-pre-line">{t.mensagem}</p>}
+      <p className="text-sm text-cw-text font-mono bg-cw-elevated border border-cw-border rounded-lg px-2.5 py-2 leading-relaxed flex-1 break-words">{t.atalho}</p>
+      {t.mensagem && <p className="text-xs text-cw-muted leading-relaxed whitespace-pre-line">{t.mensagem}</p>}
       <button
         onClick={copy}
         className={cn(
-          'w-full flex items-center justify-center gap-1.5 text-xs font-medium py-1.5 rounded-lg border transition-colors',
+          'w-full flex items-center justify-center gap-1.5 text-sm font-medium py-2.5 rounded-xl border transition-colors',
           copied ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300' : 'bg-cw-elevated border-cw-border text-cw-text hover:bg-cw-surface',
         )}
       >
-        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         {copied ? 'Copiado!' : 'Copiar atalho'}
       </button>
     </div>
@@ -217,7 +217,7 @@ export function TemplatesSection() {
           <p className="text-sm text-cw-muted">Nenhum atalho neste filtro.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtrados.map(t => (
             <TemplateCard
               key={t.id} t={t} fav={favs.has(t.id)} onFav={() => toggleFav(t.id)}
