@@ -1,0 +1,13 @@
+{
+  "name": "rag-ingest",
+  "private": true,
+  "type": "module",
+  "description": "Script standalone de ingestão da base de conhecimento do RAG (Tira-dúvidas / ClarIA). Não faz parte do bundle do app — roda manualmente via `node index.mjs`.",
+  "scripts": {
+    "ingest": "node index.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.104.0",
+    "xlsx": "^0.18.5"
+  }
+}

@@ -1,14 +1,17 @@
 /** Tira-dúvidas — chat único e contínuo (estilo WhatsApp) com roteamento
  *  100% automático pra pessoa certa do time. O SDR escolhe um TÓPICO e uma
  *  pergunta pré-cadastrada (ou digita livremente) — nunca escolhe quem
- *  responde, isso é sempre automático (src/lib/matchDuvida.ts). Sem IA
- *  generativa: banco fixo em src/data/tiraDuvidas.ts. Fora do banco, cai no
- *  fallback com o Slack da pessoa responsável. */
+ *  responde, isso é sempre automático (src/lib/matchDuvida.ts). Fora do
+ *  banco curado, cai no RAG da ClarIA (src/lib/tiraDuvidasRag.ts), que busca
+ *  na base de conhecimento real (Confluence, Sheets, Central de Ajuda, docs
+ *  da API) e gera a resposta. Se nem o RAG tiver contexto, cai no fallback
+ *  com o Slack da pessoa responsável. */
 import { useEffect, useRef, useState } from 'react';
 import { MessageCircleQuestion, Send, Sparkles, ArrowRight, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TIRA_DUVIDAS_PERSONAS, type DuvidaPersona } from '@/data/tiraDuvidas';
 import { routeDuvida, suggestDuvidas, type DuvidaSugestao } from '@/lib/matchDuvida';
+import { askRag } from '@/lib/tiraDuvidasRag';
 
 interface Mensagem {
   id: string;
@@ -126,20 +129,33 @@ export default function TiraDuvidas() {
     setMensagens((prev) => [...prev, { id: `sdr-${Date.now()}`, autor: 'sdr', texto }]);
     setPensando(true);
 
-    buscaRef.current = setTimeout(() => {
+    buscaRef.current = setTimeout(async () => {
       const { persona, item } = routeDuvida(texto, TIRA_DUVIDAS_PERSONAS);
+
+      let corpo: string;
+      let ehFallback: boolean;
+      if (item) {
+        corpo = item.resposta;
+        ehFallback = false;
+      } else {
+        const respostaRag = await askRag(texto, persona);
+        if (respostaRag) {
+          corpo = respostaRag;
+          ehFallback = false;
+        } else {
+          corpo = `Isso ainda não tá documentado no meu playbook. Já te encaminhei pro Slack d${persona.artigo} ${persona.nome} (${persona.slack}) pra garantir a resposta certa.`;
+          ehFallback = true;
+        }
+      }
 
       const primeiraVez = !apresentadosRef.current.has(persona.id);
       apresentadosRef.current.add(persona.id);
-      const corpo = item
-        ? item.resposta
-        : `Isso ainda não tá documentado no meu playbook. Já te encaminhei pro Slack d${persona.artigo} ${persona.nome} (${persona.slack}) pra garantir a resposta certa.`;
       const resposta = primeiraVez ? `${persona.saudacao}\n\n${corpo}` : corpo;
 
       setMensagens((prev) => {
         const ultimaPersonaMsg = [...prev].reverse().find((m) => m.autor === 'persona');
         const trocouDePersona = !ultimaPersonaMsg || ultimaPersonaMsg.persona?.id !== persona.id;
-        return [...prev, { id: `resp-${Date.now()}`, autor: 'persona', texto: resposta, intro: trocouDePersona, fallback: !item, persona }];
+        return [...prev, { id: `resp-${Date.now()}`, autor: 'persona', texto: resposta, intro: trocouDePersona, fallback: ehFallback, persona }];
       });
       setPensando(false);
     }, PENSANDO_MS);
@@ -172,7 +188,8 @@ export default function TiraDuvidas() {
             <h1 className="text-lg font-black text-cw-text leading-tight">Tira-dúvidas</h1>
             <p className="text-xs text-cw-muted leading-tight">
               Base de conhecimento oficial das lideranças — escolha um tópico ou pergunte, a resposta certa
-              chega automaticamente. Fora do banco, encaminha pro Slack da pessoa responsável.
+              chega automaticamente. Fora do banco curado, a ClarIA busca na base real do time; se nem ela
+              souber, encaminha pro Slack da pessoa responsável.
             </p>
           </div>
         </div>
