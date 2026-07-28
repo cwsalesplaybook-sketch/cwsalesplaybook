@@ -128,6 +128,64 @@ export const TIRA_DUVIDAS_PERSONAS: DuvidaPersona[] = [
     ],
   },
   {
+    id: 'anderson',
+    artigo: 'o',
+    nome: 'Andy',
+    cargo: 'Anderson · Liderança de Pré-Vendas',
+    foto: '/tira-duvidas/anderson.jpg',
+    slack: '@anderson',
+    topico: 'Scripts & Objeções',
+    tema: 'Scripts, SPIN, cold call e contorno de objeções',
+    saudacao: 'Oi, tudo bem? Sou o Andy. Vou verificar.',
+    perguntas: [
+      {
+        pergunta: 'Como aplicar o SPIN Selling numa ligação?',
+        palavrasChave: ['spin', 'situacao', 'problema', 'implicacao', 'necessidade'],
+        resposta: 'S — Situação: entende o contexto atual ("Quantos pedidos você recebe por dia? E no WhatsApp?").\nP — Problema: identifica a dor ("Já recebeu reclamação por demora ou pedido errado?").\nI — Implicação: amplia o impacto ("Como isso afeta suas vendas?").\nN — Necessidade de Solução: faz o lead articular o valor ("Se o atendimento fosse automático, que vantagem isso traria?").',
+      },
+      {
+        pergunta: 'Como estruturar uma cold call com AIDA?',
+        palavrasChave: ['aida', 'cold call', 'prospeccao', 'ligacao fria'],
+        resposta: 'A — Atenção: introdução + rapport + pede 2 minutos.\nI — Interesse: fala do aumento de 10 a 30% nas vendas, cita prova social (Domino\'s, Cacau Show etc.).\nD — Desejo: aplica o SPIN em cima do que viu no Instagram do lead.\nA — Ação: contorna objeção com a matriz, marca a videochamada e usa gatilho de compromisso pra confirmar.',
+      },
+      {
+        pergunta: 'O lead quer fechar direto pelo WhatsApp e não quer entrar na call, o que eu faço?',
+        palavrasChave: ['whatsapp', 'sem call', 'nao quer reuniao', 'videochamada'],
+        resposta: 'Reforça que a call é curta (30 min) e é o momento de tirar dúvidas e validar se a ferramenta serve pra operação dele antes de contratar. Oferece um horário específico ainda hoje: "Tenho horário disponível às [horário], você teria disponibilidade?"',
+      },
+      {
+        pergunta: 'O lead tá impaciente com as perguntas de qualificação, como conduzo?',
+        palavrasChave: ['impaciente', 'insatisfeito', 'qualificacao', 'perguntas demais'],
+        resposta: 'Tenta ligar pro lead; se não conseguir, abre exceção no processo e responde direto às perguntas dele, buscando marcar a reunião rápido: "Entendo que você tá com pressa, mas preciso entender sua operação pra te passar o plano certo. Qual dificuldade te fez se interessar pelo sistema?"',
+      },
+      {
+        pergunta: 'O lead pediu material com preços e funcionalidades antes da call, o que respondo?',
+        palavrasChave: ['material', 'pdf', 'antes da call', 'enviar preco'],
+        resposta: 'Explica que na videochamada o especialista mostra tudo personalizado pra operação dele, e ali mesmo já tira as dúvidas que apareceriam se ele visse um material sozinho — evita que ele avalie sem contexto.',
+      },
+      {
+        pergunta: 'O lead quer prioridade urgente na ativação, posso prometer?',
+        palavrasChave: ['urgencia', 'prioridade', 'inauguracao', 'prazo'],
+        resposta: 'Pode condicionar o fechamento à prioridade ("Se eu conseguir isso pra você, fechamos hoje?"), mas NÃO promete sozinho — precisa consultar as lideranças de Implementação e Ativação no grupo #prioridades_de_clientes no Slack antes de confirmar pro lead.',
+      },
+      {
+        pergunta: 'O lead disse que a ferramenta que ele já usa tem tudo que a gente tem, como contorno?',
+        palavrasChave: ['concorrente', 'ja uso', 'outra ferramenta'],
+        resposta: 'Pergunta se ele identifica algum ponto de melhoria no sistema atual — é comum ferramentas concorrentes parecerem completas mas terem funcionalidades incompletas ou em módulos separados. "O que você usa hoje e sente que poderia ser melhor?"',
+      },
+      {
+        pergunta: 'O lead disse que as vendas dele estão fracas e não é bom momento, como contorno?',
+        palavrasChave: ['ceticismo', 'vendas fracas', 'nao e bom momento'],
+        resposta: 'Pergunta se ele já teve dificuldade de atender no WhatsApp e se isso compromete o atendimento. Automatizando esse processo ele evita perder pedidos e ainda constrói base de clientes pra fidelizar — justamente pra reverter esse momento fraco.',
+      },
+      {
+        pergunta: 'O lead pediu pra mandar por WhatsApp e ele dá retorno depois, como contorno?',
+        palavrasChave: ['manda no whatsapp', 'depois eu vejo', 'dispensa'],
+        resposta: 'Tudo bem passar por WhatsApp, mas antes pergunta qual o principal desafio da operação dele — assim você manda exatamente o que faz sentido pra ele avaliar, em vez de material genérico.',
+      },
+    ],
+  },
+  {
     id: 'vithoria',
     artigo: 'a',
     nome: 'Vivi',
