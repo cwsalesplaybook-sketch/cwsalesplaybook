@@ -1,6 +1,7 @@
 /** Motor de busca do Tira-dúvidas — casa a pergunta livre do SDR com a
- *  pergunta pré-cadastrada mais próxima dentro da persona selecionada.
- *  Sem IA generativa: é só sobreposição de palavras-chave normalizadas. */
+ *  pergunta pré-cadastrada mais próxima, roteando pra pessoa certa sem
+ *  seleção manual. Sem IA generativa: é só sobreposição de palavras-chave
+ *  normalizadas. */
 import type { DuvidaItem, DuvidaPersona } from '@/data/tiraDuvidas';
 
 const STOPWORDS = new Set([
@@ -23,28 +24,6 @@ function normalize(text: string): string[] {
     .replace(/[^a-z0-9\s]/g, ' ')
     .split(/\s+/)
     .filter((w) => w.length > 2 && !STOPWORDS.has(w));
-}
-
-/** Retorna a pergunta pré-cadastrada com maior sobreposição de termos, ou
- *  null se nenhuma bater o suficiente pra valer a pena mostrar. */
-export function matchDuvida(query: string, persona: DuvidaPersona): DuvidaItem | null {
-  const queryTokens = new Set(normalize(query));
-  if (queryTokens.size === 0) return null;
-
-  let best: DuvidaItem | null = null;
-  let bestScore = 0;
-
-  for (const item of persona.perguntas) {
-    const itemTokens = normalize([item.pergunta, ...(item.palavrasChave ?? [])].join(' '));
-    let score = 0;
-    for (const t of itemTokens) if (queryTokens.has(t)) score++;
-    if (score > bestScore) {
-      bestScore = score;
-      best = item;
-    }
-  }
-
-  return bestScore >= 1 ? best : null;
 }
 
 export interface DuvidaRota {

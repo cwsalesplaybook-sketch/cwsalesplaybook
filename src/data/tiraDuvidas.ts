@@ -1,5 +1,6 @@
 /** Tira-dúvidas do SDR — "mini IAs" com respostas pré-curadas, uma por
- *  pessoa do time, roteadas manualmente (o SDR escolhe quem quer perguntar).
+ *  pessoa do time. O SDR escolhe o TÓPICO/pergunta, nunca a pessoa — o
+ *  roteamento pra persona certa é sempre automático (src/lib/matchDuvida.ts).
  *  Não usa IA generativa: cada persona tem um banco fixo de perguntas e
  *  respostas (ver src/lib/matchDuvida.ts pro motor de busca).
  *  Conteúdo das respostas puxado do que já existe no playbook (src/data/playbook.ts)
@@ -22,6 +23,8 @@ export interface DuvidaPersona {
   cargo: string;
   foto?: string;
   slack: string;
+  /** Rótulo curto do tópico, usado nos chips de tópico (não expõe a pessoa). */
+  topico: string;
   tema: string;
   saudacao: string;
   perguntas: DuvidaItem[];
@@ -35,8 +38,9 @@ export const TIRA_DUVIDAS_PERSONAS: DuvidaPersona[] = [
     cargo: 'Joelma Vieira · Liderança de Pré-Vendas (SDR)',
     foto: '/tira-duvidas/joelma.jpg',
     slack: '@joelma',
+    topico: 'Processo & Qualificação',
     tema: 'Processo de SDR, qualificação e passagem de bastão',
-    saudacao: 'Oi, tudo bem? Sou a versão tira-dúvidas da Jojo 👋 Cuido de processo de SDR, qualificação e passagem de bastão. Deixa eu ver isso pra você...',
+    saudacao: 'Oi, tudo bem? Sou a Jojo. Vou verificar.',
     perguntas: [
       {
         pergunta: 'Como funciona a passagem de bastão pro Closer?',
@@ -72,8 +76,9 @@ export const TIRA_DUVIDAS_PERSONAS: DuvidaPersona[] = [
     cargo: 'Pedro Ferreira · Liderança de Pré-Vendas',
     foto: '/tira-duvidas/pedro.jpg',
     slack: '@pedro',
+    topico: 'Scripts & Objeções',
     tema: 'Scripts, SPIN, cold call e contorno de objeções',
-    saudacao: 'Opa, tudo bem? Sou a versão tira-dúvidas do Pedrinho 🎯 Cuido de script, SPIN, cold call e contorno de objeção. Deixa eu ver isso pra você...',
+    saudacao: 'Oi, tudo bem? Sou o Pedrinho. Vou verificar.',
     perguntas: [
       {
         pergunta: 'Como aplicar o SPIN Selling numa ligação?',
@@ -129,8 +134,9 @@ export const TIRA_DUVIDAS_PERSONAS: DuvidaPersona[] = [
     cargo: 'Vithoria Rodrigues · Liderança de Pré-Vendas',
     foto: '/tira-duvidas/vithoria.jpg',
     slack: '@vithoria',
+    topico: 'Planos & Preços',
     tema: 'Planos, preços e parcerias',
-    saudacao: 'Oi, tudo bem? Sou a versão tira-dúvidas da Vivi 💜 Cuido de plano, preço, desconto e parcerias. Deixa eu ver isso pra você...',
+    saudacao: 'Oi, tudo bem? Sou a Vivi. Vou verificar.',
     perguntas: [
       {
         pergunta: 'Quais são os planos disponíveis e quanto custam?',
@@ -172,6 +178,11 @@ export const TIRA_DUVIDAS_PERSONAS: DuvidaPersona[] = [
         palavrasChave: ['achei caro', 'muito caro', 'objecao preco'],
         resposta: 'Se achou caro é porque ainda não vimos todo o valor da ferramenta juntos. O disparador de WhatsApp, por exemplo, costuma pagar vários meses de mensalidade com um único disparo bem feito — oferece mostrar como funciona.',
       },
+      {
+        pergunta: 'O lead pediu teste grátis, existe?',
+        palavrasChave: ['teste gratis', 'periodo de teste', 'garantia', 'reembolso', 'devolucao'],
+        resposta: 'Teste grátis a gente não tem, mas tem algo melhor: garantia de satisfação com reembolso integral, contada a partir da contratação. Planos mensal e trimestral têm 10 dias de garantia; semestral e anual têm 30 dias. Se não fizer sentido pra operação do lead, devolve sem burocracia.',
+      },
     ],
   },
   {
@@ -181,8 +192,9 @@ export const TIRA_DUVIDAS_PERSONAS: DuvidaPersona[] = [
     cargo: 'Gabrielly Oliveira · PSM',
     foto: '/tira-duvidas/bibi.jpg',
     slack: '@gabrielly',
+    topico: 'Produto',
     tema: 'Produto: Totem, ChatBot IA, WhatsApp/Meta e CW App Store',
-    saudacao: 'Oi, tudo bem? Sou a versão tira-dúvidas da Bibi 🤖 Cuido de Totem, ChatBot com IA, WhatsApp/Meta e CW App Store. Deixa eu ver isso pra você...',
+    saudacao: 'Oi, tudo bem? Sou a Bibi. Vou verificar.',
     perguntas: [
       {
         pergunta: 'O que é o Totem de Autoatendimento?',
