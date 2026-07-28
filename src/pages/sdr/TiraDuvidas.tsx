@@ -144,25 +144,16 @@ function ThinkingIndicator() {
   );
 }
 
-function TopBar({ mostrarReset, onResetar }: { mostrarReset: boolean; onResetar: () => void }) {
+function TopBar({ onResetar }: { onResetar: () => void }) {
   return (
     <div className="flex items-center justify-end gap-3 shrink-0">
-      {mostrarReset ? (
-        <button
-          type="button"
-          onClick={onResetar}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 text-xs font-semibold transition-all shrink-0"
-        >
-          <RotateCcw className="h-3.5 w-3.5" /> Resetar chat
-        </button>
-      ) : (
-        <button
-          type="button"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-cw-border bg-white text-cw-text text-xs font-semibold hover:border-cw-purple/40 transition-colors shadow-sm shrink-0"
-        >
-          <Slack className="h-3.5 w-3.5 text-cw-purple" /> Falar no Slack
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={onResetar}
+        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 text-xs font-semibold transition-all shrink-0"
+      >
+        <RotateCcw className="h-3.5 w-3.5" /> Resetar chat
+      </button>
     </div>
   );
 }
@@ -208,9 +199,15 @@ function Hero({
         </svg>
         <Star className="absolute top-9 left-[18%] h-4 w-4 text-cw-purple/30" />
         <Sparkles className="absolute bottom-20 right-[40%] h-4 w-4 text-cw-purple/25" />
-        <span className="absolute top-20 right-[14%] h-1.5 w-1.5 rounded-full bg-cw-yellow/60" />
         <span className="absolute bottom-16 left-[8%] h-1.5 w-1.5 rounded-full bg-[#FF5959]/50" />
       </div>
+
+      <button
+        type="button"
+        className="absolute right-6 top-6 z-10 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-cw-border bg-white text-cw-text text-xs font-semibold hover:border-cw-purple/40 transition-colors shadow-sm"
+      >
+        <Slack className="h-3.5 w-3.5 text-cw-purple" /> Falar no Slack
+      </button>
 
       <div className="relative grid md:grid-cols-2 gap-10 items-center w-full px-8 md:px-14 py-14 md:py-20">
         <div>
@@ -249,7 +246,12 @@ function Hero({
           </div>
         </div>
 
-        <div className="relative flex items-center justify-center h-[260px] sm:h-[340px] md:h-[420px]">
+        <div
+          className="relative flex items-center justify-center h-[260px] sm:h-[340px] md:h-[420px]"
+          style={{
+            background: 'radial-gradient(ellipse 62% 68% at 50% 46%, rgba(165,67,250,0.32), transparent 72%)',
+          }}
+        >
           <img
             src="/tira-duvidas/cardapinho-mascote.png"
             alt="Mascote Cardápio Web"
@@ -391,8 +393,7 @@ export default function TiraDuvidas() {
 
   if (mensagens.length === 0) {
     return (
-      <div className="px-6 md:px-10 py-8 space-y-8">
-        <TopBar mostrarReset={false} onResetar={resetar} />
+      <div className="px-6 md:px-10 pt-4 pb-8 space-y-8">
         <Hero input={input} setInput={setInput} onSubmit={onSubmit} disabled={pensando} />
 
         <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-12 space-y-12">
@@ -464,7 +465,7 @@ export default function TiraDuvidas() {
 
   return (
     <div className="p-4 h-[calc(100vh-1.5rem)] flex flex-col gap-3">
-      <TopBar mostrarReset onResetar={resetar} />
+      <TopBar onResetar={resetar} />
 
       <div className="cw-card flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto scrollbar-cw p-5 space-y-4">
