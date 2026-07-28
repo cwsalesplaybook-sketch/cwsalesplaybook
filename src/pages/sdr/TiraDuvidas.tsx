@@ -196,16 +196,23 @@ function Hero() {
         </div>
       </div>
 
-      <div className="relative h-[300px] md:h-[380px] flex items-center justify-center">
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-2 right-6 h-44 w-44 rounded-full bg-cw-purple/10 blur-2xl" />
-          <div className="absolute bottom-2 left-8 h-32 w-32 rounded-full bg-cw-yellow/10 blur-2xl" />
-          <svg className="absolute top-6 left-1/3 w-24 h-16 text-cw-purple/25" viewBox="0 0 100 60" fill="none">
+      <div className="relative h-[300px] md:h-[400px] flex items-center justify-center">
+        <div className="absolute inset-0 -z-10 flex items-center justify-center overflow-hidden">
+          {/* "nuvem" orgânica roxa que serve de palco pro mascote */}
+          <svg viewBox="0 0 200 200" className="w-[380px] h-[380px] md:w-[440px] md:h-[440px] text-cw-purple/[0.14]">
+            <path
+              fill="currentColor"
+              d="M137.8,-120.9C170.4,-91.5,181.7,-45.7,178.2,-2.9C174.7,39.9,156.3,79.8,123.7,109.2C91,138.6,44,157.4,-3.9,157.9C-51.9,158.3,-103.7,140.4,-133.9,105.8C-164.1,71.1,-172.6,19.7,-164.1,-29.6C-155.6,-78.9,-130,-125.9,-93.4,-155.7C-56.7,-185.5,-9,-198,29.9,-190.1C68.7,-182.2,105.2,-150.3,137.8,-120.9Z"
+              transform="translate(100 100)"
+            />
+          </svg>
+          <div className="absolute top-2 right-6 h-40 w-40 rounded-full bg-cw-yellow/10 blur-2xl" />
+          <svg className="absolute top-8 left-[18%] w-24 h-16 text-cw-purple/30" viewBox="0 0 100 60" fill="none">
             <path d="M2 40 C 30 5, 60 55, 98 15" stroke="currentColor" strokeWidth="2" strokeDasharray="4 6" strokeLinecap="round" />
           </svg>
-          <Star className="absolute top-4 left-[20%] h-4 w-4 text-cw-purple/30" />
-          <Sparkles className="absolute bottom-14 right-[18%] h-5 w-5 text-cw-purple/25" />
-          <Star className="absolute bottom-6 right-[35%] h-3 w-3 text-cw-yellow/40" />
+          <Star className="absolute top-6 left-[14%] h-4 w-4 text-cw-purple/35" />
+          <Sparkles className="absolute bottom-16 right-[16%] h-5 w-5 text-cw-purple/30" />
+          <Star className="absolute bottom-8 right-[32%] h-3 w-3 text-cw-yellow/40" />
         </div>
 
         <img
@@ -214,7 +221,8 @@ function Hero() {
           className="relative h-full w-auto object-contain drop-shadow-xl"
         />
 
-        <div className="absolute right-0 top-4 max-w-[190px] cw-card px-4 py-3 hidden lg:block">
+        {/* Card em formato de balão de fala, com "rabinho" apontando pro mascote */}
+        <div className="absolute right-0 top-6 max-w-[190px] cw-card px-4 py-3 hidden lg:block">
           <div className="h-7 w-7 rounded-lg gradient-primary flex items-center justify-center mb-2">
             <Zap className="h-3.5 w-3.5 text-white" />
           </div>
@@ -222,6 +230,7 @@ function Hero() {
             Respostas rápidas e confiáveis para te ajudar a tomar as{' '}
             <span className="text-cw-purple font-semibold">melhores decisões</span>.
           </p>
+          <div className="absolute -bottom-[7px] left-7 h-4 w-4 bg-cw-surface border-b border-r border-cw-border rotate-45" />
         </div>
       </div>
     </div>
