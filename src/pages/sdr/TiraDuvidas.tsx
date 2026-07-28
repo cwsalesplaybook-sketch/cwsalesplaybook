@@ -146,19 +146,7 @@ function ThinkingIndicator() {
 
 function TopBar({ mostrarReset, onResetar }: { mostrarReset: boolean; onResetar: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-3 shrink-0">
-      <div className="flex items-center gap-3">
-        <div className="relative h-11 w-11 rounded-full gradient-primary flex items-center justify-center text-white font-black text-sm shrink-0">
-          CW
-          <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-cw-purple-dark border-2 border-white flex items-center justify-center text-[7px] font-black text-white">
-            CW
-          </div>
-        </div>
-        <div>
-          <p className="text-[15px] font-black text-cw-text leading-tight">Central de Dúvidas</p>
-          <p className="text-xs text-cw-muted leading-tight">Playbook da Liderança</p>
-        </div>
-      </div>
+    <div className="flex items-center justify-end gap-3 shrink-0">
       {mostrarReset ? (
         <button
           type="button"
@@ -356,7 +344,7 @@ export default function TiraDuvidas() {
 
   if (mensagens.length === 0) {
     return (
-      <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6">
+      <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
         <TopBar mostrarReset={false} onResetar={resetar} />
         <Hero />
 
