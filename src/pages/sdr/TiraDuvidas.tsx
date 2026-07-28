@@ -178,54 +178,95 @@ function InfoBadge({ icon: Icon, texto }: { icon: typeof Shield; texto: string }
   );
 }
 
-function Hero() {
+function Hero({
+  input,
+  setInput,
+  onSubmit,
+  disabled,
+}: {
+  input: string;
+  setInput: (v: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  disabled: boolean;
+}) {
   return (
-    <div className="grid md:grid-cols-2 gap-8 items-center">
-      <div>
-        <p className="text-xl">Olá! 👋</p>
-        <h1 className="text-[40px] md:text-[52px] font-black text-cw-text leading-[1.05] mt-1">
-          Como podemos te <span className="text-cw-purple">ajudar</span> hoje?
-        </h1>
-        <p className="text-cw-muted text-[15px] mt-4 max-w-md leading-relaxed">
-          Faça sua pergunta ou escolha um tópico abaixo para encontrar rapidamente a resposta que procura.
-        </p>
-        <div className="flex flex-wrap gap-2.5 mt-6">
-          <InfoBadge icon={Shield} texto="Respostas oficiais do Playbook" />
-          <InfoBadge icon={RefreshCw} texto="Conteúdo sempre atualizado" />
-          <InfoBadge icon={Slack} texto="Não encontrou? Encaminhamos para o Slack da liderança" />
-        </div>
+    <div className="relative overflow-hidden rounded-[32px] bg-white min-h-[40vh] flex items-center">
+      {/* Fundo: gradiente radial (é background, não um elemento com tamanho —
+          nunca "corta quadrado" contra as bordas arredondadas do painel). */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 65% 70% at 78% 45%, rgba(165,67,250,0.16), transparent 70%),' +
+            'radial-gradient(ellipse 35% 35% at 12% 88%, rgba(255,182,0,0.10), transparent 70%)',
+        }}
+      />
+      {/* Grafismos — presos dentro deste painel único, não vazam mais pro resto da página. */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <svg className="absolute top-12 left-[22%] w-20 h-14 text-cw-purple/25" viewBox="0 0 100 60" fill="none">
+          <path d="M2 40 C 30 5, 60 55, 98 15" stroke="currentColor" strokeWidth="2" strokeDasharray="4 6" strokeLinecap="round" />
+        </svg>
+        <Star className="absolute top-9 left-[18%] h-4 w-4 text-cw-purple/30" />
+        <Sparkles className="absolute bottom-20 right-[40%] h-4 w-4 text-cw-purple/25" />
+        <span className="absolute top-20 right-[14%] h-1.5 w-1.5 rounded-full bg-cw-yellow/60" />
+        <span className="absolute bottom-16 left-[8%] h-1.5 w-1.5 rounded-full bg-[#FF5959]/50" />
       </div>
 
-      <div className="relative h-[300px] md:h-[400px] flex items-center justify-center">
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          {/* Halo roxo — "palco" do mascote, bem visível (não só um blur fraco) */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[260px] w-[260px] md:h-[320px] md:w-[320px] lg:h-[440px] lg:w-[440px] rounded-full bg-cw-purple/[0.35] blur-2xl" />
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[170px] w-[170px] md:h-[210px] md:w-[210px] lg:h-[280px] lg:w-[280px] rounded-full bg-cw-purple/[0.30] blur-xl" />
-          <div className="absolute top-4 right-8 h-40 w-40 rounded-full bg-cw-yellow/10 blur-2xl" />
-          <svg className="absolute top-8 left-[18%] w-24 h-16 text-cw-purple/40" viewBox="0 0 100 60" fill="none">
-            <path d="M2 40 C 30 5, 60 55, 98 15" stroke="currentColor" strokeWidth="2.5" strokeDasharray="4 6" strokeLinecap="round" />
-          </svg>
-          <Star className="absolute top-6 left-[14%] h-5 w-5 text-cw-purple/45" />
-          <Sparkles className="absolute bottom-16 right-[16%] h-6 w-6 text-cw-purple/40" />
-          <Star className="absolute bottom-8 right-[32%] h-3.5 w-3.5 text-cw-yellow/50" />
+      <div className="relative grid md:grid-cols-2 gap-10 items-center w-full px-8 md:px-14 py-14 md:py-20">
+        <div>
+          <p className="text-xl">Olá! 👋</p>
+          <h1 className="text-[42px] md:text-[58px] font-black text-cw-text leading-[1.03] mt-1">
+            Como podemos te <span className="text-cw-purple">ajudar</span> hoje?
+          </h1>
+          <p className="text-cw-muted text-[15px] mt-4 max-w-md leading-relaxed">
+            Faça sua pergunta ou escolha um tópico abaixo para encontrar rapidamente a resposta que procura.
+          </p>
+
+          <form
+            onSubmit={onSubmit}
+            className="flex items-center gap-3 bg-white border border-cw-border/50 shadow-[0_4px_20px_rgba(89,50,122,0.07)] rounded-[20px] px-5 h-16 mt-7 max-w-lg"
+          >
+            <Search className="h-[18px] w-[18px] text-cw-muted shrink-0" />
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Digite sua pergunta..."
+              className="flex-1 bg-transparent text-sm text-cw-text placeholder:text-cw-muted focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={disabled || !input.trim()}
+              className="h-11 w-11 rounded-2xl gradient-primary text-white flex items-center justify-center disabled:opacity-40 shrink-0"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </form>
+
+          <div className="flex flex-wrap gap-2 mt-6">
+            <InfoBadge icon={Shield} texto="Respostas oficiais do Playbook" />
+            <InfoBadge icon={RefreshCw} texto="Conteúdo sempre atualizado" />
+            <InfoBadge icon={Slack} texto="Encaminhamos pro Slack da liderança" />
+          </div>
         </div>
 
-        <img
-          src="/tira-duvidas/cardapinho-mascote.png"
-          alt="Mascote Cardápio Web"
-          className="relative h-full w-auto object-contain drop-shadow-xl"
-        />
+        <div className="relative flex items-center justify-center h-[260px] sm:h-[340px] md:h-[420px]">
+          <img
+            src="/tira-duvidas/cardapinho-mascote.png"
+            alt="Mascote Cardápio Web"
+            className="relative h-full w-auto object-contain drop-shadow-2xl"
+          />
 
-        {/* Card em formato de balão de fala, com "rabinho" apontando pro mascote */}
-        <div className="absolute right-0 top-6 max-w-[190px] cw-card px-4 py-3 hidden lg:block">
-          <div className="h-7 w-7 rounded-lg gradient-primary flex items-center justify-center mb-2">
-            <Zap className="h-3.5 w-3.5 text-white" />
+          {/* Card em formato de balão de fala, com "rabinho" apontando pro mascote */}
+          <div className="absolute right-0 top-4 max-w-[190px] cw-card px-4 py-3 hidden lg:block">
+            <div className="h-7 w-7 rounded-lg gradient-primary flex items-center justify-center mb-2">
+              <Zap className="h-3.5 w-3.5 text-white" />
+            </div>
+            <p className="text-[11.5px] text-cw-muted leading-snug">
+              Respostas rápidas e confiáveis para te ajudar a tomar as{' '}
+              <span className="text-cw-purple font-semibold">melhores decisões</span>.
+            </p>
+            <div className="absolute -bottom-[7px] left-7 h-4 w-4 bg-cw-surface border-b border-r border-cw-border rotate-45" />
           </div>
-          <p className="text-[11.5px] text-cw-muted leading-snug">
-            Respostas rápidas e confiáveis para te ajudar a tomar as{' '}
-            <span className="text-cw-purple font-semibold">melhores decisões</span>.
-          </p>
-          <div className="absolute -bottom-[7px] left-7 h-4 w-4 bg-cw-surface border-b border-r border-cw-border rotate-45" />
         </div>
       </div>
     </div>
@@ -247,15 +288,17 @@ function TopicCard({
       type="button"
       onClick={onClick}
       className={cn(
-        'text-left p-5 rounded-2xl border transition-all duration-150',
-        ativo ? 'border-cw-purple bg-cw-purple/5' : 'border-cw-border bg-white hover:border-cw-purple/30 hover:shadow-md',
+        'text-left p-4 rounded-2xl border bg-white transition-all duration-200',
+        ativo
+          ? 'border-cw-purple/40 shadow-[0_6px_20px_rgba(165,67,250,0.14)]'
+          : 'border-transparent shadow-[0_1px_2px_rgba(89,50,122,0.04),0_2px_8px_rgba(89,50,122,0.03)] hover:shadow-[0_10px_28px_rgba(89,50,122,0.09)] hover:-translate-y-0.5',
       )}
     >
-      <div className="h-11 w-11 rounded-xl bg-cw-purple/10 flex items-center justify-center mb-3">
-        <Icone className="h-5 w-5 text-cw-purple" />
+      <div className="h-9 w-9 rounded-lg bg-cw-purple/10 flex items-center justify-center mb-2.5">
+        <Icone className="h-4 w-4 text-cw-purple" />
       </div>
-      <p className="font-bold text-[15px] text-cw-text">{grupo.topico}</p>
-      <p className="text-[12.5px] text-cw-muted mt-1 leading-snug">{grupo.personas[0].tema}</p>
+      <p className="font-bold text-[14px] text-cw-text">{grupo.topico}</p>
+      <p className="text-[12px] text-cw-muted mt-1 leading-snug">{grupo.personas[0].tema}</p>
     </button>
   );
 }
@@ -265,10 +308,10 @@ function QuestionCard({ pergunta, onClick }: { pergunta: string; onClick: () => 
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center justify-between gap-3 text-left px-4 py-3.5 rounded-xl border border-cw-border bg-white hover:border-cw-purple/40 hover:shadow-sm transition-all group"
+      className="flex items-center justify-between gap-3 text-left px-3.5 py-3 rounded-xl hover:bg-cw-elevated transition-colors group"
     >
       <span className="text-[13px] font-medium text-cw-text">{pergunta}</span>
-      <ArrowRight className="h-3.5 w-3.5 text-cw-muted group-hover:text-cw-purple group-hover:translate-x-0.5 transition-all shrink-0" />
+      <ArrowRight className="h-3.5 w-3.5 text-cw-muted/60 group-hover:text-cw-purple group-hover:translate-x-0.5 transition-all shrink-0" />
     </button>
   );
 }
@@ -348,17 +391,17 @@ export default function TiraDuvidas() {
 
   if (mensagens.length === 0) {
     return (
-      <div className="px-6 md:px-10 py-6 space-y-3">
+      <div className="px-6 md:px-10 py-8 space-y-8">
         <TopBar mostrarReset={false} onResetar={resetar} />
-        <Hero />
+        <Hero input={input} setInput={setInput} onSubmit={onSubmit} disabled={pensando} />
 
-        <div className="cw-card p-6 md:p-8 space-y-8">
+        <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-12 space-y-12">
           <div>
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-5">
               <LayoutGrid className="h-4 w-4 text-cw-purple" />
               <h2 className="font-black text-cw-text text-[15px]">Navegue por assuntos</h2>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {GRUPOS_TOPICO.map((g) => (
                 <TopicCard
                   key={g.topico}
@@ -369,13 +412,13 @@ export default function TiraDuvidas() {
               ))}
             </div>
             {grupoAberto && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
+              <div className="flex flex-wrap gap-1.5 mt-4">
                 {grupoAberto.personas.flatMap((p) => p.perguntas).map((q) => (
                   <button
                     key={q.pergunta}
                     type="button"
                     onClick={() => enviar(q.pergunta)}
-                    className="text-[12px] font-medium px-3 py-1.5 rounded-full border border-cw-border bg-cw-elevated text-cw-text hover:border-cw-purple/40 hover:bg-white transition-colors"
+                    className="text-[12px] font-medium px-3 py-1.5 rounded-full bg-cw-elevated text-cw-text hover:bg-cw-purple/10 hover:text-cw-purple transition-colors"
                   >
                     {q.pergunta}
                   </button>
@@ -385,11 +428,11 @@ export default function TiraDuvidas() {
           </div>
 
           <div>
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-5">
               <Flame className="h-4 w-4 text-cw-purple" />
               <h2 className="font-black text-cw-text text-[15px]">Perguntas populares</h2>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-1">
               {(mostrarTodas ? TODAS_PERGUNTAS : PERGUNTAS_POPULARES).map((item, i) => (
                 <QuestionCard key={item.pergunta + i} pergunta={item.pergunta} onClick={() => enviar(item.pergunta)} />
               ))}
@@ -397,7 +440,7 @@ export default function TiraDuvidas() {
                 <button
                   type="button"
                   onClick={() => setMostrarTodas(true)}
-                  className="flex items-center justify-between gap-3 text-left px-4 py-3.5 rounded-xl border border-cw-border bg-cw-elevated hover:border-cw-purple/40 transition-all"
+                  className="flex items-center justify-between gap-3 text-left px-3.5 py-3 rounded-xl hover:bg-cw-elevated transition-colors"
                 >
                   <span className="text-[13px] font-bold text-cw-purple">Ver todas as perguntas</span>
                   <LayoutGrid className="h-3.5 w-3.5 text-cw-purple" />
@@ -405,26 +448,9 @@ export default function TiraDuvidas() {
               )}
             </div>
           </div>
-
-          <form onSubmit={onSubmit} className="flex items-center gap-3 bg-cw-elevated border border-cw-border rounded-[20px] px-5 h-16">
-            <Search className="h-[18px] w-[18px] text-cw-muted shrink-0" />
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Digite sua pergunta... Ex.: Como funciona a passagem de bastão pro Closer?"
-              className="flex-1 bg-transparent text-sm text-cw-text placeholder:text-cw-muted focus:outline-none"
-            />
-            <button
-              type="submit"
-              disabled={!input.trim()}
-              className="h-11 w-11 rounded-2xl gradient-primary text-white flex items-center justify-center disabled:opacity-40 shrink-0"
-            >
-              <Send className="h-4 w-4" />
-            </button>
-          </form>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-3 rounded-xl bg-cw-elevated/60 text-[11px] text-cw-muted">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-3 text-[11px] text-cw-muted">
           <p>
             As respostas são baseadas no Playbook oficial e, quando necessário, geradas pela ClarIA com base na
             nossa documentação real. Caso não exista resposta, sua pergunta poderá ser enviada para o Slack da
