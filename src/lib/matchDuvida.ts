@@ -83,3 +83,30 @@ export function routeDuvida(query: string, personas: DuvidaPersona[]): DuvidaRot
   const fallbackPersona = personas[Math.floor(Math.random() * personas.length)];
   return { persona: fallbackPersona, item: null };
 }
+
+export interface DuvidaSugestao {
+  persona: DuvidaPersona;
+  item: DuvidaItem;
+  score: number;
+}
+
+/** "Dicas de palavra-chave": lista as perguntas pré-cadastradas mais
+ *  parecidas com o que o SDR já digitou, pra ele escolher em vez de
+ *  escrever a pergunta inteira. */
+export function suggestDuvidas(query: string, personas: DuvidaPersona[], limit = 4): DuvidaSugestao[] {
+  const queryTokens = new Set(normalize(query));
+  if (queryTokens.size === 0) return [];
+
+  const resultados: DuvidaSugestao[] = [];
+  for (const persona of personas) {
+    for (const item of persona.perguntas) {
+      const itemTokens = normalize([item.pergunta, ...(item.palavrasChave ?? [])].join(' '));
+      let score = 0;
+      for (const t of itemTokens) if (queryTokens.has(t)) score++;
+      if (score > 0) resultados.push({ persona, item, score });
+    }
+  }
+
+  resultados.sort((a, b) => b.score - a.score);
+  return resultados.slice(0, limit);
+}
