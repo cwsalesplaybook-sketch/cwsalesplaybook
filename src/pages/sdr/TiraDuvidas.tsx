@@ -1,13 +1,17 @@
-/** Tira-dúvidas — chat único e contínuo (estilo WhatsApp) com roteamento
- *  100% automático pra pessoa certa do time. O SDR escolhe um TÓPICO e uma
- *  pergunta pré-cadastrada (ou digita livremente) — nunca escolhe quem
- *  responde, isso é sempre automático (src/lib/matchDuvida.ts). Fora do
- *  banco curado, cai no RAG da ClarIA (src/lib/tiraDuvidasRag.ts), que busca
- *  na base de conhecimento real (Confluence, Sheets, Central de Ajuda, docs
- *  da API) e gera a resposta. Se nem o RAG tiver contexto, cai no fallback
- *  com o Slack da pessoa responsável. */
+/** Tira-dúvidas — landing premium (estado vazio) + chat único e contínuo
+ *  (depois da primeira pergunta), com roteamento 100% automático pra pessoa
+ *  certa do time. O SDR escolhe um TÓPICO e uma pergunta pré-cadastrada (ou
+ *  digita livremente) — nunca escolhe quem responde, isso é sempre
+ *  automático (src/lib/matchDuvida.ts). Fora do banco curado, cai no RAG da
+ *  ClarIA (src/lib/tiraDuvidasRag.ts), que busca na base de conhecimento
+ *  real (Confluence, Sheets, Central de Ajuda, docs da API) e gera a
+ *  resposta. Se nem o RAG tiver contexto, cai no fallback com o Slack da
+ *  pessoa responsável. */
 import { useEffect, useRef, useState } from 'react';
-import { MessageCircleQuestion, Send, Sparkles, ArrowRight, RotateCcw } from 'lucide-react';
+import {
+  Send, Sparkles, ArrowRight, RotateCcw, Shield, RefreshCw, Slack,
+  Rocket, Package, DollarSign, MessageSquare, Flame, LayoutGrid, Search, Zap, Star,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TIRA_DUVIDAS_PERSONAS, type DuvidaPersona } from '@/data/tiraDuvidas';
 import { routeDuvida, suggestDuvidas, type DuvidaSugestao } from '@/lib/matchDuvida';
@@ -23,6 +27,39 @@ interface Mensagem {
 }
 
 const PENSANDO_MS = 900;
+
+/** Agrupa as personas pelo `topico` (Pedrinho e Andy dividem "Scripts &
+ *  Objeções") — usado tanto nos cards da landing quanto nos chips do modo
+ *  chat, pra nunca mostrar dois botões com o mesmo rótulo. */
+function agruparPorTopico(personas: DuvidaPersona[]) {
+  const grupos: { topico: string; personas: DuvidaPersona[] }[] = [];
+  for (const p of personas) {
+    const grupo = grupos.find((g) => g.topico === p.topico);
+    if (grupo) grupo.personas.push(p);
+    else grupos.push({ topico: p.topico, personas: [p] });
+  }
+  return grupos;
+}
+const GRUPOS_TOPICO = agruparPorTopico(TIRA_DUVIDAS_PERSONAS);
+const ICONE_TOPICO: Record<string, typeof Rocket> = {
+  'Processo & Qualificação': Rocket,
+  'Scripts & Objeções': MessageSquare,
+  'Planos & Preços': DollarSign,
+  Produto: Package,
+};
+
+const porId = (id: string) => TIRA_DUVIDAS_PERSONAS.find((p) => p.id === id)!;
+const JOELMA = porId('joelma');
+const PERGUNTAS_POPULARES = [
+  JOELMA.perguntas[0],
+  JOELMA.perguntas[1],
+  JOELMA.perguntas[2],
+  JOELMA.perguntas[3],
+  porId('pedro').perguntas[0],
+  porId('vithoria').perguntas[0],
+  porId('bibi').perguntas[0],
+];
+const TODAS_PERGUNTAS = TIRA_DUVIDAS_PERSONAS.flatMap((p) => p.perguntas);
 
 function Avatar({ persona, size = 'md' }: { persona: DuvidaPersona; size?: 'sm' | 'md' | 'lg' }) {
   const [erro, setErro] = useState(false);
@@ -107,11 +144,149 @@ function ThinkingIndicator() {
   );
 }
 
+function TopBar({ mostrarReset, onResetar }: { mostrarReset: boolean; onResetar: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-3 shrink-0">
+      <div className="flex items-center gap-3">
+        <div className="relative h-11 w-11 rounded-full gradient-primary flex items-center justify-center text-white font-black text-sm shrink-0">
+          CW
+          <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-cw-purple-dark border-2 border-white flex items-center justify-center text-[7px] font-black text-white">
+            CW
+          </div>
+        </div>
+        <div>
+          <p className="text-[15px] font-black text-cw-text leading-tight">Central de Dúvidas</p>
+          <p className="text-xs text-cw-muted leading-tight">Playbook da Liderança</p>
+        </div>
+      </div>
+      {mostrarReset ? (
+        <button
+          type="button"
+          onClick={onResetar}
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 text-xs font-semibold transition-all shrink-0"
+        >
+          <RotateCcw className="h-3.5 w-3.5" /> Resetar chat
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-cw-border bg-white text-cw-text text-xs font-semibold hover:border-cw-purple/40 transition-colors shadow-sm shrink-0"
+        >
+          <Slack className="h-3.5 w-3.5 text-cw-purple" /> Falar no Slack
+        </button>
+      )}
+    </div>
+  );
+}
+
+function InfoBadge({ icon: Icon, texto }: { icon: typeof Shield; texto: string }) {
+  return (
+    <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-cw-border bg-white text-[12px] font-semibold text-cw-text">
+      <div className="h-6 w-6 rounded-full bg-cw-purple/10 flex items-center justify-center shrink-0">
+        <Icon className="h-3 w-3 text-cw-purple" />
+      </div>
+      {texto}
+    </div>
+  );
+}
+
+function Hero() {
+  return (
+    <div className="grid md:grid-cols-2 gap-8 items-center px-1 py-4">
+      <div>
+        <p className="text-xl">Olá! 👋</p>
+        <h1 className="text-[40px] md:text-[52px] font-black text-cw-text leading-[1.05] mt-1">
+          Como podemos te <span className="text-cw-purple">ajudar</span> hoje?
+        </h1>
+        <p className="text-cw-muted text-[15px] mt-4 max-w-md leading-relaxed">
+          Faça sua pergunta ou escolha um tópico abaixo para encontrar rapidamente a resposta que procura.
+        </p>
+        <div className="flex flex-wrap gap-2.5 mt-6">
+          <InfoBadge icon={Shield} texto="Respostas oficiais do Playbook" />
+          <InfoBadge icon={RefreshCw} texto="Conteúdo sempre atualizado" />
+          <InfoBadge icon={Slack} texto="Não encontrou? Encaminhamos para o Slack da liderança" />
+        </div>
+      </div>
+
+      <div className="relative h-[300px] md:h-[380px] flex items-center justify-center">
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute top-2 right-6 h-44 w-44 rounded-full bg-cw-purple/10 blur-2xl" />
+          <div className="absolute bottom-2 left-8 h-32 w-32 rounded-full bg-cw-yellow/10 blur-2xl" />
+          <svg className="absolute top-6 left-1/3 w-24 h-16 text-cw-purple/25" viewBox="0 0 100 60" fill="none">
+            <path d="M2 40 C 30 5, 60 55, 98 15" stroke="currentColor" strokeWidth="2" strokeDasharray="4 6" strokeLinecap="round" />
+          </svg>
+          <Star className="absolute top-4 left-[20%] h-4 w-4 text-cw-purple/30" />
+          <Sparkles className="absolute bottom-14 right-[18%] h-5 w-5 text-cw-purple/25" />
+          <Star className="absolute bottom-6 right-[35%] h-3 w-3 text-cw-yellow/40" />
+        </div>
+
+        <img
+          src="/tira-duvidas/cardapinho-mascote.png"
+          alt="Mascote Cardápio Web"
+          className="relative h-full w-auto object-contain drop-shadow-xl"
+        />
+
+        <div className="absolute right-0 top-4 max-w-[190px] cw-card px-4 py-3 hidden lg:block">
+          <div className="h-7 w-7 rounded-lg gradient-primary flex items-center justify-center mb-2">
+            <Zap className="h-3.5 w-3.5 text-white" />
+          </div>
+          <p className="text-[11.5px] text-cw-muted leading-snug">
+            Respostas rápidas e confiáveis para te ajudar a tomar as{' '}
+            <span className="text-cw-purple font-semibold">melhores decisões</span>.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TopicCard({
+  grupo,
+  ativo,
+  onClick,
+}: {
+  grupo: { topico: string; personas: DuvidaPersona[] };
+  ativo: boolean;
+  onClick: () => void;
+}) {
+  const Icone = ICONE_TOPICO[grupo.topico] ?? MessageSquare;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'text-left p-5 rounded-2xl border transition-all duration-150',
+        ativo ? 'border-cw-purple bg-cw-purple/5' : 'border-cw-border bg-white hover:border-cw-purple/30 hover:shadow-md',
+      )}
+    >
+      <div className="h-11 w-11 rounded-xl bg-cw-purple/10 flex items-center justify-center mb-3">
+        <Icone className="h-5 w-5 text-cw-purple" />
+      </div>
+      <p className="font-bold text-[15px] text-cw-text">{grupo.topico}</p>
+      <p className="text-[12.5px] text-cw-muted mt-1 leading-snug">{grupo.personas[0].tema}</p>
+    </button>
+  );
+}
+
+function QuestionCard({ pergunta, onClick }: { pergunta: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center justify-between gap-3 text-left px-4 py-3.5 rounded-xl border border-cw-border bg-white hover:border-cw-purple/40 hover:shadow-sm transition-all group"
+    >
+      <span className="text-[13px] font-medium text-cw-text">{pergunta}</span>
+      <ArrowRight className="h-3.5 w-3.5 text-cw-muted group-hover:text-cw-purple group-hover:translate-x-0.5 transition-all shrink-0" />
+    </button>
+  );
+}
+
 export default function TiraDuvidas() {
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [input, setInput] = useState('');
   const [pensando, setPensando] = useState(false);
-  const [topicoAberto, setTopicoAberto] = useState<string | null>(TIRA_DUVIDAS_PERSONAS[0]?.id ?? null);
+  const [topicoAberto, setTopicoAberto] = useState<string | null>(null);
+  const [mostrarTodas, setMostrarTodas] = useState(false);
   const fimRef = useRef<HTMLDivElement>(null);
   const buscaRef = useRef<ReturnType<typeof setTimeout>>();
   const apresentadosRef = useRef<Set<string>>(new Set());
@@ -167,6 +342,8 @@ export default function TiraDuvidas() {
     setMensagens([]);
     setInput('');
     setPensando(false);
+    setTopicoAberto(null);
+    setMostrarTodas(false);
   };
 
   const onSubmit = (e: React.FormEvent) => {
@@ -175,65 +352,135 @@ export default function TiraDuvidas() {
   };
 
   const sugestoes: DuvidaSugestao[] = input.trim().length >= 2 && !pensando ? suggestDuvidas(input, TIRA_DUVIDAS_PERSONAS) : [];
-  const personaTopicoAberto = TIRA_DUVIDAS_PERSONAS.find((p) => p.id === topicoAberto) ?? null;
+  const grupoAberto = GRUPOS_TOPICO.find((g) => g.topico === topicoAberto) ?? null;
+
+  if (mensagens.length === 0) {
+    return (
+      <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6">
+        <TopBar mostrarReset={false} onResetar={resetar} />
+        <Hero />
+
+        <div className="cw-card p-6 md:p-8 space-y-8">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <LayoutGrid className="h-4 w-4 text-cw-purple" />
+              <h2 className="font-black text-cw-text text-[15px]">Navegue por assuntos</h2>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {GRUPOS_TOPICO.map((g) => (
+                <TopicCard
+                  key={g.topico}
+                  grupo={g}
+                  ativo={topicoAberto === g.topico}
+                  onClick={() => setTopicoAberto((atual) => (atual === g.topico ? null : g.topico))}
+                />
+              ))}
+            </div>
+            {grupoAberto && (
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {grupoAberto.personas.flatMap((p) => p.perguntas).map((q) => (
+                  <button
+                    key={q.pergunta}
+                    type="button"
+                    onClick={() => enviar(q.pergunta)}
+                    className="text-[12px] font-medium px-3 py-1.5 rounded-full border border-cw-border bg-cw-elevated text-cw-text hover:border-cw-purple/40 hover:bg-white transition-colors"
+                  >
+                    {q.pergunta}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Flame className="h-4 w-4 text-cw-purple" />
+              <h2 className="font-black text-cw-text text-[15px]">Perguntas populares</h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {(mostrarTodas ? TODAS_PERGUNTAS : PERGUNTAS_POPULARES).map((item, i) => (
+                <QuestionCard key={item.pergunta + i} pergunta={item.pergunta} onClick={() => enviar(item.pergunta)} />
+              ))}
+              {!mostrarTodas && (
+                <button
+                  type="button"
+                  onClick={() => setMostrarTodas(true)}
+                  className="flex items-center justify-between gap-3 text-left px-4 py-3.5 rounded-xl border border-cw-border bg-cw-elevated hover:border-cw-purple/40 transition-all"
+                >
+                  <span className="text-[13px] font-bold text-cw-purple">Ver todas as perguntas</span>
+                  <LayoutGrid className="h-3.5 w-3.5 text-cw-purple" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <form onSubmit={onSubmit} className="flex items-center gap-3 bg-cw-elevated border border-cw-border rounded-[20px] px-5 h-16">
+            <Search className="h-[18px] w-[18px] text-cw-muted shrink-0" />
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Digite sua pergunta... Ex.: Como funciona a passagem de bastão pro Closer?"
+              className="flex-1 bg-transparent text-sm text-cw-text placeholder:text-cw-muted focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={!input.trim()}
+              className="h-11 w-11 rounded-2xl gradient-primary text-white flex items-center justify-center disabled:opacity-40 shrink-0"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </form>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-3 rounded-xl bg-cw-elevated/60 text-[11px] text-cw-muted">
+          <p>
+            As respostas são baseadas no Playbook oficial e, quando necessário, geradas pela ClarIA com base na
+            nossa documentação real. Caso não exista resposta, sua pergunta poderá ser enviada para o Slack da
+            liderança responsável.
+          </p>
+          <p className="font-semibold shrink-0">Cardápio Web</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 h-[calc(100vh-1.5rem)] flex flex-col gap-3">
-      <div className="flex items-center justify-end gap-3 shrink-0">
-        <button
-          type="button"
-          onClick={resetar}
-          disabled={mensagens.length === 0}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 text-xs font-semibold transition-all shrink-0 disabled:opacity-40 disabled:pointer-events-none"
-        >
-          <RotateCcw className="h-3.5 w-3.5" /> Resetar chat
-        </button>
-      </div>
+      <TopBar mostrarReset onResetar={resetar} />
 
       <div className="cw-card flex-1 flex flex-col overflow-hidden">
-        {mensagens.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 text-cw-muted px-10 text-center">
-            <div className="w-14 h-14 rounded-full bg-cw-purple/10 flex items-center justify-center">
-              <MessageCircleQuestion className="h-6 w-6 text-cw-purple/70" />
-            </div>
-            <div className="text-[15px] font-semibold text-cw-text">
-              Escolha um tópico abaixo ou digite sua pergunta.
-            </div>
-          </div>
-        ) : (
-          <div className="flex-1 overflow-y-auto scrollbar-cw p-5 space-y-4">
-            {mensagens.map((m) => (
-              <ChatBubble key={m.id} msg={m} />
-            ))}
-            {pensando && <ThinkingIndicator />}
-            <div ref={fimRef} />
-          </div>
-        )}
+        <div className="flex-1 overflow-y-auto scrollbar-cw p-5 space-y-4">
+          {mensagens.map((m) => (
+            <ChatBubble key={m.id} msg={m} />
+          ))}
+          {pensando && <ThinkingIndicator />}
+          <div ref={fimRef} />
+        </div>
 
         {/* Tópicos — sempre visíveis, o SDR nunca escolhe a pessoa */}
         <div className="px-4 pt-3 border-t border-cw-border shrink-0 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] text-cw-muted shrink-0">Tópicos:</span>
-            {TIRA_DUVIDAS_PERSONAS.map((p) => (
+            {GRUPOS_TOPICO.map((g) => (
               <button
-                key={p.id}
+                key={g.topico}
                 type="button"
-                onClick={() => setTopicoAberto((atual) => (atual === p.id ? null : p.id))}
+                onClick={() => setTopicoAberto((atual) => (atual === g.topico ? null : g.topico))}
                 className={cn(
                   'px-3 py-1.5 rounded-full border text-[11.5px] font-semibold transition-colors',
-                  topicoAberto === p.id
+                  topicoAberto === g.topico
                     ? 'gradient-primary text-white border-transparent'
                     : 'border-cw-border bg-cw-surface text-cw-text hover:border-cw-purple/40',
                 )}
               >
-                {p.topico}
+                {g.topico}
               </button>
             ))}
           </div>
 
-          {personaTopicoAberto && (
+          {grupoAberto && (
             <div className="flex flex-wrap gap-1.5 pb-1">
-              {personaTopicoAberto.perguntas.map((q) => (
+              {grupoAberto.personas.flatMap((p) => p.perguntas).map((q) => (
                 <button
                   key={q.pergunta}
                   type="button"
