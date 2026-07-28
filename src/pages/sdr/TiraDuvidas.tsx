@@ -186,11 +186,6 @@ export default function TiraDuvidas() {
           </div>
           <div className="min-w-0">
             <h1 className="text-lg font-black text-cw-text leading-tight">Tira-dúvidas</h1>
-            <p className="text-xs text-cw-muted leading-tight">
-              Base de conhecimento oficial das lideranças — escolha um tópico ou pergunte, a resposta certa
-              chega automaticamente. Fora do banco curado, a ClarIA busca na base real do time; se nem ela
-              souber, encaminha pro Slack da pessoa responsável.
-            </p>
           </div>
         </div>
         <button
