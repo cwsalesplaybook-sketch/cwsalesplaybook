@@ -180,7 +180,7 @@ function InfoBadge({ icon: Icon, texto }: { icon: typeof Shield; texto: string }
 
 function Hero() {
   return (
-    <div className="grid md:grid-cols-2 gap-8 items-center px-1 py-4">
+    <div className="grid md:grid-cols-2 gap-8 items-center">
       <div>
         <p className="text-xl">Olá! 👋</p>
         <h1 className="text-[40px] md:text-[52px] font-black text-cw-text leading-[1.05] mt-1">
@@ -344,7 +344,7 @@ export default function TiraDuvidas() {
 
   if (mensagens.length === 0) {
     return (
-      <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6">
+      <div className="px-6 md:px-10 py-6 space-y-3">
         <TopBar mostrarReset={false} onResetar={resetar} />
         <Hero />
 
