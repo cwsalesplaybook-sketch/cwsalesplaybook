@@ -187,9 +187,7 @@ function Hero({
       <div
         className="absolute inset-0"
         style={{
-          background:
-            'radial-gradient(ellipse 65% 70% at 78% 45%, rgba(165,67,250,0.16), transparent 70%),' +
-            'radial-gradient(ellipse 35% 35% at 12% 88%, rgba(255,182,0,0.10), transparent 70%)',
+          background: 'radial-gradient(ellipse 65% 70% at 78% 45%, rgba(165,67,250,0.16), transparent 70%)',
         }}
       />
       {/* Grafismos — presos dentro deste painel único, não vazam mais pro resto da página. */}
@@ -199,7 +197,6 @@ function Hero({
         </svg>
         <Star className="absolute top-9 left-[18%] h-4 w-4 text-cw-purple/30" />
         <Sparkles className="absolute bottom-20 right-[40%] h-4 w-4 text-cw-purple/25" />
-        <span className="absolute bottom-16 left-[8%] h-1.5 w-1.5 rounded-full bg-[#FF5959]/50" />
       </div>
 
       <button
@@ -449,15 +446,6 @@ export default function TiraDuvidas() {
               )}
             </div>
           </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-3 text-[11px] text-cw-muted">
-          <p>
-            As respostas são baseadas no Playbook oficial e, quando necessário, geradas pela ClarIA com base na
-            nossa documentação real. Caso não exista resposta, sua pergunta poderá ser enviada para o Slack da
-            liderança responsável.
-          </p>
-          <p className="font-semibold shrink-0">Cardápio Web</p>
         </div>
       </div>
     );
