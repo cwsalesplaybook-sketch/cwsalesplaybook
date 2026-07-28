@@ -46,3 +46,40 @@ export function matchDuvida(query: string, persona: DuvidaPersona): DuvidaItem |
 
   return bestScore >= 1 ? best : null;
 }
+
+export interface DuvidaRota {
+  persona: DuvidaPersona;
+  item: DuvidaItem | null;
+}
+
+/** Roteia a pergunta livre do SDR pra melhor persona dentre todas, sem
+ *  seleção manual prévia. Se nenhuma pergunta pré-cadastrada bater o
+ *  suficiente, cai numa persona aleatória com `item: null` (fallback pro
+ *  Slack dela). */
+export function routeDuvida(query: string, personas: DuvidaPersona[]): DuvidaRota {
+  const queryTokens = new Set(normalize(query));
+  let bestPersona: DuvidaPersona | null = null;
+  let bestItem: DuvidaItem | null = null;
+  let bestScore = 0;
+
+  if (queryTokens.size > 0) {
+    for (const persona of personas) {
+      for (const item of persona.perguntas) {
+        const itemTokens = normalize([item.pergunta, ...(item.palavrasChave ?? [])].join(' '));
+        let score = 0;
+        for (const t of itemTokens) if (queryTokens.has(t)) score++;
+        if (score > bestScore) {
+          bestScore = score;
+          bestPersona = persona;
+          bestItem = item;
+        }
+      }
+    }
+  }
+
+  if (bestScore >= 1 && bestPersona) {
+    return { persona: bestPersona, item: bestItem };
+  }
+  const fallbackPersona = personas[Math.floor(Math.random() * personas.length)];
+  return { persona: fallbackPersona, item: null };
+}

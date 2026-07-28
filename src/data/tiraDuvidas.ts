@@ -17,6 +17,8 @@ export interface DuvidaItem {
 export interface DuvidaPersona {
   id: string;
   nome: string;
+  /** Artigo pro nome, pra concordância em frases tipo "Slack {artigo} {nome}". */
+  artigo: 'a' | 'o';
   cargo: string;
   foto?: string;
   slack: string;
@@ -28,12 +30,13 @@ export interface DuvidaPersona {
 export const TIRA_DUVIDAS_PERSONAS: DuvidaPersona[] = [
   {
     id: 'joelma',
+    artigo: 'a',
     nome: 'Jojo',
     cargo: 'Joelma Vieira · Liderança de Pré-Vendas (SDR)',
     foto: '/tira-duvidas/joelma.jpg',
     slack: '@joelma',
     tema: 'Processo de SDR, qualificação e passagem de bastão',
-    saudacao: 'Oi! Sou a versão tira-dúvidas da Jojo 👋 Pode perguntar sobre processo de qualificação, BANT, passagem de bastão ou motivos de perda.',
+    saudacao: 'Oi, tudo bem? Sou a versão tira-dúvidas da Jojo 👋 Cuido de processo de SDR, qualificação e passagem de bastão. Deixa eu ver isso pra você...',
     perguntas: [
       {
         pergunta: 'Como funciona a passagem de bastão pro Closer?',
@@ -64,12 +67,13 @@ export const TIRA_DUVIDAS_PERSONAS: DuvidaPersona[] = [
   },
   {
     id: 'pedro',
+    artigo: 'o',
     nome: 'Pedrinho',
     cargo: 'Pedro Ferreira · Liderança de Pré-Vendas',
     foto: '/tira-duvidas/pedro.jpg',
     slack: '@pedro',
     tema: 'Scripts, SPIN, cold call e contorno de objeções',
-    saudacao: 'Fala! Aqui é a versão tira-dúvidas do Pedrinho 🎯 Manda sua dúvida sobre script, SPIN, cold call ou como contornar uma objeção.',
+    saudacao: 'Opa, tudo bem? Sou a versão tira-dúvidas do Pedrinho 🎯 Cuido de script, SPIN, cold call e contorno de objeção. Deixa eu ver isso pra você...',
     perguntas: [
       {
         pergunta: 'Como aplicar o SPIN Selling numa ligação?',
@@ -120,12 +124,13 @@ export const TIRA_DUVIDAS_PERSONAS: DuvidaPersona[] = [
   },
   {
     id: 'vithoria',
+    artigo: 'a',
     nome: 'Vivi',
     cargo: 'Vithoria Rodrigues · Liderança de Pré-Vendas',
     foto: '/tira-duvidas/vithoria.jpg',
     slack: '@vithoria',
     tema: 'Planos, preços e parcerias',
-    saudacao: 'Oi, tudo bem? Aqui é a versão tira-dúvidas da Vivi 💜 Pode perguntar sobre plano, preço, desconto ou parcerias.',
+    saudacao: 'Oi, tudo bem? Sou a versão tira-dúvidas da Vivi 💜 Cuido de plano, preço, desconto e parcerias. Deixa eu ver isso pra você...',
     perguntas: [
       {
         pergunta: 'Quais são os planos disponíveis e quanto custam?',
@@ -171,12 +176,13 @@ export const TIRA_DUVIDAS_PERSONAS: DuvidaPersona[] = [
   },
   {
     id: 'bibi',
+    artigo: 'a',
     nome: 'Bibi',
     cargo: 'Gabrielly Oliveira · PSM',
     foto: '/tira-duvidas/bibi.jpg',
     slack: '@gabrielly',
     tema: 'Produto: Totem, ChatBot IA, WhatsApp/Meta e CW App Store',
-    saudacao: 'Oi! Aqui é a versão tira-dúvidas da Bibi 🤖 Pergunta sobre Totem, ChatBot com IA, integração com WhatsApp/Meta, CW App Store ou KDS.',
+    saudacao: 'Oi, tudo bem? Sou a versão tira-dúvidas da Bibi 🤖 Cuido de Totem, ChatBot com IA, WhatsApp/Meta e CW App Store. Deixa eu ver isso pra você...',
     perguntas: [
       {
         pergunta: 'O que é o Totem de Autoatendimento?',

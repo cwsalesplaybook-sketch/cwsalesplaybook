@@ -103,6 +103,14 @@ export default {
           "0%": { backgroundPosition: "-1000px 0" },
           "100%": { backgroundPosition: "1000px 0" },
         },
+        "dot-bounce": {
+          "0%, 60%, 100%": { transform: "translateY(0)", opacity: "0.5" },
+          "30%": { transform: "translateY(-4px)", opacity: "1" },
+        },
+        "caption-pulse": {
+          "0%, 100%": { opacity: "0.45" },
+          "50%": { opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -110,6 +118,8 @@ export default {
         "fade-in": "fade-in 0.3s ease-out",
         "war-pulse": "war-pulse 1.2s ease-in-out infinite",
         "shimmer": "shimmer 2s linear infinite",
+        "dot-bounce": "dot-bounce 1.1s infinite",
+        "caption-pulse": "caption-pulse 1.6s ease-in-out infinite",
       },
     },
   },
