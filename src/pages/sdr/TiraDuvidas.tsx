@@ -199,8 +199,8 @@ function Hero() {
       <div className="relative h-[300px] md:h-[400px] flex items-center justify-center">
         <div className="absolute inset-0 -z-10 overflow-hidden">
           {/* Halo roxo — "palco" do mascote, bem visível (não só um blur fraco) */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] md:h-[360px] md:w-[360px] rounded-full bg-cw-purple/[0.22] blur-3xl" />
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[220px] w-[220px] rounded-full bg-cw-purple/[0.18] blur-2xl" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[260px] w-[260px] md:h-[320px] md:w-[320px] lg:h-[440px] lg:w-[440px] rounded-full bg-cw-purple/[0.35] blur-2xl" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[170px] w-[170px] md:h-[210px] md:w-[210px] lg:h-[280px] lg:w-[280px] rounded-full bg-cw-purple/[0.30] blur-xl" />
           <div className="absolute top-4 right-8 h-40 w-40 rounded-full bg-cw-yellow/10 blur-2xl" />
           <svg className="absolute top-8 left-[18%] w-24 h-16 text-cw-purple/40" viewBox="0 0 100 60" fill="none">
             <path d="M2 40 C 30 5, 60 55, 98 15" stroke="currentColor" strokeWidth="2.5" strokeDasharray="4 6" strokeLinecap="round" />
