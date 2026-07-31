@@ -32,7 +32,7 @@ import {
   rotuloFamilia, ORDEM_DIF, type GameState,
 } from '@/lib/roleplay/engine';
 
-type Tela = 'menu' | 'briefing' | 'jogo' | 'fim' | 'placar';
+type Tela = 'menu' | 'clientes' | 'briefing' | 'jogo' | 'fim' | 'placar';
 const DIFICULDADES = ['todos', 'Treino', 'Média', 'Difícil', 'Muito difícil'] as const;
 
 /** Ícone por postura — sem foto/avatar, só o ícone animado (respiração
@@ -121,17 +121,22 @@ const HUMOR_COR: Record<Humor, string> = { irritado: '#FF5959', frio: '#FF5959',
 const HUMOR_LABEL: Record<Humor, string> = { irritado: 'Perdendo a paciência', frio: 'Distante', neutro: 'Acompanhando', quente: 'Engajado' };
 
 /** Waveform simples (sem player, sem áudio de verdade — é só o formato
- *  visual): uma barra por turno, altura = sinal daquele turno, cor = humor
- *  atual. Só muda de cor, sem animação de "vivo". */
-function Sparkline({ serie, humor }: { serie: number[]; humor: Humor }) {
+ *  visual): número fixo de barras (uma por turno possível da call), altura
+ *  = sinal daquele turno, cor = humor atual. Turnos ainda não jogados
+ *  ficam como barrinha baixa e apagada, senão no início da call (poucos
+ *  pontos) a barra única esticava e virava um bloco só. */
+function Sparkline({ serie, humor, total }: { serie: number[]; humor: Humor; total: number }) {
   const cor = HUMOR_COR[humor];
-  const barras = serie.length ? serie : [0];
+  const n = Math.max(total, serie.length, 1);
+  const barras = Array.from({ length: n }, (_, i) => serie[i]);
   return (
-    <div className="w-full h-10 flex items-center gap-[3px]">
+    <div className="w-full h-10 flex items-end gap-[3px]">
       {barras.map((v, i) => (
         <div
-          key={i} className="flex-1 min-w-[2px] rounded-full"
-          style={{ height: `${Math.max(14, Math.min(100, v))}%`, backgroundColor: cor, opacity: 0.5 + (v / 100) * 0.5 }}
+          key={i} className="flex-1 min-w-[2px] rounded-full transition-all duration-300"
+          style={v === undefined
+            ? { height: '10%', backgroundColor: '#E9DDF2' }
+            : { height: `${Math.max(14, Math.min(100, v))}%`, backgroundColor: cor, opacity: 0.5 + (v / 100) * 0.5 }}
         />
       ))}
     </div>
@@ -215,14 +220,19 @@ export default function Roleplay() {
     <div className="px-6 md:px-10 pt-4 pb-10 space-y-6">
       {telaAtual === 'menu' && (
         <MenuTela
-          filtroDif={filtroDif} setFiltroDif={setFiltroDif}
-          personas={personasFiltradas} total={PERSONAS.length}
-          onAbrir={abrirBriefing} onVerPlacar={() => setTelaAtual('placar')}
+          onIrParaClientes={() => setTelaAtual('clientes')} onVerPlacar={() => setTelaAtual('placar')}
           scores={scores} userId={profile.id}
         />
       )}
+      {telaAtual === 'clientes' && (
+        <ClientesTela
+          filtroDif={filtroDif} setFiltroDif={setFiltroDif}
+          personas={personasFiltradas} total={PERSONAS.length}
+          onAbrir={abrirBriefing} onVoltar={() => setTelaAtual('menu')}
+        />
+      )}
       {telaAtual === 'briefing' && briefingPersona && (
-        <BriefingTela persona={briefingPersona} onEntrar={() => iniciar(briefingPersona.id)} onVoltar={reiniciar} />
+        <BriefingTela persona={briefingPersona} onEntrar={() => iniciar(briefingPersona.id)} onVoltar={() => setTelaAtual('clientes')} />
       )}
       {telaAtual === 'jogo' && state && (
         <JogoTela state={state} onJogar={jogarCarta} />
@@ -298,19 +308,17 @@ function DonutConversao({ pct }: { pct: number }) {
 }
 
 /* ============================================================ MENU */
-function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlacar, scores, userId }: {
-  filtroDif: string; setFiltroDif: (d: string) => void; personas: Persona[]; total: number;
-  onAbrir: (id: string) => void; onVerPlacar: () => void;
+function MenuTela({ onIrParaClientes, onVerPlacar, scores, userId }: {
+  onIrParaClientes: () => void; onVerPlacar: () => void;
   scores: RoleplayScore[]; userId: string | null;
 }) {
-  const listaRef = useRef<HTMLDivElement>(null);
   const resultados = useMemo(() => calcularResultados(scores, userId), [scores, userId]);
   const ranking = useMemo(() => calcularRankingSemana(scores), [scores]);
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-10 grid md:grid-cols-[1fr,auto] items-center gap-6">
-        <div className="w-full">
+      <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
+        <div className="flex-1 w-full">
           <p className="text-[11.5px] font-mono uppercase tracking-[0.14em] text-cw-purple font-semibold mb-3">Roleplay · Treinamento de SDR</p>
           <h1 className="text-[32px] md:text-[38px] font-black text-cw-text leading-[1.05]">
             Sala de <span className="text-gradient-primary">Call</span>
@@ -321,7 +329,7 @@ function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlac
           </p>
           <div className="flex flex-wrap gap-3 mt-5">
             <button
-              type="button" onClick={() => listaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              type="button" onClick={onIrParaClientes}
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl gradient-primary text-white text-[13.5px] font-bold hover:opacity-90 transition-opacity"
             >
               <Phone className="h-4 w-4" /> Vamos praticar agora!
@@ -334,12 +342,12 @@ function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlac
             </button>
           </div>
         </div>
-        <div className="flex items-center md:pl-6">
+        <div className="flex items-center shrink-0">
           <img
             src="/roleplay/cardapinho-analista.png" alt="Cardapinho, o mascote da Cardápio Web"
-            className="h-52 md:h-72 w-auto object-contain shrink-0 relative z-10 md:-mr-14 drop-shadow-xl"
+            className="h-40 md:h-48 w-auto object-contain shrink-0 relative z-10 md:-mr-7 drop-shadow-xl"
           />
-          <div className="w-full md:w-[260px] space-y-3">
+          <div className="w-[210px] space-y-3 shrink-0">
             <HeroFeature icon={Phone} titulo="Pratique ligações reais" desc="Simule calls com clientes de verdade do funil." />
             <HeroFeature icon={Target} titulo="Melhore sua conversão" desc="Cada decisão certa te aproxima de mais resultados." />
             <HeroFeature icon={TrendingUp} titulo="Evolua a cada call" desc="Receba feedbacks e acompanhe sua evolução." />
@@ -426,44 +434,54 @@ function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlac
           </button>
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div ref={listaRef}>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-black text-cw-text text-[15px]">Escolha o cliente</h2>
-        </div>
-        <div className="flex flex-wrap gap-2 mb-5">
-          {DIFICULDADES.map((d) => {
-            const n = d === 'todos' ? total : personas.filter((p) => p.dificuldade === d).length;
-            return (
-              <button
-                key={d} type="button" onClick={() => setFiltroDif(d)}
-                className={cn(
-                  'px-3.5 py-2 rounded-full text-[12.5px] font-semibold border transition-colors',
-                  filtroDif === d ? 'gradient-primary text-white border-transparent' : 'border-cw-border bg-white text-cw-muted hover:border-cw-purple/40',
-                )}
-              >
-                {d === 'todos' ? 'Todos' : d} <span className="opacity-70 font-mono ml-1">{d === 'todos' ? total : PERSONAS.filter((p) => p.dificuldade === d).length}</span>
-              </button>
-            );
-          })}
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {personas.map((p) => (
+/* ============================================================ ESCOLHA O CLIENTE */
+function ClientesTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVoltar }: {
+  filtroDif: string; setFiltroDif: (d: string) => void; personas: Persona[]; total: number;
+  onAbrir: (id: string) => void; onVoltar: () => void;
+}) {
+  return (
+    <div>
+      <button type="button" onClick={onVoltar} className="flex items-center gap-1.5 text-cw-purple text-[13.5px] font-semibold mb-4 hover:opacity-75 transition-opacity">
+        <ArrowLeft className="h-4 w-4" /> Voltar para a sala
+      </button>
+
+      <h2 className="font-black text-cw-text text-[20px] mb-3">Escolha o cliente</h2>
+      <div className="flex flex-wrap gap-2 mb-5">
+        {DIFICULDADES.map((d) => {
+          const n = d === 'todos' ? total : PERSONAS.filter((p) => p.dificuldade === d).length;
+          return (
             <button
-              key={p.id} type="button" onClick={() => onAbrir(p.id)}
-              className="cw-card cw-card-hover text-left p-5 transition-all"
+              key={d} type="button" onClick={() => setFiltroDif(d)}
+              className={cn(
+                'px-3.5 py-2 rounded-full text-[12.5px] font-semibold border transition-colors',
+                filtroDif === d ? 'gradient-primary text-white border-transparent' : 'border-cw-border bg-white text-cw-muted hover:border-cw-purple/40',
+              )}
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="h-10 w-10 rounded-xl gradient-primary text-white flex items-center justify-center font-bold text-[13px]">{p.iniciais}</span>
-                <Badge className={DIF_COLOR[p.dificuldade]}>{p.dificuldade}</Badge>
-              </div>
-              <h3 className="font-bold text-cw-text text-[15.5px]">{p.nome}</h3>
-              <p className="text-[13px] text-cw-muted mt-0.5">{p.empresa}</p>
-              <p className="text-[11.5px] font-mono text-cw-muted/80 mt-1">{p.segmento}</p>
-              <p className="text-[13px] text-cw-text mt-3 border-l-2 border-cw-red pl-2.5 leading-snug">{p.objecaoDeclarada}</p>
+              {d === 'todos' ? 'Todos' : d} <span className="opacity-70 font-mono ml-1">{n}</span>
             </button>
-          ))}
-        </div>
+          );
+        })}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {personas.map((p) => (
+          <button
+            key={p.id} type="button" onClick={() => onAbrir(p.id)}
+            className="cw-card cw-card-hover text-left p-5 transition-all"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="h-10 w-10 rounded-xl gradient-primary text-white flex items-center justify-center font-bold text-[13px]">{p.iniciais}</span>
+              <Badge className={DIF_COLOR[p.dificuldade]}>{p.dificuldade}</Badge>
+            </div>
+            <h3 className="font-bold text-cw-text text-[15.5px]">{p.nome}</h3>
+            <p className="text-[13px] text-cw-muted mt-0.5">{p.empresa}</p>
+            <p className="text-[11.5px] font-mono text-cw-muted/80 mt-1">{p.segmento}</p>
+            <p className="text-[13px] text-cw-text mt-3 border-l-2 border-cw-red pl-2.5 leading-snug">{p.objecaoDeclarada}</p>
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -610,7 +628,7 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
         <div className="grid grid-cols-1 sm:grid-cols-[1fr,180px] gap-3">
           <div className="cw-card p-4">
             <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cw-muted mb-2">Leitura da call</p>
-            <Sparkline serie={state.serie} humor={humor} />
+            <Sparkline serie={state.serie} humor={humor} total={state.turnosMax} />
           </div>
           <div className="cw-card p-4 flex flex-col items-center justify-center gap-1.5 text-center overflow-hidden">
             <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cw-muted">Postura</p>
@@ -667,7 +685,7 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
           </div>
           <img
             src="/roleplay/cardapinho-call.png" alt=""
-            className="hidden sm:block h-24 md:h-32 w-auto object-contain shrink-0 -mb-5 -mr-2"
+            className="hidden sm:block h-20 md:h-24 w-auto object-contain shrink-0"
             aria-hidden="true"
           />
         </div>
