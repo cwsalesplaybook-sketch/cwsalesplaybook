@@ -254,7 +254,7 @@ function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlac
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-10 grid md:grid-cols-[1fr,auto,260px] items-center gap-6">
+      <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-10 grid md:grid-cols-[1fr,auto] items-center gap-6">
         <div className="w-full">
           <p className="text-[11.5px] font-mono uppercase tracking-[0.14em] text-cw-purple font-semibold mb-3">Roleplay · Treinamento de SDR</p>
           <h1 className="text-[32px] md:text-[38px] font-black text-cw-text leading-[1.05]">
@@ -279,13 +279,16 @@ function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlac
             </button>
           </div>
         </div>
-        <div className="shrink-0 flex items-center justify-center">
-          <img src="/roleplay/cardapinho-analista.png" alt="Cardapinho, o mascote da Cardápio Web" className="h-40 md:h-48 w-auto object-contain rounded-3xl" />
-        </div>
-        <div className="w-full space-y-3">
-          <HeroFeature icon={Phone} titulo="Pratique ligações reais" desc="Simule calls com clientes de verdade do funil." />
-          <HeroFeature icon={Target} titulo="Melhore sua conversão" desc="Cada decisão certa te aproxima de mais resultados." />
-          <HeroFeature icon={TrendingUp} titulo="Evolua a cada call" desc="Receba feedbacks e acompanhe sua evolução." />
+        <div className="flex items-center md:pl-6">
+          <img
+            src="/roleplay/cardapinho-analista.png" alt="Cardapinho, o mascote da Cardápio Web"
+            className="h-52 md:h-72 w-auto object-contain shrink-0 relative z-10 md:-mr-14 drop-shadow-xl"
+          />
+          <div className="w-full md:w-[260px] space-y-3">
+            <HeroFeature icon={Phone} titulo="Pratique ligações reais" desc="Simule calls com clientes de verdade do funil." />
+            <HeroFeature icon={Target} titulo="Melhore sua conversão" desc="Cada decisão certa te aproxima de mais resultados." />
+            <HeroFeature icon={TrendingUp} titulo="Evolua a cada call" desc="Receba feedbacks e acompanhe sua evolução." />
+          </div>
         </div>
       </div>
 
