@@ -6,15 +6,18 @@
  *  Motor do jogo em src/lib/roleplay/engine.ts, conteúdo em
  *  src/data/roleplay/{conteudo,personas,vozes}.ts, placar via Supabase
  *  (useRoleplayScores) ligado ao usuário logado — sem nome digitado à mão. */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Sparkles, ArrowRight, RotateCcw, Trophy,
+  Sparkles, ArrowRight, ArrowLeft, RotateCcw, Trophy, Star,
   Lightbulb, AlertTriangle, CheckCircle2, XCircle, Timer, Target,
-  Clock, UserMinus, ShieldOff, User as UserIcon, TrendingUp, Smile,
+  Clock, UserMinus, Frown, User as UserIcon, TrendingUp, Smile,
+  Phone, Flag, Calendar, Dumbbell, LogOut, Headphones,
+  MessageCircle, Gamepad2, ChevronRight, BarChart3,
+  type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { useRoleplayScores } from '@/hooks/useRoleplayScores';
+import { useRoleplayScores, type RoleplayScore } from '@/hooks/useRoleplayScores';
 import { PERSONAS, type Persona } from '@/data/roleplay/personas';
 import { REVELACAO } from '@/data/roleplay/conteudo';
 import {
@@ -28,7 +31,7 @@ const DIFICULDADES = ['todos', 'Treino', 'Média', 'Difícil', 'Muito difícil']
 /** Ícone por postura — sem foto/avatar, só o ícone animado (respiração
  *  contínua + pulso a cada fala + crossfade ao trocar de leitura). */
 const POSE_ICON: Record<string, typeof Clock> = {
-  relogio: Clock, recuado: UserMinus, cruzado: ShieldOff, neutro: UserIcon,
+  relogio: Clock, recuado: UserMinus, cruzado: Frown, neutro: UserIcon,
   inclinado: TrendingUp, aberto: Smile,
 };
 
@@ -64,34 +67,18 @@ function humorDe(sinalAtual: number, pac: number): Humor {
   if (sinalAtual > 68) return 'quente';
   return 'neutro';
 }
-const HUMOR_COR: Record<Humor, string> = { irritado: '#FF5959', frio: '#FF9A7A', neutro: '#A543FA', quente: '#22c55e' };
+const HUMOR_COR: Record<Humor, string> = { irritado: '#FF5959', frio: '#FF5959', neutro: '#A543FA', quente: '#22c55e' };
 const HUMOR_LABEL: Record<Humor, string> = { irritado: 'Perdendo a paciência', frio: 'Distante', neutro: 'Acompanhando', quente: 'Engajado' };
-const HUMOR_DURACAO: Record<Humor, string> = { irritado: '0.6s', frio: '2.8s', neutro: '2s', quente: '1.5s' };
 
-/** Traço "com vida" — a linha nunca fica parada (fluxo contínuo no
- *  traçado) e pulsa mais rápido quando o humor vira irritado, pra dar ao
- *  SDR uma leitura indireta de que o cliente tá perdendo a paciência,
- *  sem nunca mostrar o número. */
 function Sparkline({ serie, humor }: { serie: number[]; humor: Humor }) {
   const w = 100, h = 30;
   const pts = serie.length > 1
     ? serie.map((v, i) => `${(i / (serie.length - 1)) * w},${h - (v / 100) * h}`).join(' ')
     : `0,${h} ${w},${h}`;
-  const ultimoX = serie.length > 1 ? w : 0;
-  const ultimoY = h - ((serie[serie.length - 1] ?? 0) / 100) * h;
   const cor = HUMOR_COR[humor];
-  const duracao = HUMOR_DURACAO[humor];
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full h-10 overflow-visible">
-      <polyline
-        points={pts} fill="none" stroke={cor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-        strokeDasharray="5 4" className="animate-sparkline-flow" style={{ animationDuration: duracao }}
-      />
-      <circle cx={ultimoX} cy={ultimoY} r="2.4" fill={cor} />
-      <circle
-        cx={ultimoX} cy={ultimoY} r="2.4" fill={cor} className="animate-sparkline-pulse"
-        style={{ animationDuration: duracao, transformOrigin: `${ultimoX}px ${ultimoY}px` }}
-      />
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full h-10">
+      <polyline points={pts} fill="none" stroke={cor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -112,6 +99,20 @@ function Medidor({ label, valor, cor }: { label: string; valor: number; cor: str
 
 function Badge({ children, className }: { children: React.ReactNode; className?: string }) {
   return <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-semibold border', className)}>{children}</span>;
+}
+
+function HeroFeature({ icon: Icon, titulo, desc }: { icon: LucideIcon; titulo: string; desc: string }) {
+  return (
+    <div className="flex items-start gap-3 bg-cw-elevated rounded-xl p-3">
+      <span className="h-8 w-8 rounded-lg bg-cw-purple/10 text-cw-purple flex items-center justify-center shrink-0">
+        <Icon className="h-4 w-4" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-[12.5px] font-bold text-cw-text leading-tight">{titulo}</p>
+        <p className="text-[11px] text-cw-muted leading-snug mt-0.5">{desc}</p>
+      </div>
+    </div>
+  );
 }
 
 export default function Roleplay() {
@@ -162,6 +163,7 @@ export default function Roleplay() {
           filtroDif={filtroDif} setFiltroDif={setFiltroDif}
           personas={personasFiltradas} total={PERSONAS.length}
           onAbrir={abrirBriefing} onVerPlacar={() => setTelaAtual('placar')}
+          scores={scores} userId={profile.id}
         />
       )}
       {telaAtual === 'briefing' && briefingPersona && (
@@ -183,49 +185,191 @@ export default function Roleplay() {
   );
 }
 
+const COMO_SE_JOGA_PASSOS = [
+  { icon: Phone, titulo: 'Receba uma ligação', desc: 'Um cliente real do nosso funil liga para você.' },
+  { icon: MessageCircle, titulo: 'Converse e descubra', desc: 'Faça as perguntas certas e entenda a necessidade do cliente.' },
+  { icon: Target, titulo: 'Apresente a solução', desc: 'Mostre como a Cardápio Web resolve o problema dele.' },
+  { icon: CheckCircle2, titulo: 'Conduza para o próximo passo', desc: 'Agende uma reunião ou avance no funil.' },
+  { icon: Star, titulo: 'Receba seu feedback', desc: 'Veja seus acertos, pontos de atenção e dicas de melhoria.' },
+];
+
+const DICAS_RAPIDAS = [
+  'Escute mais do que fala.',
+  'Pergunte para entender, não para falar.',
+  'Conecte a dor do cliente à sua solução.',
+  'Seja claro no próximo passo.',
+  'Confiança = Resultado.',
+];
+
+function calcularResultados(scores: RoleplayScore[], userId: string | null) {
+  const meus = userId ? scores.filter((s) => s.userId === userId) : [];
+  const calls = meus.length;
+  const reunioes = meus.filter((s) => s.desfecho === 'vitoria').length;
+  const taxa = calls ? Math.round((reunioes / calls) * 100) : 0;
+  return { calls, reunioes, taxa };
+}
+
+function calcularRankingSemana(scores: RoleplayScore[]) {
+  const seteDiasAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const recentes = scores.filter((s) => s.data >= seteDiasAtras);
+  const porPessoa = new Map<string, { nome: string; calls: number; reunioes: number }>();
+  recentes.forEach((s) => {
+    const o = porPessoa.get(s.nome) ?? { nome: s.nome, calls: 0, reunioes: 0 };
+    o.calls++;
+    if (s.desfecho === 'vitoria') o.reunioes++;
+    porPessoa.set(s.nome, o);
+  });
+  return [...porPessoa.values()]
+    .map((o) => ({ nome: o.nome, taxa: o.calls ? Math.round((o.reunioes / o.calls) * 100) : 0, calls: o.calls }))
+    .sort((a, b) => b.taxa - a.taxa || b.calls - a.calls)
+    .slice(0, 3);
+}
+
+function DonutConversao({ pct }: { pct: number }) {
+  const r = 42, c = 2 * Math.PI * r;
+  const offset = c - (Math.min(100, Math.max(0, pct)) / 100) * c;
+  return (
+    <svg viewBox="0 0 100 100" className="h-28 w-28 -rotate-90">
+      <circle cx="50" cy="50" r={r} fill="none" stroke="#F1E5FB" strokeWidth="10" />
+      <circle
+        cx="50" cy="50" r={r} fill="none" stroke="#A543FA" strokeWidth="10" strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={offset} className="transition-all duration-700"
+      />
+      <text x="50" y="50" textAnchor="middle" dominantBaseline="central" transform="rotate(90 50 50)" className="fill-cw-text font-black" style={{ fontSize: '20px' }}>
+        {pct}%
+      </text>
+    </svg>
+  );
+}
+
 /* ============================================================ MENU */
-function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlacar }: {
+function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlacar, scores, userId }: {
   filtroDif: string; setFiltroDif: (d: string) => void; personas: Persona[]; total: number;
   onAbrir: (id: string) => void; onVerPlacar: () => void;
+  scores: RoleplayScore[]; userId: string | null;
 }) {
+  const listaRef = useRef<HTMLDivElement>(null);
+  const resultados = useMemo(() => calcularResultados(scores, userId), [scores, userId]);
+  const ranking = useMemo(() => calcularRankingSemana(scores), [scores]);
+
   return (
-    <div className="space-y-8">
-      <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-10 flex flex-col md:flex-row items-center gap-6">
-        <div className="flex-1 w-full">
+    <div className="space-y-6">
+      <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-10 grid md:grid-cols-[1fr,auto,260px] items-center gap-6">
+        <div className="w-full">
           <p className="text-[11.5px] font-mono uppercase tracking-[0.14em] text-cw-purple font-semibold mb-3">Roleplay · Treinamento de SDR</p>
-          <h1 className="text-[32px] md:text-[42px] font-black text-cw-text leading-[1.05]">
+          <h1 className="text-[32px] md:text-[38px] font-black text-cw-text leading-[1.05]">
             Sala de <span className="text-gradient-primary">Call</span>
           </h1>
-          <p className="text-cw-muted text-[15px] mt-3 max-w-2xl leading-relaxed">
-            Você liga pra um cliente real do nosso funil. Quatro medidores decidem se ele topa marcar com o
-            consultor, e você não vê nenhum deles. Só a fala, o clima e a postura do outro lado.
+          <p className="text-cw-muted text-[14px] mt-3 max-w-md leading-relaxed">
+            Quanto melhores decisões na ligação, maior a sua conversão e, consequentemente, melhores resultados.
+            Está na call, tá criando na prática!
           </p>
-          <button
-            type="button" onClick={onVerPlacar}
-            className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-cw-border bg-white text-cw-text text-[13px] font-semibold hover:border-cw-purple/40 transition-colors"
-          >
-            <Trophy className="h-4 w-4 text-cw-purple" /> Ver o placar do time
-          </button>
+          <div className="flex flex-wrap gap-3 mt-5">
+            <button
+              type="button" onClick={() => listaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl gradient-primary text-white text-[13.5px] font-bold hover:opacity-90 transition-opacity"
+            >
+              <Phone className="h-4 w-4" /> Vamos praticar agora!
+            </button>
+            <button
+              type="button" onClick={onVerPlacar}
+              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-cw-border bg-white text-cw-text text-[13px] font-semibold hover:border-cw-purple/40 transition-colors"
+            >
+              <Trophy className="h-4 w-4 text-cw-purple" /> Ver o placar do time
+            </button>
+          </div>
         </div>
-        <div className="shrink-0 w-full md:w-[260px] flex items-center justify-center">
-          <img src="/tira-duvidas/cardapinho-mascote.png" alt="Cardapinho, o mascote da Cardápio Web" className="h-44 md:h-52 w-auto object-contain" />
+        <div className="shrink-0 flex items-center justify-center">
+          <img src="/roleplay/cardapinho-analista.png" alt="Cardapinho, o mascote da Cardápio Web" className="h-40 md:h-48 w-auto object-contain rounded-3xl" />
+        </div>
+        <div className="w-full space-y-3">
+          <HeroFeature icon={Phone} titulo="Pratique ligações reais" desc="Simule calls com clientes de verdade do funil." />
+          <HeroFeature icon={Target} titulo="Melhore sua conversão" desc="Cada decisão certa te aproxima de mais resultados." />
+          <HeroFeature icon={TrendingUp} titulo="Evolua a cada call" desc="Receba feedbacks e acompanhe sua evolução." />
         </div>
       </div>
 
       <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-6 md:p-8">
-        <h2 className="font-black text-cw-text text-[15px] mb-3">Como se joga</h2>
-        <ul className="space-y-2 text-[13.5px] text-cw-muted leading-relaxed">
-          <li>· Cada carta é uma jogada, SPIN, escuta, valor e agenda. O efeito depende do estado da call, não da carta.</li>
-          <li>· Enfileirar pergunta atrás de pergunta vira interrogatório, e o cliente reage.</li>
-          <li>· A objeção que o cliente declara <b className="text-cw-text">nunca</b> é o motivo real. Existe uma raiz oculta.</li>
-          <li>· As cartas certas no momento certo revelam a raiz e liberam uma carta nova.</li>
-          <li>· Alguns clientes dão uma explicação falsa antes da verdadeira. Nem toda confissão é a raiz.</li>
-          <li>· Convidar pra call cedo demais queima. Tarde demais também: a janela abre e fecha.</li>
-          <li>· A paciência é finita e invisível. Diagnóstico consome mais que qualquer coisa.</li>
-        </ul>
+        <h2 className="font-black text-cw-text text-[15px] mb-5 flex items-center gap-2">
+          <Gamepad2 className="h-4 w-4 text-cw-purple" /> Como se joga
+        </h2>
+        <div className="flex flex-col md:flex-row items-stretch md:items-start gap-3 md:gap-1">
+          {COMO_SE_JOGA_PASSOS.map((passo, i) => (
+            <div key={passo.titulo} className="flex items-center gap-1 flex-1">
+              <div className="flex flex-col items-center text-center gap-2 flex-1 px-2">
+                <span className="h-11 w-11 rounded-full bg-cw-purple/10 text-cw-purple flex items-center justify-center shrink-0">
+                  <passo.icon className="h-5 w-5" />
+                </span>
+                <p className="text-[12.5px] font-bold text-cw-text leading-tight">{i + 1}. {passo.titulo}</p>
+                <p className="text-[11.5px] text-cw-muted leading-snug">{passo.desc}</p>
+              </div>
+              {i < COMO_SE_JOGA_PASSOS.length - 1 && (
+                <ChevronRight className="h-4 w-4 text-cw-border shrink-0 hidden md:block" />
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div>
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="rounded-[24px] p-5 bg-amber-50 border border-amber-200">
+          <h3 className="font-black text-cw-text text-[14.5px] mb-3 flex items-center gap-2">
+            <Lightbulb className="h-4 w-4 text-amber-500" /> Dicas rápidas
+          </h3>
+          <ul className="space-y-2">
+            {DICAS_RAPIDAS.map((d) => (
+              <li key={d} className="flex items-start gap-2 text-[12.5px] text-cw-text leading-snug">
+                <CheckCircle2 className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" /> {d}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-[24px] p-5 bg-cw-purple/5 border border-cw-purple/15">
+          <h3 className="font-black text-cw-text text-[14.5px] mb-3 flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-cw-purple" /> Seus resultados
+          </h3>
+          <div className="flex items-center gap-4">
+            <DonutConversao pct={resultados.taxa} />
+            <div className="space-y-1.5 flex-1 min-w-0">
+              <p className="text-[10.5px] text-cw-muted">Conversão</p>
+              <div className="flex justify-between text-[12px]"><span className="text-cw-muted">Calls realizadas</span><b className="text-cw-text">{resultados.calls}</b></div>
+              <div className="flex justify-between text-[12px]"><span className="text-cw-muted">Reuniões agendadas</span><b className="text-cw-text">{resultados.reunioes}</b></div>
+              <div className="flex justify-between text-[12px]"><span className="text-cw-muted">Taxa de conversão</span><b className="text-cw-text">{resultados.taxa}%</b></div>
+            </div>
+          </div>
+          <button type="button" onClick={onVerPlacar} className="mt-3 text-[12px] font-semibold text-cw-purple flex items-center gap-1 hover:opacity-75 transition-opacity">
+            Ver meu desempenho completo <ArrowRight className="h-3 w-3" />
+          </button>
+        </div>
+
+        <div className="rounded-[24px] p-5 bg-amber-50 border border-amber-200">
+          <h3 className="font-black text-cw-text text-[14.5px] mb-3 flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-amber-500" /> Ranking da semana
+          </h3>
+          {ranking.length ? (
+            <ul className="space-y-2">
+              {ranking.map((r, i) => (
+                <li key={r.nome} className="flex items-center gap-2.5 text-[12.5px]">
+                  <span className="font-mono text-cw-muted w-4">{i + 1}</span>
+                  <span className="h-7 w-7 rounded-full gradient-primary text-white flex items-center justify-center text-[10.5px] font-bold shrink-0">
+                    {r.nome.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase()}
+                  </span>
+                  <span className="flex-1 text-cw-text font-semibold truncate">{r.nome}</span>
+                  <b className="text-amber-600">{r.taxa}%</b>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[12.5px] text-cw-muted italic">Ninguém jogou essa semana ainda.</p>
+          )}
+          <button type="button" onClick={onVerPlacar} className="mt-3 text-[12px] font-semibold text-cw-purple flex items-center gap-1 hover:opacity-75 transition-opacity">
+            Ver ranking completo <ArrowRight className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+
+      <div ref={listaRef}>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-black text-cw-text text-[15px]">Escolha o cliente</h2>
         </div>
@@ -268,38 +412,87 @@ function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlac
 }
 
 /* ============================================================ BRIEFING */
+function dicaTreinador(dificuldade: string): string {
+  switch (dificuldade) {
+    case 'Treino': return 'Vá com calma: use as dicas que aparecem na tela e teste as cartas de escuta sem medo de errar.';
+    case 'Média': return 'Escute antes de argumentar, a raiz só aparece pra quem para de empurrar solução.';
+    case 'Difícil': return 'Sem dica na tela neste nível: leia o traço, a postura e a fala com atenção antes de escolher a carta.';
+    default: return 'Nível mais alto: cada armadilha é sutil. Prepare o terreno com escuta antes de arriscar a carta de raiz.';
+  }
+}
+
+function CampoIcon({ icon: Icon, label, children, destaque }: { icon: LucideIcon; label: string; children: React.ReactNode; destaque?: boolean }) {
+  return (
+    <div className="flex gap-3">
+      <span className="h-9 w-9 rounded-xl bg-cw-purple/10 text-cw-purple flex items-center justify-center shrink-0">
+        <Icon className="h-4 w-4" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cw-purple font-semibold mb-1">{label}</p>
+        <div className={cn('text-[14px] text-cw-text leading-relaxed', destaque && 'border-l-2 border-cw-red pl-2.5')}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
 function BriefingTela({ persona, onEntrar, onVoltar }: { persona: Persona; onEntrar: () => void; onVoltar: () => void }) {
   const rev = REVELACAO[persona.dificuldade];
+  const modoTexto = rev.badgeRaiz
+    ? 'Você recebe avisos durante a call: quando a raiz aparece e quando a janela de agendamento abre.'
+    : 'Sem avisos durante a call. A leitura é só pelo traço, pela postura e pela fala, tudo é explicado no debrief.';
+
   return (
     <div>
-      <div className="cw-card p-7 md:p-10 space-y-5">
-        <div className="flex items-center gap-4">
-          <span className="h-14 w-14 rounded-2xl gradient-primary text-white flex items-center justify-center font-bold text-[17px] shrink-0">{persona.iniciais}</span>
-          <div>
-            <h2 className="font-black text-cw-text text-[20px]">{persona.nome}</h2>
-            <p className="text-[13px] text-cw-muted">{persona.empresa} · {persona.segmento}</p>
+      <button type="button" onClick={onVoltar} className="flex items-center gap-1.5 text-cw-purple text-[13.5px] font-semibold mb-4 hover:opacity-75 transition-opacity">
+        <ArrowLeft className="h-4 w-4" /> Voltar para a sala
+      </button>
+
+      <div className="cw-card p-7 md:p-8">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
+          <div className="flex items-center gap-4">
+            <span className="h-14 w-14 rounded-2xl gradient-primary text-white flex items-center justify-center font-bold text-[17px] shrink-0">{persona.iniciais}</span>
+            <div>
+              <h2 className="font-black text-cw-text text-[20px]">{persona.nome}</h2>
+              <p className="text-[13px] text-cw-muted">{persona.empresa} · {persona.segmento}</p>
+            </div>
           </div>
+          <Badge className="bg-cw-purple/10 text-cw-purple border-cw-purple/20 shrink-0">
+            <Star className="h-3 w-3" /> Cliente em atendimento
+          </Badge>
         </div>
 
-        <Campo label="Como o cliente chegou">{persona.briefing}</Campo>
-        <Campo label="Objeção declarada"><span className="border-l-2 border-cw-red pl-2.5 block">{persona.objecaoDeclarada}</span></Campo>
-        <div className="grid grid-cols-2 gap-4">
-          <Campo label="Dificuldade">{persona.dificuldade}</Campo>
-          <Campo label="Turnos disponíveis">{persona.turnos} jogadas até o fim da ligação</Campo>
+        <div className="grid md:grid-cols-2 gap-x-8 gap-y-5 mb-6">
+          <CampoIcon icon={Phone} label="Como o cliente chegou">{persona.briefing}</CampoIcon>
+          <CampoIcon icon={Target} label="Como você joga neste nível">{modoTexto}</CampoIcon>
+          <CampoIcon icon={Flag} label="Objetivo declarado" destaque>{persona.objecaoDeclarada}</CampoIcon>
+          <CampoIcon icon={Calendar} label="Turnos disponíveis">{persona.turnos} jogadas até o fim da ligação</CampoIcon>
+          <CampoIcon icon={Dumbbell} label="Dificuldade">{persona.dificuldade}</CampoIcon>
         </div>
-        <Campo label="Como você joga neste nível">
-          {rev.badgeRaiz
-            ? 'Você recebe avisos durante a call: quando a raiz aparece e quando a janela de agendamento abre.'
-            : 'Sem avisos durante a call. A leitura é só pelo traço, pela postura e pela fala, tudo é explicado no debrief.'}
-        </Campo>
 
-        <div className="flex gap-3 pt-2">
-          <button type="button" onClick={onEntrar} className="flex-1 gradient-primary text-white font-bold text-[14.5px] py-3.5 rounded-xl hover:opacity-90 transition-opacity">
-            Entrar na call
-          </button>
-          <button type="button" onClick={onVoltar} className="px-5 py-3.5 rounded-xl border border-cw-border text-cw-muted font-semibold text-[14.5px] hover:border-cw-purple/40 transition-colors">
-            Voltar
-          </button>
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="flex gap-3 md:w-[280px] shrink-0 bg-cw-elevated rounded-xl p-4 border border-cw-border/60">
+            <span className="h-9 w-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+              <Lightbulb className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-amber-700 font-semibold mb-1">Dica do treinador</p>
+              <p className="text-[12.5px] text-cw-text leading-snug">{dicaTreinador(persona.dificuldade)}</p>
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col gap-2.5">
+            <div className="flex gap-3">
+              <button type="button" onClick={onEntrar} className="flex-1 gradient-primary text-white font-bold text-[14.5px] py-3.5 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                <Phone className="h-4 w-4" /> Entrar na call
+              </button>
+              <button type="button" onClick={onVoltar} className="px-5 py-3.5 rounded-xl border border-cw-border text-cw-muted font-semibold text-[14.5px] hover:border-cw-purple/40 transition-colors flex items-center justify-center gap-2">
+                <LogOut className="h-4 w-4" /> Voltar
+              </button>
+            </div>
+            <p className="flex items-center justify-center gap-2 text-[12px] text-cw-purple bg-cw-purple/5 rounded-lg py-2 px-3">
+              <Headphones className="h-3.5 w-3.5 shrink-0" /> Ao entrar, a simulação será iniciada e os avisos serão ativados.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -352,15 +545,7 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
 
         <div className="grid grid-cols-1 sm:grid-cols-[1fr,180px] gap-3">
           <div className="cw-card p-4">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cw-muted">Leitura da call</p>
-              {rev.clima && (
-                <span className="flex items-center gap-1.5 text-[10.5px] font-semibold" style={{ color: HUMOR_COR[humor] }}>
-                  <span className="h-1.5 w-1.5 rounded-full animate-posture-talk" style={{ backgroundColor: HUMOR_COR[humor] }} />
-                  {HUMOR_LABEL[humor]}
-                </span>
-              )}
-            </div>
+            <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cw-muted mb-2">Leitura da call</p>
             <Sparkline serie={state.serie} humor={humor} />
           </div>
           <div className="cw-card p-4 flex flex-col items-center justify-center gap-1.5 text-center overflow-hidden">

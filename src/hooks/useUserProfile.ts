@@ -3,19 +3,17 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface UserProfile {
+  id: string | null;
   avatarUrl: string | null;
   fullName: string | null;
   email: string | null;
   initials: string;
 }
 
+const EMPTY_PROFILE: UserProfile = { id: null, avatarUrl: null, fullName: null, email: null, initials: '?' };
+
 export function useUserProfile(): UserProfile {
-  const [profile, setProfile] = useState<UserProfile>({
-    avatarUrl: null,
-    fullName: null,
-    email: null,
-    initials: '?',
-  });
+  const [profile, setProfile] = useState<UserProfile>(EMPTY_PROFILE);
 
   useEffect(() => {
     const load = async () => {
@@ -30,6 +28,7 @@ export function useUserProfile(): UserProfile {
         .map((n: string) => n[0].toUpperCase())
         .join('');
       setProfile({
+        id: session.user.id,
         avatarUrl: meta?.avatar_url ?? meta?.picture ?? null,
         fullName: name || null,
         email: session.user.email ?? null,
@@ -39,11 +38,11 @@ export function useUserProfile(): UserProfile {
     load();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session) { setProfile({ avatarUrl: null, fullName: null, email: null, initials: '?' }); return; }
+      if (!session) { setProfile(EMPTY_PROFILE); return; }
       const meta = session.user.user_metadata;
       const name: string = meta?.full_name ?? meta?.name ?? session.user.email ?? '';
       const initials = name.split(' ').filter(Boolean).slice(0, 2).map((n: string) => n[0].toUpperCase()).join('');
-      setProfile({ avatarUrl: meta?.avatar_url ?? meta?.picture ?? null, fullName: name || null, email: session.user.email ?? null, initials: initials || '?' });
+      setProfile({ id: session.user.id, avatarUrl: meta?.avatar_url ?? meta?.picture ?? null, fullName: name || null, email: session.user.email ?? null, initials: initials || '?' });
     });
     return () => subscription.unsubscribe();
   }, []);
