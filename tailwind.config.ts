@@ -111,6 +111,14 @@ export default {
           "0%, 100%": { opacity: "0.45" },
           "50%": { opacity: "1" },
         },
+        "posture-idle": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-4px)" },
+        },
+        "posture-talk": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.045)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -120,6 +128,8 @@ export default {
         "shimmer": "shimmer 2s linear infinite",
         "dot-bounce": "dot-bounce 1.1s infinite",
         "caption-pulse": "caption-pulse 1.6s ease-in-out infinite",
+        "posture-idle": "posture-idle 2.6s ease-in-out infinite",
+        "posture-talk": "posture-talk 0.5s ease-in-out 2",
       },
     },
   },

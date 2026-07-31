@@ -8,8 +8,8 @@
  *  (useRoleplayScores) ligado ao usuário logado — sem nome digitado à mão. */
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Sparkles, ArrowRight, RotateCcw, Trophy, Clock, UserMinus, ShieldOff, User as UserIcon,
-  TrendingUp, Smile, Lightbulb, AlertTriangle, CheckCircle2, XCircle, Timer, Target,
+  Sparkles, ArrowRight, RotateCcw, Trophy,
+  Lightbulb, AlertTriangle, CheckCircle2, XCircle, Timer, Target,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -24,9 +24,31 @@ import {
 type Tela = 'menu' | 'briefing' | 'jogo' | 'fim' | 'placar';
 const DIFICULDADES = ['todos', 'Treino', 'Média', 'Difícil', 'Muito difícil'] as const;
 
-const POSE_ICON: Record<string, typeof Clock> = {
-  relogio: Clock, recuado: UserMinus, cruzado: ShieldOff, neutro: UserIcon,
-  inclinado: TrendingUp, aberto: Smile,
+/** Avatares chibi (placeholder — mesmos mascotes do Tira-dúvidas, só pra dar
+ *  vida ao indicador de postura até a Gabi mandar os personagens definitivos
+ *  do Roleplay). Escolhido por hash do id da persona, então cada cliente
+ *  sempre cai no mesmo avatar entre partidas. */
+const AVATARES_POSTURA = [
+  '/roleplay/avatares/anderson.png', '/roleplay/avatares/pedrinho.png', '/roleplay/avatares/vithoria.png',
+  '/roleplay/avatares/gui.png', '/roleplay/avatares/jojo.png', '/roleplay/avatares/bibi.png',
+];
+function avatarPara(personaId: string): string {
+  let h = 0;
+  for (let i = 0; i < personaId.length; i++) h = (h * 31 + personaId.charCodeAt(i)) >>> 0;
+  return AVATARES_POSTURA[h % AVATARES_POSTURA.length];
+}
+
+/** Transform/opacidade por postura — a mesma imagem "atua" as 6 leituras de
+ *  corpo (recuado, braços cruzados, inclinado etc.) só com CSS, já que ainda
+ *  não temos uma pose por estado. Composto com a animação de respiração
+ *  (transform no wrapper de fora) e o "falando" (no wrapper de dentro). */
+const POSE_TRANSFORM: Record<string, { transform: string; opacity: string }> = {
+  relogio: { transform: 'translateX(5px) rotate(-4deg) scale(0.96)', opacity: '0.7' },
+  recuado: { transform: 'translateY(5px) scale(0.92)', opacity: '0.8' },
+  cruzado: { transform: 'scale(0.96) rotate(1deg)', opacity: '0.88' },
+  neutro: { transform: 'scale(1)', opacity: '1' },
+  inclinado: { transform: 'translateY(-5px) scale(1.06)', opacity: '1' },
+  aberto: { transform: 'scale(1.08) rotate(-1deg)', opacity: '1' },
 };
 
 const DIF_COLOR: Record<string, string> = {
@@ -275,9 +297,11 @@ function Campo({ label, children }: { label: string; children: React.ReactNode }
 function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) => void }) {
   const p = state.persona, rev = state.rev;
   const pose = posturaAtual(state);
-  const Icon = POSE_ICON[pose.pose] ?? UserIcon;
   const s = sinal(state);
   const corSinal = s < 42 ? 'text-cw-red' : s > 68 ? 'text-emerald-600' : 'text-cw-purple';
+  const corGlow = s < 42 ? '#FF5959' : s > 68 ? '#22c55e' : '#A543FA';
+  const avatarSrc = avatarPara(p.id);
+  const poseStyle = POSE_TRANSFORM[pose.pose] ?? POSE_TRANSFORM.neutro;
 
   return (
     <div className="space-y-4">
@@ -303,10 +327,28 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
           <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cw-muted mb-2">Leitura da call</p>
           <Sparkline serie={state.serie} />
         </div>
-        <div className="cw-card p-4 flex flex-col items-center justify-center gap-2 text-center">
+        <div className="cw-card p-4 flex flex-col items-center justify-center gap-1.5 text-center overflow-hidden">
           <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cw-muted">Postura</p>
-          <Icon className={cn('h-8 w-8', corSinal)} />
-          <p className="text-[11px] text-cw-muted leading-snug">{pose.rotulo}</p>
+          <div className="relative h-20 w-20 flex items-center justify-center animate-posture-idle">
+            <div
+              className="absolute inset-0 rounded-full blur-xl transition-colors duration-700"
+              style={{ backgroundColor: corGlow, opacity: 0.28 }}
+              aria-hidden="true"
+            />
+            <div
+              key={state.turno}
+              className="relative h-full w-full animate-posture-talk transition-[transform,opacity] duration-500 ease-out"
+              style={poseStyle}
+            >
+              <img
+                src={avatarSrc}
+                alt=""
+                className="h-full w-full object-cover rounded-full border-2"
+                style={{ borderColor: corGlow }}
+              />
+            </div>
+          </div>
+          <p className={cn('text-[11px] leading-snug', corSinal)}>{pose.rotulo}</p>
         </div>
       </div>
 
