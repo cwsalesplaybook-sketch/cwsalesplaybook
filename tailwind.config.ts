@@ -119,6 +119,14 @@ export default {
           "0%, 100%": { transform: "scale(1)" },
           "50%": { transform: "scale(1.045)" },
         },
+        "sparkline-flow": {
+          "0%": { strokeDashoffset: "0" },
+          "100%": { strokeDashoffset: "-18" },
+        },
+        "sparkline-pulse": {
+          "0%, 100%": { transform: "scale(1)", opacity: "1" },
+          "50%": { transform: "scale(2.2)", opacity: "0.35" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -130,6 +138,8 @@ export default {
         "caption-pulse": "caption-pulse 1.6s ease-in-out infinite",
         "posture-idle": "posture-idle 2.6s ease-in-out infinite",
         "posture-talk": "posture-talk 0.5s ease-in-out 2",
+        "sparkline-flow": "sparkline-flow 1s linear infinite",
+        "sparkline-pulse": "sparkline-pulse 1.6s ease-in-out infinite",
       },
     },
   },

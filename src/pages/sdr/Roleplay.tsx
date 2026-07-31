@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Sparkles, ArrowRight, RotateCcw, Trophy,
   Lightbulb, AlertTriangle, CheckCircle2, XCircle, Timer, Target,
+  Clock, UserMinus, ShieldOff, User as UserIcon, TrendingUp, Smile,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -24,23 +25,14 @@ import {
 type Tela = 'menu' | 'briefing' | 'jogo' | 'fim' | 'placar';
 const DIFICULDADES = ['todos', 'Treino', 'Média', 'Difícil', 'Muito difícil'] as const;
 
-/** Avatares chibi (placeholder — mesmos mascotes do Tira-dúvidas, só pra dar
- *  vida ao indicador de postura até a Gabi mandar os personagens definitivos
- *  do Roleplay). Escolhido por hash do id da persona, então cada cliente
- *  sempre cai no mesmo avatar entre partidas. */
-const AVATARES_POSTURA = [
-  '/roleplay/avatares/anderson.png', '/roleplay/avatares/pedrinho.png', '/roleplay/avatares/vithoria.png',
-  '/roleplay/avatares/gui.png', '/roleplay/avatares/jojo.png', '/roleplay/avatares/bibi.png',
-];
-function avatarPara(personaId: string): string {
-  let h = 0;
-  for (let i = 0; i < personaId.length; i++) h = (h * 31 + personaId.charCodeAt(i)) >>> 0;
-  return AVATARES_POSTURA[h % AVATARES_POSTURA.length];
-}
+/** Ícone por postura — sem foto/avatar, só o ícone animado (respiração
+ *  contínua + pulso a cada fala + crossfade ao trocar de leitura). */
+const POSE_ICON: Record<string, typeof Clock> = {
+  relogio: Clock, recuado: UserMinus, cruzado: ShieldOff, neutro: UserIcon,
+  inclinado: TrendingUp, aberto: Smile,
+};
 
-/** Transform/opacidade por postura — a mesma imagem "atua" as 6 leituras de
- *  corpo (recuado, braços cruzados, inclinado etc.) só com CSS, já que ainda
- *  não temos uma pose por estado. Composto com a animação de respiração
+/** Transform/opacidade por postura, composto com a animação de respiração
  *  (transform no wrapper de fora) e o "falando" (no wrapper de dentro). */
 const POSE_TRANSFORM: Record<string, { transform: string; opacity: string }> = {
   relogio: { transform: 'translateX(5px) rotate(-4deg) scale(0.96)', opacity: '0.7' },
@@ -65,16 +57,41 @@ const FIM_COLOR: Record<string, string> = {
   tempo: 'bg-cw-red/10 text-cw-red',
 };
 
-function Sparkline({ serie }: { serie: number[] }) {
+type Humor = 'irritado' | 'frio' | 'neutro' | 'quente';
+function humorDe(sinalAtual: number, pac: number): Humor {
+  if (pac < 32) return 'irritado';
+  if (sinalAtual < 42) return 'frio';
+  if (sinalAtual > 68) return 'quente';
+  return 'neutro';
+}
+const HUMOR_COR: Record<Humor, string> = { irritado: '#FF5959', frio: '#FF9A7A', neutro: '#A543FA', quente: '#22c55e' };
+const HUMOR_LABEL: Record<Humor, string> = { irritado: 'Perdendo a paciência', frio: 'Distante', neutro: 'Acompanhando', quente: 'Engajado' };
+const HUMOR_DURACAO: Record<Humor, string> = { irritado: '0.6s', frio: '2.8s', neutro: '2s', quente: '1.5s' };
+
+/** Traço "com vida" — a linha nunca fica parada (fluxo contínuo no
+ *  traçado) e pulsa mais rápido quando o humor vira irritado, pra dar ao
+ *  SDR uma leitura indireta de que o cliente tá perdendo a paciência,
+ *  sem nunca mostrar o número. */
+function Sparkline({ serie, humor }: { serie: number[]; humor: Humor }) {
   const w = 100, h = 30;
   const pts = serie.length > 1
     ? serie.map((v, i) => `${(i / (serie.length - 1)) * w},${h - (v / 100) * h}`).join(' ')
     : `0,${h} ${w},${h}`;
-  const ultimo = serie[serie.length - 1] ?? 0;
-  const cor = ultimo < 42 ? '#FF5959' : ultimo > 68 ? '#22c55e' : '#A543FA';
+  const ultimoX = serie.length > 1 ? w : 0;
+  const ultimoY = h - ((serie[serie.length - 1] ?? 0) / 100) * h;
+  const cor = HUMOR_COR[humor];
+  const duracao = HUMOR_DURACAO[humor];
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full h-10">
-      <polyline points={pts} fill="none" stroke={cor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full h-10 overflow-visible">
+      <polyline
+        points={pts} fill="none" stroke={cor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+        strokeDasharray="5 4" className="animate-sparkline-flow" style={{ animationDuration: duracao }}
+      />
+      <circle cx={ultimoX} cy={ultimoY} r="2.4" fill={cor} />
+      <circle
+        cx={ultimoX} cy={ultimoY} r="2.4" fill={cor} className="animate-sparkline-pulse"
+        style={{ animationDuration: duracao, transformOrigin: `${ultimoX}px ${ultimoY}px` }}
+      />
     </svg>
   );
 }
@@ -303,74 +320,89 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
   const p = state.persona, rev = state.rev;
   const pose = posturaAtual(state);
   const s = sinal(state);
-  const corSinal = s < 42 ? 'text-cw-red' : s > 68 ? 'text-emerald-600' : 'text-cw-purple';
-  const corGlow = s < 42 ? '#FF5959' : s > 68 ? '#22c55e' : '#A543FA';
-  const avatarSrc = avatarPara(p.id);
+  const humor = humorDe(s, state.pac);
+  const corSinal = humor === 'irritado' || humor === 'frio' ? 'text-cw-red' : humor === 'quente' ? 'text-emerald-600' : 'text-cw-purple';
+  const corGlow = HUMOR_COR[humor];
+  const PoseIcon = POSE_ICON[pose.pose] ?? UserIcon;
   const poseStyle = POSE_TRANSFORM[pose.pose] ?? POSE_TRANSFORM.neutro;
 
   return (
     <div className="space-y-4">
-      <div className="cw-card p-4 flex items-center gap-3">
-        <span className="h-10 w-10 rounded-xl gradient-primary text-white flex items-center justify-center font-bold text-[13px] shrink-0">{p.iniciais}</span>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-cw-text text-[15px] truncate">{p.nome}</h3>
-          <p className="text-[12px] text-cw-muted truncate">{p.empresa}</p>
-        </div>
-        <span className="font-mono text-[13.5px] bg-cw-purple/10 text-cw-purple px-3 py-1.5 rounded-lg font-semibold shrink-0">
-          {Math.min(state.fim ? state.turno : state.turno + 1, state.turnosMax)}/{state.turnosMax}
-        </span>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {rev.badgeRaiz && state.raizRevelada && <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3" /> Raiz revelada, carta nova na mão</Badge>}
-        {rev.badgeJanela && state.janelaAte && !state.fim && <Badge className="bg-cw-red/10 text-cw-red border-cw-red/25"><Timer className="h-3 w-3" /> Janela de agendamento aberta</Badge>}
-        {rev.badgeFalsa && state.raizFalsaRevelada && !state.raizRevelada && <Badge className="bg-amber-100 text-amber-700 border-amber-200"><AlertTriangle className="h-3 w-3" /> Ele deu uma explicação. Confere se ela se sustenta.</Badge>}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr,180px] gap-3">
-        <div className="cw-card p-4">
-          <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cw-muted mb-2">Leitura da call</p>
-          <Sparkline serie={state.serie} />
-        </div>
-        <div className="cw-card p-4 flex flex-col items-center justify-center gap-1.5 text-center overflow-hidden">
-          <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cw-muted">Postura</p>
-          <div className="relative h-20 w-20 flex items-center justify-center animate-posture-idle">
-            <div
-              className="absolute inset-0 rounded-full blur-xl transition-colors duration-700"
-              style={{ backgroundColor: corGlow, opacity: 0.28 }}
-              aria-hidden="true"
-            />
-            <div
-              key={state.turno}
-              className="relative h-full w-full animate-posture-talk transition-[transform,opacity] duration-500 ease-out"
-              style={poseStyle}
-            >
-              <img
-                src={avatarSrc}
-                alt=""
-                className="h-full w-full object-cover rounded-full border-2"
-                style={{ borderColor: corGlow }}
-              />
-            </div>
+      {/* Fixo ao rolar, pra continuar vendo quem é o cliente e o estado da
+          call enquanto escolhe a carta lá embaixo. */}
+      <div className="sticky top-0 z-10 bg-cw-bg pt-1 pb-3 -mx-6 px-6 md:-mx-10 md:px-10 space-y-3 shadow-[0_8px_16px_-8px_rgba(89,50,122,0.12)]">
+        <div className="cw-card p-4 flex items-center gap-3">
+          <span className="h-10 w-10 rounded-xl gradient-primary text-white flex items-center justify-center font-bold text-[13px] shrink-0">{p.iniciais}</span>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-cw-text text-[15px] truncate">{p.nome}</h3>
+            <p className="text-[12px] text-cw-muted truncate">{p.empresa}</p>
           </div>
-          <p className={cn('text-[11px] leading-snug', corSinal)}>{pose.rotulo}</p>
+          <span className="font-mono text-[13.5px] bg-cw-purple/10 text-cw-purple px-3 py-1.5 rounded-lg font-semibold shrink-0">
+            {Math.min(state.fim ? state.turno : state.turno + 1, state.turnosMax)}/{state.turnosMax}
+          </span>
         </div>
-      </div>
 
-      <div className="cw-card p-5">
-        <p className="text-[17px] font-medium text-cw-text leading-relaxed">"{state.fala}"</p>
-        {state.tell && <p className="text-[13.5px] text-cw-purple italic mt-2.5 leading-relaxed">{state.tell}</p>}
-        {rev.clima && <p className="text-[12.5px] text-cw-muted mt-2 leading-relaxed">{climaAtual(state)}</p>}
-        {rev.dica && state.dica && (
-          <p className="mt-3 flex items-start gap-2 text-[13px] text-emerald-700 bg-emerald-50 border-l-2 border-emerald-400 rounded-lg px-3 py-2">
-            <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5" /> {state.dica}
-          </p>
+        {(state.raizRevelada || state.janelaAte || state.raizFalsaRevelada) && (
+          <div className="flex flex-wrap gap-2">
+            {rev.badgeRaiz && state.raizRevelada && <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3" /> Raiz revelada, carta nova na mão</Badge>}
+            {rev.badgeJanela && state.janelaAte && !state.fim && <Badge className="bg-cw-red/10 text-cw-red border-cw-red/25"><Timer className="h-3 w-3" /> Janela de agendamento aberta</Badge>}
+            {rev.badgeFalsa && state.raizFalsaRevelada && !state.raizRevelada && <Badge className="bg-amber-100 text-amber-700 border-amber-200"><AlertTriangle className="h-3 w-3" /> Ele deu uma explicação. Confere se ela se sustenta.</Badge>}
+          </div>
         )}
-        {rev.aviso && state.aviso && (
-          <p className="mt-3 flex items-start gap-2 text-[13px] text-cw-red bg-cw-red/5 border-l-2 border-cw-red rounded-lg px-3 py-2">
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" /> {state.aviso}
-          </p>
-        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr,180px] gap-3">
+          <div className="cw-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cw-muted">Leitura da call</p>
+              {rev.clima && (
+                <span className="flex items-center gap-1.5 text-[10.5px] font-semibold" style={{ color: HUMOR_COR[humor] }}>
+                  <span className="h-1.5 w-1.5 rounded-full animate-posture-talk" style={{ backgroundColor: HUMOR_COR[humor] }} />
+                  {HUMOR_LABEL[humor]}
+                </span>
+              )}
+            </div>
+            <Sparkline serie={state.serie} humor={humor} />
+          </div>
+          <div className="cw-card p-4 flex flex-col items-center justify-center gap-1.5 text-center overflow-hidden">
+            <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cw-muted">Postura</p>
+            <div className="relative h-16 w-16 flex items-center justify-center animate-posture-idle">
+              <div
+                className="absolute inset-0 rounded-full blur-xl transition-colors duration-700"
+                style={{ backgroundColor: corGlow, opacity: 0.28 }}
+                aria-hidden="true"
+              />
+              <div
+                key={pose.pose}
+                className="relative h-full w-full flex items-center justify-center animate-posture-talk transition-[transform,opacity] duration-500 ease-out"
+                style={poseStyle}
+              >
+                <div
+                  className="h-full w-full rounded-full flex items-center justify-center border-2 bg-white"
+                  style={{ borderColor: corGlow }}
+                >
+                  <PoseIcon className="h-7 w-7" style={{ color: corGlow }} />
+                </div>
+              </div>
+            </div>
+            <p className={cn('text-[11px] leading-snug', corSinal)}>{pose.rotulo}</p>
+          </div>
+        </div>
+
+        <div className="cw-card p-5">
+          <p className="text-[17px] font-medium text-cw-text leading-relaxed">"{state.fala}"</p>
+          {state.tell && <p className="text-[13.5px] text-cw-purple italic mt-2.5 leading-relaxed">{state.tell}</p>}
+          {rev.clima && <p className="text-[12.5px] text-cw-muted mt-2 leading-relaxed">{climaAtual(state)}</p>}
+          {rev.dica && state.dica && (
+            <p className="mt-3 flex items-start gap-2 text-[13px] text-emerald-700 bg-emerald-50 border-l-2 border-emerald-400 rounded-lg px-3 py-2">
+              <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5" /> {state.dica}
+            </p>
+          )}
+          {rev.aviso && state.aviso && (
+            <p className="mt-3 flex items-start gap-2 text-[13px] text-cw-red bg-cw-red/5 border-l-2 border-cw-red rounded-lg px-3 py-2">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" /> {state.aviso}
+            </p>
+          )}
+        </div>
       </div>
 
       <div>
