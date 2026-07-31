@@ -52,7 +52,7 @@ import CloserObjecoes from '@/pages/closer/Objecoes';
 import CloserDashboard from '@/pages/closer/Dashboard';
 import CloserTemplates from '@/pages/closer/Templates';
 import SdrTemplates from '@/pages/sdr/Templates';
-import TiraDuvidas from '@/pages/sdr/TiraDuvidas';
+import Roleplay from '@/pages/sdr/Roleplay';
 import CloserDescontos from '@/pages/closer/Descontos';
 import CloserMetas from '@/pages/closer/Metas';
 import CloserProcesso from '@/pages/closer/Processo';
@@ -192,7 +192,9 @@ function AnimatedRoutes() {
           <Route path="/start" element={<ForcePapel papel="SDR"><Start /></ForcePapel>} />
           <Route path="/playbook" element={<Playbook />} />
           <Route path="/sdr/templates" element={<SdrTemplates />} />
-          <Route path="/sdr/tira-duvidas" element={<TiraDuvidas />} />
+          <Route path="/sdr/roleplay" element={<Roleplay />} />
+          {/* Tira-dúvidas saiu da nav, virou Roleplay — redireciona link antigo. */}
+          <Route path="/sdr/tira-duvidas" element={<Navigate to="/sdr/roleplay" replace />} />
           <Route path="/playbook/closer" element={<PlaybookCloser />} />
           <Route path="/playbook/parcerias" element={<PlaybookParcerias />} />
           <Route path="/playbook/representantes" element={<PlaybookRepresentantes />} />

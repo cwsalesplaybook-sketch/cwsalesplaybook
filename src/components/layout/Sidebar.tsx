@@ -7,7 +7,7 @@ import {
   ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
   Loader2, Users, Library, GraduationCap, FileText, Percent, Star,
-  PartyPopper, Puzzle, Package, Store, MessageCircleQuestion,
+  PartyPopper, Puzzle, Package, Store, MessageCircleQuestion, Drama,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,7 @@ interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users, Puzzle, Package, Store, MessageCircleQuestion,
+  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users, Puzzle, Package, Store, MessageCircleQuestion, Drama,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
@@ -38,7 +38,7 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/playbook',   label: 'Playbook',                icon: 'BookOpen',       end: false },
   { to: '/pipeline',    label: 'Pipeline',                icon: 'BarChart2',       end: false },
   { to: '/sdr/templates', label: 'Templates',             icon: 'FileText',       end: false },
-  { to: '/sdr/tira-duvidas', label: 'Tira-dúvidas',       icon: 'MessageCircleQuestion', end: false },
+  { to: '/sdr/roleplay', label: 'Roleplay',               icon: 'Drama',          end: false },
   { to: '/changelog',  label: 'Changelog',               icon: 'Zap',            end: false },
   { to: '/automacoes',  label: 'Automações',             icon: 'Zap',             end: false },
   { to: '/calculadora',label: 'Calculadora',             icon: 'Calculator',     end: false },
@@ -54,7 +54,7 @@ const NAV_PADRAO: NavItem[] = [
 ];
 
 const SECTIONS = [
-  { label: 'Comercial',      routes: ['/meta', '/playbook', '/planos', '/cw-store', '/calculadora', '/faq', '/changelog', '/pipeline', '/automacoes', '/sdr/templates', '/sdr/tira-duvidas'] },
+  { label: 'Comercial',      routes: ['/meta', '/playbook', '/planos', '/cw-store', '/calculadora', '/faq', '/changelog', '/pipeline', '/automacoes', '/sdr/templates', '/sdr/roleplay'] },
   { label: 'Cultura e Time', routes: ['/historias', '/biblioteca', '/regras', '/onboarding', '/carreira'] },
 ];
 
