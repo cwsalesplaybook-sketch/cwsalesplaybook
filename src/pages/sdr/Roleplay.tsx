@@ -317,17 +317,17 @@ function MenuTela({ onIrParaClientes, onVerPlacar, scores, userId }: {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
-        <div className="flex-1 w-full">
+      <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-10 grid md:grid-cols-2 items-center gap-8">
+        <div>
           <p className="text-[11.5px] font-mono uppercase tracking-[0.14em] text-cw-purple font-semibold mb-3">Roleplay · Treinamento de SDR</p>
-          <h1 className="text-[32px] md:text-[38px] font-black text-cw-text leading-[1.05]">
+          <h1 className="text-[34px] md:text-[42px] font-black text-cw-text leading-[1.05]">
             Sala de <span className="text-gradient-primary">Call</span>
           </h1>
-          <p className="text-cw-muted text-[14px] mt-3 max-w-md leading-relaxed">
+          <p className="text-cw-muted text-[15.5px] mt-3 leading-relaxed">
             Quanto melhores decisões na ligação, maior a sua conversão e, consequentemente, melhores resultados.
             Está na call, tá criando na prática!
           </p>
-          <div className="flex flex-wrap gap-3 mt-5">
+          <div className="flex flex-wrap gap-3 mt-6">
             <button
               type="button" onClick={onIrParaClientes}
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl gradient-primary text-white text-[13.5px] font-bold hover:opacity-90 transition-opacity"
@@ -342,12 +342,12 @@ function MenuTela({ onIrParaClientes, onVerPlacar, scores, userId }: {
             </button>
           </div>
         </div>
-        <div className="flex items-center shrink-0">
+        <div className="flex items-center justify-center md:justify-end w-full">
           <img
             src="/roleplay/cardapinho-analista.png" alt="Cardapinho, o mascote da Cardápio Web"
-            className="h-40 md:h-48 w-auto object-contain shrink-0 relative z-10 md:-mr-7 drop-shadow-xl"
+            className="h-44 md:h-52 w-auto object-contain shrink-0 relative z-10 md:-mr-8 drop-shadow-xl"
           />
-          <div className="w-[210px] space-y-3 shrink-0">
+          <div className="w-[220px] space-y-3 shrink-0">
             <HeroFeature icon={Phone} titulo="Pratique ligações reais" desc="Simule calls com clientes de verdade do funil." />
             <HeroFeature icon={Target} titulo="Melhore sua conversão" desc="Cada decisão certa te aproxima de mais resultados." />
             <HeroFeature icon={TrendingUp} titulo="Evolua a cada call" desc="Receba feedbacks e acompanhe sua evolução." />
