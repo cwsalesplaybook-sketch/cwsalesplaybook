@@ -342,7 +342,7 @@ function MenuTela({ onIrParaClientes, onVerPlacar, scores, userId }: {
             </button>
           </div>
         </div>
-        <div className="flex items-center justify-center md:justify-end w-full">
+        <div className="flex items-center justify-center md:justify-start w-full">
           <img
             src="/roleplay/cardapinho-analista.png" alt="Cardapinho, o mascote da Cardápio Web"
             className="h-44 md:h-52 w-auto object-contain shrink-0 relative z-10 md:-mr-8 drop-shadow-xl"
@@ -666,9 +666,9 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
           </p>
         )}
 
-        <div className="cw-card p-5 flex items-end gap-4 overflow-hidden">
+        <div className="cw-card p-5 flex items-start gap-3">
+          <span className="h-8 w-8 rounded-full bg-cw-purple/10 text-cw-purple flex items-center justify-center shrink-0 text-[16px] font-black">"</span>
           <div className="flex-1 min-w-0">
-            <span className="h-8 w-8 rounded-full bg-cw-purple/10 text-cw-purple flex items-center justify-center mb-2 text-[16px] font-black">"</span>
             <p className="text-[17px] font-medium text-cw-text leading-relaxed">{state.fala}</p>
             {state.tell && <p className="text-[13.5px] text-cw-purple italic mt-2.5 leading-relaxed">{state.tell}</p>}
             {rev.clima && <p className="text-[12.5px] text-cw-muted mt-2 leading-relaxed">{climaAtual(state)}</p>}
@@ -683,11 +683,6 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
               </p>
             )}
           </div>
-          <img
-            src="/roleplay/cardapinho-call.png" alt=""
-            className="hidden sm:block h-20 md:h-24 w-auto object-contain shrink-0"
-            aria-hidden="true"
-          />
         </div>
       </div>
 
