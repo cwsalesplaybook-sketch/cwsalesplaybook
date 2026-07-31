@@ -8,11 +8,18 @@
  *  (useRoleplayScores) ligado ao usuário logado — sem nome digitado à mão. */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Sparkles, ArrowRight, ArrowLeft, RotateCcw, Trophy, Star,
+  Sparkles, ArrowRight, ArrowLeft, ChevronLeft, RotateCcw, Trophy, Star,
   Lightbulb, AlertTriangle, CheckCircle2, XCircle, Timer, Target,
   Clock, UserMinus, Frown, User as UserIcon, TrendingUp, Smile,
   Phone, Flag, Calendar, Dumbbell, LogOut, Headphones,
   MessageCircle, Gamepad2, ChevronRight, BarChart3,
+  Anchor, MessageSquare, HelpCircle, Gem, Scale, VolumeX, RefreshCw,
+  Search, SlidersHorizontal, ShieldCheck, Eye, Users, DollarSign,
+  LineChart, GitCompare, Crosshair, Gauge, Tag, Wallet, Hand,
+  Handshake, Snowflake, Pause, ClipboardCheck, PhoneCall, CalendarClock,
+  ArrowRightCircle, HeartHandshake, UserPlus, LifeBuoy, Wrench,
+  FileBarChart, Award, Undo2, FlaskConical, Layers, UsersRound,
+  ThumbsUp, DoorOpen, Settings2,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -46,6 +53,49 @@ const POSE_TRANSFORM: Record<string, { transform: string; opacity: string }> = {
   aberto: { transform: 'scale(1.08) rotate(-1deg)', opacity: '1' },
 };
 
+/** Dica curta por postura, escondida atrás de "Ver dicas de postura" —
+ *  não conta como aviso oficial da dificuldade, é só um empurrãozinho de
+ *  leitura corporal, sempre disponível. */
+const POSTURA_DICA: Record<string, string> = {
+  relogio: 'Ele já quer ir embora. Corte o diagnóstico e vá direto ao ponto que importa pra ele.',
+  recuado: 'Confiança baixa. Escuta rende mais que argumento agora — tenta silêncio ou validar sem concordar.',
+  cruzado: 'Postura de defesa. Nomeie o que ele parece estar sentindo antes de insistir em qualquer proposta.',
+  neutro: 'Ele está acompanhando, mas não empolgado. Boa hora pra aprofundar o diagnóstico.',
+  inclinado: 'Urgência subindo. Ele já está se inclinando pra dentro da conversa — não deixe esfriar.',
+  aberto: 'Confiança alta e clima bom. Se a raiz já apareceu, essa é a hora de convidar pra call.',
+};
+
+/** Ícone específico por carta, pra facilitar reconhecer a jogada de
+ *  relance no grid — a cor do "chip" vem da família (FAMILIA_CHIP). */
+const ICON_CARTA: Record<string, LucideIcon> = {
+  passagem_bastao: Anchor, pergunta_aberta: MessageSquare, pergunta_problema: AlertTriangle,
+  implicacao: HelpCircle, need_payoff: Gem, checar_contradicao: Scale,
+  silencio: VolumeX, espelhamento: RefreshCw, rotulagem: Smile,
+  auditoria_acusacao: Search, pergunta_calibrada: SlidersHorizontal, validar_sentimento: ShieldCheck,
+  demo_dirigida: Eye, prova_social: Users, custo_inacao: DollarSign,
+  ganho_projetado: LineChart, ensinar: Lightbulb, diferencial_concorrente: GitCompare,
+  redirecionar_negocio: Target,
+  isolar_objecao: Crosshair, escala_010: Gauge, reenquadrar_preco: Tag,
+  ancoragem: Wallet, nao_conceder: Hand, concessao_condicionada: Handshake,
+  garantia_estendida: ShieldCheck, congelamento: Snowflake, pausa_estrategica: Pause,
+  resumo_confirma: ClipboardCheck,
+  fechamento_direto: PhoneCall, fechamento_alternativa: CalendarClock, next_step: ArrowRightCircle,
+  reparacao: HeartHandshake, trazer_decisor: UserPlus, migracao_sem_risco: LifeBuoy,
+  mao_na_massa: Wrench, municao_comparativa: FileBarChart, vitoria_simbolica: Award,
+  assumir_falha: Undo2, blindar_comite: ShieldCheck, provar_sem_promessa: FlaskConical,
+  dividir_risco: Layers, proteger_rotina: UsersRound, legitimar_escolha: ThumbsUp,
+  caminho_saida: DoorOpen, assumir_operacao: Settings2,
+};
+
+const FAMILIA_CHIP: Record<string, { bg: string; text: string }> = {
+  diagnostico: { bg: 'bg-cw-purple/10', text: 'text-cw-purple' },
+  escuta: { bg: 'bg-amber-100', text: 'text-amber-600' },
+  valor: { bg: 'bg-emerald-100', text: 'text-emerald-600' },
+  negociacao: { bg: 'bg-cw-red/10', text: 'text-cw-red' },
+  fechamento: { bg: 'bg-cw-purple', text: 'text-white' },
+  raiz: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
+};
+
 const DIF_COLOR: Record<string, string> = {
   'Treino': 'bg-emerald-100 text-emerald-700 border-emerald-200',
   'Média': 'bg-cw-purple/10 text-cw-purple border-cw-purple/25',
@@ -70,16 +120,21 @@ function humorDe(sinalAtual: number, pac: number): Humor {
 const HUMOR_COR: Record<Humor, string> = { irritado: '#FF5959', frio: '#FF5959', neutro: '#A543FA', quente: '#22c55e' };
 const HUMOR_LABEL: Record<Humor, string> = { irritado: 'Perdendo a paciência', frio: 'Distante', neutro: 'Acompanhando', quente: 'Engajado' };
 
+/** Waveform simples (sem player, sem áudio de verdade — é só o formato
+ *  visual): uma barra por turno, altura = sinal daquele turno, cor = humor
+ *  atual. Só muda de cor, sem animação de "vivo". */
 function Sparkline({ serie, humor }: { serie: number[]; humor: Humor }) {
-  const w = 100, h = 30;
-  const pts = serie.length > 1
-    ? serie.map((v, i) => `${(i / (serie.length - 1)) * w},${h - (v / 100) * h}`).join(' ')
-    : `0,${h} ${w},${h}`;
   const cor = HUMOR_COR[humor];
+  const barras = serie.length ? serie : [0];
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full h-10">
-      <polyline points={pts} fill="none" stroke={cor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <div className="w-full h-10 flex items-center gap-[3px]">
+      {barras.map((v, i) => (
+        <div
+          key={i} className="flex-1 min-w-[2px] rounded-full"
+          style={{ height: `${Math.max(14, Math.min(100, v))}%`, backgroundColor: cor, opacity: 0.5 + (v / 100) * 0.5 }}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -521,6 +576,8 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
   const corGlow = HUMOR_COR[humor];
   const PoseIcon = POSE_ICON[pose.pose] ?? UserIcon;
   const poseStyle = POSE_TRANSFORM[pose.pose] ?? POSE_TRANSFORM.neutro;
+  const [dicaPosturaAberta, setDicaPosturaAberta] = useState(false);
+  const turnoAtual = Math.min(state.fim ? state.turno : state.turno + 1, state.turnosMax);
 
   return (
     <div className="space-y-4">
@@ -533,9 +590,13 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
             <h3 className="font-bold text-cw-text text-[15px] truncate">{p.nome}</h3>
             <p className="text-[12px] text-cw-muted truncate">{p.empresa}</p>
           </div>
-          <span className="font-mono text-[13.5px] bg-cw-purple/10 text-cw-purple px-3 py-1.5 rounded-lg font-semibold shrink-0">
-            {Math.min(state.fim ? state.turno : state.turno + 1, state.turnosMax)}/{state.turnosMax}
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <ChevronLeft className="h-4 w-4 text-cw-border" aria-hidden="true" />
+            <span className="font-mono text-[13.5px] bg-cw-purple/10 text-cw-purple px-3 py-1.5 rounded-lg font-semibold">
+              {turnoAtual}/{state.turnosMax}
+            </span>
+            <ChevronRight className="h-4 w-4 text-cw-border" aria-hidden="true" />
+          </div>
         </div>
 
         {(state.raizRevelada || state.janelaAte || state.raizFalsaRevelada) && (
@@ -573,23 +634,42 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
               </div>
             </div>
             <p className={cn('text-[11px] leading-snug', corSinal)}>{pose.rotulo}</p>
+            <button
+              type="button" onClick={() => setDicaPosturaAberta((v) => !v)}
+              className="flex items-center gap-1 text-[10px] font-semibold text-cw-purple bg-cw-purple/10 rounded-full px-2 py-1 hover:bg-cw-purple/15 transition-colors"
+            >
+              <Lightbulb className="h-2.5 w-2.5" /> Ver dicas de postura
+            </button>
           </div>
         </div>
+        {dicaPosturaAberta && (
+          <p className="text-[12px] text-cw-text bg-cw-purple/5 border-l-2 border-cw-purple rounded-lg px-3 py-2 leading-snug">
+            {POSTURA_DICA[pose.pose]}
+          </p>
+        )}
 
-        <div className="cw-card p-5">
-          <p className="text-[17px] font-medium text-cw-text leading-relaxed">"{state.fala}"</p>
-          {state.tell && <p className="text-[13.5px] text-cw-purple italic mt-2.5 leading-relaxed">{state.tell}</p>}
-          {rev.clima && <p className="text-[12.5px] text-cw-muted mt-2 leading-relaxed">{climaAtual(state)}</p>}
-          {rev.dica && state.dica && (
-            <p className="mt-3 flex items-start gap-2 text-[13px] text-emerald-700 bg-emerald-50 border-l-2 border-emerald-400 rounded-lg px-3 py-2">
-              <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5" /> {state.dica}
-            </p>
-          )}
-          {rev.aviso && state.aviso && (
-            <p className="mt-3 flex items-start gap-2 text-[13px] text-cw-red bg-cw-red/5 border-l-2 border-cw-red rounded-lg px-3 py-2">
-              <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" /> {state.aviso}
-            </p>
-          )}
+        <div className="cw-card p-5 flex items-end gap-4 overflow-hidden">
+          <div className="flex-1 min-w-0">
+            <span className="h-8 w-8 rounded-full bg-cw-purple/10 text-cw-purple flex items-center justify-center mb-2 text-[16px] font-black">"</span>
+            <p className="text-[17px] font-medium text-cw-text leading-relaxed">{state.fala}</p>
+            {state.tell && <p className="text-[13.5px] text-cw-purple italic mt-2.5 leading-relaxed">{state.tell}</p>}
+            {rev.clima && <p className="text-[12.5px] text-cw-muted mt-2 leading-relaxed">{climaAtual(state)}</p>}
+            {rev.dica && state.dica && (
+              <p className="mt-3 flex items-start gap-2 text-[13px] text-emerald-700 bg-emerald-50 border-l-2 border-emerald-400 rounded-lg px-3 py-2">
+                <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5" /> {state.dica}
+              </p>
+            )}
+            {rev.aviso && state.aviso && (
+              <p className="mt-3 flex items-start gap-2 text-[13px] text-cw-red bg-cw-red/5 border-l-2 border-cw-red rounded-lg px-3 py-2">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" /> {state.aviso}
+              </p>
+            )}
+          </div>
+          <img
+            src="/roleplay/cardapinho-call.png" alt=""
+            className="hidden sm:block h-24 md:h-32 w-auto object-contain shrink-0 -mb-5 -mr-2"
+            aria-hidden="true"
+          />
         </div>
       </div>
 
@@ -600,16 +680,23 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
             const c = carta(id);
             if (!c) return null;
             const usada = state.usadas.includes(id) && c.familia !== 'fechamento';
+            const Icon = ICON_CARTA[id] ?? Sparkles;
+            const chip = FAMILIA_CHIP[c.familia] ?? FAMILIA_CHIP.diagnostico;
             return (
               <button
                 key={id} type="button" onClick={() => onJogar(id)} disabled={!!state.fim}
                 className={cn(
-                  'text-left p-3.5 rounded-xl border flex flex-col gap-1 min-h-[92px] transition-all disabled:opacity-40',
+                  'text-left p-3.5 rounded-xl border flex flex-col gap-2 min-h-[104px] transition-all disabled:opacity-40',
                   c.familia === 'raiz' ? 'border-emerald-300 bg-emerald-50/60' : 'border-cw-border bg-white hover:border-cw-purple/40 hover:bg-cw-elevated',
                   usada && 'opacity-60',
                 )}
               >
-                <span className={cn('text-[9.5px] font-mono uppercase tracking-[0.1em]', c.familia === 'raiz' ? 'text-emerald-700' : 'text-cw-purple')}>{rotuloFamilia(c.familia)}</span>
+                <div className="flex items-center gap-2">
+                  <span className={cn('h-7 w-7 rounded-lg flex items-center justify-center shrink-0', chip.bg, chip.text)}>
+                    <Icon className="h-3.5 w-3.5" />
+                  </span>
+                  <span className={cn('text-[9.5px] font-mono uppercase tracking-[0.1em]', c.familia === 'raiz' ? 'text-emerald-700' : 'text-cw-purple')}>{rotuloFamilia(c.familia)}</span>
+                </div>
                 <span className="text-[13.5px] font-bold text-cw-text leading-tight">{c.nome}</span>
                 <span className="text-[11.5px] text-cw-muted leading-snug">{c.desc}</span>
               </button>
