@@ -158,7 +158,7 @@ function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlac
         </h1>
         <p className="text-cw-muted text-[15px] mt-3 max-w-2xl leading-relaxed">
           Você liga pra um cliente real do nosso funil. Quatro medidores decidem se ele topa marcar com o
-          consultor — e você não vê nenhum deles. Só a fala, o clima e a postura do outro lado.
+          consultor, e você não vê nenhum deles. Só a fala, o clima e a postura do outro lado.
         </p>
         <button
           type="button" onClick={onVerPlacar}
@@ -171,8 +171,8 @@ function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlac
       <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-6 md:p-8">
         <h2 className="font-black text-cw-text text-[15px] mb-3">Como se joga</h2>
         <ul className="space-y-2 text-[13.5px] text-cw-muted leading-relaxed">
-          <li>· Cada carta é uma jogada — SPIN, escuta, valor e agenda. O efeito depende do estado da call, não da carta.</li>
-          <li>· Enfileirar pergunta atrás de pergunta vira interrogatório — e o cliente reage.</li>
+          <li>· Cada carta é uma jogada, SPIN, escuta, valor e agenda. O efeito depende do estado da call, não da carta.</li>
+          <li>· Enfileirar pergunta atrás de pergunta vira interrogatório, e o cliente reage.</li>
           <li>· A objeção que o cliente declara <b className="text-cw-text">nunca</b> é o motivo real. Existe uma raiz oculta.</li>
           <li>· As cartas certas no momento certo revelam a raiz e liberam uma carta nova.</li>
           <li>· Alguns clientes dão uma explicação falsa antes da verdadeira. Nem toda confissão é a raiz.</li>
@@ -227,8 +227,8 @@ function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlac
 function BriefingTela({ persona, onEntrar, onVoltar }: { persona: Persona; onEntrar: () => void; onVoltar: () => void }) {
   const rev = REVELACAO[persona.dificuldade];
   return (
-    <div className="max-w-xl mx-auto">
-      <div className="cw-card p-7 md:p-8 space-y-5">
+    <div>
+      <div className="cw-card p-7 md:p-10 space-y-5">
         <div className="flex items-center gap-4">
           <span className="h-14 w-14 rounded-2xl gradient-primary text-white flex items-center justify-center font-bold text-[17px] shrink-0">{persona.iniciais}</span>
           <div>
@@ -246,7 +246,7 @@ function BriefingTela({ persona, onEntrar, onVoltar }: { persona: Persona; onEnt
         <Campo label="Como você joga neste nível">
           {rev.badgeRaiz
             ? 'Você recebe avisos durante a call: quando a raiz aparece e quando a janela de agendamento abre.'
-            : 'Sem avisos durante a call. A leitura é só pelo traço, pela postura e pela fala — tudo é explicado no debrief.'}
+            : 'Sem avisos durante a call. A leitura é só pelo traço, pela postura e pela fala, tudo é explicado no debrief.'}
         </Campo>
 
         <div className="flex gap-3 pt-2">
@@ -280,7 +280,7 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
   const corSinal = s < 42 ? 'text-cw-red' : s > 68 ? 'text-emerald-600' : 'text-cw-purple';
 
   return (
-    <div className="space-y-4 max-w-4xl mx-auto">
+    <div className="space-y-4">
       <div className="cw-card p-4 flex items-center gap-3">
         <span className="h-10 w-10 rounded-xl gradient-primary text-white flex items-center justify-center font-bold text-[13px] shrink-0">{p.iniciais}</span>
         <div className="flex-1 min-w-0">
@@ -293,7 +293,7 @@ function JogoTela({ state, onJogar }: { state: GameState; onJogar: (id: string) 
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {rev.badgeRaiz && state.raizRevelada && <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3" /> Raiz revelada — carta nova na mão</Badge>}
+        {rev.badgeRaiz && state.raizRevelada && <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3" /> Raiz revelada, carta nova na mão</Badge>}
         {rev.badgeJanela && state.janelaAte && !state.fim && <Badge className="bg-cw-red/10 text-cw-red border-cw-red/25"><Timer className="h-3 w-3" /> Janela de agendamento aberta</Badge>}
         {rev.badgeFalsa && state.raizFalsaRevelada && !state.raizRevelada && <Badge className="bg-amber-100 text-amber-700 border-amber-200"><AlertTriangle className="h-3 w-3" /> Ele deu uma explicação. Confere se ela se sustenta.</Badge>}
       </div>
@@ -365,11 +365,11 @@ function FimTela({ state, salvo, salvando, salvarMsg, onSalvar, onReiniciar, onV
   const caiu = [...state.armadilhasCaiu];
   if (state.resistencia > 0) caiu.push(`Cada momento ignorado deixou ele mais fechado: a raiz passou a exigir ${state.resistencia} jogada(s) de escuta a mais do que exigiria.`);
   const janela = [...state.janelaLog, ...(state.janelaAte ? ['A janela estava aberta quando a call terminou.'] : [])];
-  const janelaVazio = state.raizRevelada ? 'A janela de agendamento nunca chegou a abrir — faltou confiança ou urgência.' : 'A janela nunca abriu porque a raiz não foi revelada.';
+  const janelaVazio = state.raizRevelada ? 'A janela de agendamento nunca chegou a abrir, faltou confiança ou urgência.' : 'A janela nunca abriu porque a raiz não foi revelada.';
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="cw-card p-7 md:p-8">
+    <div className="space-y-6">
+      <div className="cw-card p-7 md:p-10">
         <Badge className={FIM_COLOR[f.tipo]}>{f.titulo}</Badge>
         <p className="text-[16px] text-cw-text leading-relaxed mt-3">{f.texto}</p>
 
@@ -531,7 +531,7 @@ function PlacarTela({ scores, loading, onVoltar }: { scores: import('@/hooks/use
   ), []);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="space-y-8">
       <div>
         <p className="text-[11.5px] font-mono uppercase tracking-[0.14em] text-cw-purple font-semibold mb-2">Roleplay · Sala de Call</p>
         <h1 className="text-[30px] font-black text-cw-text">Placar do time</h1>
