@@ -173,21 +173,26 @@ function MenuTela({ filtroDif, setFiltroDif, personas, total, onAbrir, onVerPlac
 }) {
   return (
     <div className="space-y-8">
-      <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-10">
-        <p className="text-[11.5px] font-mono uppercase tracking-[0.14em] text-cw-purple font-semibold mb-3">Roleplay · Treinamento de SDR</p>
-        <h1 className="text-[32px] md:text-[42px] font-black text-cw-text leading-[1.05]">
-          Sala de <span className="text-gradient-primary">Call</span>
-        </h1>
-        <p className="text-cw-muted text-[15px] mt-3 max-w-2xl leading-relaxed">
-          Você liga pra um cliente real do nosso funil. Quatro medidores decidem se ele topa marcar com o
-          consultor, e você não vê nenhum deles. Só a fala, o clima e a postura do outro lado.
-        </p>
-        <button
-          type="button" onClick={onVerPlacar}
-          className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-cw-border bg-white text-cw-text text-[13px] font-semibold hover:border-cw-purple/40 transition-colors"
-        >
-          <Trophy className="h-4 w-4 text-cw-purple" /> Ver o placar do time
-        </button>
+      <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-8 md:p-10 flex flex-col md:flex-row items-center gap-6">
+        <div className="flex-1 w-full">
+          <p className="text-[11.5px] font-mono uppercase tracking-[0.14em] text-cw-purple font-semibold mb-3">Roleplay · Treinamento de SDR</p>
+          <h1 className="text-[32px] md:text-[42px] font-black text-cw-text leading-[1.05]">
+            Sala de <span className="text-gradient-primary">Call</span>
+          </h1>
+          <p className="text-cw-muted text-[15px] mt-3 max-w-2xl leading-relaxed">
+            Você liga pra um cliente real do nosso funil. Quatro medidores decidem se ele topa marcar com o
+            consultor, e você não vê nenhum deles. Só a fala, o clima e a postura do outro lado.
+          </p>
+          <button
+            type="button" onClick={onVerPlacar}
+            className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-cw-border bg-white text-cw-text text-[13px] font-semibold hover:border-cw-purple/40 transition-colors"
+          >
+            <Trophy className="h-4 w-4 text-cw-purple" /> Ver o placar do time
+          </button>
+        </div>
+        <div className="shrink-0 w-full md:w-[260px] flex items-center justify-center">
+          <img src="/tira-duvidas/cardapinho-mascote.png" alt="Cardapinho, o mascote da Cardápio Web" className="h-44 md:h-52 w-auto object-contain" />
+        </div>
       </div>
 
       <div className="bg-white rounded-[28px] border border-cw-border/40 shadow-[0_2px_28px_rgba(89,50,122,0.05)] p-6 md:p-8">
