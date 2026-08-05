@@ -5,16 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { ONBOARDING } from '@/data/onboarding';
-
-const SDRS_ATIVOS: Record<string, string> = {
-  '1523': 'Miguel Nunes',       '1445': 'Gabrielly Oliveira', '1556': 'Thais Giurizatto',
-  '1667': 'Luis Lincon',        '1686': 'Jonas Sobreira',     '1382': 'Tatyanna Freitas',
-  '1708': 'Kailane Carvalho',   '1407': 'Lara Stefanny',      '1727': 'Raquel Alves',
-  '1710': 'José Guilherme',     '1728': 'Fabíola Azevedo',    '1729': 'Enizia Evangelista',
-  '1607': 'Caique Silva',       '1555': 'Ana Alice',          '1608': 'Ryan Felipe',
-  '1730': 'Maria Gabriela',     '1685': 'Dayana Ferreira',
-  '1738': 'Clara Rodrigues',    '1706': 'Raissa Fonseca',     '1335': 'João Paulo',
-};
+import { useSdrOptions } from '@/hooks/useSdrOptions';
 
 // Dias únicos do checklist, ordenados
 const DIAS_ONBOARDING = Array.from(new Set(ONBOARDING.map(i => i.dia))).sort((a, b) => {
@@ -211,6 +202,7 @@ function SdrOnboardingCard({ profile, progress }: {
 }
 
 export default function GestorAdminPage() {
+  const { options: sdrOptions, map: sdrMap } = useSdrOptions();
   const [metas, setMetas] = useState<MetaRow[]>([]);
   const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [sdrProfiles, setSdrProfiles] = useState<SdrProfile[]>([]);
@@ -239,8 +231,8 @@ export default function GestorAdminPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  // Monta lista mostrando todos os SDRs, com meta se existir
-  const allSdrs = Object.entries(SDRS_ATIVOS).map(([sdrId, nome]) => {
+  // Monta lista mostrando todos os SDRs (vindos ao vivo do Pipedrive), com meta se existir
+  const allSdrs = sdrOptions.map(({ id: sdrId, name: nome }) => {
     const meta = metas.find(m => m.sdr_id === sdrId);
     return { sdrId, nome, meta: meta ?? null };
   });
@@ -263,7 +255,7 @@ export default function GestorAdminPage() {
       setEditingId(null);
       return;
     }
-    toast({ title: 'Meta salva!', description: `Meta de ${SDRS_ATIVOS[sdrId]} atualizada.` });
+    toast({ title: 'Meta salva!', description: `Meta de ${sdrMap[sdrId]} atualizada.` });
     setEditingId(null);
     setEditForm({});
     loadData();

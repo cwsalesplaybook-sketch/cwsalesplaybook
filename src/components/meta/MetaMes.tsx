@@ -5,18 +5,9 @@ import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb,
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
+import { useSdrOptions } from '@/hooks/useSdrOptions';
 import TeamMetaView from './TeamMetaView';
 import PromocaoCelebration from './PromocaoCelebration';
-
-const SDRS_ATIVOS: Record<string, string> = {
-  '1523': 'Miguel Nunes', '1445': 'Gabrielly Oliveira', '1556': 'Thais Giurizatto',
-  '1667': 'Luis Lincon', '1686': 'Jonas Sobreira', '1382': 'Tatyanna Freitas',
-  '1708': 'Kailane Carvalho', '1407': 'Lara Stefanny', '1727': 'Raquel Alves',
-  '1710': 'José Guilherme', '1728': 'Fabíola Azevedo', '1729': 'Enizia Evangelista',
-  '1607': 'Caique Silva', '1555': 'Ana Alice', '1608': 'Ryan Felipe',
-  '1730': 'Maria Gabriela', '1685': 'Dayana Ferreira',
-  '1738': 'Clara Rodrigues', '1706': 'Raissa Fonseca', '1335': 'João Paulo',
-};
 
 // Remove acentos e normaliza caixa/espaços pra comparar nomes sem depender de digitação exata.
 function norm(s: string) {
@@ -72,19 +63,21 @@ function getMensagemStatus(ganhos: number, metas: { label: string; value: number
   return { texto: `Você está no forecast da ${proxima.label}`, nivel: 0 };
 }
 
-function ConfigModal({ metaData, nomeDetectado, vinculoConfirmado, onSave, onClose }: {
+function ConfigModal({ metaData, nomeDetectado, vinculoConfirmado, sdrOptions, sdrMap, onSave, onClose }: {
   metaData: MetaData;
   nomeDetectado?: string;
   vinculoConfirmado?: boolean;
+  sdrOptions: { id: string; name: string }[];
+  sdrMap: Record<string, string>;
   onSave: (d: MetaData) => void;
   onClose: () => void;
 }) {
   const [form, setForm] = useState(metaData);
-  const [busca, setBusca] = useState(nomeDetectado || SDRS_ATIVOS[metaData.sdrId] || '');
-  const [nomeSelecionado, setNomeSelecionado] = useState(nomeDetectado || SDRS_ATIVOS[metaData.sdrId] || '');
+  const [busca, setBusca] = useState(nomeDetectado || sdrMap[metaData.sdrId] || '');
+  const [nomeSelecionado, setNomeSelecionado] = useState(nomeDetectado || sdrMap[metaData.sdrId] || '');
   const [aberto, setAberto] = useState(false);
 
-  const lista = Object.entries(SDRS_ATIVOS).map(([id, name]) => ({ id, name }));
+  const lista = sdrOptions;
   const filtrados = busca.length >= 1
     ? lista.filter(u => u.name.toLowerCase().includes(busca.toLowerCase())).slice(0, 8)
     : [];
@@ -219,6 +212,7 @@ function ConfigModal({ metaData, nomeDetectado, vinculoConfirmado, onSave, onClo
 
 function PersonalMetaView() {
   const navigate = useNavigate();
+  const { options: sdrOptions, map: sdrMap } = useSdrOptions();
   const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, sdrId: '', diasUteis: null });
   const [apiData, setApiData]     = useState<ApiData | null>(null);
   const [loading, setLoading]     = useState(false);
@@ -259,9 +253,9 @@ function PersonalMetaView() {
     setUserId(session.user.id);
     const mesAtual = new Date().toISOString().slice(0, 7);
     setMes(mesAtual);
-    // Lista de nomes usada tanto pra detectar o SDR na primeira vez quanto pra
-    // exibir o nome de quem já está vinculado.
-    const options = Object.entries(SDRS_ATIVOS).map(([id, name]) => ({ id, name }));
+    // Lista de nomes (vinda do Pipedrive via useSdrOptions) usada tanto pra detectar
+    // o SDR na primeira vez quanto pra exibir o nome de quem já está vinculado.
+    const options = sdrOptions;
 
     const { data } = await supabase.from('user_metas').select('*').eq('user_id', session.user.id).eq('mes', mesAtual).single();
     if (data) {
@@ -269,7 +263,7 @@ function PersonalMetaView() {
       // Já tem um vínculo salvo (desta sessão ou de antes) — trata como confirmado
       // pra não pedir o nome de novo toda vez que reabrir "Configurar Metas".
       if (data.sdr_id) {
-        setAutoNome(options.find(u => u.id === String(data.sdr_id))?.name || SDRS_ATIVOS[data.sdr_id] || '');
+        setAutoNome(options.find(u => u.id === String(data.sdr_id))?.name || sdrMap[data.sdr_id] || '');
         setVinculoConfirmado(true);
       }
     } else {
@@ -328,7 +322,7 @@ function PersonalMetaView() {
 
       setConfig(true);
     }
-  }, []);
+  }, [sdrOptions, sdrMap]);
 
   const buscarGanhos = useCallback(async (sdrId: string, forceRefresh = false) => {
     if (!sdrId) return;
@@ -405,11 +399,21 @@ function PersonalMetaView() {
   const noRitmoHoje     = totalGanhos >= ritmoHojeValor;
 
   const nomeMes = mes ? new Date(mes + '-15').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase()) : '';
-  const nomeSDR = SDRS_ATIVOS[metaData.sdrId] || '';
+  const nomeSDR = sdrMap[metaData.sdrId] || '';
 
   return (
     <div className="p-6  space-y-4">
-      {config && <ConfigModal metaData={metaData} nomeDetectado={autoNome} vinculoConfirmado={vinculoConfirmado} onSave={salvarConfig} onClose={() => setConfig(false)} />}
+      {config && (
+        <ConfigModal
+          metaData={metaData}
+          nomeDetectado={autoNome}
+          vinculoConfirmado={vinculoConfirmado}
+          sdrOptions={sdrOptions}
+          sdrMap={sdrMap}
+          onSave={salvarConfig}
+          onClose={() => setConfig(false)}
+        />
+      )}
 
       {/* Card principal — status */}
       <div className="relative rounded-2xl border border-cw-border bg-white shadow-sm">

@@ -9,17 +9,7 @@ import {
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-
-// ── Dados dos SDRs ──────────────────────────────────────────────────────────
-const SDRS_ATIVOS: Record<string, string> = {
-  '1523': 'Miguel Nunes',       '1445': 'Gabrielly Oliveira', '1556': 'Thais Giurizatto',
-  '1667': 'Luis Lincon',        '1686': 'Jonas Sobreira',     '1382': 'Tatyanna Freitas',
-  '1708': 'Kailane Carvalho',   '1407': 'Lara Stefanny',      '1727': 'Raquel Alves',
-  '1710': 'José Guilherme',     '1728': 'Fabíola Azevedo',    '1729': 'Enizia Evangelista',
-  '1607': 'Caique Silva',       '1555': 'Ana Alice',          '1608': 'Ryan Felipe',
-  '1730': 'Maria Gabriela',     '1685': 'Dayana Ferreira',
-  '1738': 'Clara Rodrigues',    '1706': 'Raissa Fonseca',     '1335': 'João Paulo',
-};
+import { useSdrOptions } from '@/hooks/useSdrOptions';
 
 interface MetaRow {
   id?: string;
@@ -220,6 +210,7 @@ const GUIDE_SECTIONS = [
 
 // ── Componente principal ────────────────────────────────────────────────────
 export default function PainelControle() {
+  const { options: sdrOptions, map: sdrMap } = useSdrOptions();
   const [tab, setTab] = useState<'guia' | 'metas' | 'acesso'>('guia');
   const [metas, setMetas] = useState<MetaRow[]>([]);
   const [activity, setActivity] = useState<ActivityRow[]>([]);
@@ -243,7 +234,7 @@ export default function PainelControle() {
     if (tab === 'metas' || tab === 'acesso') loadData();
   }, [tab]);
 
-  const allSdrs = Object.entries(SDRS_ATIVOS).map(([sdrId, nome]) => ({
+  const allSdrs = sdrOptions.map(({ id: sdrId, name: nome }) => ({
     sdrId, nome, meta: metas.find(m => m.sdr_id === sdrId) ?? null,
   }));
 
@@ -259,7 +250,7 @@ export default function PainelControle() {
     };
     if (meta?.id) {
       await supabase.from('user_metas').update(payload).eq('id', meta.id);
-      toast({ title: 'Meta salva!', description: `Meta de ${SDRS_ATIVOS[sdrId]} atualizada.` });
+      toast({ title: 'Meta salva!', description: `Meta de ${sdrMap[sdrId]} atualizada.` });
     } else {
       toast({ title: 'Atenção', description: 'A meta só pode ser criada pelo próprio SDR na primeira vez.', variant: 'default' });
     }
