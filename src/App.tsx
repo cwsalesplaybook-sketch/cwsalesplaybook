@@ -15,6 +15,7 @@ import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { EditorBanner } from '@/admin/EditorBanner';
 import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner';
 import { PasswordGate } from '@/admin/PasswordGate';
+import { SquadReassignGate } from '@/components/SquadReassignGate';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
 import Login from '@/pages/Login';
@@ -257,6 +258,7 @@ function AppLayout() {
             <AnimatedRoutes />
           </main>
           <PasswordGate />
+          <SquadReassignGate />
           <FloatingSearch />
         </div>
       </SidebarProvider>

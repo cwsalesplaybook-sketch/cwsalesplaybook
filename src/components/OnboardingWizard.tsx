@@ -19,7 +19,8 @@ const TABS_OVERVIEW = [
   { icon: Zap,      label: 'Changelog',   desc: 'Últimas atualizações da plataforma' },
 ];
 
-const SQUADS_SDR = ['Lobo', 'Águia', 'Tubarão', 'Serpentes'];
+// Tubarão foi dissolvido (2026-08) — squads ativos ficaram só estes 3.
+const SQUADS_SDR = ['Lobo', 'Águia', 'Serpentes'];
 
 /** Emails com permissão para selecionar Liderança + cargo específico */
 const EMAILS_LIDERANCA: Record<string, string> = {
