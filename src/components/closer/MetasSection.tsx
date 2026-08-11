@@ -1,6 +1,6 @@
 /** Metas — tracker pessoal de metas do mês (localStorage por closer). */
 import { useState } from 'react';
-import { Target, Calendar, TrendingUp, Settings2, Check } from 'lucide-react';
+import { Target, Calendar, TrendingUp, Settings2, Check, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCloserMetas } from '@/hooks/useCloserMetas';
 import { ModulosSection } from '@/components/closer/ModuloCard';
@@ -17,13 +17,14 @@ function num(v: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-function KpiCard({ label, value, hint, hintClass }: { label: string; value: string; hint?: string; hintClass?: string }) {
+function KpiCard({ label, value, hint, hintClass, mega }: { label: string; value: string; hint?: string; hintClass?: string; mega?: boolean }) {
   return (
-    <div className="cw-card p-4">
+    <div className={cn('cw-card p-4', mega && 'border-amber-500/30')}>
       <div className="flex items-start justify-between">
         <p className="text-[10px] font-bold text-cw-muted uppercase tracking-widest">{label}</p>
-        <div className="h-8 w-8 rounded-lg bg-cw-purple/15 border border-cw-purple/30 flex items-center justify-center">
-          <Target className="h-4 w-4 text-cw-purple" />
+        <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center border',
+          mega ? 'bg-amber-500/15 border-amber-500/30' : 'bg-cw-purple/15 border-cw-purple/30')}>
+          {mega ? <Rocket className="h-4 w-4 text-amber-400" /> : <Target className="h-4 w-4 text-cw-purple" />}
         </div>
       </div>
       <p className="text-2xl font-black text-cw-text mt-2">{value}</p>
@@ -32,20 +33,18 @@ function KpiCard({ label, value, hint, hintClass }: { label: string; value: stri
   );
 }
 
-function ProgressoCard({ idx, alvo, progresso, falta, porDia, batida, label }:
-  { idx: number; alvo: number; progresso: number; falta: number; porDia: number; batida: boolean; label?: string }) {
-  const cor = idx === 0 ? 'text-cw-purple-light' : idx === 1 ? 'text-emerald-400' : 'text-cw-yellow';
+function ProgressoCard({ idx, alvo, progresso, falta, porDia, batida, label, mega }:
+  { idx: number; alvo: number; progresso: number; falta: number; porDia: number; batida: boolean; label?: string; mega?: boolean }) {
+  const cor = mega ? 'text-amber-400' : idx === 0 ? 'text-cw-purple-light' : idx === 1 ? 'text-emerald-400' : 'text-cw-yellow';
+  const barCor = mega ? 'bg-amber-400' : idx === 0 ? 'bg-cw-purple' : idx === 1 ? 'bg-emerald-400' : 'bg-cw-yellow';
   return (
-    <div className="cw-card p-4 space-y-3">
+    <div className={cn('cw-card p-4 space-y-3', mega && 'border-amber-500/30')}>
       <div className="flex items-center justify-between">
-        <p className="font-bold text-sm text-cw-text">{label ?? `Meta ${idx + 1}`}</p>
+        <p className="font-bold text-sm text-cw-text">{label ?? `Meta ${idx + 1}`}{mega && ' 🚀'}</p>
         <p className={cn('text-sm font-black', cor)}>{progresso.toFixed(0)}%</p>
       </div>
       <div className="h-1.5 rounded-full bg-cw-elevated overflow-hidden">
-        <div
-          className={cn('h-full rounded-full transition-all', idx === 0 ? 'bg-cw-purple' : idx === 1 ? 'bg-emerald-400' : 'bg-cw-yellow')}
-          style={{ width: `${Math.min(100, progresso)}%` }}
-        />
+        <div className={cn('h-full rounded-full transition-all', barCor)} style={{ width: `${Math.min(100, progresso)}%` }} />
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div>
@@ -71,6 +70,7 @@ export function MetasSection() {
   const { state, computed, update, setJaFechado } = useCloserMetas();
   const [editMetas, setEditMetas] = useState(false);
   const [fechadoInput, setFechadoInput] = useState('');
+  const temMega = state.mega1 > 0 || state.mega2 > 0 || state.mega3 > 0;
 
   return (
     <div className="space-y-5">
@@ -117,6 +117,22 @@ export function MetasSection() {
         ))}
       </div>
 
+      {/* KPIs — Mega Metas (só aparece se alguma mega meta foi definida) */}
+      {temMega && (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          {computed.megaMetas.map((m, i) => (
+            <KpiCard
+              key={i}
+              mega
+              label={`Meta diária p/ Mega Meta ${i + 1}`}
+              value={brl(m.porDia)}
+              hint={m.batida ? 'Mega meta batida!' : `${m.progresso.toFixed(0)}% concluído`}
+              hintClass={m.batida ? 'text-emerald-400 font-semibold' : 'text-cw-muted'}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Configurar metas */}
       {editMetas && (
         <div className="cw-card p-5 space-y-4">
@@ -156,6 +172,31 @@ export function MetasSection() {
               <span className="text-[10px] text-cw-muted">Deixe vazio para cálculo automático</span>
             </label>
           </div>
+
+          <div className="border-t border-cw-border pt-4">
+            <p className="flex items-center gap-1.5 text-[10px] font-black text-amber-400 uppercase tracking-widest mb-3">
+              <Rocket className="h-3.5 w-3.5" /> Mega Metas (stretch)
+            </p>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              {([
+                ['Mega Meta 1 (R$)', state.mega1, (v: number) => update({ mega1: v }), '25000'],
+                ['Mega Meta 2 (R$)', state.mega2, (v: number) => update({ mega2: v }), '30000'],
+                ['Mega Meta 3 (R$)', state.mega3, (v: number) => update({ mega3: v }), '35000'],
+              ] as const).map(([label, val, setter, ph]) => (
+                <label key={label} className="block">
+                  <span className="text-xs font-medium text-cw-muted">{label}</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    defaultValue={val || ''}
+                    placeholder={ph}
+                    onChange={e => setter(num(e.target.value))}
+                    className="mt-1 w-full bg-cw-surface border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text placeholder:text-cw-muted focus:outline-none focus:border-amber-400/50"
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -194,6 +235,20 @@ export function MetasSection() {
           ))}
         </div>
       </div>
+
+      {/* Progresso — Mega Metas */}
+      {temMega && (
+        <div>
+          <p className="flex items-center gap-1.5 text-[10px] font-black text-amber-400 uppercase tracking-widest mb-3">
+            <Rocket className="h-3.5 w-3.5" /> Progresso das Mega Metas
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {computed.megaMetas.map((m, i) => (
+              <ProgressoCard key={i} idx={i} mega label={`Mega Meta ${i + 1}`} alvo={m.valor} progresso={m.progresso} falta={m.falta} porDia={m.porDia} batida={m.batida} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Módulos */}
       <ModulosSection

@@ -7,6 +7,10 @@ export interface MetasState {
   meta1: number;
   meta2: number;
   meta3: number;
+  /** Mega Metas — stretch goals acima da Meta 3, mesma mecânica em R$. */
+  mega1: number;
+  mega2: number;
+  mega3: number;
   jaFechado: number;
   /** null = cálculo automático (dias úteis restantes no mês). */
   diasUteis: number | null;
@@ -23,6 +27,9 @@ const EMPTY: MetasState = {
   meta1: 0,
   meta2: 0,
   meta3: 0,
+  mega1: 0,
+  mega2: 0,
+  mega3: 0,
   jaFechado: 0,
   diasUteis: null,
   moduloMeta1: 0,
@@ -61,6 +68,7 @@ export interface MetasComputed extends MetasState {
   mesLabel: string;
   diasRestantes: number;
   metas: MetaCalculo[];        // [meta1, meta2, meta3] em R$
+  megaMetas: MetaCalculo[];    // [mega1, mega2, mega3] em R$
   moduloMetas: MetaCalculo[];  // [moduloMeta1, moduloMeta2, moduloMeta3] em unidades
   projecao: number;          // projeção de fechamento no mês
   performance: number;       // % sobre a maior meta (meta 3)
@@ -110,6 +118,9 @@ export function useCloserMetas() {
   const metas = [state.meta1, state.meta2, state.meta3].map((alvo) =>
     calcMeta(alvo, state.jaFechado, dias),
   );
+  const megaMetas = [state.mega1, state.mega2, state.mega3].map((alvo) =>
+    calcMeta(alvo, state.jaFechado, dias),
+  );
   const moduloMetas = [state.moduloMeta1, state.moduloMeta2, state.moduloMeta3].map((alvo) =>
     calcMeta(alvo, state.moduloConquistado, dias),
   );
@@ -127,6 +138,7 @@ export function useCloserMetas() {
     mesLabel: MESES[now.getMonth()],
     diasRestantes: dias,
     metas,
+    megaMetas,
     moduloMetas,
     projecao,
     performance,
