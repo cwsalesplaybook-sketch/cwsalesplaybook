@@ -242,7 +242,7 @@ function StatusCard({ icon: Icon, titulo, unidade, metric, diasRestantes, corBar
 }
 
 export default function MetaMesReps() {
-  const { state, update, ajustar, definirTotal, mesLabel, diasRestantes, cadastroMetaIndividual, agendamento, cadastro } = useRepsMetas();
+  const { state, update, ajustar, definirTotal, diasRestantes, cadastroMetaIndividual, agendamento, cadastro } = useRepsMetas();
   const [config, setConfig] = useState(false);
   const [ajusteModal, setAjusteModal] = useState<{ campo: 'agendamentos' | 'cadastros'; modo: 'add' | 'sub' } | null>(null);
   const [totalModal, setTotalModal] = useState<'agendamentos' | 'cadastros' | null>(null);
@@ -263,11 +263,6 @@ export default function MetaMesReps() {
 
   return (
     <div className="p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-cw-text">Meta do Mês</h1>
-        <p className="text-sm text-cw-muted mt-1">Metas de {mesLabel} — Aquisição de Canal: agendamentos e representantes cadastrados.</p>
-      </div>
-
       {config && (
         <ConfigModal
           agendamentoMeta={state.agendamentoMeta}
