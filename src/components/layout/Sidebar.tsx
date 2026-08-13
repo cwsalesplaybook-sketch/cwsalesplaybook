@@ -87,17 +87,17 @@ const CLOSER_SECTIONS = [
  *  não têm integração pronta para reps (mesmo estado "em construção" de lá). */
 const NAV_REPS: NavItem[] = [
   { to: '/start',       label: 'Comece Aqui', icon: 'Sparkles',  end: false },
+  { to: '/meta',        label: 'Meta do Mês', icon: 'Target',    end: false },
   { to: '/comunidade',  label: 'Comunidade',  icon: 'Users',     end: false },
   { to: '/onboarding',  label: 'Onboarding',  icon: 'MapIcon',   end: false },
   { to: '/playbook',    label: 'Playbook',    icon: 'BookOpen',  end: false },
   { to: '/pipeline',    label: 'Pipeline',    icon: 'BarChart2', end: false },
-  { to: '/meta',        label: 'Meta do Mês', icon: 'Target',    end: false },
   { to: '/ajuda',       label: 'Central de Ajuda', icon: 'HelpCircle', end: false },
 ];
 
 const REPS_SECTIONS = [
+  { label: 'Comercial', routes: ['/meta', '/onboarding', '/playbook', '/pipeline'] },
   { label: 'Equipe',    routes: ['/comunidade'] },
-  { label: 'Comercial', routes: ['/onboarding', '/playbook', '/pipeline', '/meta'] },
 ];
 
 /** Seletor de playbooks — cada opção troca o papel inteiro do app */

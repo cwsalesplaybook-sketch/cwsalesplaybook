@@ -1,14 +1,11 @@
 /** Meta do Mês de Aquisição de Canal — tracker pessoal salvo no navegador
  *  (localStorage), sem integração com Pipedrive. Mesma mecânica de cálculo
- *  do MetaMes.tsx do SDR (dias úteis, ritmo, projeção), mas com DOIS
- *  indicadores independentes em vez de um: Agendamentos (reuniões marcadas)
- *  e Representantes Cadastrados. A meta de cadastro é do SQUAD (dividida
- *  entre as pessoas que recrutam representantes, ex: você + Hyorranes). */
+ *  do MetaMes.tsx do SDR (dias úteis, ritmo, projeção), mas com um único
+ *  indicador: Representantes Cadastrados. A meta é do SQUAD (dividida entre
+ *  as pessoas que recrutam representantes, ex: você + Hyorranes). */
 import { useCallback, useEffect, useState } from 'react';
 
 export interface RepsMetasState {
-  agendamentoMeta: number;
-  agendamentos: number;
   /** Meta TOTAL do squad de aquisição (ex: 46), dividida por `squadPessoas`. */
   cadastroMetaTotal: number;
   squadPessoas: number;
@@ -20,18 +17,11 @@ export interface RepsMetasState {
 const STORAGE_KEY = 'cw-reps-metas';
 
 const EMPTY: RepsMetasState = {
-  agendamentoMeta: 0,
-  agendamentos: 0,
   cadastroMetaTotal: 46,
   squadPessoas: 2,
   cadastros: 0,
   diasUteis: null,
 };
-
-const MESES = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-];
 
 /** Dias úteis (seg-sex) do mês corrente, já passados/restantes — mesma
  *  conta usada pelo Meta do Mês do SDR (src/components/meta/MetaMes.tsx). */
@@ -107,15 +97,14 @@ export function useRepsMetas() {
     setState((s) => ({ ...s, ...patch }));
   }, []);
 
-  const ajustar = useCallback((campo: 'agendamentos' | 'cadastros', delta: number) => {
-    setState((s) => ({ ...s, [campo]: Math.max(0, s[campo] + delta) }));
+  const ajustarCadastros = useCallback((delta: number) => {
+    setState((s) => ({ ...s, cadastros: Math.max(0, s.cadastros + delta) }));
   }, []);
 
-  const definirTotal = useCallback((campo: 'agendamentos' | 'cadastros', valor: number) => {
-    setState((s) => ({ ...s, [campo]: Math.max(0, Number.isFinite(valor) ? valor : 0) }));
+  const definirCadastros = useCallback((valor: number) => {
+    setState((s) => ({ ...s, cadastros: Math.max(0, Number.isFinite(valor) ? valor : 0) }));
   }, []);
 
-  const now = new Date();
   const { diasUteisTotal, diasPassados, diasRestantes: diasRestantesCalc } = calcularDiasUteis();
   const diasRestantes = state.diasUteis ?? diasRestantesCalc;
 
@@ -123,20 +112,15 @@ export function useRepsMetas() {
     ? Math.round((state.cadastroMetaTotal / state.squadPessoas) * 10) / 10
     : state.cadastroMetaTotal;
 
-  const agendamento = calcMetric(state.agendamentoMeta, state.agendamentos, diasPassados, diasUteisTotal, diasRestantes);
   const cadastro = calcMetric(cadastroMetaIndividual, state.cadastros, diasPassados, diasUteisTotal, diasRestantes);
 
   return {
     state,
     update,
-    ajustar,
-    definirTotal,
-    mesLabel: MESES[now.getMonth()],
-    diasUteisTotal,
-    diasPassados,
+    ajustarCadastros,
+    definirCadastros,
     diasRestantes,
     cadastroMetaIndividual,
-    agendamento,
     cadastro,
   };
 }
