@@ -272,8 +272,8 @@ export default function MetaMesReps() {
           </div>
         </div>
 
-        <div className="flex justify-end -mb-2">
-          <img src="/onca-andando.gif" alt="" className="h-14 md:h-16 object-contain opacity-90 select-none" />
+        <div className="flex justify-end -mb-2 -mr-2">
+          <img src="/onca-andando.gif" alt="" className="h-28 md:h-36 object-contain select-none" />
         </div>
       </div>
 
