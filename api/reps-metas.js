@@ -77,6 +77,23 @@ export default async function handler(req, res) {
   const email = String(req.query.email || '').toLowerCase();
   const ownerId = REP_OWNERS[email];
 
+  // Modo debug temporário — inspeciona o formato bruto que o Pipedrive
+  // devolve pra essa conta, pra investigar a contagem zerada.
+  if (req.query.debug) {
+    try {
+      const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&user_id=${ownerId || REP_OWNERS['gabrielly.oliveira@cardapioweb.com']}&limit=5`;
+      const json = await fetchPipedriveComRetry(url);
+      return res.status(200).json({
+        ok: true,
+        amostra: (json.data || []).map(d => ({
+          id: d.id, pipeline_id: d.pipeline_id, owner_id: d.owner_id, won_time: d.won_time, status: d.status,
+        })),
+      });
+    } catch (e) {
+      return res.status(500).json({ ok: false, erro: String(e) });
+    }
+  }
+
   const agora = paraBR(new Date());
   const ano = agora.getUTCFullYear();
   const mesNum = agora.getUTCMonth();
