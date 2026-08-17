@@ -5,10 +5,15 @@ const TOKEN = process.env.PIPEDRIVE_API_TOKEN;
 // não interessam aqui).
 const PIPELINES_REP = new Set([60, 75]);
 
+// Só entram reuniões AGENDADAS nesses últimos N dias (retroativo) — não é o
+// histórico completo, é uma janela recente pra "quanto eu agendei" fazer sentido.
+const JANELA_DIAS = 60;
+
 // user_id real de cada pessoa no Pipedrive (confirmado via GET /v1/users) —
-// é o que identifica quem vai fazer a reunião na atividade, ao contrário do
-// "dono" do negócio, que nos funis de Representantes é sempre uma conta
-// técnica compartilhada (ver api/reps-metas.js).
+// é o melhor sinal disponível de quem vai fazer a reunião ANTES do ganho (o
+// campo "[REP] Responsável pela reunião" só existe depois do ganho). Não é
+// 100% confiável — a Gabi agenda tanto no perfil dela quanto no do Hyorranes
+// — por isso o front permite corrigir manualmente por reunião.
 const REP_PESSOAS = {
   'gabrielly.oliveira@cardapioweb.com': { userId: 26387481, nome: 'Gabrielly' },
   'hyorranes.souza@cardapioweb.com': { userId: 24835051, nome: 'Hyorranes' },
@@ -30,12 +35,16 @@ async function fetchPipedriveComRetry(url, tentativas = 5) {
   throw ultimoErro;
 }
 
-// Pipedrive devolve datas em UTC; o time opera em horário de Brasília.
+// Pipedrive devolve add_time em UTC (timestamp de sistema, igual won_time);
+// o time opera em horário de Brasília — mesmo ajuste usado em api/meta.js e
+// api/reps-metas.js. due_date/due_time da reunião em si já são inseridos
+// direto pelo usuário em horário local, não precisam desse ajuste.
 const TZ_OFFSET_MS = 3 * 60 * 60 * 1000;
-function hojeBR() {
-  const agora = new Date(Date.now() - TZ_OFFSET_MS);
-  return agora.toISOString().slice(0, 10);
+function paraBR(dataUtc) { return new Date(dataUtc.getTime() - TZ_OFFSET_MS); }
+function dataBR(str) {
+  return paraBR(new Date(str.replace(' ', 'T') + 'Z')).toISOString().slice(0, 10);
 }
+function hojeBR() { return paraBR(new Date()).toISOString().slice(0, 10); }
 
 function extrairLead(person) {
   if (!person) return { nome: null, telefone: null, email: null };
@@ -53,6 +62,7 @@ export default async function handler(req, res) {
   if (!TOKEN) return res.status(500).json({ ok: false, erro: 'PIPEDRIVE_API_TOKEN não configurado' });
 
   const hoje = hojeBR();
+  const limiteAntigo = new Date(Date.now() - JANELA_DIAS * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const dealCache = new Map();
   const personCache = new Map();
   const reunioes = [];
@@ -61,13 +71,16 @@ export default async function handler(req, res) {
     for (const [, pessoa] of Object.entries(REP_PESSOAS)) {
       let start = 0;
       while (true) {
-        const url = `https://api.pipedrive.com/v1/activities?api_token=${TOKEN}&type=meeting&done=0&limit=500&start=${start}&user_id=${pessoa.userId}`;
+        // Sem filtro de "done" — pega tanto reuniões futuras quanto já
+        // realizadas, pra alimentar o retroativo (quanto foi agendado por dia).
+        const url = `https://api.pipedrive.com/v1/activities?api_token=${TOKEN}&type=meeting&limit=500&start=${start}&user_id=${pessoa.userId}`;
         const json = await fetchPipedriveComRetry(url);
         const atividades = Array.isArray(json.data) ? json.data : [];
 
         for (const a of atividades) {
-          if ((a.due_date || '') < hoje) continue;
           if (!a.person_id) continue;
+          const agendadaEm = a.add_time ? dataBR(a.add_time) : null;
+          if (!agendadaEm || agendadaEm < limiteAntigo) continue;
 
           let lead = null;
 
@@ -99,8 +112,10 @@ export default async function handler(req, res) {
 
           reunioes.push({
             id: a.id,
-            data: a.due_date,
+            agendadaEm, // dia em que a reunião foi marcada no Pipedrive
+            data: a.due_date, // dia em que a reunião vai acontecer
             hora: a.due_time || null,
+            done: !!a.done,
             responsavel: pessoa.nome,
             lead,
           });
@@ -111,9 +126,13 @@ export default async function handler(req, res) {
       }
     }
 
-    reunioes.sort((x, y) => `${x.data} ${x.hora || '00:00'}`.localeCompare(`${y.data} ${y.hora || '00:00'}`));
+    reunioes.sort((x, y) => {
+      const porAgendamento = y.agendadaEm.localeCompare(x.agendadaEm); // mais recente primeiro
+      if (porAgendamento !== 0) return porAgendamento;
+      return `${x.data} ${x.hora || '00:00'}`.localeCompare(`${y.data} ${y.hora || '00:00'}`);
+    });
 
-    res.status(200).json({ ok: true, reunioes, ts: new Date().toISOString() });
+    res.status(200).json({ ok: true, reunioes, hoje, ts: new Date().toISOString() });
   } catch (e) {
     res.status(500).json({ ok: false, erro: String(e) });
   }
