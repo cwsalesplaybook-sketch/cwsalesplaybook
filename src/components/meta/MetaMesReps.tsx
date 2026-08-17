@@ -1,13 +1,21 @@
 /** Meta do Mês de Aquisição de Canal — mesmo layout/mecânica do Meta do Mês
  *  do SDR (src/components/meta/MetaMes.tsx: status card, barra com marcador
- *  de ritmo do dia, projeção, insights, Meta 1/2/3 ⭐), mas SEM Pipedrive
- *  (tudo manual, localStorage) e com um único indicador: Representantes
- *  Cadastrados — meta individual (2026-08-17: sem mais divisão por squad). */
-import { useState } from 'react';
+ *  de ritmo do dia, projeção, insights, Meta 1/2/3 ⭐), com um único
+ *  indicador: Representantes Cadastrados — meta individual (2026-08-17: sem
+ *  mais divisão por squad).
+ *
+ *  Pipedrive (2026-08-17): "Representantes Cadastrados" é sincronizado
+ *  automaticamente com os ganhos do mês no funil [REP] Funil de Reunião
+ *  Agendada (rep cadastrado de verdade); os botões +/-/lápis continuam
+ *  valendo como ajuste manual até a próxima sincronização (api/reps-metas.js).
+ *  O card "Agendamentos" do OKR do squad sincroniza com os ganhos do
+ *  [REP] Funil de Prospecção de Representantes (Gabrielly + Hyorranes). */
+import { useEffect, useState } from 'react';
 import { Settings, X, Check, TrendingUp, Calendar, Lightbulb, Pencil, AlertTriangle, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRepsMetas } from '@/hooks/useRepsMetas';
 import { RepsOkrsSection } from '@/components/meta/RepsOkrsSection';
+import { supabase } from '@/integrations/supabase/client';
 
 function ConfigModal({ meta1, meta2, meta3, diasUteis, onSave, onClose }: {
   meta1: number; meta2: number; meta3: number; diasUteis: number | null;
@@ -133,6 +141,34 @@ export default function MetaMesReps() {
   const porDia = (m: number) => diasRestantes > 0 ? Math.ceil(Math.max(0, m - cadastro.atual) / diasRestantes) : 0;
   const falta = (m: number) => Math.max(0, m - cadastro.atual);
 
+  // Sincroniza com o Pipedrive: cadastros (Funil de Reunião Agendada, pessoal)
+  // e agendamentos do squad (Funil de Prospecção) — ver api/reps-metas.js.
+  const [agendamentosSquad, setAgendamentosSquad] = useState<number | null>(null);
+  const [syncErro, setSyncErro] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelado = false;
+    const sincronizar = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const email = session?.user?.email;
+      if (!email) return;
+      try {
+        const r = await fetch(`/api/reps-metas?email=${encodeURIComponent(email)}`);
+        const json = await r.json();
+        if (cancelado) return;
+        if (!json.ok) { setSyncErro(json.erro ?? 'Falha ao sincronizar com o Pipedrive'); return; }
+        setSyncErro(null);
+        if (json.cadastros != null) definirCadastros(json.cadastros);
+        if (json.agendamentos != null) setAgendamentosSquad(json.agendamentos);
+      } catch (e) {
+        if (!cancelado) setSyncErro(e instanceof Error ? e.message : 'Falha ao sincronizar com o Pipedrive');
+      }
+    };
+    sincronizar();
+    const id = setInterval(sincronizar, 5 * 60 * 1000);
+    return () => { cancelado = true; clearInterval(id); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const insights: { icon: React.ReactNode; texto: string; sub: string; cor: string }[] = [];
   if (cadastro.batida) {
     insights.push({ icon: <Check className="h-4 w-4" />, texto: 'Meta de representantes cadastrados batida!', sub: 'Sua Meta 3 foi cumprida 🏆', cor: 'text-amber-600 bg-amber-50 border-amber-200' });
@@ -213,6 +249,11 @@ export default function MetaMesReps() {
             </button>
           </div>
         </div>
+
+        <p className="flex items-center gap-1.5 text-[10px] text-cw-muted">
+          <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', syncErro ? 'bg-red-400' : 'bg-emerald-400')} />
+          {syncErro ? `Sincronização com o Pipedrive falhou: ${syncErro}` : 'Sincronizado com o Pipedrive — Funil de Reunião Agendada (ganhos do mês)'}
+        </p>
 
         <div>
           <div className="flex items-baseline gap-2">
@@ -323,7 +364,7 @@ export default function MetaMesReps() {
       </div>
 
       {/* OKRs & Metas do Squad — não entra no cálculo acima */}
-      <RepsOkrsSection />
+      <RepsOkrsSection agendamentosAuto={agendamentosSquad} />
 
       {/* Insights Rápidos */}
       <div className="cw-card p-6 space-y-4">

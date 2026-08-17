@@ -1,8 +1,14 @@
 /** OKRs & Metas do Squad — painel de acompanhamento separado da Meta
  *  pessoal (Representantes Cadastrados) acima. Cada card tem uma
  *  engrenagem pra editar título/atual/meta/unidade/nota; nada aqui entra
- *  no cálculo de ritmo/projeção do bloco principal. */
-import { useState } from 'react';
+ *  no cálculo de ritmo/projeção do bloco principal.
+ *
+ *  O card "Agendamentos" (id fixo `agendamentos`) recebe sincronização
+ *  automática via prop `agendamentosAuto` (ganhos do mês no Funil de
+ *  Prospecção de Representantes, Gabrielly + Hyorranes somados — ver
+ *  MetaMesReps.tsx / api/reps-metas.js); segue editável manualmente entre
+ *  sincronizações, igual ao card de Representantes Cadastrados acima. */
+import { useEffect, useState } from 'react';
 import { Settings, X, Trash2, Plus, ListChecks } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRepsOkrs, type OkrCard } from '@/hooks/useRepsOkrs';
@@ -114,10 +120,17 @@ function Card({ okr, onEdit }: { okr: OkrCard; onEdit: () => void }) {
   );
 }
 
-export function RepsOkrsSection() {
+export function RepsOkrsSection({ agendamentosAuto }: { agendamentosAuto?: number | null }) {
   const { okrs, updateOkr, addOkr, removeOkr } = useRepsOkrs();
   const [editingId, setEditingId] = useState<string | null>(null);
   const editing = okrs.find(o => o.id === editingId) ?? null;
+
+  useEffect(() => {
+    if (agendamentosAuto == null) return;
+    const atual = okrs.find(o => o.id === 'agendamentos')?.atual;
+    if (atual !== agendamentosAuto) updateOkr('agendamentos', { atual: agendamentosAuto });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agendamentosAuto]);
 
   return (
     <div className="cw-card p-6 space-y-4">
