@@ -86,18 +86,30 @@ const CLOSER_SECTIONS = [
  *  real do canal (cw-playbook-reps.vercel.app). Pipeline e Meta do Mês ainda
  *  não têm integração pronta para reps (mesmo estado "em construção" de lá). */
 const NAV_REPS: NavItem[] = [
-  { to: '/start',       label: 'Comece Aqui', icon: 'Sparkles',  end: false },
-  { to: '/meta',        label: 'Meta do Mês', icon: 'Target',    end: false },
-  { to: '/comunidade',  label: 'Comunidade',  icon: 'Users',     end: false },
-  { to: '/onboarding',  label: 'Onboarding',  icon: 'MapIcon',   end: false },
-  { to: '/playbook',    label: 'Playbook',    icon: 'BookOpen',  end: false },
-  { to: '/pipeline',    label: 'Pipeline',    icon: 'BarChart2', end: false },
-  { to: '/ajuda',       label: 'Central de Ajuda', icon: 'HelpCircle', end: false },
+  { to: '/start',           label: 'Comece Aqui',       icon: 'Sparkles',  end: false },
+  { to: '/meta',            label: 'Meta do Mês',       icon: 'Target',    end: false },
+  { to: '/comunidade',      label: 'Comunidade',        icon: 'Users',     end: false },
+  { to: '/onboarding',      label: 'Onboarding',        icon: 'MapIcon',   end: false },
+  { to: '/playbook',        label: 'Playbook',          icon: 'BookOpen',  end: false },
+  { to: '/pipeline',        label: 'Pipeline',          icon: 'BarChart2', end: false },
+  // Clonadas do SDR — mesmo conteúdo inicial, editáveis de forma independente depois.
+  { to: '/reps/templates',  label: 'Templates',         icon: 'FileText',  end: false },
+  { to: '/reps/automacoes', label: 'Automações',        icon: 'Zap',       end: false },
+  { to: '/reps/planos',     label: 'Planos e Módulos',  icon: 'Package',   end: false },
+  { to: '/reps/cw-store',   label: 'CW Store',          icon: 'Store',     end: false },
+  { to: '/reps/faq',        label: 'FAQ',               icon: 'HelpCircle',end: false },
+  { to: '/reps/biblioteca', label: 'Biblioteca',        icon: 'Library',   end: false },
+  { to: '/historias',       label: 'Histórias de Sucesso', icon: 'Trophy', end: false },
+  { to: '/ajuda',           label: 'Central de Ajuda',  icon: 'HelpCircle', end: false },
 ];
 
 const REPS_SECTIONS = [
-  { label: 'Comercial', routes: ['/meta', '/onboarding', '/playbook', '/pipeline'] },
-  { label: 'Equipe',    routes: ['/comunidade'] },
+  {
+    label: 'Comercial',
+    routes: ['/meta', '/onboarding', '/playbook', '/pipeline', '/reps/templates', '/reps/automacoes', '/reps/planos', '/reps/cw-store', '/reps/faq'],
+  },
+  { label: 'Cultura e Time', routes: ['/reps/biblioteca', '/historias'] },
+  { label: 'Equipe',         routes: ['/comunidade'] },
 ];
 
 /** Seletor de playbooks — cada opção troca o papel inteiro do app */

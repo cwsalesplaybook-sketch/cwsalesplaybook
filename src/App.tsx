@@ -54,6 +54,12 @@ import CloserDashboard from '@/pages/closer/Dashboard';
 import CloserTemplates from '@/pages/closer/Templates';
 import SdrTemplates from '@/pages/sdr/Templates';
 import Roleplay from '@/pages/sdr/Roleplay';
+import RepsTemplates from '@/pages/reps/Templates';
+import RepsAutomacoes from '@/pages/reps/Automacoes';
+import RepsPlanos from '@/pages/reps/Planos';
+import RepsCwStore from '@/pages/reps/CwStore';
+import RepsFaq from '@/pages/reps/Faq';
+import RepsBiblioteca from '@/pages/reps/Biblioteca';
 import CloserDescontos from '@/pages/closer/Descontos';
 import CloserMetas from '@/pages/closer/Metas';
 import CloserProcesso from '@/pages/closer/Processo';
@@ -194,6 +200,14 @@ function AnimatedRoutes() {
           <Route path="/playbook" element={<Playbook />} />
           <Route path="/sdr/templates" element={<SdrTemplates />} />
           <Route path="/sdr/roleplay" element={<Roleplay />} />
+          {/* Abas clonadas do SDR pro dashboard de Representantes — mesmo
+              conteúdo inicial, independentes pra edição futura. */}
+          <Route path="/reps/templates" element={<RepsTemplates />} />
+          <Route path="/reps/automacoes" element={<RepsAutomacoes />} />
+          <Route path="/reps/planos" element={<RepsPlanos />} />
+          <Route path="/reps/cw-store" element={<RepsCwStore />} />
+          <Route path="/reps/faq" element={<RepsFaq />} />
+          <Route path="/reps/biblioteca" element={<RepsBiblioteca />} />
           {/* Tira-dúvidas saiu da nav, virou Roleplay — redireciona link antigo. */}
           <Route path="/sdr/tira-duvidas" element={<Navigate to="/sdr/roleplay" replace />} />
           <Route path="/playbook/closer" element={<PlaybookCloser />} />
