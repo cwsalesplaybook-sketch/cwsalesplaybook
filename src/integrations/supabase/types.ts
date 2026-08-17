@@ -182,6 +182,54 @@ export type Database = {
         }
         Relationships: []
       }
+      reps_agenda_reunioes: {
+        Row: {
+          agendada_em: string
+          created_at: string
+          created_by: string | null
+          data: string
+          hora: string | null
+          id: string
+          lead_email: string | null
+          lead_nome: string | null
+          lead_telefone: string | null
+          pipedrive_activity_id: number | null
+          presenca: string | null
+          responsavel: string
+          updated_at: string
+        }
+        Insert: {
+          agendada_em: string
+          created_at?: string
+          created_by?: string | null
+          data: string
+          hora?: string | null
+          id?: string
+          lead_email?: string | null
+          lead_nome?: string | null
+          lead_telefone?: string | null
+          pipedrive_activity_id?: number | null
+          presenca?: string | null
+          responsavel: string
+          updated_at?: string
+        }
+        Update: {
+          agendada_em?: string
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          hora?: string | null
+          id?: string
+          lead_email?: string | null
+          lead_nome?: string | null
+          lead_telefone?: string | null
+          pipedrive_activity_id?: number | null
+          presenca?: string | null
+          responsavel?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       roleplay_scores: {
         Row: {
           created_at: string
