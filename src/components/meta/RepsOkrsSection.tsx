@@ -120,8 +120,8 @@ function Card({ okr, onEdit }: { okr: OkrCard; onEdit: () => void }) {
   );
 }
 
-export function RepsOkrsSection({ agendamentosAuto }: { agendamentosAuto?: number | null }) {
-  const { okrs, updateOkr, addOkr, removeOkr } = useRepsOkrs();
+export function RepsOkrsSection({ cargo = 'Aquisição de Canal', agendamentosAuto }: { cargo?: string; agendamentosAuto?: number | null }) {
+  const { okrs, updateOkr, addOkr, removeOkr } = useRepsOkrs(cargo);
   const [editingId, setEditingId] = useState<string | null>(null);
   const editing = okrs.find(o => o.id === editingId) ?? null;
 

@@ -231,6 +231,7 @@ export type Database = {
         Row: {
           apelido: string | null
           cargo_lideranca: string | null
+          cargo_representante: string | null
           created_at: string
           email: string | null
           onboarding_done: boolean
@@ -243,6 +244,7 @@ export type Database = {
         Insert: {
           apelido?: string | null
           cargo_lideranca?: string | null
+          cargo_representante?: string | null
           created_at?: string
           email?: string | null
           onboarding_done?: boolean
@@ -255,6 +257,7 @@ export type Database = {
         Update: {
           apelido?: string | null
           cargo_lideranca?: string | null
+          cargo_representante?: string | null
           created_at?: string
           email?: string | null
           onboarding_done?: boolean

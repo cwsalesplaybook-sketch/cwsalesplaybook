@@ -1,16 +1,26 @@
 const TOKEN = process.env.PIPEDRIVE_API_TOKEN;
 
-// "[REP] Funil de Prospecção de Representantes" — ganho = agendamento marcado.
-const PIPELINE_PROSPECCAO = 60;
-// "[REP] Funil de Reunião Agendada" — ganho = reunião deu certo, rep foi cadastrado.
-const PIPELINE_REUNIAO = 75;
+/** Cada frente dentro do papel Representante tem seu próprio funil "principal"
+ *  no Pipedrive — o negócio ganho nesse funil é o que conta como resultado
+ *  pessoal (card "Representantes Cadastrados" / "Reps Ativados" da Meta do Mês). */
+const CARGO_CONFIG = {
+  // Prospecta e recruta — ganho no Funil de Reunião Agendada = rep cadastrado.
+  'Aquisição de Canal': { pipelinePrincipal: 75 },
+  // Ativa quem já foi cadastrado — ganho no funil de Onboarding→1º Cliente = rep ativado.
+  'PSM': { pipelinePrincipal: 62 },
+};
 
-// Squad de Aquisição de Canal (Representantes) — mapeado por e-mail de login pro
-// dono do negócio no Pipedrive. owner_id do Hyorranes inferido pela predominância
-// dele no Funil de Prospecção (80% dos negócios da amostra); confirmado pela Gabi.
-const REP_OWNERS = {
-  'gabrielly.oliveira@cardapioweb.com': 11726977,
-  'hyorranes.souza@cardapioweb.com': 21801658,
+// "[REP] Funil de Prospecção de Representantes" — ganho = agendamento marcado.
+// OKR do squad de Aquisição de Canal (soma todo mundo dessa frente).
+const PIPELINE_PROSPECCAO = 60;
+
+// Squad de Representantes mapeado por e-mail de login pro dono do negócio no
+// Pipedrive + frente. owner_id do Hyorranes inferido pela predominância dele
+// no Funil de Prospecção (80% dos negócios da amostra); confirmado pela Gabi.
+// Beatriz (PSM): adicionar aqui assim que tivermos o owner_id dela no Pipedrive.
+const REP_PESSOAS = {
+  'gabrielly.oliveira@cardapioweb.com': { ownerId: 11726977, cargo: 'Aquisição de Canal' },
+  'hyorranes.souza@cardapioweb.com': { ownerId: 21801658, cargo: 'Aquisição de Canal' },
 };
 
 // Pipedrive devolve datas em UTC; o time opera em horário de Brasília (UTC-3,
@@ -76,7 +86,7 @@ export default async function handler(req, res) {
   if (!TOKEN) return res.status(500).json({ ok: false, erro: 'PIPEDRIVE_API_TOKEN não configurado' });
 
   const email = String(req.query.email || '').toLowerCase();
-  const ownerId = REP_OWNERS[email];
+  const pessoa = REP_PESSOAS[email];
 
   const agora = paraBR(new Date());
   const ano = agora.getUTCFullYear();
@@ -86,18 +96,28 @@ export default async function handler(req, res) {
   const iniciaMes = `${ano}-${mes}-01`;
 
   try {
-    const chaveProspeccaoPorOwner = Object.values(REP_OWNERS).map(oid => `${PIPELINE_PROSPECCAO}:${oid}`);
-    const chaveReuniao = ownerId ? `${PIPELINE_REUNIAO}:${ownerId}` : null;
-    const chaves = [...chaveProspeccaoPorOwner, ...(chaveReuniao ? [chaveReuniao] : [])];
+    // Agendamentos: OKR do squad de Aquisição de Canal inteiro (soma todo mundo dessa frente).
+    const donosAquisicao = Object.values(REP_PESSOAS)
+      .filter(p => p.cargo === 'Aquisição de Canal')
+      .map(p => p.ownerId);
+    const chaveProspeccaoPorOwner = donosAquisicao.map(oid => `${PIPELINE_PROSPECCAO}:${oid}`);
 
+    // Resultado pessoal: funil principal da frente de quem está logado.
+    const pipelinePrincipal = pessoa ? CARGO_CONFIG[pessoa.cargo]?.pipelinePrincipal : null;
+    const chavePrincipal = pipelinePrincipal ? `${pipelinePrincipal}:${pessoa.ownerId}` : null;
+
+    const chaves = [...chaveProspeccaoPorOwner, ...(chavePrincipal ? [chavePrincipal] : [])];
     const contagens = await contarGanhosDoMesPorChave(chaves, prefixo, iniciaMes);
 
     const agendamentos = chaveProspeccaoPorOwner.reduce((soma, c) => soma + contagens[c], 0);
-    const cadastros = chaveReuniao ? contagens[chaveReuniao] : null;
+    const cadastros = chavePrincipal ? contagens[chavePrincipal] : null;
 
     res.status(200).json({
-      ok: true, mes: prefixo, agendamentos, cadastros,
-      reconhecido: ownerId != null,
+      ok: true, mes: prefixo, cadastros,
+      // Agendamentos só faz sentido pra quem é da Aquisição de Canal (OKR do squad).
+      agendamentos: pessoa?.cargo === 'Aquisição de Canal' ? agendamentos : null,
+      cargo: pessoa?.cargo ?? null,
+      reconhecido: pessoa != null,
       ts: new Date().toISOString(),
     });
   } catch (e) {

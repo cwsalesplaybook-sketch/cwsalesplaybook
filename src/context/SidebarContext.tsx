@@ -25,6 +25,8 @@ interface Ctx {
   squad: string | null;
   /** Squads que a liderança acompanha (vazio para não-líderes). */
   squadsLideradas: string[];
+  /** Frente dentro do papel Representante — "Aquisição de Canal" ou "PSM". */
+  cargoRepresentante: string | null;
   apelido: string | null;
   /** Bloqueia navegação na sidebar enquanto o wizard de onboarding está ativo. */
   onboardingActive: boolean;
@@ -46,6 +48,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [lockedPapel, setLockedPapel] = useState<Papel | null>(null);
   const [squad, setSquad] = useState<string | null>(null);
   const [squadsLideradas, setSquadsLideradas] = useState<string[]>([]);
+  const [cargoRepresentante, setCargoRepresentante] = useState<string | null>(null);
   const [apelido, setApelido] = useState<string | null>(null);
   const [onboardingActive, setOnboardingActive] = useState(false);
   const [impersonating, setImpersonating] = useState<ImpersonationTarget | null>(null);
@@ -69,6 +72,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     setSquad((m?.squad as string) ?? null);
     setSquadsLideradas(Array.isArray(m?.squads_lideradas) ? (m.squads_lideradas as string[]) : []);
     setApelido((m?.apelido as string) ?? null);
+    setCargoRepresentante((m?.cargo_representante as string) ?? null);
   };
 
   useEffect(() => {
@@ -84,6 +88,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
         setSquad(null);
         setSquadsLideradas([]);
         setApelido(null);
+        setCargoRepresentante(null);
         setOnboardingActive(false);
         setPapelReady(true);
         return;
@@ -121,7 +126,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   return (
     <SidebarContext.Provider value={{
       papel: visiblePapel, setPapel, setPapelPreview, clearPapelPreview, lockedPapel,
-      squad: visibleSquad, squadsLideradas, apelido: visibleApelido,
+      squad: visibleSquad, squadsLideradas, apelido: visibleApelido, cargoRepresentante,
       onboardingActive, setOnboardingActive,
       impersonating, setImpersonating,
       papelReady,
