@@ -178,8 +178,8 @@ export default function MetaMesReps() {
 
       {/* Card de status — Representantes Cadastrados */}
       <div className="cw-card relative overflow-hidden">
-        {/* Cardapinho cavaleiro — mesmo posicionamento do mascote no Meta do Mês do SDR */}
-        <img src="/cardapinho-cavaleiro.png" alt="" className="absolute right-0 bottom-0 h-52 object-contain pointer-events-none select-none" style={{ zIndex: 10 }} />
+        {/* Cardapinho viking — mesmo mascote e posicionamento do Meta do Mês do SDR */}
+        <img src="/cardapinho-viking.png" alt="" className="absolute right-0 bottom-0 h-52 object-contain pointer-events-none select-none" style={{ zIndex: 10 }} />
 
         <div className="relative p-6 space-y-5" style={{ zIndex: 1 }}>
         <div className="flex items-center justify-between flex-wrap gap-2">
