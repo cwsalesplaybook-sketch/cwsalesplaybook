@@ -38,12 +38,16 @@ async function fetchPipedriveComRetry(url, tentativas = 5) {
   throw ultimoErro;
 }
 
-/** Conta negócios ganhos de uma pipeline+owner com "Ganho em" (won_time) no mês atual. */
+/** Conta negócios ganhos de uma pipeline+owner com "Ganho em" (won_time) no mês atual.
+ *  O endpoint /v1/deals do Pipedrive filtra owner por `user_id` (não `owner_id` —
+ *  esse é só o nome do campo na resposta) e não filtra por `pipeline_id` via
+ *  querystring; por isso os dois são reconferidos manualmente em cada negócio,
+ *  em vez de confiar cegamente no filtro do lado do servidor. */
 async function contarGanhosDoMes(pipelineId, ownerId, prefixoMes, iniciaMes) {
   let count = 0;
   let start = 0;
   while (true) {
-    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&pipeline_id=${pipelineId}&owner_id=${ownerId}&limit=200&start=${start}&sort=won_time%20DESC`;
+    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&user_id=${ownerId}&limit=200&start=${start}&sort=won_time%20DESC`;
     const json = await fetchPipedriveComRetry(url);
     if (!Array.isArray(json.data) || json.data.length === 0) break;
     let parar = false;
@@ -52,7 +56,10 @@ async function contarGanhosDoMes(pipelineId, ownerId, prefixoMes, iniciaMes) {
       if (!wtRaw) continue;
       const wt = wonTimeLocal(wtRaw);
       if (wt < iniciaMes) { parar = true; break; }
-      if (wt.startsWith(prefixoMes)) count++;
+      if (!wt.startsWith(prefixoMes)) continue;
+      if (Number(deal.pipeline_id) !== pipelineId) continue;
+      if (Number(deal.owner_id?.id ?? deal.owner_id) !== ownerId) continue;
+      count++;
     }
     if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
     start += 200;
