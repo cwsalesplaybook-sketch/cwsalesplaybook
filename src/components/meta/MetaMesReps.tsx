@@ -1,19 +1,19 @@
 /** Meta do Mês de Aquisição de Canal — mesmo layout/mecânica do Meta do Mês
  *  do SDR (src/components/meta/MetaMes.tsx: status card, barra com marcador
- *  de ritmo do dia, projeção, insights), mas SEM Pipedrive (tudo manual,
- *  localStorage) e com um único indicador: Representantes Cadastrados (meta
- *  do squad dividida entre quem recruta, ex: você + Hyorranes). */
+ *  de ritmo do dia, projeção, insights, Meta 1/2/3 ⭐), mas SEM Pipedrive
+ *  (tudo manual, localStorage) e com um único indicador: Representantes
+ *  Cadastrados — meta individual (2026-08-17: sem mais divisão por squad). */
 import { useState } from 'react';
-import { Settings, X, Check, TrendingUp, Calendar, Lightbulb, Pencil, AlertTriangle, Users, ClipboardCheck } from 'lucide-react';
+import { Settings, X, Check, TrendingUp, Calendar, Lightbulb, Pencil, AlertTriangle, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRepsMetas } from '@/hooks/useRepsMetas';
 
-function ConfigModal({ cadastroMetaTotal, squadPessoas, diasUteis, onSave, onClose }: {
-  cadastroMetaTotal: number; squadPessoas: number; diasUteis: number | null;
-  onSave: (v: { cadastroMetaTotal: number; squadPessoas: number; diasUteis: number | null }) => void;
+function ConfigModal({ meta1, meta2, meta3, diasUteis, onSave, onClose }: {
+  meta1: number; meta2: number; meta3: number; diasUteis: number | null;
+  onSave: (v: { meta1: number; meta2: number; meta3: number; diasUteis: number | null }) => void;
   onClose: () => void;
 }) {
-  const [form, setForm] = useState({ cadastroMetaTotal, squadPessoas, diasUteis });
+  const [form, setForm] = useState({ meta1, meta2, meta3, diasUteis });
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="bg-white border border-cw-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
@@ -22,26 +22,14 @@ function ConfigModal({ cadastroMetaTotal, squadPessoas, diasUteis, onSave, onClo
           <button onClick={onClose} className="text-cw-muted hover:text-cw-text transition-colors"><X className="h-5 w-5" /></button>
         </div>
         <div className="space-y-4">
-          <div className="space-y-4">
-            <p className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 uppercase tracking-wider">
-              <Users className="h-3.5 w-3.5" /> Meta de Representantes Cadastrados (squad)
-            </p>
-            <div>
-              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta total do squad</label>
-              <input type="number" min={0} value={form.cadastroMetaTotal}
-                onChange={e => setForm(f => ({ ...f, cadastroMetaTotal: Number(e.target.value) }))}
-                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-emerald-400" placeholder="46" />
+          {[1, 2, 3].map(n => (
+            <div key={n}>
+              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Meta {n} {n === 3 && '⭐'}</label>
+              <input type="number" min={0} value={(form as any)[`meta${n}`]}
+                onChange={e => setForm(f => ({ ...f, [`meta${n}`]: Number(e.target.value) }))}
+                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple" placeholder="0" />
             </div>
-            <div>
-              <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Dividida entre quantas pessoas</label>
-              <input type="number" min={1} value={form.squadPessoas}
-                onChange={e => setForm(f => ({ ...f, squadPessoas: Math.max(1, Number(e.target.value)) }))}
-                className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-emerald-400" placeholder="2" />
-              <p className="text-[10px] text-cw-muted mt-1">
-                Sua parte: {form.squadPessoas > 0 ? Math.round((form.cadastroMetaTotal / form.squadPessoas) * 10) / 10 : form.cadastroMetaTotal} representantes
-              </p>
-            </div>
-          </div>
+          ))}
 
           <div className="border-t border-cw-border pt-4">
             <label className="flex items-center gap-1.5 text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5">
@@ -134,24 +122,29 @@ function TotalModal({ valorAtual, onConfirm, onClose }: {
 }
 
 export default function MetaMesReps() {
-  const { state, update, ajustarCadastros, definirCadastros, diasRestantes, cadastroMetaIndividual, cadastro } = useRepsMetas();
+  const { state, update, ajustarCadastros, definirCadastros, diasRestantes, metaReferencia, cadastro } = useRepsMetas();
   const [config, setConfig] = useState(false);
   const [ajusteModal, setAjusteModal] = useState<'add' | 'sub' | null>(null);
   const [totalModal, setTotalModal] = useState(false);
 
+  const { meta1, meta2, meta3 } = state;
+  const maxMeta = metaReferencia || 1;
+  const porDia = (m: number) => diasRestantes > 0 ? Math.ceil(Math.max(0, m - cadastro.atual) / diasRestantes) : 0;
+  const falta = (m: number) => Math.max(0, m - cadastro.atual);
+
   const insights: { icon: React.ReactNode; texto: string; sub: string; cor: string }[] = [];
   if (cadastro.batida) {
-    insights.push({ icon: <Check className="h-4 w-4" />, texto: 'Meta de representantes cadastrados batida!', sub: 'Sua parte da meta do squad foi cumprida', cor: 'text-amber-600 bg-amber-50 border-amber-200' });
+    insights.push({ icon: <Check className="h-4 w-4" />, texto: 'Meta de representantes cadastrados batida!', sub: 'Sua Meta 3 foi cumprida 🏆', cor: 'text-amber-600 bg-amber-50 border-amber-200' });
   }
   if (cadastro.meta > 0 && !cadastro.noRitmo) {
-    insights.push({ icon: <AlertTriangle className="h-4 w-4" />, texto: 'Cadastros abaixo do ritmo necessário', sub: 'No ritmo atual, dificilmente bate sua parte da meta do squad', cor: 'text-red-500 bg-red-50 border-red-200' });
+    insights.push({ icon: <AlertTriangle className="h-4 w-4" />, texto: 'Cadastros abaixo do ritmo necessário', sub: 'No ritmo atual, dificilmente bate sua meta', cor: 'text-red-500 bg-red-50 border-red-200' });
   }
   if (cadastro.meta > 0) {
     const bateMeta = cadastro.projecao >= cadastro.meta;
     insights.push({
       icon: <TrendingUp className="h-4 w-4" />,
       texto: `Na projeção atual, você fecha o mês com ${cadastro.projecao} representantes cadastrados`,
-      sub: bateMeta ? `${cadastro.projecao - cadastro.meta} acima da sua parte da meta (${cadastro.meta})` : `${cadastro.meta - cadastro.projecao} abaixo da sua parte da meta (${cadastro.meta})`,
+      sub: bateMeta ? `${cadastro.projecao - cadastro.meta} acima da sua meta (${cadastro.meta})` : `${cadastro.meta - cadastro.projecao} abaixo da sua meta (${cadastro.meta})`,
       cor: bateMeta ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-cw-purple bg-cw-purple/5 border-cw-purple/20',
     });
   }
@@ -160,8 +153,9 @@ export default function MetaMesReps() {
     <div className="p-8 space-y-6">
       {config && (
         <ConfigModal
-          cadastroMetaTotal={state.cadastroMetaTotal}
-          squadPessoas={state.squadPessoas}
+          meta1={state.meta1}
+          meta2={state.meta2}
+          meta3={state.meta3}
           diasUteis={state.diasUteis}
           onSave={(v) => { update(v); setConfig(false); }}
           onClose={() => setConfig(false)}
@@ -215,11 +209,6 @@ export default function MetaMesReps() {
           </div>
         </div>
 
-        <p className="flex items-center gap-1.5 text-xs text-cw-muted">
-          <Users className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-          Meta do squad: <span className="font-semibold text-cw-text">{state.cadastroMetaTotal}</span> ÷ {state.squadPessoas} pessoas = <span className="font-semibold text-cw-text">{cadastroMetaIndividual}</span> pra você
-        </p>
-
         <div>
           <div className="flex items-baseline gap-2">
             <span className="text-6xl font-black text-cw-purple">{cadastro.atual}</span>
@@ -237,6 +226,17 @@ export default function MetaMesReps() {
             <div className="mt-4">
               <div className="relative w-full h-1.5 bg-cw-border rounded-full">
                 <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 bg-emerald-500" style={{ width: `${cadastro.progresso}%` }} />
+                {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 }].map(({ label, value }) => {
+                  if (!(value > 0)) return null;
+                  const left = Math.min((value / maxMeta) * 100, 99);
+                  const atingida = cadastro.atual >= value;
+                  return (
+                    <div key={label} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2" style={{ left: `${left}%` }}
+                      title={atingida ? `Você chegou à ${label}!` : `Você deveria estar aqui pra bater a ${label}`}>
+                      <div className={cn('w-0.5 h-3.5 rounded-full', atingida ? 'bg-green-500' : 'bg-cw-text/40')} />
+                    </div>
+                  );
+                })}
                 {cadastro.ritmoHojeValor > 0 && (
                   <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10" style={{ left: `${cadastro.ritmoHojePct}%` }}
                     title={cadastro.noRitmoHoje ? 'Você está no ritmo hoje!' : 'Você deveria estar aqui hoje pra manter o ritmo'}>
@@ -248,27 +248,70 @@ export default function MetaMesReps() {
                   </div>
                 )}
               </div>
-              <p className={cn('text-[10px] font-bold mt-2', cadastro.noRitmoHoje ? 'text-blue-600' : 'text-amber-600')}>
-                {cadastro.noRitmoHoje ? 'Você está no ritmo hoje!' : 'Você deveria estar aqui hoje pra manter o ritmo'}
-              </p>
+              <div className="relative h-3.5 mt-2.5">
+                {[{ label: 'Meta 1', value: meta1 }, { label: 'Meta 2', value: meta2 }, { label: 'Meta 3', value: meta3 }].map(({ label, value }) => {
+                  if (!(value > 0)) return null;
+                  const left = Math.min((value / maxMeta) * 100, 99);
+                  const atingida = cadastro.atual >= value;
+                  return (
+                    <span key={label} className={cn('absolute -translate-x-1/2 text-[9px] font-bold whitespace-nowrap',
+                      atingida ? 'text-green-600' : 'text-cw-muted')} style={{ left: `${left}%` }}>
+                      {label}
+                    </span>
+                  );
+                })}
+                {cadastro.ritmoHojeValor > 0 && (
+                  <span className={cn('absolute -translate-x-1/2 text-[9px] font-bold whitespace-nowrap',
+                    cadastro.noRitmoHoje ? 'text-blue-600' : 'text-amber-600')} style={{ left: `${cadastro.ritmoHojePct}%` }}>
+                    Hoje
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>
 
+        {/* Cards Meta 1/2/3 */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="bg-cw-elevated rounded-xl border border-cw-border px-3 py-2.5">
-            <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Por dia</p>
-            <p className="text-base font-black text-cw-text">
-              {cadastro.batida ? '—' : <>{cadastro.porDia}<span className="text-xs text-cw-muted font-normal">/dia</span></>}
-            </p>
+          {[{ label: 'META 1', value: meta1 }, { label: 'META 2', value: meta2 }, { label: 'META 3 ⭐', value: meta3 }].map(({ label, value }, i) => {
+            const batida = value > 0 && cadastro.atual >= value;
+            return (
+              <div key={i} className={cn('rounded-xl border p-3',
+                batida ? 'border-green-200 bg-green-50' : 'border-cw-border bg-cw-elevated'
+              )}>
+                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">{label}</p>
+                <p className="text-xs text-cw-muted mt-0.5">{value > 0 ? `${value} representantes` : 'Não definida'}</p>
+                {batida ? (
+                  <div className="flex items-center gap-1 mt-1.5 text-green-600 text-xs font-semibold">
+                    <Check className="h-3.5 w-3.5" /> Meta atingida!
+                  </div>
+                ) : value > 0 ? (
+                  <div className="mt-1.5">
+                    <p className="text-base font-black text-cw-text">{porDia(value)}<span className="text-xs text-cw-muted ml-1">/dia</span></p>
+                    <p className="text-[10px] text-cw-muted">Falta <span className="text-cw-text font-semibold">{falta(value)}</span> pra meta</p>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-cw-elevated rounded-xl border border-cw-border px-4 py-3 flex items-center gap-3">
+            <TrendingUp className="h-4 w-4 text-cw-purple shrink-0" />
+            <div>
+              <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Projeção Final</p>
+              <p className="text-base font-black text-cw-text">
+                {cadastro.meta > 0 ? <>{cadastro.projecao} <span className="text-sm text-cw-muted font-normal">/ {cadastro.meta}</span></> : <span className="text-sm text-cw-muted font-normal">— defina uma meta</span>}
+              </p>
+            </div>
           </div>
-          <div className="bg-cw-elevated rounded-xl border border-cw-border px-3 py-2.5">
-            <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Projeção</p>
-            <p className="text-base font-black text-cw-text">{cadastro.meta > 0 ? cadastro.projecao : '—'}</p>
-          </div>
-          <div className="bg-cw-elevated rounded-xl border border-cw-border px-3 py-2.5">
-            <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Dias restantes</p>
-            <p className="text-base font-black text-cw-text">{diasRestantes}</p>
+          <div className="bg-cw-elevated rounded-xl border border-cw-border px-4 py-3 flex items-center gap-3">
+            <Calendar className="h-4 w-4 text-cw-yellow shrink-0" />
+            <div>
+              <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Dias Restantes</p>
+              <p className="text-base font-black text-cw-text">{diasRestantes} <span className="text-sm text-cw-muted font-normal">dias</span></p>
+            </div>
           </div>
         </div>
 

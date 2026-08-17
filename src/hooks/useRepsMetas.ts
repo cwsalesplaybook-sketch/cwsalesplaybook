@@ -1,14 +1,16 @@
 /** Meta do Mês de Aquisição de Canal — tracker pessoal salvo no navegador
  *  (localStorage), sem integração com Pipedrive. Mesma mecânica de cálculo
- *  do MetaMes.tsx do SDR (dias úteis, ritmo, projeção), mas com um único
- *  indicador: Representantes Cadastrados. A meta é do SQUAD (dividida entre
- *  as pessoas que recrutam representantes, ex: você + Hyorranes). */
+ *  do MetaMes.tsx do SDR (dias úteis, ritmo, projeção), com um único
+ *  indicador (Representantes Cadastrados) em 3 tiers — Meta 1/2/3 ⭐,
+ *  igual ao padrão de metas do SDR/Closer — e SEM divisão por squad: a meta
+ *  é individual (2026-08-17, Gabi passou a acompanhar só a própria meta). */
 import { useCallback, useEffect, useState } from 'react';
 
 export interface RepsMetasState {
-  /** Meta TOTAL do squad de aquisição (ex: 46), dividida por `squadPessoas`. */
-  cadastroMetaTotal: number;
-  squadPessoas: number;
+  /** Três tiers da mesma meta (Representantes Cadastrados), como no SDR: Meta 3 é a referência "oficial" (⭐), Meta 1/2 são checkpoints no caminho. */
+  meta1: number;
+  meta2: number;
+  meta3: number;
   cadastros: number;
   /** null = cálculo automático (dias úteis restantes no mês). */
   diasUteis: number | null;
@@ -17,8 +19,9 @@ export interface RepsMetasState {
 const STORAGE_KEY = 'cw-reps-metas';
 
 const EMPTY: RepsMetasState = {
-  cadastroMetaTotal: 46,
-  squadPessoas: 2,
+  meta1: 18,
+  meta2: 20,
+  meta3: 22,
   cadastros: 0,
   diasUteis: null,
 };
@@ -108,11 +111,10 @@ export function useRepsMetas() {
   const { diasUteisTotal, diasPassados, diasRestantes: diasRestantesCalc } = calcularDiasUteis();
   const diasRestantes = state.diasUteis ?? diasRestantesCalc;
 
-  const cadastroMetaIndividual = state.squadPessoas > 0
-    ? Math.round((state.cadastroMetaTotal / state.squadPessoas) * 10) / 10
-    : state.cadastroMetaTotal;
-
-  const cadastro = calcMetric(cadastroMetaIndividual, state.cadastros, diasPassados, diasUteisTotal, diasRestantes);
+  // Meta de referência pro progresso geral: a mais alta definida (Meta 3 > Meta 2 > Meta 1),
+  // igual ao SDR — Meta 3 é o alvo "oficial" (⭐), 1/2 são checkpoints no caminho.
+  const metaReferencia = state.meta3 || state.meta2 || state.meta1;
+  const cadastro = calcMetric(metaReferencia, state.cadastros, diasPassados, diasUteisTotal, diasRestantes);
 
   return {
     state,
@@ -120,7 +122,8 @@ export function useRepsMetas() {
     ajustarCadastros,
     definirCadastros,
     diasRestantes,
-    cadastroMetaIndividual,
+    diasUteisTotal,
+    metaReferencia,
     cadastro,
   };
 }

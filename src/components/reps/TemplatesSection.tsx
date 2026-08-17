@@ -1,14 +1,15 @@
 /** Templates — atalhos do Kommo pro Representante copiar e colar direto no chat.
- *  Clonado do TemplatesSection do SDR (mesmo conteúdo inicial, seed compartilhado),
- *  mas com override próprio (`representante.kommoTemplates`) — editável de forma
- *  independente do SDR pelo gestor. Favoritos são pessoais (localStorage). */
+ *  Cadência própria do Programa de Representantes (2026-08-17), independente
+ *  do SDR: override próprio (`representante.kommoTemplates`) — editável pelo
+ *  gestor sem afetar o SDR. Favoritos são pessoais (localStorage). */
 import { useState } from 'react';
 import { Copy, Check, Star, Pencil, Trash2, Plus, X, FileText, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useContentStore } from '@/store/contentStore';
 import { useEditor } from '@/admin/EditorContext';
 import { toast } from '@/hooks/use-toast';
-import { SEED_KOMMO_TEMPLATES, KOMMO_TEMPLATE_CATEGORIAS, type KommoTemplate } from '@/data/sdrKommoTemplates';
+import type { KommoTemplate } from '@/data/sdrKommoTemplates';
+import { SEED_KOMMO_TEMPLATES, KOMMO_TEMPLATE_CATEGORIAS } from '@/data/repsKommoTemplates';
 
 const OVERRIDE_KEY = 'representante.kommoTemplates';
 const FAV_KEY = 'cw-reps-kommo-fav';
@@ -130,7 +131,7 @@ function EditModal({ initial, onClose, onSave }: {
         </label>
         <label className="block">
           <span className="text-xs font-medium text-cw-muted">Atalho (texto exato do Kommo)</span>
-          <input value={atalho} onChange={e => setAtalho(e.target.value)} placeholder="/[REP][KOMMO] Follow-up 1"
+          <input value={atalho} onChange={e => setAtalho(e.target.value)} placeholder="/[REP] Follow-up 1"
             className="mt-1 w-full bg-cw-surface border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text font-mono placeholder:text-cw-muted focus:outline-none focus:border-cw-purple/50" />
         </label>
         <label className="block">
