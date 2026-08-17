@@ -177,7 +177,11 @@ export default function MetaMesReps() {
       )}
 
       {/* Card de status — Representantes Cadastrados */}
-      <div className="cw-card p-6 space-y-5">
+      <div className="cw-card relative overflow-hidden">
+        {/* Cardapinho cavaleiro — mesmo posicionamento do mascote no Meta do Mês do SDR */}
+        <img src="/cardapinho-cavaleiro.png" alt="" className="absolute right-0 bottom-0 h-52 object-contain pointer-events-none select-none" style={{ zIndex: 10 }} />
+
+        <div className="relative p-6 space-y-5" style={{ zIndex: 1 }}>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2 text-xs font-bold text-cw-purple uppercase tracking-widest">
             <ClipboardCheck className="h-4 w-4" />
@@ -271,56 +275,49 @@ export default function MetaMesReps() {
           )}
         </div>
 
-        {/* Cards Meta 1/2/3 + Projeção/Dias — onça grande ocupa a coluna à direita */}
-        <div className="flex gap-4 items-stretch">
-          <div className="flex-1 space-y-3 min-w-0">
-            <div className="grid grid-cols-3 gap-3">
-              {[{ label: 'META 1', value: meta1 }, { label: 'META 2', value: meta2 }, { label: 'META 3 ⭐', value: meta3 }].map(({ label, value }, i) => {
-                const batida = value > 0 && cadastro.atual >= value;
-                return (
-                  <div key={i} className={cn('rounded-xl border p-3',
-                    batida ? 'border-green-200 bg-green-50' : 'border-cw-border bg-cw-elevated'
-                  )}>
-                    <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">{label}</p>
-                    <p className="text-xs text-cw-muted mt-0.5">{value > 0 ? `${value} representantes` : 'Não definida'}</p>
-                    {batida ? (
-                      <div className="flex items-center gap-1 mt-1.5 text-green-600 text-xs font-semibold">
-                        <Check className="h-3.5 w-3.5" /> Meta atingida!
-                      </div>
-                    ) : value > 0 ? (
-                      <div className="mt-1.5">
-                        <p className="text-base font-black text-cw-text">{porDia(value)}<span className="text-xs text-cw-muted ml-1">/dia</span></p>
-                        <p className="text-[10px] text-cw-muted">Falta <span className="text-cw-text font-semibold">{falta(value)}</span> pra meta</p>
-                      </div>
-                    ) : null}
+        {/* Cards Meta 1/2/3 */}
+        <div className="grid grid-cols-3 gap-3">
+          {[{ label: 'META 1', value: meta1 }, { label: 'META 2', value: meta2 }, { label: 'META 3 ⭐', value: meta3 }].map(({ label, value }, i) => {
+            const batida = value > 0 && cadastro.atual >= value;
+            return (
+              <div key={i} className={cn('rounded-xl border p-3',
+                batida ? 'border-green-200 bg-green-50' : 'border-cw-border bg-cw-elevated'
+              )}>
+                <p className="text-[10px] font-bold text-cw-purple uppercase tracking-wider">{label}</p>
+                <p className="text-xs text-cw-muted mt-0.5">{value > 0 ? `${value} representantes` : 'Não definida'}</p>
+                {batida ? (
+                  <div className="flex items-center gap-1 mt-1.5 text-green-600 text-xs font-semibold">
+                    <Check className="h-3.5 w-3.5" /> Meta atingida!
                   </div>
-                );
-              })}
-            </div>
+                ) : value > 0 ? (
+                  <div className="mt-1.5">
+                    <p className="text-base font-black text-cw-text">{porDia(value)}<span className="text-xs text-cw-muted ml-1">/dia</span></p>
+                    <p className="text-[10px] text-cw-muted">Falta <span className="text-cw-text font-semibold">{falta(value)}</span> pra meta</p>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-cw-elevated rounded-xl border border-cw-border px-4 py-3 flex items-center gap-3">
-                <TrendingUp className="h-4 w-4 text-cw-purple shrink-0" />
-                <div>
-                  <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Projeção Final</p>
-                  <p className="text-base font-black text-cw-text">
-                    {cadastro.meta > 0 ? <>{cadastro.projecao} <span className="text-sm text-cw-muted font-normal">/ {cadastro.meta}</span></> : <span className="text-sm text-cw-muted font-normal">— defina uma meta</span>}
-                  </p>
-                </div>
-              </div>
-              <div className="bg-cw-elevated rounded-xl border border-cw-border px-4 py-3 flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-cw-yellow shrink-0" />
-                <div>
-                  <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Dias Restantes</p>
-                  <p className="text-base font-black text-cw-text">{diasRestantes} <span className="text-sm text-cw-muted font-normal">dias</span></p>
-                </div>
-              </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-cw-elevated rounded-xl border border-cw-border px-4 py-3 flex items-center gap-3">
+            <TrendingUp className="h-4 w-4 text-cw-purple shrink-0" />
+            <div>
+              <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Projeção Final</p>
+              <p className="text-base font-black text-cw-text">
+                {cadastro.meta > 0 ? <>{cadastro.projecao} <span className="text-sm text-cw-muted font-normal">/ {cadastro.meta}</span></> : <span className="text-sm text-cw-muted font-normal">— defina uma meta</span>}
+              </p>
             </div>
           </div>
-
-          <div className="hidden sm:flex items-center justify-center w-36 md:w-44 shrink-0">
-            <img src="/onca-andando.gif" alt="" className="h-full max-h-[220px] w-auto object-contain select-none" />
+          <div className="bg-cw-elevated rounded-xl border border-cw-border px-4 py-3 flex items-center gap-3">
+            <Calendar className="h-4 w-4 text-cw-yellow shrink-0" />
+            <div>
+              <p className="text-[10px] text-cw-muted uppercase font-bold tracking-wider">Dias Restantes</p>
+              <p className="text-base font-black text-cw-text">{diasRestantes} <span className="text-sm text-cw-muted font-normal">dias</span></p>
+            </div>
           </div>
+        </div>
         </div>
       </div>
 
