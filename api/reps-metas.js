@@ -6,8 +6,8 @@ const PIPELINE_PROSPECCAO = 60;
 const PIPELINE_REUNIAO = 75;
 
 // Squad de Aquisição de Canal (Representantes) — mapeado por e-mail de login pro
-// owner_id do Pipedrive. owner_id do Hyorranes inferido pela predominância dele
-// no Funil de Prospecção (80% dos negócios da amostra); confirmado pela Gabi.
+// dono do negócio no Pipedrive. owner_id do Hyorranes inferido pela predominância
+// dele no Funil de Prospecção (80% dos negócios da amostra); confirmado pela Gabi.
 const REP_OWNERS = {
   'gabrielly.oliveira@cardapioweb.com': 11726977,
   'hyorranes.souza@cardapioweb.com': 21801658,
@@ -39,9 +39,12 @@ async function fetchPipedriveComRetry(url, tentativas = 5) {
 }
 
 /** Varre TODOS os negócios ganhos da empresa no mês atual (igual ao api/meta.js —
- *  `user_id`/`owner_id`/`pipeline_id` como query param são ignorados silenciosamente
+ *  `user_id`/`pipeline_id` como filtro de querystring são ignorados silenciosamente
  *  por essa conta do Pipedrive, confirmado via debug em produção: filtrar sempre no
- *  código, nunca na querystring) e devolve uma contagem por chave "pipelineId:ownerId". */
+ *  código, nunca na URL) e devolve uma contagem por chave "pipelineId:donoId".
+ *  O dono do negócio vem no campo `user_id` da resposta (um objeto com `.id`) —
+ *  NÃO existe campo `owner_id` na resposta bruta da API, apesar do nome comum
+ *  em ferramentas/documentação de terceiros; confirmado via dump em produção. */
 async function contarGanhosDoMesPorChave(chaves, prefixoMes, iniciaMes) {
   const contagens = Object.fromEntries(chaves.map(c => [c, 0]));
   let start = 0;
@@ -56,7 +59,8 @@ async function contarGanhosDoMesPorChave(chaves, prefixoMes, iniciaMes) {
       const wt = wonTimeLocal(wtRaw);
       if (wt < iniciaMes) { parar = true; break; }
       if (!wt.startsWith(prefixoMes)) continue;
-      const chave = `${deal.pipeline_id}:${deal.owner_id?.id ?? deal.owner_id}`;
+      const donoId = deal.user_id?.id ?? deal.user_id;
+      const chave = `${deal.pipeline_id}:${donoId}`;
       if (chave in contagens) contagens[chave]++;
     }
     if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
@@ -73,18 +77,6 @@ export default async function handler(req, res) {
 
   const email = String(req.query.email || '').toLowerCase();
   const ownerId = REP_OWNERS[email];
-
-  if (req.query.debug) {
-    try {
-      const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&limit=2&sort=won_time%20DESC`;
-      const json = await fetchPipedriveComRetry(url);
-      const bruto = (json.data || [{}])[0] || {};
-      const semCustomFields = Object.fromEntries(Object.entries(bruto).filter(([k]) => k !== 'custom_fields'));
-      return res.status(200).json({ ok: true, chaves: Object.keys(bruto), primeiroDealSemCustomFields: semCustomFields });
-    } catch (e) {
-      return res.status(500).json({ ok: false, erro: String(e) });
-    }
-  }
 
   const agora = paraBR(new Date());
   const ano = agora.getUTCFullYear();
