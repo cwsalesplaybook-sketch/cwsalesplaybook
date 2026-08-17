@@ -74,6 +74,21 @@ export default async function handler(req, res) {
   const email = String(req.query.email || '').toLowerCase();
   const ownerId = REP_OWNERS[email];
 
+  if (req.query.debug) {
+    try {
+      const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&limit=5&sort=won_time%20DESC`;
+      const json = await fetchPipedriveComRetry(url);
+      return res.status(200).json({
+        ok: true,
+        amostra: (json.data || []).map(d => ({
+          id: d.id, pipeline_id: d.pipeline_id, owner_id: d.owner_id, won_time: d.won_time, visible_to: d.visible_to,
+        })),
+      });
+    } catch (e) {
+      return res.status(500).json({ ok: false, erro: String(e) });
+    }
+  }
+
   const agora = paraBR(new Date());
   const ano = agora.getUTCFullYear();
   const mesNum = agora.getUTCMonth();
