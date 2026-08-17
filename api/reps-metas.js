@@ -42,26 +42,27 @@ async function fetchPipedriveComRetry(url, tentativas = 5) {
  *  O endpoint /v1/deals do Pipedrive filtra owner por `user_id` (não `owner_id` —
  *  esse é só o nome do campo na resposta) e não filtra por `pipeline_id` via
  *  querystring; por isso os dois são reconferidos manualmente em cada negócio,
- *  em vez de confiar cegamente no filtro do lado do servidor. */
-async function contarGanhosDoMes(pipelineId, ownerId, prefixoMes, iniciaMes) {
+ *  em vez de confiar cegamente no filtro do lado do servidor.
+ *  Também NÃO para de paginar cedo assumindo `sort=won_time DESC` — combinado
+ *  com `user_id`, o Pipedrive nem sempre respeita esse sort (gerava contagem
+ *  zerada mesmo com ganhos reais no mês), então varre até o fim sempre. */
+async function contarGanhosDoMes(pipelineId, ownerId, prefixoMes) {
   let count = 0;
   let start = 0;
   while (true) {
-    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&user_id=${ownerId}&limit=200&start=${start}&sort=won_time%20DESC`;
+    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&user_id=${ownerId}&limit=200&start=${start}`;
     const json = await fetchPipedriveComRetry(url);
     if (!Array.isArray(json.data) || json.data.length === 0) break;
-    let parar = false;
     for (const deal of json.data) {
       const wtRaw = deal.won_time || '';
       if (!wtRaw) continue;
       const wt = wonTimeLocal(wtRaw);
-      if (wt < iniciaMes) { parar = true; break; }
       if (!wt.startsWith(prefixoMes)) continue;
       if (Number(deal.pipeline_id) !== pipelineId) continue;
       if (Number(deal.owner_id?.id ?? deal.owner_id) !== ownerId) continue;
       count++;
     }
-    if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
+    if (!json.additional_data?.pagination?.more_items_in_collection) break;
     start += 200;
   }
   return count;
@@ -81,18 +82,17 @@ export default async function handler(req, res) {
   const mesNum = agora.getUTCMonth();
   const mes = String(mesNum + 1).padStart(2, '0');
   const prefixo = `${ano}-${mes}`;
-  const iniciaMes = `${ano}-${mes}-01`;
 
   try {
     // Agendamentos: OKR do squad inteiro — soma Gabrielly + Hyorranes.
     let agendamentos = 0;
     for (const oid of Object.values(REP_OWNERS)) {
-      agendamentos += await contarGanhosDoMes(PIPELINE_PROSPECCAO, oid, prefixo, iniciaMes);
+      agendamentos += await contarGanhosDoMes(PIPELINE_PROSPECCAO, oid, prefixo);
     }
 
     // Cadastros: meta pessoal de quem está logado — só se reconhecido no mapa.
     let cadastros = null;
-    if (ownerId) cadastros = await contarGanhosDoMes(PIPELINE_REUNIAO, ownerId, prefixo, iniciaMes);
+    if (ownerId) cadastros = await contarGanhosDoMes(PIPELINE_REUNIAO, ownerId, prefixo);
 
     res.status(200).json({
       ok: true, mes: prefixo, agendamentos, cadastros,
