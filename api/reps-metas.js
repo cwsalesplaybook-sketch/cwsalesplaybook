@@ -7,7 +7,7 @@ const PIPELINE_REUNIAO = 75;
 
 // Squad de Aquisição de Canal (Representantes) — mapeado por e-mail de login pro
 // owner_id do Pipedrive. owner_id do Hyorranes inferido pela predominância dele
-// no Funil de Prospecção (80% dos negócios da amostra); revisar se algo destoar.
+// no Funil de Prospecção (80% dos negócios da amostra); confirmado pela Gabi.
 const REP_OWNERS = {
   'gabrielly.oliveira@cardapioweb.com': 11726977,
   'hyorranes.souza@cardapioweb.com': 21801658,
@@ -38,34 +38,31 @@ async function fetchPipedriveComRetry(url, tentativas = 5) {
   throw ultimoErro;
 }
 
-/** Conta negócios ganhos de uma pipeline+owner com "Ganho em" (won_time) no mês atual.
- *  O endpoint /v1/deals do Pipedrive filtra owner por `user_id` (não `owner_id` —
- *  esse é só o nome do campo na resposta) e não filtra por `pipeline_id` via
- *  querystring; por isso os dois são reconferidos manualmente em cada negócio,
- *  em vez de confiar cegamente no filtro do lado do servidor.
- *  Também NÃO para de paginar cedo assumindo `sort=won_time DESC` — combinado
- *  com `user_id`, o Pipedrive nem sempre respeita esse sort (gerava contagem
- *  zerada mesmo com ganhos reais no mês), então varre até o fim sempre. */
-async function contarGanhosDoMes(pipelineId, ownerId, prefixoMes) {
-  let count = 0;
+/** Varre TODOS os negócios ganhos da empresa no mês atual (igual ao api/meta.js —
+ *  `user_id`/`owner_id`/`pipeline_id` como query param são ignorados silenciosamente
+ *  por essa conta do Pipedrive, confirmado via debug em produção: filtrar sempre no
+ *  código, nunca na querystring) e devolve uma contagem por chave "pipelineId:ownerId". */
+async function contarGanhosDoMesPorChave(chaves, prefixoMes, iniciaMes) {
+  const contagens = Object.fromEntries(chaves.map(c => [c, 0]));
   let start = 0;
   while (true) {
-    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&user_id=${ownerId}&limit=200&start=${start}`;
+    const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&limit=200&start=${start}&sort=won_time%20DESC`;
     const json = await fetchPipedriveComRetry(url);
     if (!Array.isArray(json.data) || json.data.length === 0) break;
+    let parar = false;
     for (const deal of json.data) {
       const wtRaw = deal.won_time || '';
       if (!wtRaw) continue;
       const wt = wonTimeLocal(wtRaw);
+      if (wt < iniciaMes) { parar = true; break; }
       if (!wt.startsWith(prefixoMes)) continue;
-      if (Number(deal.pipeline_id) !== pipelineId) continue;
-      if (Number(deal.owner_id?.id ?? deal.owner_id) !== ownerId) continue;
-      count++;
+      const chave = `${deal.pipeline_id}:${deal.owner_id?.id ?? deal.owner_id}`;
+      if (chave in contagens) contagens[chave]++;
     }
-    if (!json.additional_data?.pagination?.more_items_in_collection) break;
+    if (parar || !json.additional_data?.pagination?.more_items_in_collection) break;
     start += 200;
   }
-  return count;
+  return contagens;
 }
 
 export default async function handler(req, res) {
@@ -77,39 +74,22 @@ export default async function handler(req, res) {
   const email = String(req.query.email || '').toLowerCase();
   const ownerId = REP_OWNERS[email];
 
-  // Modo debug temporário — inspeciona o formato bruto que o Pipedrive
-  // devolve pra essa conta, pra investigar a contagem zerada.
-  if (req.query.debug) {
-    try {
-      const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&user_id=${ownerId || REP_OWNERS['gabrielly.oliveira@cardapioweb.com']}&limit=5`;
-      const json = await fetchPipedriveComRetry(url);
-      return res.status(200).json({
-        ok: true,
-        amostra: (json.data || []).map(d => ({
-          id: d.id, pipeline_id: d.pipeline_id, owner_id: d.owner_id, won_time: d.won_time, status: d.status,
-        })),
-      });
-    } catch (e) {
-      return res.status(500).json({ ok: false, erro: String(e) });
-    }
-  }
-
   const agora = paraBR(new Date());
   const ano = agora.getUTCFullYear();
   const mesNum = agora.getUTCMonth();
   const mes = String(mesNum + 1).padStart(2, '0');
   const prefixo = `${ano}-${mes}`;
+  const iniciaMes = `${ano}-${mes}-01`;
 
   try {
-    // Agendamentos: OKR do squad inteiro — soma Gabrielly + Hyorranes.
-    let agendamentos = 0;
-    for (const oid of Object.values(REP_OWNERS)) {
-      agendamentos += await contarGanhosDoMes(PIPELINE_PROSPECCAO, oid, prefixo);
-    }
+    const chaveProspeccaoPorOwner = Object.values(REP_OWNERS).map(oid => `${PIPELINE_PROSPECCAO}:${oid}`);
+    const chaveReuniao = ownerId ? `${PIPELINE_REUNIAO}:${ownerId}` : null;
+    const chaves = [...chaveProspeccaoPorOwner, ...(chaveReuniao ? [chaveReuniao] : [])];
 
-    // Cadastros: meta pessoal de quem está logado — só se reconhecido no mapa.
-    let cadastros = null;
-    if (ownerId) cadastros = await contarGanhosDoMes(PIPELINE_REUNIAO, ownerId, prefixo);
+    const contagens = await contarGanhosDoMesPorChave(chaves, prefixo, iniciaMes);
+
+    const agendamentos = chaveProspeccaoPorOwner.reduce((soma, c) => soma + contagens[c], 0);
+    const cadastros = chaveReuniao ? contagens[chaveReuniao] : null;
 
     res.status(200).json({
       ok: true, mes: prefixo, agendamentos, cadastros,
