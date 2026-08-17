@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Settings, X, Check, TrendingUp, Calendar, Lightbulb, Pencil, AlertTriangle, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRepsMetas } from '@/hooks/useRepsMetas';
+import { RepsOkrsSection } from '@/components/meta/RepsOkrsSection';
 
 function ConfigModal({ meta1, meta2, meta3, diasUteis, onSave, onClose }: {
   meta1: number; meta2: number; meta3: number; diasUteis: number | null;
@@ -320,6 +321,9 @@ export default function MetaMesReps() {
         </div>
         </div>
       </div>
+
+      {/* OKRs & Metas do Squad — não entra no cálculo acima */}
+      <RepsOkrsSection />
 
       {/* Insights Rápidos */}
       <div className="cw-card p-6 space-y-4">
