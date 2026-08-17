@@ -133,7 +133,11 @@ export function RepsOkrsSection({ cargo = 'Aquisição de Canal', agendamentosAu
   }, [agendamentosAuto]);
 
   return (
-    <div className="cw-card p-6 space-y-4">
+    <div className="cw-card relative overflow-hidden">
+      {/* Cardapinho troféu — preenche o espaço vazio da última célula do grid */}
+      <img src="/cardapinho-trofeu.png" alt="" className="absolute right-6 bottom-0 h-36 object-contain pointer-events-none select-none" style={{ zIndex: 10 }} />
+
+      <div className="relative p-6 space-y-4" style={{ zIndex: 1 }}>
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-cw-purple/10 flex items-center justify-center shrink-0">
@@ -154,6 +158,7 @@ export function RepsOkrsSection({ cargo = 'Aquisição de Canal', agendamentosAu
         {okrs.map(okr => (
           <Card key={okr.id} okr={okr} onEdit={() => setEditingId(okr.id)} />
         ))}
+      </div>
       </div>
 
       {editing && (
