@@ -20,16 +20,16 @@ const SEED: OkrCard[] = [
   { id: 'clientes-semana', titulo: 'Clientes por semana', meta: 25, unidade: 'clientes' },
   { id: 'agendamentos', titulo: 'Agendamentos', meta: 120, unidade: 'agendamentos' },
   { id: 'clientes-dia', titulo: 'Clientes por dia (ritmo)', meta: 1, atual: 26, unidade: 'clientes' },
-  { id: 'gap-reps-ativados', titulo: 'Gap de reps ativados', meta: 4, unidade: 'reps até o fim da semana' },
   { id: 'ativar-reps', titulo: 'Ativar reps (OKR)', meta: 55, atual: 7, unidade: 'reps', nota: 'No ritmo, precisaríamos estar em 22 — déficit de 16' },
   { id: 'nps-certificacao', titulo: 'NPS da certificação', meta: 73, unidade: 'respostas com nota > 70' },
   { id: 'mentorias', titulo: 'Mentorias coletivas com reps', meta: 9, unidade: 'mentorias realizadas' },
   { id: 'novos-clientes-canal', titulo: 'Novos clientes — canal de representantes', meta: 81, atual: 61, unidade: 'clientes', nota: 'Objetivo maior do OKR: 376 novos clientes no total' },
   { id: 'novos-clientes-cidades-30', titulo: 'Novos clientes (cidades com base > 30)', meta: 53, atual: 26, unidade: 'clientes' },
-  { id: 'reengajamento-marco', titulo: 'Marco — desengajado', nota: 'Precisa de reengajamento' },
-  { id: 'disputa-reps', titulo: 'Disputa de reps — reengajar', meta: 81, unidade: 'reps na disputa' },
-  { id: 'engajar-sem-contrato', titulo: 'Engajar reps sem contrato', nota: 'Fazer a galera sem contrato vender' },
 ];
+
+/** IDs removidos a pedido da Gabi (2026-08-17) — filtrados também de quem já
+ *  tinha o seed antigo salvo no localStorage, não só de instalações novas. */
+const REMOVED_IDS = new Set(['reengajamento-marco', 'disputa-reps', 'engajar-sem-contrato', 'gap-reps-ativados']);
 
 function load(): OkrCard[] {
   if (typeof window === 'undefined') return SEED;
@@ -37,7 +37,8 @@ function load(): OkrCard[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return SEED;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : SEED;
+    const list = Array.isArray(parsed) ? parsed : SEED;
+    return list.filter((o: OkrCard) => !REMOVED_IDS.has(o.id));
   } catch {
     return SEED;
   }
