@@ -7,7 +7,7 @@ import {
   ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
   HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
   Loader2, Users, Library, GraduationCap, FileText, Percent, Star,
-  PartyPopper, Puzzle, Package, Store, MessageCircleQuestion, Drama, Video,
+  PartyPopper, Puzzle, Package, Store, MessageCircleQuestion, Drama, Video, CalendarClock,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,7 @@ interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?
 
 const ICON_MAP = {
   Sparkles, BookOpen, LayoutDashboard, BarChart2, Heart, MapIcon,
-  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users, Puzzle, Package, Store, MessageCircleQuestion, Drama, Video,
+  Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users, Puzzle, Package, Store, MessageCircleQuestion, Drama, Video, CalendarClock,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
@@ -89,6 +89,7 @@ const NAV_REPS: NavItem[] = [
   { to: '/start',           label: 'Comece Aqui',       icon: 'Sparkles',  end: false },
   { to: '/meta',            label: 'Meta do Mês',       icon: 'Target',    end: false },
   { to: '/reps/reunioes',   label: 'Reuniões',          icon: 'Video',     end: false },
+  { to: '/reps/agenda',     label: 'Agenda de Reuniões',icon: 'CalendarClock', end: false },
   { to: '/comunidade',      label: 'Comunidade',        icon: 'Users',     end: false },
   { to: '/onboarding',      label: 'Onboarding',        icon: 'MapIcon',   end: false },
   { to: '/playbook',        label: 'Playbook',          icon: 'BookOpen',  end: false },
@@ -107,7 +108,7 @@ const NAV_REPS: NavItem[] = [
 const REPS_SECTIONS = [
   {
     label: 'Comercial',
-    routes: ['/meta', '/reps/reunioes', '/onboarding', '/playbook', '/pipeline', '/reps/templates', '/reps/automacoes', '/reps/planos', '/reps/cw-store', '/reps/faq'],
+    routes: ['/meta', '/reps/reunioes', '/reps/agenda', '/onboarding', '/playbook', '/pipeline', '/reps/templates', '/reps/automacoes', '/reps/planos', '/reps/cw-store', '/reps/faq'],
   },
   { label: 'Cultura e Time', routes: ['/reps/biblioteca', '/historias'] },
   { label: 'Equipe',         routes: ['/comunidade'] },
