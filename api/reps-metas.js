@@ -76,14 +76,11 @@ export default async function handler(req, res) {
 
   if (req.query.debug) {
     try {
-      const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&limit=5&sort=won_time%20DESC`;
+      const url = `https://api.pipedrive.com/v1/deals?api_token=${TOKEN}&status=won&limit=2&sort=won_time%20DESC`;
       const json = await fetchPipedriveComRetry(url);
-      return res.status(200).json({
-        ok: true,
-        amostra: (json.data || []).map(d => ({
-          id: d.id, pipeline_id: d.pipeline_id, owner_id: d.owner_id, won_time: d.won_time, visible_to: d.visible_to,
-        })),
-      });
+      const bruto = (json.data || [{}])[0] || {};
+      const semCustomFields = Object.fromEntries(Object.entries(bruto).filter(([k]) => k !== 'custom_fields'));
+      return res.status(200).json({ ok: true, chaves: Object.keys(bruto), primeiroDealSemCustomFields: semCustomFields });
     } catch (e) {
       return res.status(500).json({ ok: false, erro: String(e) });
     }
