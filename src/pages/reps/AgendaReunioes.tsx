@@ -16,10 +16,12 @@
  *  nem estão certas no Pipedrive — tudo guardado no Supabase (tabela
  *  reps_agenda_reunioes) pra Gabrielly e Hyorranes verem a mesma correção. */
 import { useEffect, useMemo, useState } from 'react';
-import { Clock, Phone, Mail, RefreshCw, CalendarClock, Loader2, Check, X, Pencil, Plus, BarChart3, LayoutGrid, Trash2 } from 'lucide-react';
+import { Clock, Phone, Mail, RefreshCw, CalendarClock, Loader2, Check, X, Pencil, Plus, BarChart3, LayoutGrid, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { cn } from '@/lib/utils';
 import { useRepsAgendaOverrides } from '@/hooks/useRepsAgendaOverrides';
+
+const NOME_COMPLETO: Record<string, string> = { Gabrielly: 'Gabrielly Oliveira', Hyorranes: 'Hyorranes Alencar' };
 
 interface ReuniaoPipedrive {
   id: number;
@@ -62,9 +64,22 @@ function rotuloDia(data: string) {
   return `${nome.charAt(0).toUpperCase()}${nome.slice(1)}, ${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}`;
 }
 
-function formatarDataCurta(data: string) {
-  const [, mes, dia] = data.split('-');
-  return `${dia}/${mes}`;
+function addDias(data: string, delta: number) {
+  const [ano, mes, dia] = data.split('-').map(Number);
+  const d = new Date(ano, mes - 1, dia);
+  d.setDate(d.getDate() + delta);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function tituloDiaLongo(data: string) {
+  const [ano, mes, dia] = data.split('-').map(Number);
+  const d = new Date(ano, mes - 1, dia);
+  return d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+function iniciais(nome: string) {
+  const partes = nome.trim().split(/\s+/);
+  return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase();
 }
 
 function ReuniaoModal({ inicial, manual, onSave, onDelete, onClose }: {
@@ -168,10 +183,11 @@ export default function AgendaReunioes() {
   const [pipedrive, setPipedrive] = useState<ReuniaoPipedrive[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
-  const [vista, setVista] = useState<'kanban' | 'total'>('kanban');
+  const [vista, setVista] = useState<'agenda' | 'total'>('agenda');
   const [editando, setEditando] = useState<ReuniaoView | null | 'novo'>(null);
   const { rows: overrides, salvarOverride, adicionarManual, atualizar, remover } = useRepsAgendaOverrides();
   const hoje = hojeStr();
+  const [dataSelecionada, setDataSelecionada] = useState(hoje);
 
   const carregar = async () => {
     setLoading(true);
@@ -224,24 +240,20 @@ export default function AgendaReunioes() {
     return [...dasPipedrive, ...manuais];
   }, [pipedrive, overrides]);
 
-  // Kanban: uma coluna por pessoa, dentro dela agrupado pelo dia da REUNIÃO
-  // em si (não o dia em que foi marcada) — é a agenda do que vai acontecer,
-  // hoje primeiro. Só reuniões de hoje em diante, dias úteis.
-  const kanban = useMemo(() => {
-    const porPessoa: Record<string, [string, ReuniaoView[]][]> = {};
+  // Agenda do dia selecionado: uma lista por pessoa, só as reuniões daquele
+  // dia específico — navega com as setas/date picker, como um calendário.
+  const doDia = useMemo(() => {
+    const porPessoa: Record<string, ReuniaoView[]> = {};
     for (const pessoa of PESSOAS) {
-      const doPessoa = todas.filter(r =>
-        r.responsavel === pessoa && r.data >= hoje && diaDaSemana(r.data) >= 1 && diaDaSemana(r.data) <= 5);
-      const grupos = new Map<string, ReuniaoView[]>();
-      for (const r of doPessoa) {
-        if (!grupos.has(r.data)) grupos.set(r.data, []);
-        grupos.get(r.data)!.push(r);
-      }
-      for (const lista of grupos.values()) lista.sort((a, b) => (a.hora || '99:99').localeCompare(b.hora || '99:99'));
-      porPessoa[pessoa] = [...grupos.entries()].sort(([a], [b]) => a.localeCompare(b)); // hoje primeiro
+      porPessoa[pessoa] = todas
+        .filter(r => r.responsavel === pessoa && r.data === dataSelecionada)
+        .sort((a, b) => (a.hora || '99:99').localeCompare(b.hora || '99:99'));
     }
     return porPessoa;
-  }, [todas, hoje]);
+  }, [todas, dataSelecionada]);
+
+  const totalDia = PESSOAS.reduce((soma, p) => soma + doDia[p].length, 0);
+  const responsaveisDia = PESSOAS.filter(p => doDia[p].length > 0).length;
 
   const totalMes = useMemo(() => {
     const mesAtual = hoje.slice(0, 7);
@@ -291,7 +303,7 @@ export default function AgendaReunioes() {
     <>
       <Header
         titulo="Agenda de Reuniões"
-        subtitulo="Kanban de Gabrielly e Hyorranes, dia da reunião — hoje primeiro"
+        subtitulo="Gabrielly e Hyorranes — navegue por dia ou veja o retroativo"
         acoes={
           <div className="flex items-center gap-2">
             <button onClick={() => setEditando('novo')} title="Adicionar reunião retroativa"
@@ -308,9 +320,9 @@ export default function AgendaReunioes() {
       <div className="p-8 space-y-6">
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => setVista('kanban')}
+            onClick={() => setVista('agenda')}
             className={cn('flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-full border transition-colors',
-              vista === 'kanban'
+              vista === 'agenda'
                 ? 'gradient-primary text-white border-transparent'
                 : 'bg-cw-surface text-cw-muted border-cw-border hover:text-cw-text')}
           >
@@ -326,6 +338,34 @@ export default function AgendaReunioes() {
             <BarChart3 className="h-3 w-3" /> Total
           </button>
         </div>
+
+        {vista === 'agenda' && (
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-bold text-cw-purple uppercase tracking-widest">Agenda</p>
+              <h2 className="text-2xl font-black text-cw-text capitalize mt-0.5">{tituloDiaLongo(dataSelecionada)}</h2>
+              <p className="text-xs text-cw-muted mt-1">
+                {totalDia} reunião(ões) · {responsaveisDia} responsável(is)
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setDataSelecionada(d => addDias(d, -1))} title="Dia anterior"
+                className="h-9 w-9 rounded-full border border-cw-border bg-cw-surface text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-colors">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <input type="date" value={dataSelecionada} onChange={e => setDataSelecionada(e.target.value)}
+                className="h-9 bg-cw-surface border border-cw-border rounded-full px-3.5 text-sm text-cw-text focus:outline-none focus:border-cw-purple/50" />
+              <button onClick={() => setDataSelecionada(d => addDias(d, 1))} title="Próximo dia"
+                className="h-9 w-9 rounded-full border border-cw-border bg-cw-surface text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-colors">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              <button onClick={() => setDataSelecionada(hoje)}
+                className="h-9 px-4 rounded-full gradient-primary text-white text-xs font-bold transition-opacity hover:opacity-90">
+                Hoje
+              </button>
+            </div>
+          </div>
+        )}
 
         {loading && pipedrive.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-2 text-cw-muted">
@@ -406,77 +446,78 @@ export default function AgendaReunioes() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {PESSOAS.map(pessoa => {
-              const grupos = kanban[pessoa] ?? [];
-              const total = grupos.reduce((soma, [, lista]) => soma + lista.length, 0);
+              const lista = doDia[pessoa] ?? [];
               return (
                 <div key={pessoa} className="cw-card p-4 space-y-4">
-                  <div className="flex items-center justify-between px-1">
-                    <h3 className="text-sm font-black text-cw-text">{pessoa}</h3>
-                    <span className="text-xs text-cw-muted">{total} reunião(ões)</span>
+                  <div className="flex items-center gap-3 px-1">
+                    <div className="h-9 w-9 rounded-full gradient-primary text-white text-xs font-black flex items-center justify-center shrink-0">
+                      {iniciais(NOME_COMPLETO[pessoa])}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-black text-cw-text truncate">{NOME_COMPLETO[pessoa]}</p>
+                      <p className="text-xs text-cw-muted">{lista.length} reunião(ões)</p>
+                    </div>
                   </div>
 
-                  {grupos.length === 0 ? (
+                  {lista.length === 0 ? (
                     <div className="py-10 flex flex-col items-center gap-2 text-center">
                       <CalendarClock className="h-7 w-7 text-cw-muted/40" />
-                      <p className="text-xs text-cw-muted">Nada agendado.</p>
+                      <p className="text-xs text-cw-muted">Nada agendado nesse dia.</p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      {grupos.map(([data, lista]) => (
-                        <div key={data} className="space-y-2">
-                          <div className="flex items-center gap-2 px-1">
-                            <h4 className={cn('text-xs font-black', data === hoje ? 'text-emerald-600' : 'text-cw-muted')}>
-                              {rotuloDia(data)}
-                            </h4>
-                            {data === hoje && (
-                              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">HOJE</span>
-                            )}
+                    <div className="space-y-2.5">
+                      {lista.map(r => (
+                        <div key={r.chave} className="rounded-xl border border-cw-border bg-cw-elevated p-3.5 space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-1 text-xs font-bold text-cw-purple">
+                              <Clock className="h-3.5 w-3.5" /> {r.hora ?? '—'}
+                            </span>
+                            <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0',
+                              r.presenca === 'compareceu' ? 'text-emerald-600 bg-emerald-50 border-emerald-200'
+                                : r.presenca === 'nao_compareceu' ? 'text-red-500 bg-red-50 border-red-200'
+                                : 'text-cw-purple bg-cw-purple/10 border-cw-purple/20')}>
+                              {r.presenca === 'compareceu' ? 'Compareceu' : r.presenca === 'nao_compareceu' ? 'Não compareceu' : 'Agendada'}
+                            </span>
                           </div>
 
-                          {lista.map(r => (
-                            <div key={r.chave} className="rounded-xl border border-cw-border bg-cw-elevated p-3 space-y-2">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="min-w-0">
-                                  <p className="font-semibold text-sm text-cw-text truncate">{r.lead.nome || 'Lead sem nome'}</p>
-                                  <span className="flex items-center gap-1 text-[11px] text-cw-muted mt-0.5">
-                                    <Clock className="h-3 w-3" /> {formatarDataCurta(r.data)}{r.hora ? ` às ${r.hora}` : ''}
-                                  </span>
-                                </div>
-                                <button onClick={() => setEditando(r)} title="Corrigir dados"
-                                  className="h-7 w-7 rounded-lg border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-colors shrink-0">
-                                  <Pencil className="h-3 w-3" />
-                                </button>
-                              </div>
-                              {(r.lead.telefone || r.lead.email) && (
-                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-cw-muted">
-                                  {r.lead.telefone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {r.lead.telefone}</span>}
-                                  {r.lead.email && <span className="flex items-center gap-1 truncate"><Mail className="h-3 w-3 shrink-0" /> {r.lead.email}</span>}
-                                </div>
-                              )}
-                              <div className="flex items-center gap-1.5">
-                                <button
-                                  onClick={() => marcarPresenca(r, 'compareceu')}
-                                  title="Lead compareceu"
-                                  className={cn('h-7 w-7 rounded-lg border flex items-center justify-center transition-colors',
-                                    r.presenca === 'compareceu'
-                                      ? 'bg-emerald-500 border-emerald-500 text-white'
-                                      : 'border-cw-border text-cw-muted hover:text-emerald-600 hover:border-emerald-300')}
-                                >
-                                  <Check className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => marcarPresenca(r, 'nao_compareceu')}
-                                  title="Lead não compareceu"
-                                  className={cn('h-7 w-7 rounded-lg border flex items-center justify-center transition-colors',
-                                    r.presenca === 'nao_compareceu'
-                                      ? 'bg-red-500 border-red-500 text-white'
-                                      : 'border-cw-border text-cw-muted hover:text-red-500 hover:border-red-300')}
-                                >
-                                  <X className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
+                          <p className="font-semibold text-sm text-cw-text">{r.lead.nome || 'Lead sem nome'}</p>
+
+                          {(r.lead.telefone || r.lead.email) && (
+                            <div className="space-y-1 text-[11px] text-cw-muted">
+                              {r.lead.telefone && <span className="flex items-center gap-1.5"><Phone className="h-3 w-3 shrink-0" /> {r.lead.telefone}</span>}
+                              {r.lead.email && <span className="flex items-center gap-1.5 truncate"><Mail className="h-3 w-3 shrink-0" /> {r.lead.email}</span>}
                             </div>
-                          ))}
+                          )}
+
+                          <div className="flex items-center justify-between pt-2 border-t border-cw-border">
+                            <span className="text-[10px] text-cw-muted">Origem: Pipedrive</span>
+                            <div className="flex items-center gap-1.5">
+                              <button onClick={() => setEditando(r)} title="Corrigir dados"
+                                className="h-7 w-7 rounded-lg border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-colors">
+                                <Pencil className="h-3 w-3" />
+                              </button>
+                              <button
+                                onClick={() => marcarPresenca(r, 'compareceu')}
+                                title="Lead compareceu"
+                                className={cn('h-7 w-7 rounded-lg border flex items-center justify-center transition-colors',
+                                  r.presenca === 'compareceu'
+                                    ? 'bg-emerald-500 border-emerald-500 text-white'
+                                    : 'border-cw-border text-cw-muted hover:text-emerald-600 hover:border-emerald-300')}
+                              >
+                                <Check className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => marcarPresenca(r, 'nao_compareceu')}
+                                title="Lead não compareceu"
+                                className={cn('h-7 w-7 rounded-lg border flex items-center justify-center transition-colors',
+                                  r.presenca === 'nao_compareceu'
+                                    ? 'bg-red-500 border-red-500 text-white'
+                                    : 'border-cw-border text-cw-muted hover:text-red-500 hover:border-red-300')}
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
