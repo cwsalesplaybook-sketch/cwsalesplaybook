@@ -1,10 +1,12 @@
-/** Agenda de Reuniões — espelha as reuniões (agendadas e já realizadas, últimos
- *  60 dias) da Gabrielly e do Hyorranes direto do Pipedrive, com os dados do
- *  lead (nome, telefone, email). Só entram reuniões ligadas aos funis do
- *  programa de Representantes (ver api/reps-agenda.js).
+/** Agenda de Reuniões — Kanban com uma coluna pra Gabrielly e outra pro
+ *  Hyorranes, cada uma organizada por DIA DA REUNIÃO (hoje primeiro), pra dar
+ *  aquele check diário rápido de "o que tenho hoje e o que ele tem hoje".
+ *  Dados vêm do Pipedrive (ver api/reps-agenda.js), só dos funis do programa
+ *  de Representantes.
  *
- *  Organizada por DIA EM QUE FOI AGENDADA (não pelo dia da reunião em si) —
- *  é um controle retroativo de "quanto eu agendei", a pedido da Gabi.
+ *  A aba "Total" é outra visão dos mesmos dados: quanto foi AGENDADO por mês
+ *  (retroativo, últimos 60 dias) — pedido separado da Gabi, métrica diferente
+ *  de "o que vai acontecer".
  *
  *  "Responsável" vem do perfil do Pipedrive que criou a reunião, que a Gabi
  *  confirmou não ser 100% confiável (ela agenda tanto no perfil dela quanto
@@ -14,7 +16,7 @@
  *  nem estão certas no Pipedrive — tudo guardado no Supabase (tabela
  *  reps_agenda_reunioes) pra Gabrielly e Hyorranes verem a mesma correção. */
 import { useEffect, useMemo, useState } from 'react';
-import { Users, Clock, Phone, Mail, RefreshCw, CalendarClock, Loader2, User, Check, X, Pencil, Plus, BarChart3, Trash2 } from 'lucide-react';
+import { Clock, Phone, Mail, RefreshCw, CalendarClock, Loader2, Check, X, Pencil, Plus, BarChart3, LayoutGrid, Trash2 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { cn } from '@/lib/utils';
 import { useRepsAgendaOverrides } from '@/hooks/useRepsAgendaOverrides';
@@ -42,10 +44,6 @@ interface ReuniaoView {
 }
 
 const PESSOAS = ['Gabrielly', 'Hyorranes'] as const;
-const ABAS = [
-  { label: 'Todas', valor: null },
-  ...PESSOAS.map(p => ({ label: p, valor: p as string })),
-] as const;
 
 function hojeStr() {
   const hoje = new Date();
@@ -170,7 +168,7 @@ export default function AgendaReunioes() {
   const [pipedrive, setPipedrive] = useState<ReuniaoPipedrive[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
-  const [aba, setAba] = useState<string | null>(null);
+  const [vista, setVista] = useState<'kanban' | 'total'>('kanban');
   const [editando, setEditando] = useState<ReuniaoView | null | 'novo'>(null);
   const { rows: overrides, salvarOverride, adicionarManual, atualizar, remover } = useRepsAgendaOverrides();
   const hoje = hojeStr();
@@ -226,19 +224,24 @@ export default function AgendaReunioes() {
     return [...dasPipedrive, ...manuais];
   }, [pipedrive, overrides]);
 
-  const filtradas = useMemo(
-    () => todas.filter(r => (!aba || aba === 'total' || r.responsavel === aba) && diaDaSemana(r.agendadaEm) >= 1 && diaDaSemana(r.agendadaEm) <= 5),
-    [todas, aba],
-  );
-
-  const porDia = useMemo(() => {
-    const grupos = new Map<string, ReuniaoView[]>();
-    for (const r of filtradas) {
-      if (!grupos.has(r.agendadaEm)) grupos.set(r.agendadaEm, []);
-      grupos.get(r.agendadaEm)!.push(r);
+  // Kanban: uma coluna por pessoa, dentro dela agrupado pelo dia da REUNIÃO
+  // em si (não o dia em que foi marcada) — é a agenda do que vai acontecer,
+  // hoje primeiro. Só reuniões de hoje em diante, dias úteis.
+  const kanban = useMemo(() => {
+    const porPessoa: Record<string, [string, ReuniaoView[]][]> = {};
+    for (const pessoa of PESSOAS) {
+      const doPessoa = todas.filter(r =>
+        r.responsavel === pessoa && r.data >= hoje && diaDaSemana(r.data) >= 1 && diaDaSemana(r.data) <= 5);
+      const grupos = new Map<string, ReuniaoView[]>();
+      for (const r of doPessoa) {
+        if (!grupos.has(r.data)) grupos.set(r.data, []);
+        grupos.get(r.data)!.push(r);
+      }
+      for (const lista of grupos.values()) lista.sort((a, b) => (a.hora || '99:99').localeCompare(b.hora || '99:99'));
+      porPessoa[pessoa] = [...grupos.entries()].sort(([a], [b]) => a.localeCompare(b)); // hoje primeiro
     }
-    return [...grupos.entries()].sort(([a], [b]) => b.localeCompare(a)); // mais recente primeiro
-  }, [filtradas]);
+    return porPessoa;
+  }, [todas, hoje]);
 
   const totalMes = useMemo(() => {
     const mesAtual = hoje.slice(0, 7);
@@ -267,7 +270,7 @@ export default function AgendaReunioes() {
     <>
       <Header
         titulo="Agenda de Reuniões"
-        subtitulo="Reuniões marcadas (Gabrielly e Hyorranes), organizadas por dia de agendamento — últimos 60 dias"
+        subtitulo="Kanban de Gabrielly e Hyorranes, dia da reunião — hoje primeiro"
         acoes={
           <div className="flex items-center gap-2">
             <button onClick={() => setEditando('novo')} title="Adicionar reunião retroativa"
@@ -283,28 +286,24 @@ export default function AgendaReunioes() {
       />
       <div className="p-8 space-y-6">
         <div className="flex flex-wrap items-center gap-2">
-          {ABAS.map(p => (
-            <button
-              key={p.label}
-              onClick={() => setAba(p.valor)}
-              className={cn('flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-full border transition-colors',
-                aba === p.valor
-                  ? 'gradient-primary text-white border-transparent'
-                  : 'bg-cw-surface text-cw-muted border-cw-border hover:text-cw-text')}
-            >
-              <Users className="h-3 w-3" /> {p.label}
-            </button>
-          ))}
           <button
-            onClick={() => setAba('total')}
+            onClick={() => setVista('kanban')}
             className={cn('flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-full border transition-colors',
-              aba === 'total'
+              vista === 'kanban'
+                ? 'gradient-primary text-white border-transparent'
+                : 'bg-cw-surface text-cw-muted border-cw-border hover:text-cw-text')}
+          >
+            <LayoutGrid className="h-3 w-3" /> Agenda
+          </button>
+          <button
+            onClick={() => setVista('total')}
+            className={cn('flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-full border transition-colors',
+              vista === 'total'
                 ? 'gradient-primary text-white border-transparent'
                 : 'bg-cw-surface text-cw-muted border-cw-border hover:text-cw-text')}
           >
             <BarChart3 className="h-3 w-3" /> Total
           </button>
-          {aba !== 'total' && <span className="text-xs text-cw-muted ml-1">{filtradas.length} reunião(ões)</span>}
         </div>
 
         {loading && pipedrive.length === 0 ? (
@@ -318,9 +317,9 @@ export default function AgendaReunioes() {
             <p className="text-xs text-cw-muted">{erro}</p>
             <button onClick={carregar} className="text-xs font-semibold text-cw-purple-light hover:underline">Tentar de novo</button>
           </div>
-        ) : aba === 'total' ? (
+        ) : vista === 'total' ? (
           <div className="cw-card p-6 space-y-5">
-            <h3 className="text-sm font-black text-cw-text">Esse mês (dias úteis)</h3>
+            <h3 className="text-sm font-black text-cw-text">Esse mês (dias úteis) — reuniões agendadas</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="rounded-xl border border-cw-border bg-cw-elevated p-4">
                 <p className="text-[11px] font-bold text-cw-purple uppercase tracking-wider">Agendadas</p>
@@ -347,75 +346,87 @@ export default function AgendaReunioes() {
               ))}
             </div>
           </div>
-        ) : porDia.length === 0 ? (
-          <div className="cw-card p-10 flex flex-col items-center gap-2 text-center">
-            <CalendarClock className="h-8 w-8 text-cw-muted/40" />
-            <p className="text-sm text-cw-muted">Nenhuma reunião agendada por enquanto.</p>
-          </div>
         ) : (
-          <div className="space-y-6">
-            {porDia.map(([data, lista]) => (
-              <div key={data} className="space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <h3 className={cn('text-sm font-black', data === hoje ? 'text-emerald-600' : 'text-cw-text')}>
-                    {rotuloDia(data)}
-                  </h3>
-                  {data === hoje && (
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">HOJE</span>
-                  )}
-                  <span className="text-xs text-cw-muted">
-                    — foram marcadas {lista.length} {lista.length === 1 ? 'reunião' : 'reuniões'}
-                  </span>
-                </div>
-
-                {lista.map(r => (
-                  <div key={r.chave} className="cw-card p-4 flex items-center gap-4">
-                    <div className={cn('h-10 w-10 rounded-lg flex items-center justify-center shrink-0',
-                      r.presenca === 'compareceu' ? 'bg-emerald-500/10' : r.presenca === 'nao_compareceu' ? 'bg-red-500/10' : 'bg-cw-purple/10')}>
-                      <CalendarClock className={cn('h-4.5 w-4.5',
-                        r.presenca === 'compareceu' ? 'text-emerald-500' : r.presenca === 'nao_compareceu' ? 'text-red-500' : 'text-cw-purple-light')} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-cw-text truncate">{r.lead.nome || 'Lead sem nome'}</p>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-cw-muted">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" /> reunião {formatarDataCurta(r.data)}{r.hora ? ` às ${r.hora}` : ''}
-                        </span>
-                        {r.lead.telefone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {r.lead.telefone}</span>}
-                        {r.lead.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {r.lead.email}</span>}
-                        <span className="flex items-center gap-1"><User className="h-3 w-3" /> {r.responsavel}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <button onClick={() => setEditando(r)} title="Corrigir dados"
-                        className="h-8 w-8 rounded-lg border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-colors">
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => marcarPresenca(r, 'compareceu')}
-                        title="Lead compareceu"
-                        className={cn('h-8 w-8 rounded-lg border flex items-center justify-center transition-colors',
-                          r.presenca === 'compareceu'
-                            ? 'bg-emerald-500 border-emerald-500 text-white'
-                            : 'border-cw-border text-cw-muted hover:text-emerald-600 hover:border-emerald-300')}
-                      >
-                        <Check className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => marcarPresenca(r, 'nao_compareceu')}
-                        title="Lead não compareceu"
-                        className={cn('h-8 w-8 rounded-lg border flex items-center justify-center transition-colors',
-                          r.presenca === 'nao_compareceu'
-                            ? 'bg-red-500 border-red-500 text-white'
-                            : 'border-cw-border text-cw-muted hover:text-red-500 hover:border-red-300')}
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {PESSOAS.map(pessoa => {
+              const grupos = kanban[pessoa] ?? [];
+              const total = grupos.reduce((soma, [, lista]) => soma + lista.length, 0);
+              return (
+                <div key={pessoa} className="cw-card p-4 space-y-4">
+                  <div className="flex items-center justify-between px-1">
+                    <h3 className="text-sm font-black text-cw-text">{pessoa}</h3>
+                    <span className="text-xs text-cw-muted">{total} reunião(ões)</span>
                   </div>
-                ))}
-              </div>
-            ))}
+
+                  {grupos.length === 0 ? (
+                    <div className="py-10 flex flex-col items-center gap-2 text-center">
+                      <CalendarClock className="h-7 w-7 text-cw-muted/40" />
+                      <p className="text-xs text-cw-muted">Nada agendado.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {grupos.map(([data, lista]) => (
+                        <div key={data} className="space-y-2">
+                          <div className="flex items-center gap-2 px-1">
+                            <h4 className={cn('text-xs font-black', data === hoje ? 'text-emerald-600' : 'text-cw-muted')}>
+                              {rotuloDia(data)}
+                            </h4>
+                            {data === hoje && (
+                              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">HOJE</span>
+                            )}
+                          </div>
+
+                          {lista.map(r => (
+                            <div key={r.chave} className="rounded-xl border border-cw-border bg-cw-elevated p-3 space-y-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <p className="font-semibold text-sm text-cw-text truncate">{r.lead.nome || 'Lead sem nome'}</p>
+                                  <span className="flex items-center gap-1 text-[11px] text-cw-muted mt-0.5">
+                                    <Clock className="h-3 w-3" /> {formatarDataCurta(r.data)}{r.hora ? ` às ${r.hora}` : ''}
+                                  </span>
+                                </div>
+                                <button onClick={() => setEditando(r)} title="Corrigir dados"
+                                  className="h-7 w-7 rounded-lg border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-colors shrink-0">
+                                  <Pencil className="h-3 w-3" />
+                                </button>
+                              </div>
+                              {(r.lead.telefone || r.lead.email) && (
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-cw-muted">
+                                  {r.lead.telefone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {r.lead.telefone}</span>}
+                                  {r.lead.email && <span className="flex items-center gap-1 truncate"><Mail className="h-3 w-3 shrink-0" /> {r.lead.email}</span>}
+                                </div>
+                              )}
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => marcarPresenca(r, 'compareceu')}
+                                  title="Lead compareceu"
+                                  className={cn('h-7 w-7 rounded-lg border flex items-center justify-center transition-colors',
+                                    r.presenca === 'compareceu'
+                                      ? 'bg-emerald-500 border-emerald-500 text-white'
+                                      : 'border-cw-border text-cw-muted hover:text-emerald-600 hover:border-emerald-300')}
+                                >
+                                  <Check className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => marcarPresenca(r, 'nao_compareceu')}
+                                  title="Lead não compareceu"
+                                  className={cn('h-7 w-7 rounded-lg border flex items-center justify-center transition-colors',
+                                    r.presenca === 'nao_compareceu'
+                                      ? 'bg-red-500 border-red-500 text-white'
+                                      : 'border-cw-border text-cw-muted hover:text-red-500 hover:border-red-300')}
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
