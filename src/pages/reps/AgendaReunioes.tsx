@@ -257,6 +257,27 @@ export default function AgendaReunioes() {
     };
   }, [todas, hoje]);
 
+  /** Detalhamento dia a dia do mês (mesma janela do totalMes) — a Gabi quer
+   *  ver as datas, não só o total agregado. */
+  const detalhamentoMes = useMemo(() => {
+    const mesAtual = hoje.slice(0, 7);
+    const doMes = todas.filter(r => r.agendadaEm.startsWith(mesAtual) && diaDaSemana(r.agendadaEm) >= 1 && diaDaSemana(r.agendadaEm) <= 5);
+    const porDia = new Map<string, ReuniaoView[]>();
+    for (const r of doMes) {
+      if (!porDia.has(r.agendadaEm)) porDia.set(r.agendadaEm, []);
+      porDia.get(r.agendadaEm)!.push(r);
+    }
+    return [...porDia.entries()]
+      .map(([data, lista]) => ({
+        data,
+        total: lista.length,
+        compareceram: lista.filter(r => r.presenca === 'compareceu').length,
+        naoCompareceram: lista.filter(r => r.presenca === 'nao_compareceu').length,
+        porPessoa: PESSOAS.map(p => lista.filter(r => r.responsavel === p).length),
+      }))
+      .sort((a, b) => b.data.localeCompare(a.data)); // mais recente primeiro
+  }, [todas, hoje]);
+
   const marcarPresenca = (r: ReuniaoView, valor: 'compareceu' | 'nao_compareceu') => {
     const novoValor = r.presenca === valor ? null : valor;
     if (r.pipedriveActivityId != null) {
@@ -344,6 +365,42 @@ export default function AgendaReunioes() {
                   <span className="font-bold text-cw-text">{p.pessoa}:</span> {p.total} agendadas
                 </p>
               ))}
+            </div>
+
+            <div className="pt-2 border-t border-cw-border space-y-3">
+              <h4 className="text-xs font-black text-cw-muted uppercase tracking-wider">Detalhamento por dia</h4>
+              {detalhamentoMes.length === 0 ? (
+                <p className="text-xs text-cw-muted">Nada agendado esse mês ainda.</p>
+              ) : (
+                <div className="overflow-x-auto scrollbar-cw">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-left text-cw-muted border-b border-cw-border">
+                        <th className="py-2 pr-3 font-semibold">Data</th>
+                        <th className="py-2 px-3 font-semibold text-center">Agendadas</th>
+                        <th className="py-2 px-3 font-semibold text-center">Gabrielly</th>
+                        <th className="py-2 px-3 font-semibold text-center">Hyorranes</th>
+                        <th className="py-2 px-3 font-semibold text-center">No show</th>
+                        <th className="py-2 pl-3 font-semibold text-center">Não compareceu</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detalhamentoMes.map(d => (
+                        <tr key={d.data} className={cn('border-b border-cw-border/60', d.data === hoje && 'bg-emerald-50')}>
+                          <td className="py-2 pr-3 font-semibold text-cw-text whitespace-nowrap">
+                            {rotuloDia(d.data)}{d.data === hoje && <span className="ml-1.5 text-[10px] font-bold text-emerald-600">HOJE</span>}
+                          </td>
+                          <td className="py-2 px-3 text-center text-cw-text">{d.total}</td>
+                          <td className="py-2 px-3 text-center text-cw-muted">{d.porPessoa[0]}</td>
+                          <td className="py-2 px-3 text-center text-cw-muted">{d.porPessoa[1]}</td>
+                          <td className="py-2 px-3 text-center text-emerald-600 font-semibold">{d.compareceram}</td>
+                          <td className="py-2 pl-3 text-center text-red-500 font-semibold">{d.naoCompareceram}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         ) : (
