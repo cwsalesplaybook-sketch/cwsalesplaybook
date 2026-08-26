@@ -30,16 +30,18 @@ const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
 // Paleta de badges dos ícones — cicla por posição do item na nav, pra cada
 // linha ter uma cor própria (visual pedido pela Gabi: quadradinho colorido
-// atrás do ícone, como num app mobile). Tons ajustados pro fundo roxo escuro.
+// atrás do ícone, como num app mobile). Cor sólida + ícone branco: no fundo
+// roxo escuro, badge translúcido com ícone claro ficava tudo esmaecido/sem
+// contraste (feedback da Gabi), então aqui é cor cheia de verdade.
 const BADGE_COLORS = [
-  { bg: 'bg-pink-400/20',    text: 'text-pink-300'    },
-  { bg: 'bg-blue-400/20',    text: 'text-blue-300'    },
-  { bg: 'bg-fuchsia-400/20', text: 'text-fuchsia-300' },
-  { bg: 'bg-amber-400/20',   text: 'text-amber-300'   },
-  { bg: 'bg-emerald-400/20', text: 'text-emerald-300' },
-  { bg: 'bg-rose-400/20',    text: 'text-rose-300'    },
-  { bg: 'bg-indigo-400/20',  text: 'text-indigo-300'  },
-  { bg: 'bg-cyan-400/20',    text: 'text-cyan-300'    },
+  { bg: 'bg-pink-500',    text: 'text-white' },
+  { bg: 'bg-blue-500',    text: 'text-white' },
+  { bg: 'bg-fuchsia-500', text: 'text-white' },
+  { bg: 'bg-amber-500',   text: 'text-white' },
+  { bg: 'bg-emerald-500', text: 'text-white' },
+  { bg: 'bg-rose-500',    text: 'text-white' },
+  { bg: 'bg-indigo-500',  text: 'text-white' },
+  { bg: 'bg-cyan-500',    text: 'text-white' },
 ];
 const badgeColor = (idx: number) => BADGE_COLORS[idx % BADGE_COLORS.length];
 
