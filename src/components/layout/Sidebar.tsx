@@ -1,6 +1,6 @@
 /** Sidebar — roxo escuro de sempre, com ícones em badge colorido, seta e mascote no rodapé. */
 import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   BookOpen, LayoutDashboard, BarChart2, Heart, Map as MapIcon,
   TrendingUp, BarChart3, Sword, Sparkles, Award, Crown,
@@ -108,12 +108,22 @@ const PLAYBOOK_OPTIONS: { label: string; papel: Papel; icon: LucideIcon; short: 
 
 const STORE_KEY = 'sidebar.nav';
 
+// Seções que já nascem fechadas (acordeão) — a Gabi pediu pra "Cultura e
+// Time" virar sub-aba recolhida, pra diminuir o menu. Se a rota ativa
+// estiver dentro de uma seção fechada, ela abre sozinha (ver `sectionOpen`).
+const SECTIONS_COLLAPSED_BY_DEFAULT = ['Cultura e Time'];
+
 export function Sidebar() {
   const { papel, setPapel, lockedPapel, squad, squadsLideradas, apelido, onboardingActive, papelReady } = useSidebarContext();
   const { isEditing, openPasswordModal, lock, isMaster, isGestor } = useEditor();
   const userProfile = useUserProfile();
   const { isFav, toggle: toggleFav } = useNavFavorites(userProfile.email ?? '');
   const navigate = useNavigate();
+  const location = useLocation();
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(SECTIONS_COLLAPSED_BY_DEFAULT.map(label => [label, true])),
+  );
+  const toggleSection = (label: string) => setCollapsedSections(c => ({ ...c, [label]: !c[label] }));
   const isCloser = papel === 'Closer';
   const rawItems = useGlobalEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
   // Closer tem navegação própria, hardcoded (não passa pelo override global).
@@ -356,18 +366,27 @@ export function Sidebar() {
               </div>
             )}
 
-            {/* Seções */}
+            {/* Seções — acordeão: clica no título e abre/fecha as sub-abas */}
             {sections.map(section => {
               const sItems = sectionItems(section.routes);
               if (sItems.length === 0) return null;
+              const hasActive = sItems.some(i => location.pathname === i.to || (!i.end && location.pathname.startsWith(i.to + '/')));
+              const open = hasActive || !collapsedSections[section.label];
               return (
                 <div key={section.label}>
-                  <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8]">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(section.label)}
+                    className="w-full flex items-center justify-between px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8] hover:text-[#b89fd4] transition-colors"
+                  >
                     {section.label}
-                  </p>
-                  <div className="space-y-0.5">
-                    {sItems.map(item => <NavItemEl key={item.to} item={item} />)}
-                  </div>
+                    <ChevronRight className={cn('h-3 w-3 transition-transform', open && 'rotate-90')} />
+                  </button>
+                  {open && (
+                    <div className="space-y-0.5">
+                      {sItems.map(item => <NavItemEl key={item.to} item={item} />)}
+                    </div>
+                  )}
                 </div>
               );
             })}
