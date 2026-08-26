@@ -432,13 +432,17 @@ export function Sidebar() {
         <NotificationBell />
       </div>
 
-      {/* ── Rodapé decorativo: onda + mascote ── */}
-      <div className="relative h-20 mt-1 shrink-0 overflow-hidden">
+      {/* ── Rodapé decorativo: onda + mascote 3D ── */}
+      <div className="relative h-36 mt-1 shrink-0 overflow-hidden">
+        {/* Estrelinhas decorativas */}
+        <Sparkles className="absolute left-4 top-2 h-3 w-3 text-cw-purple/30" />
+        <Sparkles className="absolute left-9 top-7 h-2 w-2 text-cw-purple/20" />
+
         <svg
-          viewBox="0 0 240 60" preserveAspectRatio="none"
-          className="absolute inset-x-0 bottom-0 w-full h-full"
+          viewBox="0 0 240 90" preserveAspectRatio="none"
+          className="absolute inset-x-0 bottom-0 w-full h-[70px]"
         >
-          <path d="M0,28 C60,4 120,44 240,18 L240,60 L0,60 Z" fill="url(#sidebarWave)" />
+          <path d="M0,45 C70,85 170,5 240,40 L240,90 L0,90 Z" fill="url(#sidebarWave)" />
           <defs>
             <linearGradient id="sidebarWave" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#A543FA" />
@@ -449,7 +453,7 @@ export function Sidebar() {
         <img
           src="/cardapinho-cw-store.png"
           alt=""
-          className="absolute right-1 bottom-0 h-24 object-contain pointer-events-none select-none"
+          className="absolute right-0 bottom-0 h-36 object-contain object-bottom pointer-events-none select-none"
         />
       </div>
     </aside>
