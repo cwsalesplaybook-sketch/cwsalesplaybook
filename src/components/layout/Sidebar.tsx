@@ -1,4 +1,4 @@
-/** Sidebar — visual idêntico ao print de referência. */
+/** Sidebar — cartão claro flutuante, ícones em badge colorido, mascote no rodapé. */
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
@@ -27,6 +27,21 @@ const ICON_MAP = {
   Award, TrendingUp, BarChart3, Sword, Trophy, Target, HelpCircle, Zap, ShieldCheck, Calculator, Library, GraduationCap, FileText, Percent, Users, Puzzle, Package, Store, MessageCircleQuestion, Drama, Video, CalendarClock,
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
+
+// Paleta de badges dos ícones — cicla por posição do item na nav, pra cada
+// linha ter uma cor própria (visual pedido pela Gabi: quadradinho colorido
+// atrás do ícone, como num app mobile).
+const BADGE_COLORS = [
+  { bg: 'bg-pink-500/15',    text: 'text-pink-600'    },
+  { bg: 'bg-blue-500/15',    text: 'text-blue-600'    },
+  { bg: 'bg-cw-purple/15',   text: 'text-cw-purple'   },
+  { bg: 'bg-amber-500/15',   text: 'text-amber-600'   },
+  { bg: 'bg-emerald-500/15', text: 'text-emerald-600' },
+  { bg: 'bg-rose-500/15',    text: 'text-rose-600'    },
+  { bg: 'bg-indigo-500/15',  text: 'text-indigo-600'  },
+  { bg: 'bg-cyan-500/15',    text: 'text-cyan-600'    },
+];
+const badgeColor = (idx: number) => BADGE_COLORS[idx % BADGE_COLORS.length];
 
 // Grupo "Comercial": Meta do Mês e Playbook são os favoritos, ficam fixos no
 // topo; o resto segue ordenado do nome mais curto pro mais longo, com CW Store
@@ -146,8 +161,10 @@ export function Sidebar() {
   const NavItemEl = ({ item }: { item: NavItem }) => {
     const idx = items.indexOf(item);
     const Icon = ICON_MAP[item.icon] ?? Sparkles;
+    const badge = badgeColor(idx);
     // Gestores em modo edição não ficam bloqueados pelo onboarding
     const locked = onboardingActive && item.to !== '/start' && !isEditing;
+    const fav = isFav(item.to);
 
     return (
       <div className="group/nav relative">
@@ -155,30 +172,40 @@ export function Sidebar() {
           to={locked ? '/start' : item.to}
           end={item.end}
           className={({ isActive }) => cn(
-            'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
+            'flex items-center gap-2.5 px-2 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
             locked
-              ? 'text-[#4a3560] cursor-not-allowed pointer-events-none'
+              ? 'text-cw-muted/50 cursor-not-allowed pointer-events-none'
               : isActive
-                ? 'bg-[#2d1760] text-white font-semibold'
-                : 'text-[#b89fd4] hover:text-white hover:bg-white/5'
+                ? 'bg-cw-purple/10 text-cw-purple font-semibold'
+                : 'text-cw-text/80 hover:bg-cw-elevated'
           )}
         >
           <button
             type="button"
             onClick={navEditable ? e => { e.preventDefault(); e.stopPropagation(); cycleIcon(idx); } : undefined}
             disabled={!navEditable}
-            className={cn('shrink-0', navEditable && 'cursor-pointer hover:scale-110')}
+            className={cn(
+              'h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-transform',
+              locked ? 'bg-cw-elevated text-cw-muted/50' : cn(badge.bg, badge.text),
+              navEditable && 'cursor-pointer hover:scale-110',
+            )}
           >
-            <Icon className="h-[18px] w-[18px]" />
+            <Icon className="h-4 w-4" />
           </button>
-          <span className="flex-1">{item.label}</span>
+          <span className="flex-1 truncate">{item.label}</span>
+
+          {!navEditable && (
+            fav
+              ? <Star className="h-3.5 w-3.5 shrink-0 fill-current text-cw-yellow" />
+              : <ChevronRight className="h-3.5 w-3.5 shrink-0 text-cw-muted/40" />
+          )}
         </NavLink>
 
         {navEditable && (
           <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover/nav:opacity-100 transition-opacity duration-150">
-            <button onClick={() => move(idx, -1)} disabled={idx === 0} className="h-4 w-4 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowUp className="h-2.5 w-2.5" /></button>
-            <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="h-4 w-4 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowDown className="h-2.5 w-2.5" /></button>
-            <button onClick={() => remove(idx)} className="h-4 w-4 rounded bg-red-900/30 border border-red-500/30 text-red-400 flex items-center justify-center hover:bg-red-900/50"><Trash2 className="h-2.5 w-2.5" /></button>
+            <button onClick={() => move(idx, -1)} disabled={idx === 0} className="h-4 w-4 rounded bg-cw-elevated border border-cw-border flex items-center justify-center disabled:opacity-30 hover:bg-cw-purple/10"><ArrowUp className="h-2.5 w-2.5" /></button>
+            <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="h-4 w-4 rounded bg-cw-elevated border border-cw-border flex items-center justify-center disabled:opacity-30 hover:bg-cw-purple/10"><ArrowDown className="h-2.5 w-2.5" /></button>
+            <button onClick={() => remove(idx)} className="h-4 w-4 rounded bg-red-100 border border-red-300 text-red-500 flex items-center justify-center hover:bg-red-200"><Trash2 className="h-2.5 w-2.5" /></button>
           </div>
         )}
 
@@ -187,15 +214,15 @@ export function Sidebar() {
           <button
             type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFav(item.to); }}
-            title={isFav(item.to) ? 'Remover dos favoritos' : 'Favoritar'}
+            title={fav ? 'Remover dos favoritos' : 'Favoritar'}
             className={cn(
               'absolute right-2 top-1/2 -translate-y-1/2 transition-opacity duration-150',
-              isFav(item.to)
-                ? 'opacity-100 text-cw-yellow'
-                : 'opacity-0 group-hover/nav:opacity-100 text-[#b89fd4] hover:text-cw-yellow',
+              fav
+                ? 'opacity-0 group-hover/nav:opacity-100 text-cw-red hover:text-cw-red'
+                : 'opacity-0 group-hover/nav:opacity-100 text-cw-muted hover:text-cw-yellow',
             )}
           >
-            <Star className={cn('h-3.5 w-3.5', isFav(item.to) && 'fill-current')} />
+            <Star className={cn('h-3.5 w-3.5', fav && 'fill-current')} />
           </button>
         )}
       </div>
@@ -226,26 +253,56 @@ export function Sidebar() {
         <p className="text-white text-2xl font-black mt-1">Dashboard de {switchingLabel}</p>
       </div>
     )}
-    <aside
-      className="w-[220px] shrink-0 flex flex-col h-screen sticky top-0 z-30 border-r border-[#ffffff08] overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, #1a0f2e 0%, #130a22 100%)' }}
-    >
+    <aside className="w-[240px] shrink-0 flex flex-col h-screen sticky top-0 z-30 border-r border-cw-border bg-cw-bg overflow-hidden">
       {/* ── Logo ── */}
-      <div className="px-4 pt-5 pb-2">
-        <div className="bg-white rounded-2xl px-3 py-2.5 flex items-center justify-center mb-3">
+      <div className="px-3 pt-4 pb-2">
+        <div className="cw-card px-3 py-2.5 flex items-center justify-center mb-2">
           <img
             src="https://cardapioweb.com/wp-content/uploads/2024/01/Logo-Cardapio-Web.png"
             alt="Cardápio Web"
             className="h-7 w-auto object-contain"
           />
         </div>
-        <p className="text-center text-[10px] text-[#7c5aa8] uppercase tracking-[0.2em] font-bold">
+        <p className="text-center text-[10px] text-cw-muted uppercase tracking-[0.2em] font-bold">
           Time e Comercial
         </p>
       </div>
 
+      {/* ── Perfil ── */}
+      <div className="px-3 pb-2">
+        <div className="cw-card flex items-center gap-2.5 px-3 py-2.5">
+          {userProfile.avatarUrl ? (
+            <img
+              src={userProfile.avatarUrl}
+              alt={userProfile.fullName ?? ''}
+              className="h-9 w-9 rounded-full object-cover shrink-0 border border-cw-border"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="h-9 w-9 rounded-full bg-cw-purple/15 flex items-center justify-center text-[11px] font-black text-cw-purple shrink-0">
+              {userProfile.initials}
+            </div>
+          )}
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-[12px] font-bold text-cw-text truncate leading-tight">
+              {apelido ?? userProfile.fullName ?? 'Usuário'}
+            </p>
+            <p className="text-[10px] text-cw-muted truncate leading-tight">
+              {papel}{squad ? ` · Squad ${squad}` : ''}
+            </p>
+          </div>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            title="Sair"
+            className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-cw-muted hover:text-cw-red hover:bg-cw-red/10 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
       {/* ── Nav ── */}
-      <nav className="flex-1 px-3 py-2 overflow-y-auto scrollbar-cw space-y-4">
+      <nav className="flex-1 px-3 py-1 overflow-y-auto scrollbar-cw space-y-4">
 
         {/* Comece Aqui */}
         {startItem && (() => {
@@ -285,7 +342,7 @@ export function Sidebar() {
             {/* Favoritos do colaborador */}
             {favItems.length > 0 && (
               <div>
-                <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8] flex items-center gap-1">
+                <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-cw-muted flex items-center gap-1">
                   <Star className="h-3 w-3 fill-current text-cw-yellow" /> Favoritos
                 </p>
                 <div className="space-y-0.5">
@@ -300,7 +357,7 @@ export function Sidebar() {
               if (sItems.length === 0) return null;
               return (
                 <div key={section.label}>
-                  <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8]">
+                  <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-cw-muted">
                     {section.label}
                   </p>
                   <div className="space-y-0.5">
@@ -325,8 +382,8 @@ export function Sidebar() {
             className={({ isActive }) => cn(
               'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all border',
               isActive
-                ? 'bg-amber-400/20 text-amber-300 border-amber-400/30'
-                : 'bg-amber-400/5 text-amber-400/80 hover:bg-amber-400/15 hover:text-amber-300 border-amber-400/15'
+                ? 'bg-amber-400/15 text-amber-600 border-amber-400/30'
+                : 'bg-amber-400/5 text-amber-600/80 hover:bg-amber-400/15 border-amber-400/15'
             )}
           >
             <ShieldCheck className="h-[18px] w-[18px] shrink-0" />
@@ -337,7 +394,7 @@ export function Sidebar() {
       </nav>
 
       {/* ── Footer ── */}
-      <div className="px-3 pb-4 space-y-1.5">
+      <div className="px-3 pb-1 space-y-1">
 
         {/* Promoções — visível só para quem lidera squad */}
         {squadsLideradas.length > 0 && (
@@ -346,8 +403,8 @@ export function Sidebar() {
             className={({ isActive }) => cn(
               'w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all',
               isActive
-                ? 'text-cw-purple-light bg-cw-purple/15'
-                : 'text-cw-purple-light/70 hover:text-cw-purple-light hover:bg-cw-purple/10'
+                ? 'text-cw-purple bg-cw-purple/10'
+                : 'text-cw-purple/70 hover:text-cw-purple hover:bg-cw-purple/5'
             )}
           >
             <PartyPopper className="h-3 w-3 shrink-0" />
@@ -362,8 +419,8 @@ export function Sidebar() {
             className={({ isActive }) => cn(
               'w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all',
               isActive
-                ? 'text-amber-300 bg-amber-400/10'
-                : 'text-amber-400/60 hover:text-amber-300 hover:bg-amber-400/5'
+                ? 'text-amber-600 bg-amber-400/10'
+                : 'text-amber-600/70 hover:text-amber-600 hover:bg-amber-400/5'
             )}
           >
             <Crown className="h-3 w-3 shrink-0" />
@@ -372,42 +429,28 @@ export function Sidebar() {
         )}
 
         {/* Sino de notificações */}
-        <div className="px-1">
-          <NotificationBell />
-        </div>
+        <NotificationBell />
+      </div>
 
-        {/* Perfil do usuário */}
-        <div className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[#1e1040] border border-[#ffffff08]">
-          {userProfile.avatarUrl ? (
-            <img
-              src={userProfile.avatarUrl}
-              alt={userProfile.fullName ?? ''}
-              className="h-8 w-8 rounded-full object-cover shrink-0 border border-white/10"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div className="h-8 w-8 rounded-full bg-[#4a0080] flex items-center justify-center text-[11px] font-black text-white shrink-0">
-              {userProfile.initials}
-            </div>
-          )}
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-[12px] font-semibold text-white truncate leading-tight">
-              {apelido ?? userProfile.fullName ?? 'Usuário'}
-            </p>
-            <p className="text-[10px] text-[#7c5aa8] truncate leading-tight">
-              {papel}{squad ? ` · Squad ${squad}` : ''}
-            </p>
-          </div>
-        </div>
-
-        {/* Botão de sair */}
-        <button
-          onClick={() => supabase.auth.signOut()}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium text-red-400/70 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150"
+      {/* ── Rodapé decorativo: onda + mascote ── */}
+      <div className="relative h-20 mt-1 shrink-0 overflow-hidden">
+        <svg
+          viewBox="0 0 240 60" preserveAspectRatio="none"
+          className="absolute inset-x-0 bottom-0 w-full h-full"
         >
-          <LogOut className="h-[16px] w-[16px] shrink-0" />
-          <span>Sair</span>
-        </button>
+          <path d="M0,28 C60,4 120,44 240,18 L240,60 L0,60 Z" fill="url(#sidebarWave)" />
+          <defs>
+            <linearGradient id="sidebarWave" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#A543FA" />
+              <stop offset="100%" stopColor="#59327A" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <img
+          src="/cardapinho-cw-store.png"
+          alt=""
+          className="absolute right-1 bottom-0 h-24 object-contain pointer-events-none select-none"
+        />
       </div>
     </aside>
     </>

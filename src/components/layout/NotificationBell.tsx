@@ -41,13 +41,15 @@ export function NotificationBell() {
         ref={btnRef}
         onClick={handleToggle}
         className={cn(
-          'relative w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
+          'relative w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
           open
-            ? 'bg-[#2d1760] text-white font-semibold'
-            : 'text-[#b89fd4] hover:text-white hover:bg-white/5'
+            ? 'bg-cw-purple/10 text-cw-purple font-semibold'
+            : 'text-cw-muted hover:text-cw-text hover:bg-cw-elevated'
         )}
       >
-        <Bell className="h-[18px] w-[18px] shrink-0" />
+        <span className="h-7 w-7 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
+          <Bell className="h-4 w-4" />
+        </span>
         <span className="flex-1 text-left">Avisos</span>
         {unreadCount > 0 && (
           <span className="h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center leading-none">

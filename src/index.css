@@ -33,7 +33,8 @@
 }
 
 /* CW Sales Playbook — Design System
-   Light main area + dark sidebar. Paleta oficial Cardápio Web. */
+   Tudo em tema claro, incluindo a sidebar (remodelada em 26/08 pro estilo
+   cartão flutuante). Paleta oficial Cardápio Web. */
 
 @layer base {
   :root {
