@@ -43,11 +43,11 @@ export function NotificationBell() {
         className={cn(
           'relative w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
           open
-            ? 'bg-cw-purple/10 text-cw-purple font-semibold'
-            : 'text-cw-muted hover:text-cw-text hover:bg-cw-elevated'
+            ? 'bg-[#2d1760] text-white font-semibold'
+            : 'text-[#b89fd4] hover:text-white hover:bg-white/5'
         )}
       >
-        <span className="h-7 w-7 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
+        <span className="h-7 w-7 rounded-lg bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0">
           <Bell className="h-4 w-4" />
         </span>
         <span className="flex-1 text-left">Avisos</span>

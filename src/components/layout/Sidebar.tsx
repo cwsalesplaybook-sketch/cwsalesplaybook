@@ -1,4 +1,4 @@
-/** Sidebar — cartão claro flutuante, ícones em badge colorido, mascote no rodapé. */
+/** Sidebar — roxo escuro de sempre, com ícones em badge colorido, seta e mascote no rodapé. */
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
@@ -30,16 +30,16 @@ const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
 // Paleta de badges dos ícones — cicla por posição do item na nav, pra cada
 // linha ter uma cor própria (visual pedido pela Gabi: quadradinho colorido
-// atrás do ícone, como num app mobile).
+// atrás do ícone, como num app mobile). Tons ajustados pro fundo roxo escuro.
 const BADGE_COLORS = [
-  { bg: 'bg-pink-500/15',    text: 'text-pink-600'    },
-  { bg: 'bg-blue-500/15',    text: 'text-blue-600'    },
-  { bg: 'bg-cw-purple/15',   text: 'text-cw-purple'   },
-  { bg: 'bg-amber-500/15',   text: 'text-amber-600'   },
-  { bg: 'bg-emerald-500/15', text: 'text-emerald-600' },
-  { bg: 'bg-rose-500/15',    text: 'text-rose-600'    },
-  { bg: 'bg-indigo-500/15',  text: 'text-indigo-600'  },
-  { bg: 'bg-cyan-500/15',    text: 'text-cyan-600'    },
+  { bg: 'bg-pink-400/20',    text: 'text-pink-300'    },
+  { bg: 'bg-blue-400/20',    text: 'text-blue-300'    },
+  { bg: 'bg-fuchsia-400/20', text: 'text-fuchsia-300' },
+  { bg: 'bg-amber-400/20',   text: 'text-amber-300'   },
+  { bg: 'bg-emerald-400/20', text: 'text-emerald-300' },
+  { bg: 'bg-rose-400/20',    text: 'text-rose-300'    },
+  { bg: 'bg-indigo-400/20',  text: 'text-indigo-300'  },
+  { bg: 'bg-cyan-400/20',    text: 'text-cyan-300'    },
 ];
 const badgeColor = (idx: number) => BADGE_COLORS[idx % BADGE_COLORS.length];
 
@@ -174,10 +174,10 @@ export function Sidebar() {
           className={({ isActive }) => cn(
             'flex items-center gap-2.5 px-2 py-2 rounded-xl text-[13px] font-medium transition-all duration-150',
             locked
-              ? 'text-cw-muted/50 cursor-not-allowed pointer-events-none'
+              ? 'text-[#4a3560] cursor-not-allowed pointer-events-none'
               : isActive
-                ? 'bg-cw-purple/10 text-cw-purple font-semibold'
-                : 'text-cw-text/80 hover:bg-cw-elevated'
+                ? 'bg-[#2d1760] text-white font-semibold'
+                : 'text-[#b89fd4] hover:text-white hover:bg-white/5'
           )}
         >
           <button
@@ -186,7 +186,7 @@ export function Sidebar() {
             disabled={!navEditable}
             className={cn(
               'h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-transform',
-              locked ? 'bg-cw-elevated text-cw-muted/50' : cn(badge.bg, badge.text),
+              locked ? 'bg-white/5 text-[#4a3560]' : cn(badge.bg, badge.text),
               navEditable && 'cursor-pointer hover:scale-110',
             )}
           >
@@ -197,15 +197,15 @@ export function Sidebar() {
           {!navEditable && (
             fav
               ? <Star className="h-3.5 w-3.5 shrink-0 fill-current text-cw-yellow" />
-              : <ChevronRight className="h-3.5 w-3.5 shrink-0 text-cw-muted/40" />
+              : <ChevronRight className="h-3.5 w-3.5 shrink-0 text-white/20" />
           )}
         </NavLink>
 
         {navEditable && (
           <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover/nav:opacity-100 transition-opacity duration-150">
-            <button onClick={() => move(idx, -1)} disabled={idx === 0} className="h-4 w-4 rounded bg-cw-elevated border border-cw-border flex items-center justify-center disabled:opacity-30 hover:bg-cw-purple/10"><ArrowUp className="h-2.5 w-2.5" /></button>
-            <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="h-4 w-4 rounded bg-cw-elevated border border-cw-border flex items-center justify-center disabled:opacity-30 hover:bg-cw-purple/10"><ArrowDown className="h-2.5 w-2.5" /></button>
-            <button onClick={() => remove(idx)} className="h-4 w-4 rounded bg-red-100 border border-red-300 text-red-500 flex items-center justify-center hover:bg-red-200"><Trash2 className="h-2.5 w-2.5" /></button>
+            <button onClick={() => move(idx, -1)} disabled={idx === 0} className="h-4 w-4 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowUp className="h-2.5 w-2.5" /></button>
+            <button onClick={() => move(idx, 1)} disabled={idx === items.length - 1} className="h-4 w-4 rounded bg-[#2a0040] border border-[#3a1050] flex items-center justify-center disabled:opacity-30 hover:bg-white/10"><ArrowDown className="h-2.5 w-2.5" /></button>
+            <button onClick={() => remove(idx)} className="h-4 w-4 rounded bg-red-900/30 border border-red-500/30 text-red-400 flex items-center justify-center hover:bg-red-900/50"><Trash2 className="h-2.5 w-2.5" /></button>
           </div>
         )}
 
@@ -218,8 +218,8 @@ export function Sidebar() {
             className={cn(
               'absolute right-2 top-1/2 -translate-y-1/2 transition-opacity duration-150',
               fav
-                ? 'opacity-0 group-hover/nav:opacity-100 text-cw-red hover:text-cw-red'
-                : 'opacity-0 group-hover/nav:opacity-100 text-cw-muted hover:text-cw-yellow',
+                ? 'opacity-0 group-hover/nav:opacity-100 text-cw-yellow hover:text-cw-yellow'
+                : 'opacity-0 group-hover/nav:opacity-100 text-[#b89fd4] hover:text-cw-yellow',
             )}
           >
             <Star className={cn('h-3.5 w-3.5', fav && 'fill-current')} />
@@ -253,48 +253,51 @@ export function Sidebar() {
         <p className="text-white text-2xl font-black mt-1">Dashboard de {switchingLabel}</p>
       </div>
     )}
-    <aside className="w-[240px] shrink-0 flex flex-col h-screen sticky top-0 z-30 border-r border-cw-border bg-cw-bg overflow-hidden">
+    <aside
+      className="w-[240px] shrink-0 flex flex-col h-screen sticky top-0 z-30 border-r border-[#ffffff08] overflow-hidden"
+      style={{ background: 'linear-gradient(180deg, #1a0f2e 0%, #130a22 100%)' }}
+    >
       {/* ── Logo ── */}
       <div className="px-3 pt-4 pb-2">
-        <div className="cw-card px-3 py-2.5 flex items-center justify-center mb-2">
+        <div className="bg-white rounded-2xl px-3 py-2.5 flex items-center justify-center mb-2">
           <img
             src="https://cardapioweb.com/wp-content/uploads/2024/01/Logo-Cardapio-Web.png"
             alt="Cardápio Web"
             className="h-7 w-auto object-contain"
           />
         </div>
-        <p className="text-center text-[10px] text-cw-muted uppercase tracking-[0.2em] font-bold">
+        <p className="text-center text-[10px] text-[#7c5aa8] uppercase tracking-[0.2em] font-bold">
           Time e Comercial
         </p>
       </div>
 
       {/* ── Perfil ── */}
       <div className="px-3 pb-2">
-        <div className="cw-card flex items-center gap-2.5 px-3 py-2.5">
+        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[#1e1040] border border-[#ffffff08]">
           {userProfile.avatarUrl ? (
             <img
               src={userProfile.avatarUrl}
               alt={userProfile.fullName ?? ''}
-              className="h-9 w-9 rounded-full object-cover shrink-0 border border-cw-border"
+              className="h-9 w-9 rounded-full object-cover shrink-0 border border-white/10"
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="h-9 w-9 rounded-full bg-cw-purple/15 flex items-center justify-center text-[11px] font-black text-cw-purple shrink-0">
+            <div className="h-9 w-9 rounded-full bg-[#4a0080] flex items-center justify-center text-[11px] font-black text-white shrink-0">
               {userProfile.initials}
             </div>
           )}
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-[12px] font-bold text-cw-text truncate leading-tight">
+            <p className="text-[12px] font-semibold text-white truncate leading-tight">
               {apelido ?? userProfile.fullName ?? 'Usuário'}
             </p>
-            <p className="text-[10px] text-cw-muted truncate leading-tight">
+            <p className="text-[10px] text-[#7c5aa8] truncate leading-tight">
               {papel}{squad ? ` · Squad ${squad}` : ''}
             </p>
           </div>
           <button
             onClick={() => supabase.auth.signOut()}
             title="Sair"
-            className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-cw-muted hover:text-cw-red hover:bg-cw-red/10 transition-colors"
+            className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-[#b89fd4] hover:text-red-400 hover:bg-red-500/10 transition-colors"
           >
             <LogOut className="h-4 w-4" />
           </button>
@@ -342,7 +345,7 @@ export function Sidebar() {
             {/* Favoritos do colaborador */}
             {favItems.length > 0 && (
               <div>
-                <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-cw-muted flex items-center gap-1">
+                <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8] flex items-center gap-1">
                   <Star className="h-3 w-3 fill-current text-cw-yellow" /> Favoritos
                 </p>
                 <div className="space-y-0.5">
@@ -357,7 +360,7 @@ export function Sidebar() {
               if (sItems.length === 0) return null;
               return (
                 <div key={section.label}>
-                  <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-cw-muted">
+                  <p className="px-1 mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#7c5aa8]">
                     {section.label}
                   </p>
                   <div className="space-y-0.5">
@@ -382,8 +385,8 @@ export function Sidebar() {
             className={({ isActive }) => cn(
               'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all border',
               isActive
-                ? 'bg-amber-400/15 text-amber-600 border-amber-400/30'
-                : 'bg-amber-400/5 text-amber-600/80 hover:bg-amber-400/15 border-amber-400/15'
+                ? 'bg-amber-400/20 text-amber-300 border-amber-400/30'
+                : 'bg-amber-400/5 text-amber-400/80 hover:bg-amber-400/15 hover:text-amber-300 border-amber-400/15'
             )}
           >
             <ShieldCheck className="h-[18px] w-[18px] shrink-0" />
@@ -403,8 +406,8 @@ export function Sidebar() {
             className={({ isActive }) => cn(
               'w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all',
               isActive
-                ? 'text-cw-purple bg-cw-purple/10'
-                : 'text-cw-purple/70 hover:text-cw-purple hover:bg-cw-purple/5'
+                ? 'text-cw-purple-light bg-cw-purple/15'
+                : 'text-cw-purple-light/70 hover:text-cw-purple-light hover:bg-cw-purple/10'
             )}
           >
             <PartyPopper className="h-3 w-3 shrink-0" />
@@ -419,8 +422,8 @@ export function Sidebar() {
             className={({ isActive }) => cn(
               'w-full flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all',
               isActive
-                ? 'text-amber-600 bg-amber-400/10'
-                : 'text-amber-600/70 hover:text-amber-600 hover:bg-amber-400/5'
+                ? 'text-amber-300 bg-amber-400/10'
+                : 'text-amber-400/60 hover:text-amber-300 hover:bg-amber-400/5'
             )}
           >
             <Crown className="h-3 w-3 shrink-0" />
@@ -435,8 +438,8 @@ export function Sidebar() {
       {/* ── Rodapé decorativo: onda + mascote 3D ── */}
       <div className="relative h-36 mt-1 shrink-0 overflow-hidden">
         {/* Estrelinhas decorativas */}
-        <Sparkles className="absolute left-4 top-2 h-3 w-3 text-cw-purple/30" />
-        <Sparkles className="absolute left-9 top-7 h-2 w-2 text-cw-purple/20" />
+        <Sparkles className="absolute left-4 top-2 h-3 w-3 text-white/20" />
+        <Sparkles className="absolute left-9 top-7 h-2 w-2 text-white/10" />
 
         <svg
           viewBox="0 0 240 90" preserveAspectRatio="none"
