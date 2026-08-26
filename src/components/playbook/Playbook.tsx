@@ -28,7 +28,6 @@ import { toast } from '@/hooks/use-toast';
 import { useSidebarContext } from '@/context/SidebarContext';
 import PlaybookCloser from './PlaybookCloser';
 import PlaybookParcerias from './PlaybookParcerias';
-import PlaybookRepresentantes from './PlaybookRepresentantes';
 import TreinamentoConteudo from './TreinamentoConteudo';
 
 const SPIN_COLORS: Record<'purple' | 'red' | 'yellow' | 'green', string> = {
@@ -135,9 +134,8 @@ export default function Playbook() {
   const { papel } = useSidebarContext();
 
   // Redireciona para o playbook do setor ativo
-  if (papel === 'Closer')        return <PlaybookCloser />;
-  if (papel === 'Parcerias')     return <PlaybookParcerias />;
-  if (papel === 'Representante') return <PlaybookRepresentantes />;
+  if (papel === 'Closer')    return <PlaybookCloser />;
+  if (papel === 'Parcerias') return <PlaybookParcerias />;
 
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') ?? 'cultura';

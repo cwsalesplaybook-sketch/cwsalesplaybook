@@ -11,8 +11,7 @@
  *  - SDR e Liderança: sem prefixo (compatibilidade com overrides existentes).
  *  - Closer: prefixo "closer." → ex: "closer.playbook.tabs"
  *  - Parcerias: prefixo "parcerias."
- *  - Representante: prefixo "representante."
- *  - Isso garante 4 dashboards independentes num único app.
+ *  - Isso garante dashboards independentes num único app.
  */
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
@@ -225,7 +224,7 @@ export const useContentStore = create<ContentStore>()((set, get) => ({
 /**
  * Hook: devolve conteúdo específico do setor atual.
  * SDR e Liderança usam chaves sem prefixo (compatibilidade com overrides existentes).
- * Closer/Parcerias/Representante usam "closer.", "parcerias.", "representante." como prefixo.
+ * Closer/Parcerias usam "closer.", "parcerias." como prefixo.
  * Setores não-SDR sem override retornam string vazia ou array vazio (dashboard em branco).
  */
 export function useEditableContent<T>(key: string, defaultValue: T): T {

@@ -53,7 +53,6 @@ const PLANOS: Plano[] = [
       'Controle financeiro das vendas.',
       'Impressão automática para agilizar o atendimento.',
       'Gestão de usuários e clientes, com controle de acesso e cadastro.',
-      'Controle básico de insumos.',
       'Campos personalizados para adaptar o sistema à sua operação.',
     ],
     detalhes: [
@@ -69,9 +68,6 @@ const PLANOS: Plano[] = [
       ]},
       { titulo: 'Clientes e Usuários', itens: [
         'Gestão de usuários e clientes, com controle de acesso e cadastro.',
-      ]},
-      { titulo: 'Estoque', itens: [
-        'Controle básico de insumos.',
       ]},
       { titulo: 'Configuração', itens: [
         'Campos personalizados para adaptar o sistema à sua operação.',
@@ -111,7 +107,6 @@ const PLANOS: Plano[] = [
       'Campos personalizados para adaptar o sistema à sua operação.',
       'Impressão automática para agilizar o processo de produção e entrega.',
       'Gestão de usuários e clientes, com controle de acesso e cadastro.',
-      'Controle básico de insumos.',
       'Programa de pontos para clientes.',
       'Permissão para vendas a prazo.',
       'Recebimento de pedidos pagos pelo site.',
@@ -134,9 +129,6 @@ const PLANOS: Plano[] = [
       { titulo: 'Clientes e Fidelidade', itens: [
         'Gestão de usuários e clientes, com controle de acesso e cadastro.',
         'Programa de pontos para clientes.',
-      ]},
-      { titulo: 'Estoque', itens: [
-        'Controle básico de insumos.',
       ]},
       { titulo: 'Atendimento ao Cliente', itens: [
         'Integração com WhatsApp para atendimento e pedidos.',
@@ -174,7 +166,6 @@ const PLANOS: Plano[] = [
       'Campos personalizados para adaptar o sistema à sua operação.',
       'Impressão automática para agilizar o atendimento e entrega.',
       'Gestão de usuários e clientes, com controle de acesso e cadastro.',
-      'Controle básico de insumos.',
       'Programa de pontos para clientes (fidelidade).',
       'Permissão para vendas a prazo.',
       'Recebimento de pedidos pagos pelo site.',
@@ -198,9 +189,6 @@ const PLANOS: Plano[] = [
       { titulo: 'Clientes e Fidelidade', itens: [
         'Gestão de usuários e clientes, com controle de acesso e cadastro.',
         'Programa de pontos para clientes (fidelidade).',
-      ]},
-      { titulo: 'Estoque', itens: [
-        'Controle básico de insumos.',
       ]},
       { titulo: 'Atendimento ao Cliente', itens: [
         'Integração com WhatsApp para atendimento e pedidos.',

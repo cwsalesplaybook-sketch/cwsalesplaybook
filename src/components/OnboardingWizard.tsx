@@ -24,7 +24,6 @@ const SQUADS_SDR = ['Lobo', 'Águia', 'Serpentes'];
 
 /** Emails com permissão para selecionar Liderança + cargo específico */
 const EMAILS_LIDERANCA: Record<string, string> = {
-  'hyorranes.souza@cardapioweb.com':    'Liderança de Representantes',
   'antonio.anderson@cardapioweb.com':   'Liderança Comercial',
   'pedro.ferreira@cardapioweb.com':     'Liderança Comercial',
   'joelma.vieira@cardapioweb.com':      'Liderança Comercial',
@@ -37,16 +36,8 @@ const EMAILS_LIDERANCA: Record<string, string> = {
 const CARGOS_LIDERANCA = [
   'Liderança Comercial',
   'Liderança de Closer',
-  'Liderança de Representantes',
   'Coordenação Comercial',
   'Coordenação de Parcerias',
-];
-
-/** Frentes dentro do papel Representante — cada uma tem funis/metas próprios
- *  no Pipedrive (ver CARGO_CONFIG em src/config/repsCargo.ts). */
-const CARGOS_REPRESENTANTE = [
-  { valor: 'Aquisição de Canal', desc: 'Prospecta e recruta novos representantes pro canal' },
-  { valor: 'PSM',                desc: 'Ativa representantes já recrutados até o primeiro cliente' },
 ];
 
 /** CEOs: pulam a seleção de cargo/squad — entram direto como Liderança com acesso a todos os squads. */
@@ -59,7 +50,6 @@ const EMAILS_CEO = [
 const PAPEIS_INFO: Record<Papel, { desc: string; aviso?: string }> = {
   SDR:          { desc: 'Prospecção, qualificação e cadências de outbound' },
   Closer:       { desc: 'Negociação, fechamento e expansão de contas' },
-  Representante:{ desc: 'Atendimento e gestão de representantes externos', aviso: 'Escolha seu setor específico para que seu dashboard seja direcionado corretamente.' },
   Parcerias:    { desc: 'Gestão de canais e parcerias estratégicas', aviso: 'Escolha seu setor específico para que seu dashboard seja direcionado corretamente.' },
   Liderança:    { desc: 'Gestão, acompanhamento e desenvolvimento do time comercial' },
 };
@@ -82,8 +72,6 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
   const [squad, setSquad] = useState<string | null>(null);
   // cargo específico de liderança (ex: "Liderança Comercial")
   const [cargoLideranca, setCargoLideranca] = useState<string | null>(null);
-  // frente dentro de Representante (ex: "Aquisição de Canal" ou "PSM")
-  const [cargoRepresentante, setCargoRepresentante] = useState<string | null>(null);
   // squads que a liderança acompanha (ex: ['Tubarão'])
   const [squadsLideradas, setSquadsLideradas] = useState<string[]>([]);
   const [apelido, setApelido] = useState('');
@@ -94,9 +82,8 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
 
   const needsSquad     = papel === 'SDR';
   const needsSubCargo  = papel === 'Liderança';
-  const needsCargoRep  = papel === 'Representante';
-  // steps: 0=boas-vindas 1=cargo 2=squad/subcargo/frente 3=apelido
-  const totalSteps = (needsSquad || needsSubCargo || needsCargoRep) ? 4 : 3;
+  // steps: 0=boas-vindas 1=cargo 2=squad/subcargo 3=apelido
+  const totalSteps = (needsSquad || needsSubCargo) ? 4 : 3;
 
   const stepPosition = () => {
     if (step === 0) return 0;
@@ -108,13 +95,13 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
   const handleNext = () => {
     if (step === 0) setStep(1);
     else if (step === 1 && papel) {
-      if (needsSquad || needsSubCargo || needsCargoRep) setStep(2);
+      if (needsSquad || needsSubCargo) setStep(2);
       else setStep(3);
     } else if (step === 2) setStep(3);
   };
 
   const handleBack = () => {
-    if (step === 3 && !needsSquad && !needsSubCargo && !needsCargoRep) setStep(1);
+    if (step === 3 && !needsSquad && !needsSubCargo) setStep(1);
     else if (step > 0) setStep(prev => prev - 1);
   };
 
@@ -123,7 +110,6 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
     if (step === 1) return papel !== null;
     if (step === 2) {
       if (needsSubCargo) return cargoLideranca !== null && squadsLideradas.length > 0;
-      if (needsCargoRep) return cargoRepresentante !== null;
       return squad !== null;
     }
     return true;
@@ -135,21 +121,13 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
     const name = apelido.trim() || null;
 
     const squadsLed = papel === 'Liderança' ? squadsLideradas : [];
-    // Liderança de Representantes não tem "sabor" próprio de Liderança no app —
-    // cai sempre no dashboard/editor de Representantes, mantendo cargo e squads
-    // liderados para fins de identificação (ex: Promoções).
-    const papelFinal: Papel =
-      papel === 'Liderança' && cargoLideranca === 'Liderança de Representantes'
-        ? 'Representante'
-        : papel;
 
     // 1. Atualiza metadados do auth (visão do sidebar)
     const { error, data: authData } = await supabase.auth.updateUser({
       data: {
-        papel: papelFinal,
+        papel,
         squad: papel === 'SDR' ? squad : null,
         cargo_lideranca: papel === 'Liderança' ? cargoLideranca : null,
-        cargo_representante: needsCargoRep ? cargoRepresentante : null,
         squads_lideradas: squadsLed,
         apelido: name,
         onboarding_done: true,
@@ -165,17 +143,16 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
         user_id: uid,
         email,
         apelido: name,
-        papel: papelFinal,
+        papel,
         squad: papel === 'SDR' ? squad : null,
         squads_lideradas: squadsLed,
         cargo_lideranca: papel === 'Liderança' ? cargoLideranca : null,
-        cargo_representante: needsCargoRep ? cargoRepresentante : null,
         onboarding_done: true,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
     }
 
-    localStorage.setItem('cw-papel', papelFinal);
+    localStorage.setItem('cw-papel', papel);
     onComplete();
   };
 
@@ -301,7 +278,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
               </div>
 
               <div className="grid grid-cols-1 gap-2.5">
-                {((['SDR', 'Closer', 'Representante', 'Parcerias'] as Papel[]).concat(
+                {((['SDR', 'Closer', 'Parcerias'] as Papel[]).concat(
                   podeEscolherLideranca ? ['Liderança' as Papel] : []
                 )).map(p => {
                   const info = PAPEIS_INFO[p];
@@ -328,7 +305,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
                           </div>
                         )}
                       </div>
-                      {/* Aviso para Representante e Parcerias */}
+                      {/* Aviso para Parcerias */}
                       {selected && info.aviso && (
                         <div className="mt-2.5 flex items-start gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
                           <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
@@ -412,45 +389,6 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
                     );
                   })}
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Step 2c: Frente (Representante) ── */}
-          {step === 2 && needsCargoRep && (
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-black text-cw-text mb-1">Qual sua frente dentro de Representantes?</h2>
-                <p className="text-sm text-cw-muted">
-                  Cada frente acompanha funis e metas diferentes no Pipedrive.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-2.5">
-                {CARGOS_REPRESENTANTE.map(c => (
-                  <button
-                    key={c.valor}
-                    onClick={() => setCargoRepresentante(c.valor)}
-                    className={cn(
-                      'w-full p-4 rounded-xl border-2 text-left transition-all duration-150',
-                      cargoRepresentante === c.valor
-                        ? 'border-cw-purple bg-cw-purple/10'
-                        : 'border-cw-border bg-cw-elevated hover:border-cw-purple/40'
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-[15px] font-black text-cw-text">{c.valor}</span>
-                        <p className="text-[11px] text-cw-muted leading-snug mt-0.5">{c.desc}</p>
-                      </div>
-                      {cargoRepresentante === c.valor && (
-                        <div className="h-5 w-5 rounded-full gradient-primary flex items-center justify-center shrink-0 ml-3">
-                          <Check className="h-3 w-3 text-white" />
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                ))}
               </div>
             </div>
           )}
@@ -543,14 +481,6 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
                     <Check className="h-3.5 w-3.5 text-cw-purple shrink-0" />
                     <p className="text-[12px] text-cw-muted">
                       Squads que lidera: <span className="font-bold text-cw-text">{squadsLideradas.join(', ')}</span>
-                    </p>
-                  </div>
-                )}
-                {cargoRepresentante && (
-                  <div className="flex items-center gap-2">
-                    <Check className="h-3.5 w-3.5 text-cw-purple shrink-0" />
-                    <p className="text-[12px] text-cw-muted">
-                      Frente: <span className="font-bold text-cw-text">{cargoRepresentante}</span>
                     </p>
                   </div>
                 )}

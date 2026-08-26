@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Users, Handshake, UserCheck, TrendingUp, Plus } from 'lucide-react';
+import { BookOpen, Users, Handshake, TrendingUp, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Playbook {
@@ -15,7 +15,6 @@ const PLAYBOOKS: Playbook[] = [
   { id: 'sdr',            nome: 'SDR',             descricao: 'Prospecção, qualificação e agendamento de reuniões.',     conteudos: 23, Icon: BookOpen,   cor: 'text-purple-400 bg-purple-500/15' },
   { id: 'closer',         nome: 'Closer',           descricao: 'Condução de reuniões e fechamento de vendas.',            conteudos: 28, Icon: TrendingUp, cor: 'text-blue-400 bg-blue-500/15'   },
   { id: 'parceiros',      nome: 'Parceiros',        descricao: 'Processos e materiais para parcerias estratégicas.',      conteudos: 18, Icon: Handshake,  cor: 'text-orange-400 bg-orange-500/15'},
-  { id: 'representantes', nome: 'Representantes',   descricao: 'Gestão de contas e relacionamento.',                      conteudos: 16, Icon: UserCheck,  cor: 'text-pink-400 bg-pink-500/15'   },
   { id: 'lideranca',      nome: 'Liderança',        descricao: 'Gestão de times, processos e performance.',               conteudos: 31, Icon: Users,      cor: 'text-emerald-400 bg-emerald-500/15'},
 ];
 

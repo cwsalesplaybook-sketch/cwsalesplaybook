@@ -82,44 +82,11 @@ const CLOSER_SECTIONS = [
   { label: 'Cultura e Time',    routes: ['/historias'] },
 ];
 
-/** Dashboard de REPS (Representantes): navegação própria — espelha o portal
- *  real do canal (cw-playbook-reps.vercel.app). Pipeline e Meta do Mês ainda
- *  não têm integração pronta para reps (mesmo estado "em construção" de lá). */
-const NAV_REPS: NavItem[] = [
-  { to: '/start',           label: 'Comece Aqui',       icon: 'Sparkles',  end: false },
-  { to: '/meta',            label: 'Meta do Mês',       icon: 'Target',    end: false },
-  { to: '/reps/reunioes',   label: 'Reuniões',          icon: 'Video',     end: false },
-  { to: '/reps/agenda',     label: 'Agenda de Reuniões',icon: 'CalendarClock', end: false },
-  { to: '/comunidade',      label: 'Comunidade',        icon: 'Users',     end: false },
-  { to: '/onboarding',      label: 'Onboarding',        icon: 'MapIcon',   end: false },
-  { to: '/playbook',        label: 'Playbook',          icon: 'BookOpen',  end: false },
-  { to: '/pipeline',        label: 'Pipeline',          icon: 'BarChart2', end: false },
-  // Clonadas do SDR — mesmo conteúdo inicial, editáveis de forma independente depois.
-  { to: '/reps/templates',  label: 'Templates',         icon: 'FileText',  end: false },
-  { to: '/reps/automacoes', label: 'Automações',        icon: 'Zap',       end: false },
-  { to: '/reps/planos',     label: 'Planos e Módulos',  icon: 'Package',   end: false },
-  { to: '/reps/cw-store',   label: 'CW Store',          icon: 'Store',     end: false },
-  { to: '/reps/faq',        label: 'FAQ',               icon: 'HelpCircle',end: false },
-  { to: '/reps/biblioteca', label: 'Biblioteca',        icon: 'Library',   end: false },
-  { to: '/historias',       label: 'Histórias de Sucesso', icon: 'Trophy', end: false },
-  { to: '/ajuda',           label: 'Central de Ajuda',  icon: 'HelpCircle', end: false },
-];
-
-const REPS_SECTIONS = [
-  {
-    label: 'Comercial',
-    routes: ['/meta', '/reps/reunioes', '/reps/agenda', '/onboarding', '/playbook', '/pipeline', '/reps/templates', '/reps/automacoes', '/reps/planos', '/reps/cw-store', '/reps/faq'],
-  },
-  { label: 'Cultura e Time', routes: ['/reps/biblioteca', '/historias'] },
-  { label: 'Equipe',         routes: ['/comunidade'] },
-];
-
 /** Seletor de playbooks — cada opção troca o papel inteiro do app */
 const PLAYBOOK_OPTIONS: { label: string; papel: Papel; icon: LucideIcon; short: string }[] = [
   { label: 'SDR',            papel: 'SDR',          icon: Zap,     short: 'SDR'   },
   { label: 'Closer',         papel: 'Closer',       icon: Target,  short: 'Closer'},
   { label: 'Parcerias',      papel: 'Parcerias',    icon: Users,   short: 'Parc.' },
-  { label: 'Representantes', papel: 'Representante',icon: MapIcon, short: 'Rep.'  },
 ];
 
 const STORE_KEY = 'sidebar.nav';
@@ -131,13 +98,12 @@ export function Sidebar() {
   const { isFav, toggle: toggleFav } = useNavFavorites(userProfile.email ?? '');
   const navigate = useNavigate();
   const isCloser = papel === 'Closer';
-  const isReps = papel === 'Representante';
   const rawItems = useGlobalEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
-  // Closer e REPS têm navegação própria, hardcoded (não passa pelo override global).
-  const items = isCloser ? NAV_CLOSER : isReps ? NAV_REPS : rawItems.filter(i => i.to !== '/mural');
-  const sections = isCloser ? CLOSER_SECTIONS : isReps ? REPS_SECTIONS : SECTIONS;
-  // Edição de nav só vale para o nav global (SDR/Liderança), não para Closer/REPS.
-  const navEditable = isEditing && !isCloser && !isReps;
+  // Closer tem navegação própria, hardcoded (não passa pelo override global).
+  const items = isCloser ? NAV_CLOSER : rawItems.filter(i => i.to !== '/mural');
+  const sections = isCloser ? CLOSER_SECTIONS : SECTIONS;
+  // Edição de nav só vale para o nav global (SDR/Liderança), não para Closer.
+  const navEditable = isEditing && !isCloser;
   const saveGlobalOverride = useContentStore((s) => s.saveGlobalOverride);
 
   const update = async (next: NavItem[]) => {

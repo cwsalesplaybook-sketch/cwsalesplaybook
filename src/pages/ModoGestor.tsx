@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Crown, ShieldCheck, Target, BarChart2, LayoutDashboard, Zap, Users, Loader2, Eye, Pencil, X, MapIcon } from 'lucide-react';
+import { Crown, ShieldCheck, Target, BarChart2, LayoutDashboard, Zap, Users, Loader2, Eye, Pencil, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useSidebarContext, type Papel, type ImpersonationTarget } from '@/context/SidebarContext';
@@ -10,7 +10,6 @@ import { supabase } from '@/integrations/supabase/client';
 const PLAYBOOKS = [
   { label: 'SDR',    papel: 'SDR' as Papel,          icon: Zap,     desc: 'Prospecção, qualificação e agendamento de reuniões.' },
   { label: 'Closer', papel: 'Closer' as Papel,       icon: Target,  desc: 'Condução de reuniões e fechamento de vendas.' },
-  { label: 'REPS',   papel: 'Representante' as Papel,icon: MapIcon, desc: 'Atendimento, território e gestão de contas externas.' },
 ];
 
 const FERRAMENTAS = [

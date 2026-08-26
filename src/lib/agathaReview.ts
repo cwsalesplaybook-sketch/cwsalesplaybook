@@ -58,10 +58,6 @@ export const REVIEW_TARGETS: ReviewTarget[] = [
   // Parcerias
   { papel: 'Parcerias', route: '/', label: 'Parcerias · Dashboard' },
   { papel: 'Parcerias', route: '/playbook/parcerias', label: 'Parcerias · Playbook' },
-
-  // Representante
-  { papel: 'Representante', route: '/', label: 'Representante · Dashboard' },
-  { papel: 'Representante', route: '/playbook/representantes', label: 'Representante · Playbook' },
 ];
 
 const READY_TIMEOUT_MS = 9000;

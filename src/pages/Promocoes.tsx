@@ -14,7 +14,7 @@ interface Membro {
   promoPapel: string | null;
 }
 
-const PAPEIS: Papel[] = ['SDR', 'Closer', 'Representante', 'Parcerias', 'Liderança'];
+const PAPEIS: Papel[] = ['SDR', 'Closer', 'Parcerias', 'Liderança'];
 
 function PromoverModal({ membro, onConfirm, onClose }: {
   membro: Membro; onConfirm: (novoPapel: Papel) => void; onClose: () => void;

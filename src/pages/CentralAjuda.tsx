@@ -1,5 +1,5 @@
 /** Central de Ajuda — documentação oficial da CW embutida via iframe.
- *  Disponível em todos os dashboards (SDR, Closer, Parcerias, Representante).
+ *  Disponível em todos os dashboards (SDR, Closer, Parcerias).
  *  O site (ajuda.cardapioweb.com / GitBook) permite framing
  *  (CSP: frame-ancestors https:), então renderiza embutido. Mantemos o
  *  "abrir em nova aba" como fallback. */

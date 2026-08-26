@@ -23,18 +23,14 @@ import Dashboard from '@/components/dashboard/Dashboard';
 import Agenda from '@/components/agenda/Agenda';
 import Cultura from '@/components/cultura/Cultura';
 import Onboarding from '@/components/onboarding/Onboarding';
-import OnboardingReps from '@/components/onboarding/OnboardingReps';
 import Carreira from '@/components/carreira/Carreira';
 import Berserker from '@/components/berserker/Berserker';
 import Playbook from '@/components/playbook/Playbook';
 import PlaybookCloser from '@/components/playbook/PlaybookCloser';
 import PlaybookParcerias from '@/components/playbook/PlaybookParcerias';
-import PlaybookRepresentantes from '@/components/playbook/PlaybookRepresentantes';
 import Pipeline from '@/components/pipeline/Pipeline';
-import PipelineReps from '@/components/pipeline/PipelineReps';
 import Gestao from '@/components/gestao/Gestao';
 import MetaMes from '@/components/meta/MetaMes';
-import MetaMesReps from '@/components/meta/MetaMesReps';
 import Promocoes from '@/pages/Promocoes';
 import Kanban from '@/pages/Kanban';
 import Start from '@/pages/Start';
@@ -54,14 +50,6 @@ import CloserDashboard from '@/pages/closer/Dashboard';
 import CloserTemplates from '@/pages/closer/Templates';
 import SdrTemplates from '@/pages/sdr/Templates';
 import Roleplay from '@/pages/sdr/Roleplay';
-import RepsTemplates from '@/pages/reps/Templates';
-import RepsAutomacoes from '@/pages/reps/Automacoes';
-import RepsPlanos from '@/pages/reps/Planos';
-import RepsCwStore from '@/pages/reps/CwStore';
-import RepsFaq from '@/pages/reps/Faq';
-import RepsBiblioteca from '@/pages/reps/Biblioteca';
-import RepsReunioes from '@/pages/reps/Reunioes';
-import RepsAgenda from '@/pages/reps/AgendaReunioes';
 import CloserDescontos from '@/pages/closer/Descontos';
 import CloserMetas from '@/pages/closer/Metas';
 import CloserProcesso from '@/pages/closer/Processo';
@@ -159,27 +147,19 @@ function LoginRedirectHandler() {
 function HomeRoute() {
   const { papel } = useSidebarContext();
   if (papel === 'Closer') return <Navigate to="/closer/dashboard" replace />;
-  if (papel === 'Representante') return <Navigate to="/start" replace />;
   return <Dashboard />;
 }
 
-/** Onboarding, Pipeline e Meta do Mês de Representante ainda não têm
- *  integração pronta (mesmo estado do portal real de reps) — mostram
- *  versões próprias em vez do fluxo completo do SDR. */
 function OnboardingRoute() {
-  const { papel } = useSidebarContext();
-  return papel === 'Representante' ? <OnboardingReps /> : <Onboarding />;
+  return <Onboarding />;
 }
 
 function PipelineRoute() {
-  const { papel } = useSidebarContext();
-  if (papel === 'Representante') return <PipelineReps />;
   return <ForcePapel papel="SDR"><Pipeline /></ForcePapel>;
 }
 
 function MetaRoute() {
-  const { papel } = useSidebarContext();
-  return papel === 'Representante' ? <MetaMesReps /> : <MetaMes />;
+  return <MetaMes />;
 }
 
 function AnimatedRoutes() {
@@ -202,21 +182,10 @@ function AnimatedRoutes() {
           <Route path="/playbook" element={<Playbook />} />
           <Route path="/sdr/templates" element={<SdrTemplates />} />
           <Route path="/sdr/roleplay" element={<Roleplay />} />
-          {/* Abas clonadas do SDR pro dashboard de Representantes — mesmo
-              conteúdo inicial, independentes pra edição futura. */}
-          <Route path="/reps/templates" element={<RepsTemplates />} />
-          <Route path="/reps/automacoes" element={<RepsAutomacoes />} />
-          <Route path="/reps/planos" element={<RepsPlanos />} />
-          <Route path="/reps/cw-store" element={<RepsCwStore />} />
-          <Route path="/reps/faq" element={<RepsFaq />} />
-          <Route path="/reps/biblioteca" element={<RepsBiblioteca />} />
-          <Route path="/reps/reunioes" element={<RepsReunioes />} />
-          <Route path="/reps/agenda" element={<RepsAgenda />} />
           {/* Tira-dúvidas saiu da nav, virou Roleplay — redireciona link antigo. */}
           <Route path="/sdr/tira-duvidas" element={<Navigate to="/sdr/roleplay" replace />} />
           <Route path="/playbook/closer" element={<PlaybookCloser />} />
           <Route path="/playbook/parcerias" element={<PlaybookParcerias />} />
-          <Route path="/playbook/representantes" element={<PlaybookRepresentantes />} />
           {/* Seções do dashboard de Closer */}
           <Route path="/closer/dashboard" element={<CloserDashboard />} />
           <Route path="/closer/planos" element={<CloserPlanos />} />
