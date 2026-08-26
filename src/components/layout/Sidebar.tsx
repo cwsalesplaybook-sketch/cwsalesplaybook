@@ -28,23 +28,6 @@ const ICON_MAP = {
 } as const satisfies Record<string, LucideIcon>;
 const ICON_KEYS = Object.keys(ICON_MAP) as (keyof typeof ICON_MAP)[];
 
-// Paleta de badges dos ícones — cicla por posição do item na nav, pra cada
-// linha ter uma cor própria (visual pedido pela Gabi: quadradinho colorido
-// atrás do ícone, como num app mobile). Cor sólida + ícone branco: no fundo
-// roxo escuro, badge translúcido com ícone claro ficava tudo esmaecido/sem
-// contraste (feedback da Gabi), então aqui é cor cheia de verdade.
-const BADGE_COLORS = [
-  { bg: 'bg-pink-500',    text: 'text-white' },
-  { bg: 'bg-blue-500',    text: 'text-white' },
-  { bg: 'bg-fuchsia-500', text: 'text-white' },
-  { bg: 'bg-amber-500',   text: 'text-white' },
-  { bg: 'bg-emerald-500', text: 'text-white' },
-  { bg: 'bg-rose-500',    text: 'text-white' },
-  { bg: 'bg-indigo-500',  text: 'text-white' },
-  { bg: 'bg-cyan-500',    text: 'text-white' },
-];
-const badgeColor = (idx: number) => BADGE_COLORS[idx % BADGE_COLORS.length];
-
 // Grupo "Comercial": Meta do Mês e Playbook são os favoritos, ficam fixos no
 // topo; o resto segue ordenado do nome mais curto pro mais longo, com CW Store
 // e FAQ deslocados pro fim (depois de Planos e Módulos) a pedido da Gabi.
@@ -173,7 +156,6 @@ export function Sidebar() {
   const NavItemEl = ({ item }: { item: NavItem }) => {
     const idx = items.indexOf(item);
     const Icon = ICON_MAP[item.icon] ?? Sparkles;
-    const badge = badgeColor(idx);
     // Gestores em modo edição não ficam bloqueados pelo onboarding
     const locked = onboardingActive && item.to !== '/start' && !isEditing;
     const fav = isFav(item.to);
@@ -196,13 +178,9 @@ export function Sidebar() {
             type="button"
             onClick={navEditable ? e => { e.preventDefault(); e.stopPropagation(); cycleIcon(idx); } : undefined}
             disabled={!navEditable}
-            className={cn(
-              'h-8 w-8 rounded-lg flex items-center justify-center shrink-0 transition-transform',
-              locked ? 'bg-white/5 text-[#4a3560]' : cn(badge.bg, badge.text),
-              navEditable && 'cursor-pointer hover:scale-110',
-            )}
+            className={cn('shrink-0', navEditable && 'cursor-pointer hover:scale-110')}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-[18px] w-[18px]" />
           </button>
           <span className="flex-1 truncate">{item.label}</span>
 
