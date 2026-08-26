@@ -15,7 +15,6 @@ import { useSidebarContext, type Papel } from '@/context/SidebarContext';
 import { useEditor } from '@/admin/EditorContext';
 import { useContentStore, useGlobalEditableContent } from '@/store/contentStore';
 import { toast } from '@/hooks/use-toast';
-import { NotificationBell } from '@/components/layout/NotificationBell';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useNavFavorites } from '@/hooks/useNavFavorites';
 import { supabase } from '@/integrations/supabase/client';
@@ -429,9 +428,6 @@ export function Sidebar() {
             <span>Modo Gestor</span>
           </NavLink>
         )}
-
-        {/* Sino de notificações */}
-        <NotificationBell />
       </div>
 
       {/* ── Rodapé decorativo: onda + mascote 3D ── */}
