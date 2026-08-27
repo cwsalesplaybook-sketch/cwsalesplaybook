@@ -27,8 +27,8 @@ const DESTINOS_SDR: Destino[] = [
   {
     id: 'calculadora',
     tags: ['calculadora', 'calcular', 'calcula', 'proposta', 'simular', 'simulação'],
-    label: 'Calculadora',
-    descricao: 'Monte e compare propostas de planos',
+    label: 'Calculadora de Proposta',
+    descricao: 'Monte a proposta comercial e copie o texto',
     path: '/calculadora',
     cor: 'bg-cw-purple/20 text-cw-purple-light border-cw-purple/30',
   },
