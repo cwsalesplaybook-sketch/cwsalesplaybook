@@ -310,6 +310,14 @@ export default function Calculadora() {
   const selectedModules = MODULES.filter(m => active.modules[m.id]);
   const totemQty = active.selfModules['totem'] || 0;
 
+  // Linhas do cliente que aparecem na proposta (só as preenchidas).
+  const clientLines = [
+    [client.contato, client.empresa].filter(Boolean).join(' · '),
+    client.documento,
+    [client.email, client.telefone].filter(Boolean).join(' · '),
+    [client.endereco, [client.cidade, client.uf].filter(Boolean).join('/')].filter(Boolean).join(' — '),
+  ].filter(Boolean);
+
   return (
     <div className="p-8 space-y-4 h-full flex flex-col">
       {/* Barra de ações — lojas */}
@@ -529,6 +537,17 @@ export default function Calculadora() {
               </div>
               <p className="text-[11px] text-cw-muted whitespace-nowrap">{hoje}</p>
             </div>
+
+            {/* Dados do cliente */}
+            {clientLines.length > 0 && (
+              <div className="mt-4 rounded-xl bg-cw-elevated border border-cw-border px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-cw-muted mb-1">Cliente</p>
+                <p className="text-sm font-bold text-cw-text">{clientLines[0]}</p>
+                {clientLines.slice(1).map(l => (
+                  <p key={l} className="text-[12px] text-cw-muted">{l}</p>
+                ))}
+              </div>
+            )}
 
             {/* Solução proposta */}
             <p className="text-[10px] font-bold uppercase tracking-widest text-cw-muted mt-4 mb-2">Solução proposta</p>
