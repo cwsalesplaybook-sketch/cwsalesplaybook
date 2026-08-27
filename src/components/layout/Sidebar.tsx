@@ -40,7 +40,7 @@ const NAV_PADRAO: NavItem[] = [
   { to: '/sdr/roleplay', label: 'Roleplay',               icon: 'Drama',          end: false },
   { to: '/changelog',  label: 'Changelog',               icon: 'Zap',            end: false },
   { to: '/automacoes',  label: 'Automações',             icon: 'Zap',             end: false },
-  { to: '/calculadora',label: 'Calculadora de Proposta',  icon: 'Calculator',     end: false },
+  { to: '/calculadora',label: 'Calculadora',             icon: 'Calculator',     end: false },
   { to: '/planos',     label: 'Planos e Módulos',        icon: 'Package',        end: false },
   { to: '/cw-store',   label: 'CW Store',                icon: 'Store',          end: false },
   { to: '/faq',        label: 'FAQ',                     icon: 'HelpCircle',     end: false },

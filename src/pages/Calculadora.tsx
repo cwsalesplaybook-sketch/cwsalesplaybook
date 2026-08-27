@@ -33,7 +33,6 @@ const PLANOS: Record<PlanType, Record<Period, { t: number; m: number }>> = {
   },
 };
 
-const PLAN_SUB: Record<PlanType, string> = { Mesas: 'Plano A', Delivery: 'Plano B', Premium: 'Plano A+B' };
 const PLAN_OPTIONS: PlanType[] = ['Mesas', 'Delivery', 'Premium'];
 
 const MODULES = [
@@ -212,8 +211,8 @@ function buildProposta(
   for (const { s, c } of calcs) {
     out.push('');
     if (multi) out.push(`🏪 *${s.name}* — Plano ${s.planType} · ${s.period}`);
-    else out.push(`*Plano ${s.planType} (${PLAN_SUB[s.planType]}) · ${s.period}*`);
-    out.push(`• Plano ${s.planType} (${PLAN_SUB[s.planType]}): ${BRL(c.planMonthly)}/mês`);
+    else out.push(`*Plano ${s.planType} · ${s.period}*`);
+    out.push(`• Plano ${s.planType}: ${BRL(c.planMonthly)}/mês`);
     MODULES.filter(m => s.modules[m.id]).forEach(m => out.push(`• ${m.name}: ${BRL(m.val)}/mês`));
     SELF_MODULES.forEach(m => {
       const q = s.selfModules[m.id] || 0;
@@ -421,10 +420,7 @@ export default function Calculadora() {
                     <span className={cn('h-4 w-4 rounded-full border-2 shrink-0 flex items-center justify-center', sel ? 'border-cw-purple' : 'border-cw-border')}>
                       {sel && <span className="h-2 w-2 rounded-full bg-cw-purple" />}
                     </span>
-                    <span className="flex-1">
-                      <span className={cn('block text-sm font-bold', sel ? 'text-cw-text' : 'text-cw-muted')}>Plano {p}</span>
-                      <span className="block text-[11px] text-cw-muted">{PLAN_SUB[p]}</span>
-                    </span>
+                    <span className={cn('flex-1 text-sm font-bold', sel ? 'text-cw-text' : 'text-cw-muted')}>Plano {p}</span>
                     <span className={cn('text-sm font-bold shrink-0', sel ? 'text-[#5b21b6]' : 'text-cw-muted')}>{BRL(monthly)}/mês</span>
                   </button>
                 );
@@ -538,7 +534,7 @@ export default function Calculadora() {
             <p className="text-[10px] font-bold uppercase tracking-widest text-cw-muted mt-4 mb-2">Solução proposta</p>
             <div className="space-y-0">
               <div className="flex items-center justify-between py-2 border-b border-cw-border">
-                <span className="text-sm text-cw-text">Plano {active.planType} ({PLAN_SUB[active.planType]})</span>
+                <span className="text-sm text-cw-text">Plano {active.planType}</span>
                 <span className="text-sm font-bold text-[#5b21b6]">{BRL(ac.planMonthly)}/mês</span>
               </div>
               {selectedModules.map(m => (
