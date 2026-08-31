@@ -1,7 +1,6 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, LayoutGrid, Pencil, AlertTriangle } from 'lucide-react';
+import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, Pencil, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
@@ -211,7 +210,6 @@ function ConfigModal({ metaData, nomeDetectado, vinculoConfirmado, sdrOptions, s
 }
 
 function PersonalMetaView() {
-  const navigate = useNavigate();
   const { options: sdrOptions, map: sdrMap } = useSdrOptions();
   const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, sdrId: '', diasUteis: null });
   const [apiData, setApiData]     = useState<ApiData | null>(null);
@@ -459,10 +457,6 @@ function PersonalMetaView() {
               )}>
                 {status === 'no-ritmo' ? '↗ No Ritmo' : '↘ Atrasado'}
               </span>
-              <button onClick={() => navigate('/kanban')} title="Kanban de reuniões"
-                className="h-7 w-7 rounded-lg bg-white/60 border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-all">
-                <LayoutGrid className="h-3.5 w-3.5" />
-              </button>
               <button onClick={() => setConfig(true)} title="Configurar metas"
                 className="h-7 w-7 rounded-lg bg-white/60 border border-cw-border text-cw-muted hover:text-cw-purple hover:border-cw-purple/40 flex items-center justify-center transition-all">
                 <Settings className="h-3.5 w-3.5" />

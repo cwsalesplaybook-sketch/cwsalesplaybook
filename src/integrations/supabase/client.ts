@@ -8,9 +8,47 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// "Lembrar de mim": quando ligado (padrão), a sessão vai pro localStorage e
+// sobrevive ao fechar o navegador. Quando desligado, vai só pro sessionStorage
+// e some quando a aba/navegador fecha. A tela de login grava esse flag antes
+// de autenticar (ver src/pages/Login.tsx).
+export const REMEMBER_KEY = 'cw.auth.remember';
+
+const rememberStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key) ?? sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      const lembrar = localStorage.getItem(REMEMBER_KEY) !== 'false'; // default: lembra
+      if (lembrar) {
+        localStorage.setItem(key, value);
+        sessionStorage.removeItem(key);
+      } else {
+        sessionStorage.setItem(key, value);
+        localStorage.removeItem(key);
+      }
+    } catch {
+      /* ignore */
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
+  },
+};
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: rememberStorage,
     persistSession: true,
     autoRefreshToken: true,
   }

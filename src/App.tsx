@@ -19,6 +19,7 @@ import { SquadReassignGate } from '@/components/SquadReassignGate';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
 import Login from '@/pages/Login';
+import TrocarSenha from '@/pages/TrocarSenha';
 import Dashboard from '@/components/dashboard/Dashboard';
 import Agenda from '@/components/agenda/Agenda';
 import Cultura from '@/components/cultura/Cultura';
@@ -32,7 +33,6 @@ import Pipeline from '@/components/pipeline/Pipeline';
 import Gestao from '@/components/gestao/Gestao';
 import MetaMes from '@/components/meta/MetaMes';
 import Promocoes from '@/pages/Promocoes';
-import Kanban from '@/pages/Kanban';
 import Start from '@/pages/Start';
 import BadgesPage from '@/pages/Badges';
 import FaqPage from '@/pages/Faq';
@@ -209,12 +209,12 @@ function AnimatedRoutes() {
           <Route path="/gestao" element={<Gestao />} />
           <Route path="/berserker" element={<Berserker />} />
           <Route path="/meta" element={<MetaRoute />} />
-          <Route path="/kanban" element={<Kanban />} />
           <Route path="/promocoes" element={<Promocoes />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/ajuda" element={<CentralAjuda />} />
           <Route path="/mural" element={<MuralPage />} />
           <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="/trocar-senha" element={<TrocarSenha />} />
           <Route path="/calculadora" element={<Calculadora />} />
           <Route path="/planos" element={<Planos />} />
           <Route path="/cw-store" element={<CwStore />} />

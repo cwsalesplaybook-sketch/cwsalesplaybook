@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, REMEMBER_KEY } from '@/integrations/supabase/client';
 
 /* ─── Decorative background ─── */
 function Background() {
@@ -79,18 +79,6 @@ function Background() {
   );
 }
 
-/* ─── Google SVG icon ─── */
-function GoogleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" xmlns="http://www.w3.org/2000/svg">
-      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-    </svg>
-  );
-}
-
 const FEATURES = [
   {
     label: 'Cardápio\nDigital',
@@ -123,60 +111,134 @@ const FEATURES = [
   },
 ];
 
+const DOMINIO = '@cardapioweb.com';
+type Modo = 'login' | 'signup' | 'forgot';
+
+// Guarda o último e-mail usado nesta máquina pra pré-preencher o campo.
+// A sessão em si já fica salva (supabase client: persistSession + localStorage).
+const EMAIL_KEY = 'cw.login.email';
+const lerEmailSalvo = () => { try { return localStorage.getItem(EMAIL_KEY) ?? ''; } catch { return ''; } };
+const salvarEmail = (e: string) => { try { localStorage.setItem(EMAIL_KEY, e); } catch { /* ignore */ } };
+const lerLembrar = () => { try { return localStorage.getItem(REMEMBER_KEY) !== 'false'; } catch { return true; } };
+const salvarLembrar = (v: boolean) => { try { localStorage.setItem(REMEMBER_KEY, String(v)); } catch { /* ignore */ } };
+
+const inputCls =
+  'w-full rounded-xl px-4 py-[13px] text-[14px] text-white placeholder-white/35 outline-none transition-all';
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(168,85,247,0.25)',
+};
+
 export default function Login() {
+  const [modo, setModo] = useState<Modo>('login');
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState(lerEmailSalvo);
+  const [senha, setSenha] = useState('');
+  const [senha2, setSenha2] = useState('');
+  const [lembrar, setLembrar] = useState(lerLembrar);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
+  const [okMsg, setOkMsg] = useState('');
 
-  const loginGoogle = async () => {
+  const limpar = () => { setErro(''); setOkMsg(''); };
+  const trocarModo = (m: Modo) => { limpar(); setSenha(''); setSenha2(''); setModo(m); };
+
+  const entrar = async () => {
+    limpar();
     setLoading(true);
-    setErro('');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin + '/start' },
-    });
-    if (error) { setErro(error.message); setLoading(false); }
+    salvarLembrar(lembrar);
+    const mail = email.trim().toLowerCase();
+    const { error } = await supabase.auth.signInWithPassword({ email: mail, password: senha });
+    if (error) {
+      setErro(/invalid login/i.test(error.message) ? 'E-mail ou senha incorretos.' : error.message);
+      setLoading(false);
+      return;
+    }
+    salvarEmail(mail);
+    // sucesso → App.tsx (onAuthStateChange) redireciona pra /start
   };
+
+  const criarConta = async () => {
+    limpar();
+    const mail = email.trim().toLowerCase();
+    if (!mail.endsWith(DOMINIO)) { setErro(`Use seu e-mail ${DOMINIO}`); return; }
+    if (senha.length < 8) { setErro('A senha precisa ter pelo menos 8 caracteres.'); return; }
+    if (senha !== senha2) { setErro('As senhas não conferem.'); return; }
+    if (nome.trim().length < 3) { setErro('Informe seu nome completo.'); return; }
+
+    setLoading(true);
+    salvarLembrar(lembrar);
+    try {
+      const { data, error } = await supabase.functions.invoke('signup', {
+        body: { email: mail, password: senha, nome: nome.trim() },
+      });
+      if (error) throw error;
+      if (!data?.ok) { setErro(data?.error ?? 'Não foi possível criar a conta.'); setLoading(false); return; }
+
+      salvarEmail(mail);
+      // Conta criada e já confirmada — loga direto
+      const { error: signErr } = await supabase.auth.signInWithPassword({ email: mail, password: senha });
+      if (signErr) {
+        setOkMsg('Conta criada! Agora é só entrar com seu e-mail e senha.');
+        trocarModo('login');
+        setEmail(mail);
+        setLoading(false);
+      }
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível criar a conta.');
+      setLoading(false);
+    }
+  };
+
+  const pedirReset = async () => {
+    limpar();
+    const mail = email.trim().toLowerCase();
+    if (!mail.endsWith(DOMINIO)) { setErro(`Use seu e-mail ${DOMINIO}`); return; }
+    setLoading(true);
+    try {
+      await supabase.functions.invoke('password-reset-request', { body: { email: mail } });
+    } catch { /* resposta é sempre ok, ignora falha */ }
+    setLoading(false);
+    setOkMsg('Avisamos o gestor. Ele vai te enviar uma senha temporária para você entrar e cadastrar uma nova.');
+  };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
+    if (modo === 'login') entrar();
+    else if (modo === 'signup') criarConta();
+    else pedirReset();
+  };
+
+  const titulo =
+    modo === 'login' ? 'Bem-vindo de volta! 👋'
+    : modo === 'signup' ? 'Criar sua conta ✨'
+    : 'Recuperar acesso 🔑';
+
+  const btnLabel =
+    loading ? 'Aguarde...'
+    : modo === 'login' ? 'Entrar'
+    : modo === 'signup' ? 'Criar conta'
+    : 'Avisar o gestor';
 
   return (
     <div
       className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden"
-      style={{
-        background: 'linear-gradient(160deg, #2e0b5c 0%, #210845 55%, #160330 100%)',
-      }}
+      style={{ background: 'linear-gradient(160deg, #2e0b5c 0%, #210845 55%, #160330 100%)' }}
     >
       <Background />
 
-      {/* ── Mascote esquerda — rock (grande) ── */}
-      <img
-        src="/cardapinho-rock.png"
-        alt=""
-        aria-hidden
+      <img src="/cardapinho-rock.png" alt="" aria-hidden
         className="pointer-events-none select-none absolute bottom-0 left-0"
-        style={{ height: '62vh', maxHeight: 520, width: 'auto', objectFit: 'contain', objectPosition: 'bottom', zIndex: 1 }}
-      />
-
-      {/* ── Mascote viking — centro-direita ── */}
-      <img
-        src="/cardapinho-vinkin.png"
-        alt=""
-        aria-hidden
+        style={{ height: '62vh', maxHeight: 520, width: 'auto', objectFit: 'contain', objectPosition: 'bottom', zIndex: 1 }} />
+      <img src="/cardapinho-vinkin.png" alt="" aria-hidden
         className="pointer-events-none select-none absolute bottom-0"
-        style={{ right: '14vw', height: '48vh', maxHeight: 400, width: 'auto', objectFit: 'contain', objectPosition: 'bottom', zIndex: 1 }}
-      />
-
-      {/* ── Mascote laptop — direita ── */}
-      <img
-        src="/cardapinho-not.png"
-        alt=""
-        aria-hidden
+        style={{ right: '14vw', height: '48vh', maxHeight: 400, width: 'auto', objectFit: 'contain', objectPosition: 'bottom', zIndex: 1 }} />
+      <img src="/cardapinho-not.png" alt="" aria-hidden
         className="pointer-events-none select-none absolute bottom-0 right-0"
-        style={{ height: '44vh', maxHeight: 360, width: 'auto', objectFit: 'contain', objectPosition: 'bottom', zIndex: 1 }}
-      />
+        style={{ height: '44vh', maxHeight: 360, width: 'auto', objectFit: 'contain', objectPosition: 'bottom', zIndex: 1 }} />
 
-      {/* ── Conteúdo central ── */}
       <div className="relative flex flex-col items-center w-full max-w-[440px] px-5" style={{ zIndex: 2 }}>
-
-        {/* Logo CW */}
         <img
           src="/cardapio-web-logotype-fundo-off-rgb-2800px-w-144ppi.jpg"
           alt="Cardápio Web"
@@ -184,16 +246,14 @@ export default function Login() {
           style={{ height: 130, width: 'auto', mixBlendMode: 'luminosity' }}
         />
 
-        {/* Boas-vindas */}
         <h1 className="text-[28px] font-black text-white text-center mb-2 tracking-tight leading-tight">
-          Bem-vindo de volta! 👋
+          {titulo}
         </h1>
         <p className="text-[14px] text-white/65 text-center mb-7">
           Acesse sua plataforma{' '}
           <span className="font-bold" style={{ color: '#f59e0b' }}>Cardápio Web</span>
         </p>
 
-        {/* Card */}
         <div
           className="w-full rounded-2xl px-6 py-6"
           style={{
@@ -203,43 +263,113 @@ export default function Login() {
             boxShadow: '0 24px 60px rgba(0,0,0,0.40)',
           }}
         >
-          {/* Google button */}
-          <button
-            onClick={loginGoogle}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 py-[14px] rounded-xl font-bold text-[15px] text-white transition-all duration-150 disabled:opacity-60"
-            style={{
-              background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
-              boxShadow: '0 6px 24px rgba(124,58,237,0.50)',
-            }}
-            onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.filter = 'brightness(1.12)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.filter = ''; }}
-          >
-            {loading ? (
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-              </svg>
-            ) : (
-              <GoogleIcon />
+          <form onSubmit={submit} className="flex flex-col gap-3">
+            {modo === 'signup' && (
+              <input
+                className={inputCls} style={inputStyle}
+                type="text" placeholder="Nome completo" autoComplete="name"
+                value={nome} onChange={e => setNome(e.target.value)} disabled={loading}
+              />
             )}
-            <span>{loading ? 'Entrando...' : 'Entrar com Google'}</span>
-          </button>
+
+            <input
+              className={inputCls} style={inputStyle}
+              type="email" placeholder={`seu.nome${DOMINIO}`} autoComplete="email"
+              value={email} onChange={e => setEmail(e.target.value)} disabled={loading} required
+            />
+
+            {modo !== 'forgot' && (
+              <input
+                className={inputCls} style={inputStyle}
+                type="password" placeholder="Senha"
+                autoComplete={modo === 'signup' ? 'new-password' : 'current-password'}
+                value={senha} onChange={e => setSenha(e.target.value)} disabled={loading} required
+              />
+            )}
+
+            {modo === 'signup' && (
+              <input
+                className={inputCls} style={inputStyle}
+                type="password" placeholder="Confirmar senha" autoComplete="new-password"
+                value={senha2} onChange={e => setSenha2(e.target.value)} disabled={loading} required
+              />
+            )}
+
+            {modo !== 'forgot' && (
+              <label className="flex items-center gap-2 mt-0.5 text-[12.5px] text-white/60 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={lembrar}
+                  onChange={e => setLembrar(e.target.checked)}
+                  disabled={loading}
+                  className="h-4 w-4 rounded accent-[#7c3aed] cursor-pointer"
+                />
+                Lembrar de mim neste computador
+              </label>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-1 w-full flex items-center justify-center gap-3 py-[14px] rounded-xl font-bold text-[15px] text-white transition-all duration-150 disabled:opacity-60"
+              style={{
+                background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+                boxShadow: '0 6px 24px rgba(124,58,237,0.50)',
+              }}
+              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.filter = 'brightness(1.12)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.filter = ''; }}
+            >
+              {loading && (
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                </svg>
+              )}
+              <span>{btnLabel}</span>
+            </button>
+          </form>
+
+          {/* Links de navegação entre modos */}
+          <div className="mt-4 flex items-center justify-between text-[12px]">
+            {modo === 'login' ? (
+              <>
+                <button onClick={() => trocarModo('forgot')} className="text-white/45 hover:text-white/80 transition-colors">
+                  Esqueci a senha
+                </button>
+                <button onClick={() => trocarModo('signup')} className="font-semibold transition-colors" style={{ color: '#c4b5fd' }}>
+                  Criar conta
+                </button>
+              </>
+            ) : (
+              <button onClick={() => trocarModo('login')} className="text-white/45 hover:text-white/80 transition-colors">
+                ← Voltar para o login
+              </button>
+            )}
+          </div>
 
           {/* Divider */}
           <div className="flex items-center gap-3 my-4">
             <div className="flex-1 h-px" style={{ background: 'rgba(168,85,247,0.20)' }}/>
-            <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.30)' }}>ou</span>
+            <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.30)' }}>🔒</span>
             <div className="flex-1 h-px" style={{ background: 'rgba(168,85,247,0.20)' }}/>
           </div>
 
-          {/* Acesso restrito */}
+          {modo !== 'forgot' && (
+            <div
+              className="mb-3 rounded-xl px-3.5 py-3 text-[11.5px] leading-relaxed"
+              style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', color: '#fcd9a0' }}
+            >
+              <span className="font-bold" style={{ color: '#f59e0b' }}>Entrando de outro computador?</span>{' '}
+              Com <span className="font-semibold">Lembrar de mim</span> seu acesso fica salvo neste aparelho.
+              Numa máquina nova, use <span className="font-semibold">Criar conta</span> com o seu e-mail{' '}
+              <span className="font-semibold">{DOMINIO}</span>, é esse e-mail que vincula você ao Pipedrive.
+            </div>
+          )}
+
           <div className="flex items-center justify-center gap-2">
-            <span style={{ color: 'rgba(255,255,255,0.30)', fontSize: 13 }}>🔒</span>
             <span className="text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.30)' }}>
               Acesso restrito ao time da Cardápio Web
             </span>
-            <span style={{ color: 'rgba(255,255,255,0.30)', fontSize: 13 }}>🔒</span>
           </div>
 
           {erro && (
@@ -247,9 +377,13 @@ export default function Login() {
               {erro}
             </p>
           )}
+          {okMsg && (
+            <p className="mt-4 text-[12px] text-center rounded-xl px-4 py-2" style={{ color: '#6ee7b7', background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.20)' }}>
+              {okMsg}
+            </p>
+          )}
         </div>
 
-        {/* Features */}
         <div className="flex items-start justify-center gap-8 mt-8">
           {FEATURES.map(({ icon, label }) => (
             <div key={label} className="flex flex-col items-center gap-2.5">
@@ -266,7 +400,6 @@ export default function Login() {
           ))}
         </div>
 
-        {/* Rodapé */}
         <p className="text-[11px] mt-7 text-center" style={{ color: 'rgba(255,255,255,0.22)' }}>
           Tecnologia e resultado para o crescimento do seu restaurante. 💜
         </p>

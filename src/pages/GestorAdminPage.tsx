@@ -111,6 +111,8 @@ function SdrOnboardingCard({ profile, progress }: {
   progress: OnboardingProgressRow | null;
 }) {
   const [open, setOpen] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [tempPass, setTempPass] = useState<string | null>(null);
   const checkedIds = progress?.checked_ids ?? [];
   const percent = progress?.percent ?? 0;
   const done = progress?.done_items ?? 0;
@@ -193,6 +195,45 @@ function SdrOnboardingCard({ profile, progress }: {
             <span>Cadastrado: <strong className="text-cw-text">{formatDate(profile.registered_at)}</strong></span>
             {progress?.updated_at && (
               <span>Último check: <strong className="text-cw-text">{getDaysAgo(progress.updated_at)}</strong></span>
+            )}
+          </div>
+
+          {/* Resetar senha */}
+          <div className="border-t border-cw-border/50 pt-2">
+            {tempPass ? (
+              <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                <span className="text-cw-muted">Senha temporária:</span>
+                <code className="px-2 py-1 rounded-md bg-cw-purple/10 border border-cw-purple/30 text-cw-text font-mono text-xs tracking-wider">{tempPass}</code>
+                <button
+                  onClick={() => { navigator.clipboard?.writeText(tempPass); toast({ title: 'Copiado', description: 'Repasse pra pessoa. Ela troca em "Trocar senha" depois de entrar.' }); }}
+                  className="text-cw-purple hover:underline font-semibold"
+                >
+                  Copiar
+                </button>
+              </div>
+            ) : (
+              <button
+                disabled={resetting}
+                onClick={async () => {
+                  setResetting(true);
+                  try {
+                    const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+                      body: { email: profile.email },
+                    });
+                    if (error) throw error;
+                    if (!data?.ok) throw new Error(data?.error ?? 'Falhou');
+                    setTempPass(data.senha as string);
+                  } catch (e) {
+                    toast({ title: 'Erro ao resetar', description: e instanceof Error ? e.message : 'Tente de novo.', variant: 'destructive' });
+                  } finally {
+                    setResetting(false);
+                  }
+                }}
+                className="flex items-center gap-1.5 text-[11px] font-semibold text-cw-muted hover:text-cw-text transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={cn('h-3 w-3', resetting && 'animate-spin')} />
+                {resetting ? 'Gerando...' : 'Resetar senha'}
+              </button>
             )}
           </div>
         </div>

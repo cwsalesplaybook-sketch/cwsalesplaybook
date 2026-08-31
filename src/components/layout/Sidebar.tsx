@@ -5,7 +5,7 @@ import {
   BookOpen, LayoutDashboard, BarChart2, Heart, Map as MapIcon,
   TrendingUp, BarChart3, Sword, Sparkles, Award, Crown,
   ArrowUp, ArrowDown, ChevronRight, Trophy, Target,
-  HelpCircle, Zap, ShieldCheck, Calculator, LogOut, Trash2,
+  HelpCircle, Zap, ShieldCheck, Calculator, LogOut, KeyRound, Trash2,
   Loader2, Users, Library, GraduationCap, FileText, Percent, Star,
   PartyPopper, Puzzle, Package, Store, MessageCircleQuestion, Drama, Video, CalendarClock,
   type LucideIcon,
@@ -283,6 +283,13 @@ export function Sidebar() {
               {papel}{squad ? ` · Squad ${squad}` : ''}
             </p>
           </div>
+          <button
+            onClick={() => navigate('/trocar-senha')}
+            title="Trocar senha"
+            className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-[#b89fd4] hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <KeyRound className="h-4 w-4" />
+          </button>
           <button
             onClick={() => supabase.auth.signOut()}
             title="Sair"
