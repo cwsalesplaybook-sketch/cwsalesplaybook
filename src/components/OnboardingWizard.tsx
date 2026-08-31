@@ -28,8 +28,8 @@ const EMAILS_LIDERANCA: Record<string, string> = {
   'pedro.ferreira@cardapioweb.com':     'Liderança Comercial',
   'joelma.vieira@cardapioweb.com':      'Liderança Comercial',
   'vithoria.pinheiro@cardapioweb.com':  'Liderança Comercial',
+  'ana.clara@cardapioweb.com':          'Liderança Comercial',
   'whenna.oliveira@cardapioweb.com':    'Liderança de Closer',
-  'ana.clara@cardapioweb.com':          'Coordenação Comercial',
   'vanessa.alencar@cardapioweb.com':    'Coordenação de Parcerias',
 };
 

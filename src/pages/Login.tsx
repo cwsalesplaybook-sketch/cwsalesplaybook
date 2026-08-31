@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase, REMEMBER_KEY } from '@/integrations/supabase/client';
+import { traduzErroAuth } from '@/lib/erroAuthPt';
 
 /* ─── Decorative background ─── */
 function Background() {
@@ -123,10 +124,6 @@ const lerLembrar = () => { try { return localStorage.getItem(REMEMBER_KEY) !== '
 const salvarLembrar = (v: boolean) => { try { localStorage.setItem(REMEMBER_KEY, String(v)); } catch { /* ignore */ } };
 
 const MIN_SENHA = 6;
-// Erro de rede / função Edge fora do ar (inclui o 402 de projeto restrito no Supabase).
-const pareceServicoFora = (m: string) =>
-  /edge function|failed to send|failed to fetch|networkerror|restricted|exceed_egress|non-2xx/i.test(m);
-const MSG_FORA = 'Serviço indisponível no momento. Tente de novo em alguns minutos.';
 
 const inputCls =
   'w-full rounded-xl px-4 py-[13px] text-[14px] text-white placeholder-white/35 outline-none transition-all';
@@ -156,8 +153,7 @@ export default function Login() {
     const mail = email.trim().toLowerCase();
     const { error } = await supabase.auth.signInWithPassword({ email: mail, password: senha });
     if (error) {
-      const m = error.message || '';
-      setErro(/invalid login/i.test(m) ? 'E-mail ou senha incorretos.' : pareceServicoFora(m) ? MSG_FORA : m);
+      setErro(traduzErroAuth(error.message));
       setLoading(false);
       return;
     }
@@ -202,12 +198,7 @@ export default function Login() {
         options: { data: { full_name: nome.trim(), name: nome.trim() } },
       });
       if (signUpErr) {
-        const m = signUpErr.message || '';
-        if (/already registered|already exists|user already/i.test(m)) {
-          setErro("Já existe uma conta com esse e-mail. Use 'Entrar' ou 'Esqueci a senha'.");
-        } else {
-          setErro(pareceServicoFora(m) ? MSG_FORA : (m || 'Não foi possível criar a conta.'));
-        }
+        setErro(traduzErroAuth(signUpErr.message));
         setLoading(false);
         return;
       }
@@ -222,8 +213,7 @@ export default function Login() {
         setLoading(false);
       }
     } catch (e) {
-      const m = e instanceof Error ? e.message : '';
-      setErro(pareceServicoFora(m) ? MSG_FORA : (m || 'Não foi possível criar a conta.'));
+      setErro(traduzErroAuth(e));
       setLoading(false);
     }
   };

@@ -22,7 +22,6 @@ const GESTOR_EMAILS = new Set([
 
 // Mestres: veem e editam TODOS os setores (switcher sempre visível).
 const MASTER_EMAILS = new Set([
-  'ana.clara@cardapioweb.com',
   'vanessa.alencar@cardapioweb.com',
   'gabrielly.oliveira@cardapioweb.com',
   'johnnyalves@cardapioweb.com',

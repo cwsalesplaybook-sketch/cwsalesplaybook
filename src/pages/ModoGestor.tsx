@@ -21,13 +21,14 @@ const FERRAMENTAS = [
 ];
 
 const LIDERANCAS = [
-  { nome: 'Ana Clara',          cargo: 'Coordenadora Comercial'    },
-  { nome: 'Vanessa Alencar',    cargo: 'Coordenadora de Parcerias' },
   { nome: 'Gabrielly Oliveira', cargo: 'Criadora do Playbook'      },
   { nome: 'Pedro Ferreira',     cargo: 'Liderança de Pré-Vendas'  },
-  { nome: 'Whenna Oliveira',    cargo: 'Liderança de Closer'       },
-  { nome: 'Antonio Anderson',   cargo: 'Liderança de Pré-Vendas'  },
   { nome: 'Joelma Vieira',      cargo: 'Liderança de Pré-Vendas'  },
+  { nome: 'Vithoria Pinheiro',  cargo: 'Liderança de Pré-Vendas'  },
+  { nome: 'Ana Clara',          cargo: 'Liderança de Pré-Vendas'  },
+  { nome: 'Whenna Oliveira',    cargo: 'Liderança de Closer'       },
+  { nome: 'Vanessa Alencar',    cargo: 'Coordenadora de Parcerias' },
+  { nome: 'Antonio Anderson',   cargo: 'Liderança de Pré-Vendas'  },
   { nome: 'Beatriz Magalhães',  cargo: 'Liderança de Parcerias'    },
 ];
 

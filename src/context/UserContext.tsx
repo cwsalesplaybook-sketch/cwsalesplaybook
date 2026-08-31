@@ -4,7 +4,6 @@ export const MASTER_EMAILS = [
   'glauton@cardapioweb.com',
   'matheus.lessa@cardapioweb.com',
   'johnnyalves@cardapioweb.com',
-  'ana.clara@cardapioweb.com',
   'vanessa.alencar@cardapioweb.com',
   'gabrielly.oliveira@cardapioweb.com',
 ];
