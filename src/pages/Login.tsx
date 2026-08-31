@@ -122,6 +122,12 @@ const salvarEmail = (e: string) => { try { localStorage.setItem(EMAIL_KEY, e); }
 const lerLembrar = () => { try { return localStorage.getItem(REMEMBER_KEY) !== 'false'; } catch { return true; } };
 const salvarLembrar = (v: boolean) => { try { localStorage.setItem(REMEMBER_KEY, String(v)); } catch { /* ignore */ } };
 
+const MIN_SENHA = 6;
+// Erro de rede / função Edge fora do ar (inclui o 402 de projeto restrito no Supabase).
+const pareceServicoFora = (m: string) =>
+  /edge function|failed to send|failed to fetch|networkerror|restricted|exceed_egress|non-2xx/i.test(m);
+const MSG_FORA = 'Serviço indisponível no momento. Tente de novo em alguns minutos.';
+
 const inputCls =
   'w-full rounded-xl px-4 py-[13px] text-[14px] text-white placeholder-white/35 outline-none transition-all';
 const inputStyle: React.CSSProperties = {
@@ -150,7 +156,8 @@ export default function Login() {
     const mail = email.trim().toLowerCase();
     const { error } = await supabase.auth.signInWithPassword({ email: mail, password: senha });
     if (error) {
-      setErro(/invalid login/i.test(error.message) ? 'E-mail ou senha incorretos.' : error.message);
+      const m = error.message || '';
+      setErro(/invalid login/i.test(m) ? 'E-mail ou senha incorretos.' : pareceServicoFora(m) ? MSG_FORA : m);
       setLoading(false);
       return;
     }
@@ -162,7 +169,7 @@ export default function Login() {
     limpar();
     const mail = email.trim().toLowerCase();
     if (!mail.endsWith(DOMINIO)) { setErro(`Use seu e-mail ${DOMINIO}`); return; }
-    if (senha.length < 8) { setErro('A senha precisa ter pelo menos 8 caracteres.'); return; }
+    if (senha.length < MIN_SENHA) { setErro(`A senha precisa ter pelo menos ${MIN_SENHA} caracteres.`); return; }
     if (senha !== senha2) { setErro('As senhas não conferem.'); return; }
     if (nome.trim().length < 3) { setErro('Informe seu nome completo.'); return; }
 
@@ -185,7 +192,8 @@ export default function Login() {
         setLoading(false);
       }
     } catch (e) {
-      setErro(e instanceof Error ? e.message : 'Não foi possível criar a conta.');
+      const m = e instanceof Error ? e.message : '';
+      setErro(pareceServicoFora(m) ? MSG_FORA : (m || 'Não foi possível criar a conta.'));
       setLoading(false);
     }
   };
@@ -196,10 +204,13 @@ export default function Login() {
     if (!mail.endsWith(DOMINIO)) { setErro(`Use seu e-mail ${DOMINIO}`); return; }
     setLoading(true);
     try {
-      await supabase.functions.invoke('password-reset-request', { body: { email: mail } });
-    } catch { /* resposta é sempre ok, ignora falha */ }
+      const { error } = await supabase.functions.invoke('password-reset-request', { body: { email: mail } });
+      if (error) throw error;
+      setOkMsg('Avisamos o gestor. Ele vai te enviar uma senha temporária para você entrar e cadastrar uma nova.');
+    } catch {
+      setErro('Não conseguimos avisar o gestor agora. Tente de novo em alguns minutos ou fale direto com ele.');
+    }
     setLoading(false);
-    setOkMsg('Avisamos o gestor. Ele vai te enviar uma senha temporária para você entrar e cadastrar uma nova.');
   };
 
   const submit = (e: React.FormEvent) => {

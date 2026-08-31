@@ -98,8 +98,8 @@ Deno.serve(async (req) => {
   if (!email.endsWith(DOMINIO)) {
     return new Response(JSON.stringify({ ok: false, error: `Use seu e-mail ${DOMINIO}` }), { headers: CORS });
   }
-  if (password.length < 8) {
-    return new Response(JSON.stringify({ ok: false, error: "A senha precisa ter pelo menos 8 caracteres" }), { headers: CORS });
+  if (password.length < 6) {
+    return new Response(JSON.stringify({ ok: false, error: "A senha precisa ter pelo menos 6 caracteres" }), { headers: CORS });
   }
   if (nome.length < 3) {
     return new Response(JSON.stringify({ ok: false, error: "Informe seu nome completo" }), { headers: CORS });

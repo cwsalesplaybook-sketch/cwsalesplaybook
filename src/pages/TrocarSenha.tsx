@@ -17,7 +17,7 @@ export default function TrocarSenha() {
   const salvar = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro('');
-    if (senha.length < 8) { setErro('A senha precisa ter pelo menos 8 caracteres.'); return; }
+    if (senha.length < 6) { setErro('A senha precisa ter pelo menos 6 caracteres.'); return; }
     if (senha !== senha2) { setErro('As senhas não conferem.'); return; }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password: senha });
