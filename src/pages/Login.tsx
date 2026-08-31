@@ -175,18 +175,48 @@ export default function Login() {
 
     setLoading(true);
     salvarLembrar(lembrar);
+
+    // 1) Tenta a edge function (cria já confirmado + vínculo no Pipedrive + Slack).
     try {
       const { data, error } = await supabase.functions.invoke('signup', {
         body: { email: mail, password: senha, nome: nome.trim() },
       });
-      if (error) throw error;
-      if (!data?.ok) { setErro(data?.error ?? 'Não foi possível criar a conta.'); setLoading(false); return; }
+      if (!error && data && !data.ok) {
+        setErro(data.error ?? 'Não foi possível criar a conta.');
+        setLoading(false);
+        return;
+      }
+      if (!error && data?.ok) {
+        salvarEmail(mail);
+        await supabase.auth.signInWithPassword({ email: mail, password: senha });
+        return; // sucesso → App.tsx redireciona
+      }
+      // error (ex.: função ainda não publicada) → cai no fallback abaixo
+    } catch { /* fallback abaixo */ }
 
+    // 2) Fallback: cadastro direto no Supabase, sem depender da edge function.
+    try {
+      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+        email: mail,
+        password: senha,
+        options: { data: { full_name: nome.trim(), name: nome.trim() } },
+      });
+      if (signUpErr) {
+        const m = signUpErr.message || '';
+        if (/already registered|already exists|user already/i.test(m)) {
+          setErro("Já existe uma conta com esse e-mail. Use 'Entrar' ou 'Esqueci a senha'.");
+        } else {
+          setErro(pareceServicoFora(m) ? MSG_FORA : (m || 'Não foi possível criar a conta.'));
+        }
+        setLoading(false);
+        return;
+      }
       salvarEmail(mail);
-      // Conta criada e já confirmada — loga direto
+      if (signUpData.session) return; // já logou → App.tsx redireciona
+      // Sem sessão: tenta entrar (funciona se "Confirm email" estiver desligado).
       const { error: signErr } = await supabase.auth.signInWithPassword({ email: mail, password: senha });
       if (signErr) {
-        setOkMsg('Conta criada! Agora é só entrar com seu e-mail e senha.');
+        setOkMsg('Conta criada! Se não entrar direto, confirme pelo e-mail ou fale com o gestor.');
         trocarModo('login');
         setEmail(mail);
         setLoading(false);
