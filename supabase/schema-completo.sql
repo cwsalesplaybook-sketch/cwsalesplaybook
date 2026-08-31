@@ -1,57 +1,17 @@
 -- =====================================================================
 -- CW Sales Playbook — schema completo (public)
--- Gerado a partir das migrations + introspecção do projeto ymwiujzispztajwtmeek
--- em 2026-08-31, para recriar o schema num projeto Supabase novo.
+-- Recria o schema num projeto Supabase novo. Cole TUDO no SQL Editor e rode.
+-- Idempotente o suficiente pra rodar de novo. NÃO cria dados nem usuários.
 --
--- Como usar: cole TUDO no SQL Editor do projeto novo e rode uma vez.
--- É idempotente o suficiente pra rodar de novo sem quebrar.
--- NÃO cria dados nem usuários — só a estrutura.
+-- Ordem: extensões -> tabelas -> funções -> RLS -> policies -> triggers -> grants.
+-- (as funções vêm DEPOIS das tabelas porque referenciam sdr_profiles/rag_chunks)
 -- =====================================================================
+
+-- Não valida corpo de função na criação (evita erro de ordem de dependência).
+set check_function_bodies = off;
 
 -- ---------- Extensões ----------
 create extension if not exists "pgcrypto";      -- gen_random_uuid()
-
--- ---------- Funções auxiliares (SECURITY DEFINER) ----------
--- Usadas dentro das policies de RLS; SECURITY DEFINER evita recursão de RLS
--- ao consultar sdr_profiles de dentro das próprias policies.
-
-create or replace function public.squads_que_lidero()
-returns text[] language sql security definer set search_path = public stable as $$
-  select coalesce(squads_lideradas, '{}') from public.sdr_profiles where user_id = auth.uid();
-$$;
-
-create or replace function public.lidero_o_usuario(alvo uuid)
-returns boolean language sql security definer set search_path = public stable as $$
-  select exists (
-    select 1 from public.sdr_profiles p
-    where p.user_id = alvo and p.squad = any (public.squads_que_lidero())
-  );
-$$;
-
-create or replace function public.mesmo_squad(alvo uuid)
-returns boolean language sql security definer set search_path = public stable as $$
-  select exists (
-    select 1
-    from public.sdr_profiles caller
-    join public.sdr_profiles alvo_perfil on alvo_perfil.user_id = alvo
-    where caller.user_id = auth.uid()
-      and caller.squad is not null
-      and caller.squad = alvo_perfil.squad
-  );
-$$;
-
-create or replace function public.meu_squad()
-returns text language sql security definer set search_path = public stable as $$
-  select squad from public.sdr_profiles where user_id = auth.uid();
-$$;
-
-create or replace function public.touch_content_overrides()
-returns trigger language plpgsql security definer set search_path = public as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$;
 
 -- =====================================================================
 -- TABELAS
@@ -230,6 +190,48 @@ create table if not exists public.rag_chunks (
 create index if not exists rag_chunks_source_idx on public.rag_chunks (source);
 create index if not exists rag_chunks_content_tsv_idx on public.rag_chunks using gin (content_tsv);
 
+-- =====================================================================
+-- FUNÇÕES (depois das tabelas — referenciam sdr_profiles / rag_chunks)
+-- =====================================================================
+
+create or replace function public.squads_que_lidero()
+returns text[] language sql security definer set search_path = public stable as $$
+  select coalesce(squads_lideradas, '{}') from public.sdr_profiles where user_id = auth.uid();
+$$;
+
+create or replace function public.lidero_o_usuario(alvo uuid)
+returns boolean language sql security definer set search_path = public stable as $$
+  select exists (
+    select 1 from public.sdr_profiles p
+    where p.user_id = alvo and p.squad = any (public.squads_que_lidero())
+  );
+$$;
+
+create or replace function public.mesmo_squad(alvo uuid)
+returns boolean language sql security definer set search_path = public stable as $$
+  select exists (
+    select 1
+    from public.sdr_profiles caller
+    join public.sdr_profiles alvo_perfil on alvo_perfil.user_id = alvo
+    where caller.user_id = auth.uid()
+      and caller.squad is not null
+      and caller.squad = alvo_perfil.squad
+  );
+$$;
+
+create or replace function public.meu_squad()
+returns text language sql security definer set search_path = public stable as $$
+  select squad from public.sdr_profiles where user_id = auth.uid();
+$$;
+
+create or replace function public.touch_content_overrides()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
 create or replace function public.to_or_tsquery(config regconfig, txt text)
 returns tsquery language sql immutable as $$
   select coalesce(string_agg(word, ' | ')::tsquery, ''::tsquery)
@@ -252,72 +254,93 @@ $$;
 -- =====================================================================
 -- RLS
 -- =====================================================================
-alter table public.content_overrides          enable row level security;
-alter table public.sdr_profiles               enable row level security;
-alter table public.team_metas                 enable row level security;
-alter table public.user_metas                 enable row level security;
-alter table public.squad_kpis                 enable row level security;
-alter table public.promocoes                  enable row level security;
-alter table public.kanban_reunioes            enable row level security;
+alter table public.content_overrides           enable row level security;
+alter table public.sdr_profiles                enable row level security;
+alter table public.team_metas                  enable row level security;
+alter table public.user_metas                  enable row level security;
+alter table public.squad_kpis                  enable row level security;
+alter table public.promocoes                   enable row level security;
+alter table public.kanban_reunioes             enable row level security;
 alter table public.google_calendar_connections enable row level security;
-alter table public.roleplay_scores            enable row level security;
-alter table public.onboarding_progress        enable row level security;
-alter table public.reps_agenda_reunioes       enable row level security;
-alter table public.rag_chunks                 enable row level security;
+alter table public.roleplay_scores             enable row level security;
+alter table public.onboarding_progress         enable row level security;
+alter table public.reps_agenda_reunioes        enable row level security;
+alter table public.rag_chunks                  enable row level security;
 
 -- ----- content_overrides -----
+drop policy if exists "Conteúdo é público para leitura" on public.content_overrides;
 create policy "Conteúdo é público para leitura" on public.content_overrides
   for select using (true);
+drop policy if exists "Bloqueia escrita direta de clientes" on public.content_overrides;
 create policy "Bloqueia escrita direta de clientes" on public.content_overrides
   for all using (false) with check (false);
 
 -- ----- sdr_profiles -----
+drop policy if exists "Usuário gerencia o próprio perfil" on public.sdr_profiles;
 create policy "Usuário gerencia o próprio perfil" on public.sdr_profiles
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Líder vê perfis do squad que lidera" on public.sdr_profiles;
 create policy "Líder vê perfis do squad que lidera" on public.sdr_profiles
   for select using (squad = any (public.squads_que_lidero()));
+drop policy if exists "Colega vê perfis do mesmo squad" on public.sdr_profiles;
 create policy "Colega vê perfis do mesmo squad" on public.sdr_profiles
   for select using (public.mesmo_squad(user_id));
 
 -- ----- user_metas -----
+drop policy if exists "SDR vê só a própria meta" on public.user_metas;
 create policy "SDR vê só a própria meta" on public.user_metas
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Líder lê metas do squad" on public.user_metas;
 create policy "Líder lê metas do squad" on public.user_metas
   for select using (public.lidero_o_usuario(user_id));
+drop policy if exists "Líder edita metas do squad" on public.user_metas;
 create policy "Líder edita metas do squad" on public.user_metas
   for all using (public.lidero_o_usuario(user_id)) with check (public.lidero_o_usuario(user_id));
+drop policy if exists "Colega lê metas do mesmo squad" on public.user_metas;
 create policy "Colega lê metas do mesmo squad" on public.user_metas
   for select using (public.mesmo_squad(user_id));
 
 -- ----- team_metas -----
+drop policy if exists "Escrita da meta do time só por service role" on public.team_metas;
 create policy "Escrita da meta do time só por service role" on public.team_metas
   for all using (false) with check (false);
+drop policy if exists "Líder edita meta do time" on public.team_metas;
 create policy "Líder edita meta do time" on public.team_metas
   for all using (squad = any (public.squads_que_lidero())) with check (squad = any (public.squads_que_lidero()));
+drop policy if exists "Membro lê meta do próprio squad" on public.team_metas;
 create policy "Membro lê meta do próprio squad" on public.team_metas
   for select using (squad = public.meu_squad());
 
 -- ----- squad_kpis -----
+drop policy if exists "Líder edita KPIs do squad" on public.squad_kpis;
 create policy "Líder edita KPIs do squad" on public.squad_kpis
   for all using (squad = any (public.squads_que_lidero())) with check (squad = any (public.squads_que_lidero()));
+drop policy if exists "Membro lê KPIs do próprio squad" on public.squad_kpis;
 create policy "Membro lê KPIs do próprio squad" on public.squad_kpis
   for select using (squad = public.meu_squad());
 
 -- ----- promocoes -----
+drop policy if exists "Vê a própria promoção" on public.promocoes;
 create policy "Vê a própria promoção" on public.promocoes
   for select using (auth.uid() = user_id);
+drop policy if exists "Conclui a própria promoção" on public.promocoes;
 create policy "Conclui a própria promoção" on public.promocoes
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Líder gerencia promoção do squad" on public.promocoes;
 create policy "Líder gerencia promoção do squad" on public.promocoes
   for all using (public.lidero_o_usuario(user_id)) with check (public.lidero_o_usuario(user_id));
 
 -- ----- kanban_reunioes -----
+drop policy if exists "Vê os próprios cards" on public.kanban_reunioes;
 create policy "Vê os próprios cards" on public.kanban_reunioes
   for select using (auth.uid() = user_id);
+drop policy if exists "Cria os próprios cards" on public.kanban_reunioes;
 create policy "Cria os próprios cards" on public.kanban_reunioes
   for insert with check (auth.uid() = user_id);
+drop policy if exists "Edita os próprios cards" on public.kanban_reunioes;
 create policy "Edita os próprios cards" on public.kanban_reunioes
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Remove os próprios cards" on public.kanban_reunioes;
 create policy "Remove os próprios cards" on public.kanban_reunioes
   for delete using (auth.uid() = user_id);
 
@@ -325,24 +348,32 @@ create policy "Remove os próprios cards" on public.kanban_reunioes
 -- Sem policies de propósito: acesso só via service role (edge functions).
 
 -- ----- roleplay_scores -----
+drop policy if exists "Time inteiro vê o placar" on public.roleplay_scores;
 create policy "Time inteiro vê o placar" on public.roleplay_scores
   for select using (auth.uid() is not null);
+drop policy if exists "Cria a própria partida" on public.roleplay_scores;
 create policy "Cria a própria partida" on public.roleplay_scores
   for insert with check (auth.uid() = user_id);
+drop policy if exists "Remove a própria partida" on public.roleplay_scores;
 create policy "Remove a própria partida" on public.roleplay_scores
   for delete using (auth.uid() = user_id);
 
 -- ----- onboarding_progress -----
+drop policy if exists "Time inteiro vê o progresso de onboarding" on public.onboarding_progress;
 create policy "Time inteiro vê o progresso de onboarding" on public.onboarding_progress
   for select using (auth.uid() is not null);
+drop policy if exists "Usuário grava o próprio progresso" on public.onboarding_progress;
 create policy "Usuário grava o próprio progresso" on public.onboarding_progress
   for insert with check (auth.uid() = user_id);
+drop policy if exists "Usuário atualiza o próprio progresso" on public.onboarding_progress;
 create policy "Usuário atualiza o próprio progresso" on public.onboarding_progress
   for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ----- reps_agenda_reunioes -----
+drop policy if exists "Reps autenticados leem a agenda" on public.reps_agenda_reunioes;
 create policy "Reps autenticados leem a agenda" on public.reps_agenda_reunioes
   for select using (auth.role() = 'authenticated');
+drop policy if exists "Reps autenticados gerenciam a agenda" on public.reps_agenda_reunioes;
 create policy "Reps autenticados gerenciam a agenda" on public.reps_agenda_reunioes
   for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
@@ -374,3 +405,5 @@ begin
   alter publication supabase_realtime add table public.content_overrides;
 exception when duplicate_object then null;
 end $$;
+
+reset check_function_bodies;
