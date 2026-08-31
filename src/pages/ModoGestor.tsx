@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Crown, ShieldCheck, Target, BarChart2, LayoutDashboard, Zap, Users, Loader2, Eye, Pencil, X } from 'lucide-react';
+import { Crown, ShieldCheck, Target, BarChart2, LayoutDashboard, Zap, Users, Loader2, Eye, Pencil, X, KeyRound, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useSidebarContext, type Papel, type ImpersonationTarget } from '@/context/SidebarContext';
 import { useEditor } from '@/admin/EditorContext';
 import { Header } from '@/components/layout/Header';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const PLAYBOOKS = [
   { label: 'SDR',    papel: 'SDR' as Papel,          icon: Zap,     desc: 'Prospecção, qualificação e agendamento de reuniões.' },
@@ -32,43 +33,50 @@ const LIDERANCAS = [
   { nome: 'Beatriz Magalhães',  cargo: 'Liderança de Parcerias'    },
 ];
 
-interface SdrProfile {
+interface Usuario {
   userId: string;
+  email: string;
   apelido: string;
   squad: string | null;
-  papel: Papel;
+  papel: Papel | null;
+  temPerfil: boolean;
 }
 
 export default function ModoGestor() {
   const { papel, lockedPapel, setPapelPreview, clearPapelPreview, setImpersonating } = useSidebarContext();
   const { isGestor, isEditing, openPasswordModal, lock } = useEditor();
   const navigate = useNavigate();
-  const [membros, setMembros] = useState<SdrProfile[]>([]);
+  const [membros, setMembros] = useState<Usuario[]>([]);
   const [loadingMembros, setLoadingMembros] = useState(true);
   const [switching, setSwitching] = useState<Papel | null>(null);
   const [pendingPapel, setPendingPapel] = useState<Papel | null>(null);
+  const [resetando, setResetando] = useState<string | null>(null);
+  const [senhaTemp, setSenhaTemp] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!isGestor) return;
-    supabase
-      .from('sdr_profiles')
-      .select('user_id, apelido, squad, papel')
-      .then(({ data }) => {
-        if (data) {
-          setMembros(
-            data
-              .filter(d => d.apelido)
-              .map(d => ({
-                userId: d.user_id,
-                apelido: d.apelido as string,
-                squad: d.squad ?? null,
-                papel: (d.papel as Papel) ?? 'SDR',
-              }))
-          );
-        }
-        setLoadingMembros(false);
-      });
+    supabase.functions.invoke('listar-usuarios').then(({ data }) => {
+      const lista = (data as { usuarios?: Usuario[] } | null)?.usuarios ?? [];
+      setMembros(lista.map(u => ({ ...u, papel: (u.papel as Papel) ?? null })));
+      setLoadingMembros(false);
+    }).catch(() => setLoadingMembros(false));
   }, [isGestor]);
+
+  const resetarSenha = async (u: Usuario) => {
+    setResetando(u.userId);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
+        body: { email: u.email, userId: u.userId },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error ?? 'Falhou');
+      setSenhaTemp(s => ({ ...s, [u.userId]: data.senha as string }));
+    } catch (e) {
+      toast({ title: 'Erro ao resetar', description: e instanceof Error ? e.message : 'Tente de novo.', variant: 'destructive' });
+    } finally {
+      setResetando(null);
+    }
+  };
 
   if (!isGestor) {
     return (
@@ -79,10 +87,10 @@ export default function ModoGestor() {
     );
   }
 
-  const verComo = (membro: SdrProfile) => {
+  const verComo = (membro: Usuario) => {
     const target: ImpersonationTarget = {
       apelido: membro.apelido,
-      papel: membro.papel,
+      papel: membro.papel ?? 'SDR',
       squad: membro.squad,
       userId: membro.userId,
     };
@@ -234,39 +242,70 @@ export default function ModoGestor() {
           </div>
         </section>
 
-        {/* Visualizar como membro */}
+        {/* Usuários */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <Eye className="h-5 w-5 text-cw-purple-light" />
-            <h2 className="text-lg font-bold">Visualizar como</h2>
-            <span className="text-xs text-cw-muted font-normal">Veja o playbook pelos olhos de cada membro</span>
+            <Users className="h-5 w-5 text-cw-purple-light" />
+            <h2 className="text-lg font-bold">Usuários</h2>
+            <span className="text-xs text-cw-muted font-normal">Resete a senha ou veja o playbook pelos olhos de qualquer pessoa</span>
           </div>
           {loadingMembros ? (
             <div className="flex items-center gap-2 text-cw-muted text-sm">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Carregando membros...
+              Carregando usuários...
             </div>
           ) : membros.length === 0 ? (
-            <p className="text-sm text-cw-muted">Nenhum membro configurou o perfil ainda.</p>
+            <p className="text-sm text-cw-muted">Ninguém criou conta ainda.</p>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {membros.map((m) => (
-                <div key={m.userId} className="cw-card p-4 flex items-center gap-3 group">
-                  <div className="h-10 w-10 rounded-full bg-[#4a0080] flex items-center justify-center text-[12px] font-black text-white shrink-0">
-                    {(m.apelido ?? '?').split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
+                <div key={m.userId} className="cw-card p-4 flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-[#4a0080] flex items-center justify-center text-[12px] font-black text-white shrink-0">
+                      {(m.apelido ?? '?').split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-cw-text leading-tight truncate">{m.apelido}</p>
+                      <p className="text-xs text-cw-muted mt-0.5 truncate">{m.email}</p>
+                      <p className="text-[11px] text-cw-muted mt-0.5">
+                        {m.papel ?? 'sem papel'}{m.squad ? ` · ${m.squad}` : ''}{!m.temPerfil && ' · sem onboarding'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-cw-text leading-tight truncate">{m.apelido}</p>
-                    <p className="text-xs text-cw-muted mt-0.5">{m.papel}{m.squad ? ` · ${m.squad}` : ''}</p>
-                  </div>
-                  <button
-                    onClick={() => verComo(m)}
-                    title={`Ver como ${m.apelido}`}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-bold text-cw-purple-light bg-cw-purple/10 hover:bg-cw-purple/20 px-2 py-1 rounded-lg shrink-0"
-                  >
-                    <Eye className="h-3 w-3" />
-                    Ver
-                  </button>
+
+                  {senhaTemp[m.userId] ? (
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] border-t border-cw-border/50 pt-2">
+                      <span className="text-cw-muted">Senha temporária:</span>
+                      <code className="px-2 py-1 rounded-md bg-cw-purple/10 border border-cw-purple/30 text-cw-text font-mono tracking-wider">{senhaTemp[m.userId]}</code>
+                      <button
+                        onClick={() => { navigator.clipboard?.writeText(senhaTemp[m.userId]); toast({ title: 'Copiado', description: 'Repasse pra pessoa. Ela troca em "Trocar senha" depois de entrar.' }); }}
+                        className="text-cw-purple-light hover:underline font-semibold"
+                      >
+                        Copiar
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 border-t border-cw-border/50 pt-2">
+                      <button
+                        onClick={() => resetarSenha(m)}
+                        disabled={resetando === m.userId}
+                        className="flex items-center gap-1.5 text-[11px] font-bold text-cw-purple-light bg-cw-purple/10 hover:bg-cw-purple/20 px-2.5 py-1.5 rounded-lg disabled:opacity-50"
+                      >
+                        {resetando === m.userId
+                          ? <RefreshCw className="h-3 w-3 animate-spin" />
+                          : <KeyRound className="h-3 w-3" />}
+                        {resetando === m.userId ? 'Gerando...' : 'Resetar senha'}
+                      </button>
+                      <button
+                        onClick={() => verComo(m)}
+                        title={`Ver como ${m.apelido}`}
+                        className="flex items-center gap-1 text-[11px] font-bold text-cw-muted hover:text-cw-text px-2 py-1.5 rounded-lg"
+                      >
+                        <Eye className="h-3 w-3" />
+                        Ver como
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

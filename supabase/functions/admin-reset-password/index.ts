@@ -36,14 +36,24 @@ async function postSlack(text: string): Promise<void> {
   } catch { /* fire-and-forget */ }
 }
 
-// Mesma lista de src/context/UserContext.tsx (mantidas em sincronia na mão)
-const MASTER_EMAILS = [
+// Masters + gestores de setor podem resetar senha (sincronizar com o front:
+// EditorContext GESTOR_EMAILS/MASTER_EMAILS e UserContext MASTER_EMAILS).
+const AUTORIZADOS = [
+  // masters
+  "gabrielly.oliveira@cardapioweb.com",
+  "vanessa.alencar@cardapioweb.com",
+  "johnnyalves@cardapioweb.com",
   "glauton@cardapioweb.com",
   "matheus.lessa@cardapioweb.com",
-  "johnnyalves@cardapioweb.com",
+  // gestores de setor
+  "pedro.ferreira@cardapioweb.com",
+  "joelma.vieira@cardapioweb.com",
+  "vithoria.pinheiro@cardapioweb.com",
   "ana.clara@cardapioweb.com",
-  "vanessa.alencar@cardapioweb.com",
-  "gabrielly.oliveira@cardapioweb.com",
+  "whenna.oliveira@cardapioweb.com",
+  "antonio.anderson@cardapioweb.com",
+  "hyorranes.souza@cardapioweb.com",
+  "beatriz.magalhaes@cardapioweb.com",
 ];
 
 function gerarSenha(): string {
@@ -77,7 +87,7 @@ Deno.serve(async (req) => {
   });
   const { data: { user: caller }, error: callerErr } = await asUser.auth.getUser();
   const callerEmail = (caller?.email ?? "").toLowerCase();
-  if (callerErr || !caller || !MASTER_EMAILS.includes(callerEmail)) {
+  if (callerErr || !caller || !AUTORIZADOS.includes(callerEmail)) {
     return new Response(JSON.stringify({ ok: false, error: "Sem permissão" }), { status: 403, headers: CORS });
   }
 
