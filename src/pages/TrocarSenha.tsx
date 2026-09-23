@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { KeyRound, ArrowLeft, Check } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { traduzErroAuth } from '@/lib/erroAuthPt';
+import { apiPost } from '@/lib/apiClient';
 
 /** Página simples pra pessoa trocar a própria senha (ex.: depois de entrar com
  *  uma senha temporária que o gestor gerou). Acessível pelo ícone de chave no
@@ -21,9 +20,9 @@ export default function TrocarSenha() {
     if (senha.length < 6) { setErro('A senha precisa ter pelo menos 6 caracteres.'); return; }
     if (senha !== senha2) { setErro('As senhas não conferem.'); return; }
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password: senha });
+    const r = await apiPost<{ error?: string }>('/api/auth/change-password', { password: senha });
     setLoading(false);
-    if (error) { setErro(traduzErroAuth(error.message)); return; }
+    if (!r.data.ok) { setErro(r.data.error ?? 'Não foi possível trocar a senha.'); return; }
     setOk(true);
     setSenha(''); setSenha2('');
   };

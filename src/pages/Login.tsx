@@ -1,6 +1,9 @@
-import { useState } from 'react';
-import { supabase, REMEMBER_KEY } from '@/integrations/supabase/client';
-import { traduzErroAuth } from '@/lib/erroAuthPt';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { apiPost } from '@/lib/apiClient';
+
+const REMEMBER_KEY = 'cw.auth.remember';
 
 /* ─── Decorative background ─── */
 function Background() {
@@ -128,7 +131,7 @@ const DOMINIO = '@cardapioweb.com';
 type Modo = 'login' | 'signup' | 'forgot';
 
 // Guarda o último e-mail usado nesta máquina pra pré-preencher o campo.
-// A sessão em si já fica salva (supabase client: persistSession + localStorage).
+// A sessão em si fica salva no cookie httpOnly de refresh token (ver AuthContext).
 const EMAIL_KEY = 'cw.login.email';
 const lerEmailSalvo = () => { try { return localStorage.getItem(EMAIL_KEY) ?? ''; } catch { return ''; } };
 const salvarEmail = (e: string) => { try { localStorage.setItem(EMAIL_KEY, e); } catch { /* ignore */ } };
@@ -145,6 +148,8 @@ const inputStyle: React.CSSProperties = {
 };
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { login, signup, loginWithGoogle } = useAuth();
   const [modo, setModo] = useState<Modo>('login');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState(lerEmailSalvo);
@@ -154,23 +159,40 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
   const [okMsg, setOkMsg] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Erro vindo do redirect do /api/auth/google/callback (login com Google falhou)
+  useEffect(() => {
+    const erroGoogle = searchParams.get('erro');
+    if (erroGoogle) {
+      setErro(erroGoogle);
+      setSearchParams((p) => { p.delete('erro'); return p; }, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const limpar = () => { setErro(''); setOkMsg(''); };
   const trocarModo = (m: Modo) => { limpar(); setSenha(''); setSenha2(''); setModo(m); };
+  const erroDeRede = () => 'Serviço indisponível no momento. Tente de novo em alguns minutos.';
 
   const entrar = async () => {
     limpar();
     setLoading(true);
     salvarLembrar(lembrar);
     const mail = email.trim().toLowerCase();
-    const { error } = await supabase.auth.signInWithPassword({ email: mail, password: senha });
-    if (error) {
-      setErro(traduzErroAuth(error.message));
+    try {
+      const r = await login(mail, senha, lembrar);
+      if (!r.ok) {
+        setErro(r.error ?? 'E-mail ou senha incorretos.');
+        setLoading(false);
+        return;
+      }
+      salvarEmail(mail);
+      navigate('/start', { replace: true });
+    } catch {
+      setErro(erroDeRede());
       setLoading(false);
-      return;
     }
-    salvarEmail(mail);
-    // sucesso → App.tsx (onAuthStateChange) redireciona pra /start
   };
 
   const criarConta = async () => {
@@ -183,62 +205,24 @@ export default function Login() {
 
     setLoading(true);
     salvarLembrar(lembrar);
-
-    // 1) Tenta a edge function (cria já confirmado + vínculo no Pipedrive + Slack).
     try {
-      const { data, error } = await supabase.functions.invoke('signup', {
-        body: { email: mail, password: senha, nome: nome.trim() },
-      });
-      if (!error && data && !data.ok) {
-        setErro(data.error ?? 'Não foi possível criar a conta.');
-        setLoading(false);
-        return;
-      }
-      if (!error && data?.ok) {
-        salvarEmail(mail);
-        await supabase.auth.signInWithPassword({ email: mail, password: senha });
-        return; // sucesso → App.tsx redireciona
-      }
-      // error (ex.: função ainda não publicada) → cai no fallback abaixo
-    } catch { /* fallback abaixo */ }
-
-    // 2) Fallback: cadastro direto no Supabase, sem depender da edge function.
-    try {
-      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
-        email: mail,
-        password: senha,
-        options: { data: { full_name: nome.trim(), name: nome.trim() } },
-      });
-      if (signUpErr) {
-        setErro(traduzErroAuth(signUpErr.message));
+      const r = await signup(mail, senha, nome.trim(), lembrar);
+      if (!r.ok) {
+        setErro(r.error ?? 'Não foi possível criar a conta.');
         setLoading(false);
         return;
       }
       salvarEmail(mail);
-      if (signUpData.session) return; // já logou → App.tsx redireciona
-      // Sem sessão: tenta entrar (funciona se "Confirm email" estiver desligado).
-      const { error: signErr } = await supabase.auth.signInWithPassword({ email: mail, password: senha });
-      if (signErr) {
-        setOkMsg('Conta criada! Se não entrar direto, confirme pelo e-mail ou fale com o gestor.');
-        trocarModo('login');
-        setEmail(mail);
-        setLoading(false);
-      }
-    } catch (e) {
-      setErro(traduzErroAuth(e));
+      navigate('/start', { replace: true });
+    } catch {
+      setErro(erroDeRede());
       setLoading(false);
     }
   };
 
-  const loginGoogle = async () => {
+  const loginGoogle = () => {
     limpar();
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin + '/start' },
-    });
-    if (error) { setErro(traduzErroAuth(error.message)); setLoading(false); }
-    // sucesso → redireciona pro Google; ao voltar, App.tsx (onAuthStateChange) leva pra /start
+    loginWithGoogle(); // redireciona a página inteira pro Google
   };
 
   const pedirReset = async () => {
@@ -247,8 +231,8 @@ export default function Login() {
     if (!mail.endsWith(DOMINIO)) { setErro(`Use seu e-mail ${DOMINIO}`); return; }
     setLoading(true);
     try {
-      const { error } = await supabase.functions.invoke('password-reset-request', { body: { email: mail } });
-      if (error) throw error;
+      const r = await apiPost('/api/auth/password-reset-request', { email: mail });
+      if (!r.data.ok) throw new Error();
       setOkMsg('Avisamos o gestor. Ele vai te enviar uma senha temporária para você entrar e cadastrar uma nova.');
     } catch {
       setErro('Não conseguimos avisar o gestor agora. Tente de novo em alguns minutos ou fale direto com ele.');

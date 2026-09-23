@@ -1,7 +1,8 @@
-/** Persistência do progresso de onboarding: localStorage (imediato) + Supabase (visível ao gestor). */
+/** Persistência do progresso de onboarding: localStorage (imediato) + API (visível ao gestor). */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ONBOARDING } from '@/data/onboarding';
-import { supabase } from '@/integrations/supabase/client';
+import { apiPut } from '@/lib/apiClient';
+import { hasAccessToken } from '@/context/AuthContext';
 
 const KEY_CHECKS = 'cw-onboarding-checks';
 const KEY_NOTES = 'cw-onboarding-notes';
@@ -15,10 +16,9 @@ function loadJSON<T>(key: string, fallback: T): T {
   }
 }
 
-/** Envia progresso ao Supabase (debounced 2s para não spammar a cada clique) */
-async function syncToSupabase(checked: Record<string, boolean>) {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return;
+/** Envia progresso pra API (debounced 2s para não spammar a cada clique) */
+async function syncProgresso(checked: Record<string, boolean>) {
+  if (!hasAccessToken()) return;
 
   const checkedIds = Object.entries(checked)
     .filter(([, v]) => v)
@@ -28,14 +28,12 @@ async function syncToSupabase(checked: Record<string, boolean>) {
   const done = checkedIds.length;
   const percent = Math.round((done / total) * 100);
 
-  await supabase.from('onboarding_progress').upsert({
-    user_id: session.user.id,
+  await apiPut('/api/profile/onboarding-progress', {
     checked_ids: checkedIds,
     done_items: done,
     total_items: total,
     percent,
-    updated_at: new Date().toISOString(),
-  }, { onConflict: 'user_id' });
+  });
 }
 
 export function useOnboardingProgress() {
@@ -46,7 +44,7 @@ export function useOnboardingProgress() {
     loadJSON<Record<string, string>>(KEY_NOTES, {})
   );
 
-  // Debounce ref para o sync ao Supabase
+  // Debounce ref para o sync com a API
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -55,7 +53,7 @@ export function useOnboardingProgress() {
     // Debounce: espera 2s de inatividade antes de sincronizar
     if (syncTimer.current) clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(() => {
-      syncToSupabase(checked);
+      syncProgresso(checked);
     }, 2000);
 
     return () => { if (syncTimer.current) clearTimeout(syncTimer.current); };

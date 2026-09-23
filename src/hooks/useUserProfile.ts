@@ -1,6 +1,5 @@
-/** Hook que expõe os dados do perfil Google do usuário logado via Supabase OAuth. */
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+/** Hook que expõe os dados do perfil do usuário logado (via AuthContext). */
+import { useAuth } from '@/context/AuthContext';
 
 export interface UserProfile {
   id: string | null;
@@ -13,39 +12,23 @@ export interface UserProfile {
 const EMPTY_PROFILE: UserProfile = { id: null, avatarUrl: null, fullName: null, email: null, initials: '?' };
 
 export function useUserProfile(): UserProfile {
-  const [profile, setProfile] = useState<UserProfile>(EMPTY_PROFILE);
+  const { user } = useAuth();
+  if (!user) return EMPTY_PROFILE;
 
-  useEffect(() => {
-    const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-      const meta = session.user.user_metadata;
-      const name: string = meta?.full_name ?? meta?.name ?? session.user.email ?? '';
-      const initials = name
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((n: string) => n[0].toUpperCase())
-        .join('');
-      setProfile({
-        id: session.user.id,
-        avatarUrl: meta?.avatar_url ?? meta?.picture ?? null,
-        fullName: name || null,
-        email: session.user.email ?? null,
-        initials: initials || '?',
-      });
-    };
-    load();
+  const name = user.apelido ?? user.email ?? '';
+  const initials =
+    name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((n) => n[0].toUpperCase())
+      .join('') || '?';
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session) { setProfile(EMPTY_PROFILE); return; }
-      const meta = session.user.user_metadata;
-      const name: string = meta?.full_name ?? meta?.name ?? session.user.email ?? '';
-      const initials = name.split(' ').filter(Boolean).slice(0, 2).map((n: string) => n[0].toUpperCase()).join('');
-      setProfile({ id: session.user.id, avatarUrl: meta?.avatar_url ?? meta?.picture ?? null, fullName: name || null, email: session.user.email ?? null, initials: initials || '?' });
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  return profile;
+  return {
+    id: user.id,
+    avatarUrl: null, // sem foto do Google agora que o login não é mais só OAuth
+    fullName: name || null,
+    email: user.email,
+    initials,
+  };
 }

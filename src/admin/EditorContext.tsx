@@ -3,7 +3,8 @@
  *  Demais usuários precisam da senha para desbloquear. */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useContentStore } from '@/store/contentStore';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import { apiPost } from '@/lib/apiClient';
 
 // Quem pode entrar no Modo Gestor. A trava por setor (mestre x gestor) é
 // imposta no servidor (edge function editor-save) pelo e-mail do login.
@@ -48,25 +49,18 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [isGestor, setIsGestor] = useState(false);
   const [isMaster, setIsMaster] = useState(false);
 
+  const { user } = useAuth();
+
   useEffect(() => {
     initStore();
   }, [initStore]);
 
   // Verifica se o usuário logado é uma liderança (gestor) ou mestre
   useEffect(() => {
-    const apply = (email: string) => {
-      const e = email.trim().toLowerCase();
-      setIsGestor(GESTOR_EMAILS.has(e));
-      setIsMaster(MASTER_EMAILS.has(e));
-    };
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      apply(session?.user?.email ?? '');
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      apply(session?.user?.email ?? '');
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+    const e = (user?.email ?? '').trim().toLowerCase();
+    setIsGestor(GESTOR_EMAILS.has(e));
+    setIsMaster(MASTER_EMAILS.has(e));
+  }, [user]);
 
   const isEditing = !!editorToken;
 
@@ -89,9 +83,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   }, [isEditing, isGestor, setEditorToken]);
 
   const tryUnlock = async (password: string) => {
-    const editorPw = import.meta.env.VITE_EDITOR_PASSWORD;
-    if (editorPw && password === editorPw) {
-      setEditorToken('editor-mode-active');
+    const r = await apiPost<{ token?: string }>('/api/auth/editor-login', { password });
+    if (r.data.ok && r.data.token) {
+      setEditorToken(r.data.token);
       setPasswordModalOpen(false);
       return true;
     }

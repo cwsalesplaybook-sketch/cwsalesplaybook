@@ -1,7 +1,8 @@
 /** Meta do Mês — layout completo com ritmo diário e insights */
 import { useEffect, useState, useCallback } from 'react';
 import { Settings, RefreshCw, X, Check, TrendingUp, Calendar, Target, Lightbulb, Zap, Star, Rocket, Pencil, AlertTriangle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiGet, apiPut } from '@/lib/apiClient';
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { useSidebarContext } from '@/context/SidebarContext';
 import { useSdrOptions } from '@/hooks/useSdrOptions';
@@ -210,6 +211,7 @@ function ConfigModal({ metaData, nomeDetectado, vinculoConfirmado, sdrOptions, s
 }
 
 function PersonalMetaView() {
+  const { user } = useAuth();
   const { options: sdrOptions, map: sdrMap } = useSdrOptions();
   const [metaData, setMetaData]   = useState<MetaData>({ meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, sdrId: '', diasUteis: null });
   const [apiData, setApiData]     = useState<ApiData | null>(null);
@@ -246,18 +248,23 @@ function PersonalMetaView() {
   const [totalValor, setTotalValor] = useState('0');
 
   const carregarPerfil = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    setUserId(session.user.id);
+    if (!user) return;
+    setUserId(user.id);
     const mesAtual = new Date().toISOString().slice(0, 7);
     setMes(mesAtual);
     // Lista de nomes (vinda do Pipedrive via useSdrOptions) usada tanto pra detectar
     // o SDR na primeira vez quanto pra exibir o nome de quem já está vinculado.
     const options = sdrOptions;
 
-    const { data } = await supabase.from('user_metas').select('*').eq('user_id', session.user.id).eq('mes', mesAtual).single();
+    interface UserMetaRow {
+      meta1: number; meta2: number; meta3: number;
+      mega1: number | null; mega2: number | null; mega3: number | null;
+      ajuste: number; sdr_id: string | null; dias_uteis: number | null;
+    }
+    const r = await apiGet<{ meta: UserMetaRow | null }>(`/api/profile/user-metas?mes=${mesAtual}`);
+    const data = r.data.meta;
     if (data) {
-      setMetaData({ meta1: data.meta1, meta2: data.meta2, meta3: data.meta3, mega1: data.mega1 ?? 0, mega2: data.mega2 ?? 0, mega3: data.mega3 ?? 0, ajuste: data.ajuste, sdrId: data.sdr_id, diasUteis: data.dias_uteis ?? null });
+      setMetaData({ meta1: data.meta1, meta2: data.meta2, meta3: data.meta3, mega1: data.mega1 ?? 0, mega2: data.mega2 ?? 0, mega3: data.mega3 ?? 0, ajuste: data.ajuste, sdrId: data.sdr_id ?? '', diasUteis: data.dias_uteis ?? null });
       // Já tem um vínculo salvo (desta sessão ou de antes) — trata como confirmado
       // pra não pedir o nome de novo toda vez que reabrir "Configurar Metas".
       if (data.sdr_id) {
@@ -269,7 +276,7 @@ function PersonalMetaView() {
       let autoSdrId = '';
       let autoSdrNome = '';
       let confiavel = false; // match exato ou "contém" — confiável o bastante pra auto-salvar
-      const fullName = norm(session.user.user_metadata?.full_name ?? '');
+      const fullName = norm(user.apelido ?? '');
       if (fullName) {
         // 1º: nome exatamente igual (ignorando acento/caixa)
         let match = options.find(u => norm(u.name) === fullName);
@@ -311,16 +318,12 @@ function PersonalMetaView() {
       // o clique em "Salvar" — assim a liderança já acompanha os ganhos do squad
       // mesmo antes da pessoa configurar as próprias metas.
       if (confiavel) {
-        await supabase.from('user_metas').upsert({
-          user_id: session.user.id, sdr_id: autoSdrId,
-          meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0,
-          mes: mesAtual, updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id,mes' });
+        await apiPut('/api/profile/user-metas', { sdr_id: autoSdrId, meta1: 0, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0, ajuste: 0, mes: mesAtual });
       }
 
       setConfig(true);
     }
-  }, [sdrOptions, sdrMap]);
+  }, [user, sdrOptions, sdrMap]);
 
   const buscarGanhos = useCallback(async (sdrId: string, forceRefresh = false) => {
     if (!sdrId) return;
@@ -341,7 +344,7 @@ function PersonalMetaView() {
   }, [metaData.sdrId, buscarGanhos]);
 
   const salvarConfig = async (novosDados: MetaData) => {
-    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: novosDados.sdrId, meta1: novosDados.meta1, meta2: novosDados.meta2, meta3: novosDados.meta3, mega1: novosDados.mega1, mega2: novosDados.mega2, mega3: novosDados.mega3, ajuste: novosDados.ajuste, dias_uteis: novosDados.diasUteis, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
+    await apiPut('/api/profile/user-metas', { sdr_id: novosDados.sdrId, meta1: novosDados.meta1, meta2: novosDados.meta2, meta3: novosDados.meta3, mega1: novosDados.mega1, mega2: novosDados.mega2, mega3: novosDados.mega3, ajuste: novosDados.ajuste, dias_uteis: novosDados.diasUteis, mes });
     setMetaData(novosDados);
     setConfig(false);
     if (novosDados.sdrId) buscarGanhos(novosDados.sdrId, true);
@@ -350,7 +353,7 @@ function PersonalMetaView() {
   const alterarAjuste = async (delta: number) => {
     const novoAjuste = metaData.ajuste + delta;
     setMetaData(m => ({ ...m, ajuste: novoAjuste }));
-    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: metaData.sdrId, meta1: metaData.meta1, meta2: metaData.meta2, meta3: metaData.meta3, mega1: metaData.mega1, mega2: metaData.mega2, mega3: metaData.mega3, ajuste: novoAjuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
+    await apiPut('/api/profile/user-metas', { sdr_id: metaData.sdrId, meta1: metaData.meta1, meta2: metaData.meta2, meta3: metaData.meta3, mega1: metaData.mega1, mega2: metaData.mega2, mega3: metaData.mega3, ajuste: novoAjuste, mes });
   };
 
   // Define o total de ganhos direto (em vez de somar/subtrair) — reconstitui o
@@ -359,7 +362,7 @@ function PersonalMetaView() {
   const definirTotalManual = async (novoTotal: number) => {
     const novoAjuste = novoTotal - (apiData?.ganhos ?? 0);
     setMetaData(m => ({ ...m, ajuste: novoAjuste }));
-    await supabase.from('user_metas').upsert({ user_id: userId, sdr_id: metaData.sdrId, meta1: metaData.meta1, meta2: metaData.meta2, meta3: metaData.meta3, mega1: metaData.mega1, mega2: metaData.mega2, mega3: metaData.mega3, ajuste: novoAjuste, mes, updated_at: new Date().toISOString() }, { onConflict: 'user_id,mes' });
+    await apiPut('/api/profile/user-metas', { sdr_id: metaData.sdrId, meta1: metaData.meta1, meta2: metaData.meta2, meta3: metaData.meta3, mega1: metaData.mega1, mega2: metaData.mega2, mega3: metaData.mega3, ajuste: novoAjuste, mes });
   };
 
   const totalGanhos   = (apiData?.ganhos ?? 0) + metaData.ajuste;

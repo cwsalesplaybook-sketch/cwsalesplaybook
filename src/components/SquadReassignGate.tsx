@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Users, ArrowRight, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 import { useSidebarContext } from '@/context/SidebarContext';
 
 const SQUAD_DISSOLVIDO = 'Tubarão';
@@ -12,6 +12,7 @@ const SQUADS_DISPONIVEIS = ['Águia', 'Lobo', 'Serpentes'];
 
 export function SquadReassignGate() {
   const { papel, squad, papelReady } = useSidebarContext();
+  const { updateProfile } = useAuth();
   const [novoSquad, setNovoSquad] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -21,19 +22,10 @@ export function SquadReassignGate() {
   const confirmar = async () => {
     if (!novoSquad || saving) return;
     setSaving(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { setSaving(false); return; }
-
-    const { error } = await supabase.auth.updateUser({ data: { squad: novoSquad } });
-    if (error) { setSaving(false); return; }
-
-    await supabase.from('sdr_profiles').update({
-      squad: novoSquad, updated_at: new Date().toISOString(),
-    }).eq('user_id', session.user.id);
-
-    // SidebarContext escuta onAuthStateChange (USER_UPDATED) e reaplica o squad
-    // novo sozinho — assim que isso acontecer, precisaEscolher vira false e
-    // o gate some, sem precisar de estado local extra aqui.
+    const r = await updateProfile({ squad: novoSquad }, 'PATCH');
+    if (!r.ok) { setSaving(false); return; }
+    // updateProfile já refaz o /me — SidebarContext reaplica o squad novo
+    // sozinho, precisaEscolher vira false e o gate some.
   };
 
   return (

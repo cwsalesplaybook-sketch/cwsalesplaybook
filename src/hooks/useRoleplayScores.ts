@@ -1,10 +1,11 @@
-/** Placar do Roleplay — em Supabase, ligado ao usuário logado de verdade
+/** Placar do Roleplay — na API própria, ligado ao usuário logado de verdade
  *  (nada de nome digitado à mão). Antes de salvar ou de exibir o ranking,
  *  a pontuação é recalculada a partir da sequência de jogadas guardada
  *  (ver jogarSequencia em lib/roleplay/engine.ts), então um número editado
  *  na mão no banco não teria efeito nenhum no ranking. */
 import { useCallback, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiGet, apiPost, apiDelete } from '@/lib/apiClient';
+import { hasAccessToken } from '@/context/AuthContext';
 import { jogarSequencia, type GameState, type Pontuacao } from '@/lib/roleplay/engine';
 
 export interface RoleplayScore {
@@ -44,12 +45,9 @@ export function useRoleplayScores() {
   const carregar = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const { data, error: err } = await supabase
-      .from('roleplay_scores')
-      .select('*')
-      .order('pontos', { ascending: false });
-    if (err) setError(err.message);
-    else setScores((data ?? []).map(fromRow));
+    const r = await apiGet<{ scores?: Parameters<typeof fromRow>[0][]; error?: string }>('/api/profile/roleplay-scores');
+    if (!r.data.ok) setError(r.data.error ?? 'Erro ao carregar');
+    else setScores((r.data.scores ?? []).map(fromRow));
     setLoading(false);
   }, []);
 
@@ -62,11 +60,9 @@ export function useRoleplayScores() {
     const replay = jogarSequencia(state.persona.id, state.jogadas);
     if (!replay || !replay.estado.fim) return { ok: false, motivo: 'Não foi possível validar a sequência da partida.' };
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return { ok: false, motivo: 'Sessão expirada — faça login de novo.' };
+    if (!hasAccessToken()) return { ok: false, motivo: 'Sessão expirada — faça login de novo.' };
 
-    const { error: err } = await supabase.from('roleplay_scores').insert({
-      user_id: session.user.id,
+    const r = await apiPost<{ error?: string }>('/api/profile/roleplay-scores', {
       nome_exibicao: nome,
       persona_id: state.persona.id,
       dificuldade: state.persona.dificuldade,
@@ -77,15 +73,15 @@ export function useRoleplayScores() {
       turnos: replay.estado.turno,
       jogadas: state.jogadas,
     });
-    if (err) return { ok: false, motivo: err.message };
+    if (!r.data.ok) return { ok: false, motivo: r.data.error };
     await carregar();
     return { ok: true, pontuacao: replay.pontuacao };
   }, [carregar]);
 
   const remover = useCallback(async (id: string) => {
     setScores((prev) => prev.filter((s) => s.id !== id));
-    const { error: err } = await supabase.from('roleplay_scores').delete().eq('id', id);
-    if (err) { setError(err.message); carregar(); }
+    const r = await apiDelete<{ error?: string }>(`/api/profile/roleplay-scores?id=${encodeURIComponent(id)}`);
+    if (!r.data.ok) { setError(r.data.error ?? 'Erro ao remover'); carregar(); }
   }, [carregar]);
 
   return { scores, loading, error, salvar, remover, recarregar: carregar };

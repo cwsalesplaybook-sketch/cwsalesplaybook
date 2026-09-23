@@ -3,11 +3,11 @@ import { useState, useEffect } from 'react';
 import {
   ShieldCheck, BookOpen, Target, Heart, Zap, Bell, HelpCircle,
   LayoutDashboard, Sparkles, Settings, RefreshCw, Save, X,
-  Users, Activity, Edit3, ChevronRight, ArrowUpDown, Type,
-  Megaphone, Trophy, Calendar, Map, TrendingUp,
+  Edit3, ChevronRight, Type,
+  Trophy, Calendar, Map, TrendingUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { apiGet, apiPatch } from '@/lib/apiClient';
 import { toast } from '@/hooks/use-toast';
 import { useSdrOptions } from '@/hooks/useSdrOptions';
 
@@ -22,25 +22,7 @@ interface MetaRow {
   mes: string;
 }
 
-interface ActivityRow {
-  user_id: string;
-  user_email: string;
-  user_name: string;
-  last_seen: string;
-  visit_count: number;
-}
-
 function getMesAtual() { return new Date().toISOString().slice(0, 7); }
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-}
-function getDaysAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const days = Math.floor(diff / 86400000);
-  if (days === 0) return 'Hoje';
-  if (days === 1) return 'Ontem';
-  return `${days} dias atrás`;
-}
 
 // ── Guia por seção ──────────────────────────────────────────────────────────
 const GUIDE_SECTIONS = [
@@ -211,9 +193,8 @@ const GUIDE_SECTIONS = [
 // ── Componente principal ────────────────────────────────────────────────────
 export default function PainelControle() {
   const { options: sdrOptions, map: sdrMap } = useSdrOptions();
-  const [tab, setTab] = useState<'guia' | 'metas' | 'acesso'>('guia');
+  const [tab, setTab] = useState<'guia' | 'metas'>('guia');
   const [metas, setMetas] = useState<MetaRow[]>([]);
-  const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<MetaRow>>({});
@@ -221,17 +202,13 @@ export default function PainelControle() {
 
   async function loadData() {
     setLoading(true);
-    const [{ data: metasData }, { data: actData }] = await Promise.all([
-      supabase.from('user_metas').select('*').eq('mes', mes),
-      supabase.from('user_activity' as any).select('*').order('last_seen', { ascending: false }),
-    ]);
-    setMetas((metasData as MetaRow[] | null) ?? []);
-    setActivity((actData as ActivityRow[] | null) ?? []);
+    const r = await apiGet<{ metas: MetaRow[] }>(`/api/admin/user-metas?mes=${mes}`);
+    setMetas(r.data.metas ?? []);
     setLoading(false);
   }
 
   useEffect(() => {
-    if (tab === 'metas' || tab === 'acesso') loadData();
+    if (tab === 'metas') loadData();
   }, [tab]);
 
   const allSdrs = sdrOptions.map(({ id: sdrId, name: nome }) => ({
@@ -249,7 +226,7 @@ export default function PainelControle() {
       mes,
     };
     if (meta?.id) {
-      await supabase.from('user_metas').update(payload).eq('id', meta.id);
+      await apiPatch('/api/admin/user-metas', { ...payload, id: meta.id });
       toast({ title: 'Meta salva!', description: `Meta de ${sdrMap[sdrId]} atualizada.` });
     } else {
       toast({ title: 'Atenção', description: 'A meta só pode ser criada pelo próprio SDR na primeira vez.', variant: 'default' });
@@ -279,7 +256,6 @@ export default function PainelControle() {
         {([
           { key: 'guia',   label: 'Guia do Gestor',  icon: ShieldCheck },
           { key: 'metas',  label: 'Metas dos SDRs',  icon: Settings    },
-          { key: 'acesso', label: 'Acesso do Time',  icon: Activity    },
         ] as const).map(({ key, label, icon: Icon }) => (
           <button key={key} onClick={() => setTab(key)}
             className={cn(
@@ -317,7 +293,7 @@ export default function PainelControle() {
                 },
                 {
                   title: 'Salva automaticamente',
-                  desc: 'Toda edição é salva no Supabase em tempo real. Não precisa clicar em "Salvar".',
+                  desc: 'Toda edição é salva automaticamente. Não precisa clicar em "Salvar".',
                 },
               ].map(({ title, desc }) => (
                 <div key={title} className="flex gap-3">
@@ -472,78 +448,6 @@ export default function PainelControle() {
           <p className="text-xs text-cw-muted">
             💡 Apenas SDRs que já configuraram suas metas podem ter os valores editados aqui.
           </p>
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          ABA: ACESSO DO TIME
-      ══════════════════════════════════════════════════════════════════════ */}
-      {tab === 'acesso' && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <button onClick={loadData}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-cw-elevated border border-cw-border text-cw-muted hover:text-cw-text hover:bg-cw-purple/10 transition-all">
-              <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
-              Atualizar
-            </button>
-          </div>
-
-          {activity.length === 0 ? (
-            <div className="cw-card p-10 text-center">
-              <Users className="h-10 w-10 text-cw-border mx-auto mb-3" />
-              <p className="text-cw-muted text-sm">Nenhum dado de acesso ainda.</p>
-              <p className="text-cw-muted text-xs mt-1">Os dados aparecem conforme o time acessa o sistema.</p>
-            </div>
-          ) : (
-            <div className="cw-card overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-cw-border">
-                    <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-cw-muted">Usuário</th>
-                    <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-cw-muted">Email</th>
-                    <th className="text-center px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-cw-muted">Último acesso</th>
-                    <th className="text-center px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-cw-muted">Visitas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activity.map(row => (
-                    <tr key={row.user_id} className="border-b border-cw-border/50">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="h-7 w-7 rounded-full bg-cw-purple/20 flex items-center justify-center text-[10px] font-black text-cw-purple shrink-0">
-                            {(row.user_name ?? '?').split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
-                          </div>
-                          <span className="font-medium text-cw-text">{row.user_name ?? 'Usuário'}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-cw-muted text-xs">{row.user_email}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={cn(
-                          'text-xs font-semibold px-2 py-0.5 rounded-full',
-                          getDaysAgo(row.last_seen) === 'Hoje' ? 'bg-emerald-500/20 text-emerald-400' :
-                          getDaysAgo(row.last_seen) === 'Ontem' ? 'bg-blue-500/20 text-blue-400' :
-                          'bg-cw-elevated text-cw-muted border border-cw-border'
-                        )}>
-                          {getDaysAgo(row.last_seen)}
-                        </span>
-                        <p className="text-[10px] text-cw-muted mt-0.5">{formatDate(row.last_seen)}</p>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={cn(
-                          'text-sm font-bold px-2.5 py-0.5 rounded-lg',
-                          row.visit_count >= 10 ? 'bg-purple-500/20 text-purple-300' :
-                          row.visit_count >= 3  ? 'bg-blue-500/20 text-blue-300' :
-                          'bg-cw-elevated text-cw-muted border border-cw-border'
-                        )}>
-                          {row.visit_count}x
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
       )}
     </div>

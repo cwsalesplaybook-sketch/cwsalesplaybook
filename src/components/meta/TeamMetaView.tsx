@@ -10,7 +10,7 @@
  *  LTR e no-show ainda não têm dado real integrado — mostram só a meta. */
 import { useCallback, useEffect, useState } from 'react';
 import { Settings, RefreshCw, X, Users, Target, TrendingUp, BarChart3 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiGet, apiPut, apiPatch } from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
 
 interface TeamMeta { meta1: number; }
@@ -152,24 +152,31 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
     setMes(mesAtual);
     try {
       // 1. Membros do squad + meta agregada + KPIs do squad (RLS libera para o líder).
-      const [{ data: perfis }, { data: tMeta }, { data: kpis }] = await Promise.all([
-        supabase.from('sdr_profiles').select('user_id, apelido, email').eq('squad', sq),
-        supabase.from('team_metas').select('*').eq('squad', sq).eq('mes', mesAtual).maybeSingle(),
-        supabase.from('squad_kpis').select('*').eq('squad', sq).eq('mes', mesAtual).maybeSingle(),
+      const [perfisR, tMetaR, kpisR] = await Promise.all([
+        apiGet<{ perfis: { user_id: string; apelido: string | null; email: string | null }[] }>(
+          `/api/profile/sdr-profiles?squad=${encodeURIComponent(sq)}`,
+        ),
+        apiGet<{ meta: { meta1: number } | null }>(`/api/profile/team-metas?squad=${encodeURIComponent(sq)}&mes=${mesAtual}`),
+        apiGet<{
+          kpis: { meta_clientes: number; meta_clientes_dia: number; meta_agendamentos_dia: number | null; meta_ltr: number; meta_no_show: number } | null;
+        }>(`/api/profile/squad-kpis?squad=${encodeURIComponent(sq)}&mes=${mesAtual}`),
       ]);
+      const tMeta = tMetaR.data.meta;
+      const kpis = kpisR.data.kpis;
       setTeamMeta(tMeta ? { meta1: tMeta.meta1 } : META_VAZIA);
       setSquadKpis(kpis
         ? { clientes: kpis.meta_clientes, clientesDia: kpis.meta_clientes_dia, agendamentosDia: kpis.meta_agendamentos_dia ?? 0, ltr: Number(kpis.meta_ltr), noShow: Number(kpis.meta_no_show) }
         : KPIS_VAZIO);
 
-      const lista = perfis ?? [];
+      const lista = perfisR.data.perfis ?? [];
       const ids = lista.map(p => p.user_id);
 
       // 2. Metas individuais dos membros.
-      const { data: metas } = ids.length
-        ? await supabase.from('user_metas').select('*').in('user_id', ids).eq('mes', mesAtual)
-        : { data: [] as any[] };
-      const metaPorUser = new Map((metas ?? []).map(m => [m.user_id, m]));
+      interface UserMetaRow { user_id: string; sdr_id: string | null; meta1: number; meta2: number; meta3: number; ajuste: number; }
+      const metasR = ids.length
+        ? await apiGet<{ metas: UserMetaRow[] }>(`/api/profile/user-metas?mes=${mesAtual}&userIds=${ids.join(',')}`)
+        : null;
+      const metaPorUser = new Map((metasR?.data.metas ?? []).map(m => [m.user_id, m]));
 
       // 3. Monta os membros — ganhos vêm só do ajuste manual (sem API externa).
       const base: Membro[] = lista.map(p => {
@@ -191,19 +198,12 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
   useEffect(() => { carregar(squad); }, [squad, carregar]);
 
   const salvarMetaSquad = async (m: TeamMeta, k: SquadKpis) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const email = session?.user?.email ?? null;
-    const agora = new Date().toISOString();
     await Promise.all([
-      supabase.from('team_metas').upsert({
-        squad, mes, meta1: m.meta1, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0,
-        updated_by: email, updated_at: agora,
-      }, { onConflict: 'squad,mes' }),
-      supabase.from('squad_kpis').upsert({
+      apiPut('/api/profile/team-metas', { squad, mes, meta1: m.meta1, meta2: 0, meta3: 0, mega1: 0, mega2: 0, mega3: 0 }),
+      apiPut('/api/profile/squad-kpis', {
         squad, mes, meta_clientes: k.clientes, meta_clientes_dia: k.clientesDia,
-        meta_agendamentos_dia: k.agendamentosDia,
-        meta_ltr: k.ltr, meta_no_show: k.noShow, updated_by: email, updated_at: agora,
-      }, { onConflict: 'squad,mes' }),
+        meta_agendamentos_dia: k.agendamentosDia, meta_ltr: k.ltr, meta_no_show: k.noShow,
+      }),
     ]);
     setTeamMeta(m);
     setSquadKpis(k);
@@ -212,10 +212,7 @@ export default function TeamMetaView({ squads }: { squads: string[] }) {
 
   const salvarMembroMeta = async (mem: Membro, novo: { meta1: number; meta2: number; meta3: number }) => {
     if (!mem.sdrId) return;
-    await supabase.from('user_metas').upsert({
-      user_id: mem.userId, sdr_id: mem.sdrId, mes,
-      meta1: novo.meta1, meta2: novo.meta2, meta3: novo.meta3, updated_at: new Date().toISOString(),
-    }, { onConflict: 'user_id,mes' });
+    await apiPatch('/api/profile/user-metas', { userId: mem.userId, sdrId: mem.sdrId, mes, ...novo });
     setMembros(prev => prev.map(x => x.userId === mem.userId ? { ...x, ...novo } : x));
     setEditMembro(null);
   };

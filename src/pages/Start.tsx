@@ -1,6 +1,6 @@
 /** Página /start — Comece por Aqui. */
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 import { OnboardingWizard } from '@/components/OnboardingWizard';
 import { WelcomeHero } from '@/components/start/WelcomeHero';
 import { NextTasks } from '@/components/start/NextTasks';
@@ -15,16 +15,15 @@ import { useSidebarContext } from '@/context/SidebarContext';
 export default function Start() {
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const { setOnboardingActive } = useSidebarContext();
+  const { user } = useAuth();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      const done = data.user?.user_metadata?.onboarding_done === true;
-      const needs = !done;
-      setNeedsOnboarding(needs);
-      setOnboardingActive(needs);
-    });
+    if (!user) return;
+    const needs = user.onboarding_done !== true;
+    setNeedsOnboarding(needs);
+    setOnboardingActive(needs);
     return () => { setOnboardingActive(false); };
-  }, [setOnboardingActive]);
+  }, [user, setOnboardingActive]);
 
   const handleComplete = () => {
     setNeedsOnboarding(false);

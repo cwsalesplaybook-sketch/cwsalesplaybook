@@ -1,23 +1,19 @@
 /** Roteamento e layout global do CW Sales Playbook. */
-import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { SidebarProvider, ForcePapel, useSidebarContext, type Papel } from '@/context/SidebarContext';
-import { useContentStore } from '@/store/contentStore';
+import { SidebarProvider, ForcePapel, useSidebarContext } from '@/context/SidebarContext';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { FloatingSearch } from '@/components/FloatingSearch';
 import { EditorProvider } from '@/admin/EditorContext';
-import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { EditorBanner } from '@/admin/EditorBanner';
 import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner';
 import { PasswordGate } from '@/admin/PasswordGate';
 import { SquadReassignGate } from '@/components/SquadReassignGate';
-import { supabase } from '@/integrations/supabase/client';
-import type { Session } from '@supabase/supabase-js';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 import Login from '@/pages/Login';
 import TrocarSenha from '@/pages/TrocarSenha';
 import Dashboard from '@/components/dashboard/Dashboard';
@@ -71,75 +67,6 @@ import GestorPlaceholder from '@/pages/gestor/GestorPlaceholder';
 import { Users, Trophy, Map as GestorMap, BarChart3, Settings } from 'lucide-react';
 
 const queryClient = new QueryClient();
-
-const SESSION_KEY = 'cw-login-redirected';
-
-/* ── Modo "scrape" da Agatha ───────────────────────────────────────────────
-   A engine de revisão (src/lib/agathaReview.ts) abre cada aba num <iframe>
-   oculto com `?agatha=scrape&papel=X`. Nesse modo o app renderiza só o <main>
-   da rota, sob o papel pedido (ForcePapel), SEM sidebar/agents/overlay — pra
-   não poluir nem cair em recursão (o iframe não pode abrir sua própria engine).
-   Avaliado uma vez por documento; no iframe é fresh, então funciona. */
-const SCRAPE_PARAMS = new URLSearchParams(window.location.search);
-const IS_SCRAPE = SCRAPE_PARAMS.get('agatha') === 'scrape';
-const SCRAPE_PAPEL = ((SCRAPE_PARAMS.get('papel') as Papel) ?? 'SDR');
-
-/** Sinaliza ao iframe-pai que o conteúdo já carregou e pode ser raspado. */
-function ScrapeReady() {
-  const loaded = useContentStore((s) => s.loaded);
-  useEffect(() => {
-    if (!loaded) return;
-    // settle pra render/animações assentarem antes do pai ler o texto
-    const t = setTimeout(() => {
-      (window as unknown as { __agathaReady?: boolean }).__agathaReady = true;
-    }, 400);
-    return () => clearTimeout(t);
-  }, [loaded]);
-  return null;
-}
-
-/** Layout mínimo usado dentro dos iframes de scrape: só conteúdo, sem chrome. */
-function ScrapeLayout() {
-  return (
-    <EditorProvider>
-      <SidebarProvider>
-        <ForcePapel papel={SCRAPE_PAPEL}>
-          <main className="flex-1 overflow-y-auto scrollbar-cw">
-            <AnimatedRoutes />
-          </main>
-        </ForcePapel>
-        <ScrapeReady />
-      </SidebarProvider>
-    </EditorProvider>
-  );
-}
-
-/**
- * Roda dentro do BrowserRouter para ter acesso ao useNavigate.
- * Redireciona para /start UMA única vez por login.
- * sessionStorage garante que o flag sobrevive re-renders mas é limpo ao fechar a aba.
- */
-function LoginRedirectHandler() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (_event === 'SIGNED_IN') {
-        // Só redireciona se ainda não o fez nesta sessão do browser
-        if (!sessionStorage.getItem(SESSION_KEY)) {
-          sessionStorage.setItem(SESSION_KEY, '1');
-          navigate('/start', { replace: true });
-        }
-      }
-      if (_event === 'SIGNED_OUT') {
-        sessionStorage.removeItem(SESSION_KEY);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  return null;
-}
 
 /** Rota "/" (Sales Enablement) é do dashboard padrão/liderança — um Closer que
  *  chegue aqui por link antigo/salvo é levado pro próprio dashboard, já que
@@ -233,7 +160,6 @@ function AnimatedRoutes() {
 }
 
 function AppLayout() {
-  useActivityTracker();
   return (
     <EditorProvider>
       <SidebarProvider>
@@ -253,28 +179,10 @@ function AppLayout() {
   );
 }
 
-const App = () => {
-  const [session, setSession] = useState<Session | null | undefined>(undefined);
+function AppShell() {
+  const { status } = useAuth();
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
-      setSession(s ?? null);
-      if (!IS_SCRAPE && event === 'SIGNED_IN' && s?.user?.email) {
-        supabase.functions.invoke('login-notify', {
-          body: {
-            email: s.user.email,
-            name: s.user.user_metadata?.full_name ?? s.user.email,
-          },
-        }).catch(() => { /* fire-and-forget */ });
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (session === undefined) {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen bg-cw-bg flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-cw-purple border-t-transparent rounded-full animate-spin" />
@@ -298,20 +206,18 @@ const App = () => {
               <Route path="relatorios" element={<GestorPlaceholder titulo="Relatórios" subtitulo="Análises e dados do time" Icon={BarChart3} />} />
               <Route path="configuracoes" element={<GestorPlaceholder titulo="Configurações" subtitulo="Configurações do sistema" Icon={Settings} />} />
             </Route>
-            <Route path="/*" element={
-              session ? (
-                IS_SCRAPE
-                  ? <ScrapeLayout />
-                  : <><AppLayout /><LoginRedirectHandler /></>
-              ) : (
-                <Login />
-              )
-            } />
+            <Route path="/*" element={status === 'authed' ? <AppLayout /> : <Login />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
-};
+}
+
+const App = () => (
+  <AuthProvider>
+    <AppShell />
+  </AuthProvider>
+);
 
 export default App;

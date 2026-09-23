@@ -1,10 +1,10 @@
-/** Store global de overrides do Modo Gestor — agora usando Lovable Cloud (Supabase).
+/** Store global de overrides do Modo Gestor — API própria (Neon + Vercel).
  *
  *  Arquitetura:
- *  - Leitura pública via tabela `content_overrides` (qualquer usuário lê).
- *  - Escrita exclusiva via edge function `editor-save` (valida token de gestor).
- *  - Sincronização ao vivo via Supabase Realtime: quando um gestor salva,
- *    todos os clientes conectados recebem o update em ~1s.
+ *  - Leitura pública via GET /api/content/list (qualquer usuário lê).
+ *  - Escrita exclusiva via POST /api/content/save (valida token de gestor).
+ *  - Sincronização entre sessões via polling (30s + refetch ao focar a aba) —
+ *    Neon não tem um equivalente ao Realtime do Supabase.
  *  - Cache local em memória (useSyncExternalStore-friendly via Zustand).
  *
  *  Prefixo de setor:
@@ -14,10 +14,12 @@
  *  - Isso garante dashboards independentes num único app.
  */
 import { create } from 'zustand';
-import { supabase } from '@/integrations/supabase/client';
+import { apiGet, apiPost } from '@/lib/apiClient';
 import { useSidebarContext } from '@/context/SidebarContext';
 
 export const STORE_VERSION = 2;
+
+const POLL_MS = 30_000;
 
 /** Prefixo do setor para ações do store (lê localStorage — sem React). */
 function getStoreSectorPrefix(): string {
@@ -32,32 +34,31 @@ interface ContentStore {
   overrides: Record<string, unknown>;
   loaded: boolean;
   loading: boolean;
-  /** Token de sessão do gestor (vindo de editor-login). null = não logado. */
+  /** Token de sessão do gestor (vindo do editor-login, ou flag local pra quem já está autorizado pelo próprio login). null = não logado. */
   editorToken: string | null;
-  /** Aplica um valor remoto ao cache (chamado por realtime e por load inicial). */
   applyRemote: (key: string, value: unknown) => void;
   removeRemote: (key: string) => void;
   applyMany: (rows: Array<{ key: string; value: unknown }>) => void;
-  /** Salva com prefixo do setor atual (para conteúdo específico do setor). */
   saveOverride: (key: string, value: unknown) => Promise<void>;
-  /** Salva sem prefixo de setor — para conteúdo global (ex: sidebar.nav). */
   saveGlobalOverride: (key: string, value: unknown) => Promise<void>;
   saveMany: (upserts: Array<{ key: string; value: unknown }>) => Promise<void>;
-  /** Deleta com prefixo do setor atual. */
   deleteOverride: (key: string) => Promise<void>;
-  /** Deleta sem prefixo — para conteúdo global. */
   deleteGlobalOverride: (key: string) => Promise<void>;
   resetAll: () => Promise<void>;
   setEditorToken: (token: string | null) => void;
-  /** Carrega todos os overrides + assina realtime. Chame uma vez no boot. */
   init: () => Promise<void>;
+  refetch: () => Promise<void>;
   exportJSON: () => string;
   importJSON: (data: { version: number; overrides: Record<string, unknown> }) => Promise<void>;
 }
 
-let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-
 const TOKEN_KEY = 'cw-editor-token';
+let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+async function save(body: Record<string, unknown>): Promise<void> {
+  const r = await apiPost<{ error?: string }>('/api/content/save', body);
+  if (!r.data.ok) throw new Error(r.data.error || 'Falha ao salvar');
+}
 
 export const useContentStore = create<ContentStore>()((set, get) => ({
   version: STORE_VERSION,
@@ -92,117 +93,74 @@ export const useContentStore = create<ContentStore>()((set, get) => ({
   },
 
   saveOverride: async (key, value) => {
-    const token = get().editorToken;
-    if (!token) throw new Error('Sessão de gestor expirada — entre novamente.');
+    if (!get().editorToken) throw new Error('Sessão de gestor expirada — entre novamente.');
     const prefix = getStoreSectorPrefix();
     const effectiveKey = prefix + key;
     get().applyRemote(effectiveKey, value);
-    const { data, error } = await supabase.functions.invoke('editor-save', {
-      body: { token, key: effectiveKey, value },
-    });
-    if (error || (data && (data as { error?: string }).error)) {
-      throw new Error(error?.message || (data as { error?: string })?.error || 'Falha ao salvar');
-    }
+    await save({ token: get().editorToken, key: effectiveKey, value });
   },
 
   saveGlobalOverride: async (key, value) => {
-    const token = get().editorToken;
-    if (!token) throw new Error('Sessão de gestor expirada — entre novamente.');
+    if (!get().editorToken) throw new Error('Sessão de gestor expirada — entre novamente.');
     get().applyRemote(key, value);
-    const { data, error } = await supabase.functions.invoke('editor-save', {
-      body: { token, key, value },
-    });
-    if (error || (data && (data as { error?: string }).error)) {
-      throw new Error(error?.message || (data as { error?: string })?.error || 'Falha ao salvar');
-    }
+    await save({ token: get().editorToken, key, value });
   },
 
   saveMany: async (upserts) => {
-    const token = get().editorToken;
-    if (!token) throw new Error('Sessão de gestor expirada — entre novamente.');
+    if (!get().editorToken) throw new Error('Sessão de gestor expirada — entre novamente.');
     for (const u of upserts) get().applyRemote(u.key, u.value);
-    const { data, error } = await supabase.functions.invoke('editor-save', {
-      body: { token, upserts },
-    });
-    if (error || (data && (data as { error?: string }).error)) {
-      throw new Error(error?.message || (data as { error?: string })?.error || 'Falha ao salvar');
-    }
+    await save({ token: get().editorToken, upserts });
   },
 
   deleteOverride: async (key) => {
-    const token = get().editorToken;
-    if (!token) throw new Error('Sessão de gestor expirada — entre novamente.');
+    if (!get().editorToken) throw new Error('Sessão de gestor expirada — entre novamente.');
     const prefix = getStoreSectorPrefix();
     const effectiveKey = prefix + key;
     get().removeRemote(effectiveKey);
-    const { data, error } = await supabase.functions.invoke('editor-save', {
-      body: { token, deletes: [effectiveKey] },
-    });
-    if (error || (data && (data as { error?: string }).error)) {
-      throw new Error(error?.message || (data as { error?: string })?.error || 'Falha ao deletar');
-    }
+    await save({ token: get().editorToken, deletes: [effectiveKey] });
   },
 
   deleteGlobalOverride: async (key) => {
-    const token = get().editorToken;
-    if (!token) throw new Error('Sessão de gestor expirada — entre novamente.');
+    if (!get().editorToken) throw new Error('Sessão de gestor expirada — entre novamente.');
     get().removeRemote(key);
-    const { data, error } = await supabase.functions.invoke('editor-save', {
-      body: { token, deletes: [key] },
-    });
-    if (error || (data && (data as { error?: string }).error)) {
-      throw new Error(error?.message || (data as { error?: string })?.error || 'Falha ao deletar');
-    }
+    await save({ token: get().editorToken, deletes: [key] });
   },
 
   resetAll: async () => {
-    const token = get().editorToken;
-    if (!token) throw new Error('Sessão de gestor expirada — entre novamente.');
+    if (!get().editorToken) throw new Error('Sessão de gestor expirada — entre novamente.');
     set({ overrides: {} });
-    const { data, error } = await supabase.functions.invoke('editor-save', {
-      body: { token, resetAll: true },
-    });
-    if (error || (data && (data as { error?: string }).error)) {
-      throw new Error(error?.message || (data as { error?: string })?.error || 'Falha ao resetar');
-    }
+    await save({ token: get().editorToken, resetAll: true });
+  },
+
+  refetch: async () => {
+    const r = await apiGet<{ overrides?: Array<{ key: string; value: unknown }> }>('/api/content/list');
+    if (!r.data.ok || !r.data.overrides) return;
+    const map: Record<string, unknown> = {};
+    for (const row of r.data.overrides) map[row.key] = row.value;
+    set({ overrides: map });
   },
 
   init: async () => {
     if (get().loaded || get().loading) return;
     set({ loading: true });
     try {
-      const { data, error } = await supabase
-        .from('content_overrides')
-        .select('key, value');
-      if (error) throw error;
-      const map: Record<string, unknown> = {};
-      for (const row of data ?? []) map[row.key] = row.value;
-      set({ overrides: map, loaded: true, loading: false });
+      await get().refetch();
+      set({ loaded: true, loading: false });
     } catch (e) {
       console.error('[contentStore] erro ao carregar overrides:', e);
       set({ loaded: true, loading: false });
     }
 
-    // Realtime subscription
-    if (realtimeChannel) {
-      try { supabase.removeChannel(realtimeChannel); } catch { /* ignore */ }
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(() => {
+      if (document.visibilityState === 'visible') get().refetch();
+    }, POLL_MS);
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') get().refetch();
+      });
     }
-    realtimeChannel = supabase
-      .channel('content_overrides_changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'content_overrides' },
-        (payload) => {
-          if (payload.eventType === 'DELETE') {
-            const oldKey = (payload.old as { key?: string })?.key;
-            if (oldKey) get().removeRemote(oldKey);
-          } else {
-            const row = payload.new as { key: string; value: unknown };
-            if (row?.key) get().applyRemote(row.key, row.value);
-          }
-        }
-      )
-      .subscribe();
   },
 
   exportJSON: () =>

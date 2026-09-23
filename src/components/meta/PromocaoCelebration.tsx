@@ -5,7 +5,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PartyPopper, Rocket, ArrowRight, Sparkles } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiGet, apiPatch } from '@/lib/apiClient';
+import { useAuth } from '@/context/AuthContext';
 import { useSidebarContext, type Papel } from '@/context/SidebarContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { Confetti } from '@/components/Confetti';
@@ -14,28 +15,25 @@ interface Promo { novoPapel: Papel; novoSquad: string | null; promovidoPor: stri
 
 export default function PromocaoCelebration() {
   const { papel, squad, apelido, setPapel } = useSidebarContext();
+  const { user } = useAuth();
   const userProfile = useUserProfile();
   const navigate = useNavigate();
 
   const [promo, setPromo]       = useState<Promo | null>(null);
-  const [userId, setUserId]     = useState('');
   const [etapa, setEtapa]       = useState<'oferta' | 'aplicando' | 'feito'>('oferta');
   const [confetti, setConfetti] = useState(false);
+  const userId = user?.id ?? '';
 
   const carregar = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    setUserId(session.user.id);
-    const { data } = await supabase
-      .from('promocoes')
-      .select('novo_papel, novo_squad, promovido_por, status')
-      .eq('user_id', session.user.id)
-      .eq('status', 'pendente')
-      .maybeSingle();
+    if (!userId) return;
+    const r = await apiGet<{ promocao: { novo_papel: string; novo_squad: string | null; promovido_por: string | null } | null }>(
+      '/api/profile/promocoes',
+    );
+    const data = r.data.promocao;
     if (data) {
       setPromo({ novoPapel: data.novo_papel as Papel, novoSquad: data.novo_squad ?? null, promovidoPor: data.promovido_por ?? null });
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
@@ -55,12 +53,8 @@ export default function PromocaoCelebration() {
     setEtapa('aplicando');
     const novoSquad = promo.novoPapel === 'SDR' ? (promo.novoSquad ?? squad) : null;
 
-    // 1. Metadados do auth (fonte do papel no app).
-    await supabase.auth.updateUser({ data: { papel: promo.novoPapel, squad: novoSquad } });
-    // 2. Perfil público.
-    await supabase.from('sdr_profiles').update({ papel: promo.novoPapel, squad: novoSquad, updated_at: new Date().toISOString() }).eq('user_id', userId);
-    // 3. Fecha a promoção.
-    await supabase.from('promocoes').update({ status: 'concluida', concluida_at: new Date().toISOString() }).eq('user_id', userId);
+    // PATCH atualiza sdr_profiles (papel/squad) e fecha a promoção numa só transação.
+    await apiPatch('/api/profile/promocoes', { novoPapel: promo.novoPapel, novoSquad });
 
     setPapel(promo.novoPapel);
     setEtapa('feito');

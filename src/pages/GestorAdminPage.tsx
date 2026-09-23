@@ -1,7 +1,7 @@
 /** Painel do Gestor — metas dos SDRs, rastreamento de acesso e acompanhamento de onboarding */
 import { useEffect, useState } from 'react';
-import { Settings, RefreshCw, Save, X, Users, Activity, Edit3, ClipboardList, ChevronDown, ChevronRight } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Settings, RefreshCw, Save, X, Users, Edit3, ClipboardList, ChevronDown, ChevronRight } from 'lucide-react';
+import { apiGet, apiPost, apiPatch } from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { ONBOARDING } from '@/data/onboarding';
@@ -30,14 +30,6 @@ interface MetaRow {
   mes: string;
 }
 
-interface ActivityRow {
-  user_id: string;
-  user_email: string;
-  user_name: string;
-  last_seen: string;
-  visit_count: number;
-}
-
 interface SdrProfile {
   user_id: string;
   email: string;
@@ -45,7 +37,7 @@ interface SdrProfile {
   squad: string | null;
   papel: string;
   onboarding_done: boolean;
-  registered_at: string;
+  created_at: string;
 }
 
 interface OnboardingProgressRow {
@@ -192,7 +184,7 @@ function SdrOnboardingCard({ profile, progress }: {
 
           {/* Rodapé */}
           <div className="flex items-center gap-4 text-[11px] text-cw-muted border-t border-cw-border/50 pt-2">
-            <span>Cadastrado: <strong className="text-cw-text">{formatDate(profile.registered_at)}</strong></span>
+            <span>Cadastrado: <strong className="text-cw-text">{formatDate(profile.created_at)}</strong></span>
             {progress?.updated_at && (
               <span>Último check: <strong className="text-cw-text">{getDaysAgo(progress.updated_at)}</strong></span>
             )}
@@ -217,12 +209,11 @@ function SdrOnboardingCard({ profile, progress }: {
                 onClick={async () => {
                   setResetting(true);
                   try {
-                    const { data, error } = await supabase.functions.invoke('admin-reset-password', {
-                      body: { email: profile.email },
+                    const r = await apiPost<{ senha?: string; error?: string }>('/api/admin/reset-password', {
+                      email: profile.email,
                     });
-                    if (error) throw error;
-                    if (!data?.ok) throw new Error(data?.error ?? 'Falhou');
-                    setTempPass(data.senha as string);
+                    if (!r.data.ok || !r.data.senha) throw new Error(r.data.error ?? 'Falhou');
+                    setTempPass(r.data.senha);
                   } catch (e) {
                     toast({ title: 'Erro ao resetar', description: e instanceof Error ? e.message : 'Tente de novo.', variant: 'destructive' });
                   } finally {
@@ -245,28 +236,25 @@ function SdrOnboardingCard({ profile, progress }: {
 export default function GestorAdminPage() {
   const { options: sdrOptions, map: sdrMap } = useSdrOptions();
   const [metas, setMetas] = useState<MetaRow[]>([]);
-  const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [sdrProfiles, setSdrProfiles] = useState<SdrProfile[]>([]);
   const [onboardingProgress, setOnboardingProgress] = useState<OnboardingProgressRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<MetaRow>>({});
-  const [tab, setTab] = useState<'metas' | 'acesso' | 'onboarding'>('onboarding');
+  const [tab, setTab] = useState<'metas' | 'onboarding'>('onboarding');
   const [squadFiltro, setSquadFiltro] = useState<string>('Todos');
   const mes = getMesAtual();
 
   async function loadData() {
     setLoading(true);
-    const [{ data: metasData }, { data: actData }, { data: profilesData }, { data: progressData }] = await Promise.all([
-      supabase.from('user_metas').select('*').eq('mes', mes),
-      supabase.from('user_activity' as any).select('*').order('last_seen', { ascending: false }),
-      supabase.from('sdr_profiles').select('*').eq('papel', 'SDR').order('registered_at', { ascending: false }),
-      supabase.from('onboarding_progress').select('*'),
+    const [metasR, profilesR, progressR] = await Promise.all([
+      apiGet<{ metas: MetaRow[] }>(`/api/admin/user-metas?mes=${mes}`),
+      apiGet<{ perfis: SdrProfile[] }>('/api/admin/sdr-profiles'),
+      apiGet<{ progresso: OnboardingProgressRow[] }>('/api/admin/onboarding-progress'),
     ]);
-    setMetas((metasData as MetaRow[] | null) ?? []);
-    setActivity((actData as ActivityRow[] | null) ?? []);
-    setSdrProfiles((profilesData as SdrProfile[] | null) ?? []);
-    setOnboardingProgress((progressData as OnboardingProgressRow[] | null) ?? []);
+    setMetas(metasR.data.metas ?? []);
+    setSdrProfiles(profilesR.data.perfis ?? []);
+    setOnboardingProgress(progressR.data.progresso ?? []);
     setLoading(false);
   }
 
@@ -290,7 +278,7 @@ export default function GestorAdminPage() {
     };
 
     if (meta?.id) {
-      await supabase.from('user_metas').update(payload).eq('id', meta.id);
+      await apiPatch('/api/admin/user-metas', { ...payload, id: meta.id });
     } else {
       toast({ title: 'Atenção', description: 'A meta só pode ser criada pelo próprio SDR na primeira vez.', variant: 'default' });
       setEditingId(null);
@@ -347,7 +335,6 @@ export default function GestorAdminPage() {
         {([
           { key: 'onboarding', label: 'Onboarding SDRs', icon: ClipboardList },
           { key: 'metas',      label: 'Metas dos SDRs',  icon: Settings },
-          { key: 'acesso',     label: 'Acesso',           icon: Activity },
         ] as const).map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -511,74 +498,6 @@ export default function GestorAdminPage() {
           <p className="text-xs text-cw-muted">
             💡 Apenas SDRs que já configuraram suas metas podem ter os valores editados aqui.
           </p>
-        </div>
-      )}
-
-      {/* ───── Tab: Acesso ───── */}
-      {tab === 'acesso' && (
-        <div className="space-y-3 max-w-3xl">
-          {activity.length === 0 ? (
-            <div className="cw-card p-10 text-center">
-              <Users className="h-10 w-10 text-cw-border mx-auto mb-3" />
-              <p className="text-cw-muted text-sm">Nenhum dado de acesso ainda.</p>
-              <p className="text-cw-muted text-xs mt-1">Os dados aparecem conforme os SDRs acessam o sistema.</p>
-            </div>
-          ) : (
-            <div className="cw-card overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-cw-border">
-                    <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-cw-muted">Usuário</th>
-                    <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-cw-muted">Email</th>
-                    <th className="text-center px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-cw-muted">Último acesso</th>
-                    <th className="text-center px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-cw-muted">Visitas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activity.map(row => (
-                    <tr key={row.user_id} className="border-b border-cw-border/50">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="h-7 w-7 rounded-full bg-cw-purple/20 flex items-center justify-center text-[10px] font-black text-cw-purple shrink-0">
-                            {(row.user_name ?? '?').split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
-                          </div>
-                          <span className="font-medium text-cw-text">{row.user_name ?? 'Usuário'}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-cw-muted text-xs">{row.user_email}</td>
-                      <td className="px-4 py-3 text-center">
-                        <div>
-                          <span className={cn(
-                            'text-xs font-semibold px-2 py-0.5 rounded-full',
-                            getDaysAgo(row.last_seen) === 'Hoje'
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : getDaysAgo(row.last_seen) === 'Ontem'
-                              ? 'bg-blue-500/20 text-blue-400'
-                              : 'bg-cw-elevated text-cw-muted border border-cw-border'
-                          )}>
-                            {getDaysAgo(row.last_seen)}
-                          </span>
-                          <p className="text-[10px] text-cw-muted mt-0.5">{formatDate(row.last_seen)}</p>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={cn(
-                          'text-sm font-bold px-2.5 py-0.5 rounded-lg',
-                          row.visit_count >= 10
-                            ? 'bg-purple-500/20 text-purple-300'
-                            : row.visit_count >= 3
-                            ? 'bg-blue-500/20 text-blue-300'
-                            : 'bg-cw-elevated text-cw-muted border border-cw-border'
-                        )}>
-                          {row.visit_count}x
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
       )}
     </div>

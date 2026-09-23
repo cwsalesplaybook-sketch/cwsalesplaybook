@@ -3,7 +3,7 @@
  *  A pessoa promovida recebe a celebração na Meta do Mês e confirma a troca. */
 import { useCallback, useEffect, useState } from 'react';
 import { PartyPopper, X, Check, Clock, Rocket, Users } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiGet, apiPut, apiDelete } from '@/lib/apiClient';
 import { useSidebarContext, type Papel } from '@/context/SidebarContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { cn } from '@/lib/utils';
@@ -63,16 +63,13 @@ export default function Promocoes() {
   const carregar = useCallback(async () => {
     if (squadsLideradas.length === 0) { setLoading(false); return; }
     setLoading(true);
-    const { data: perfis } = await supabase
-      .from('sdr_profiles')
-      .select('user_id, apelido, email, papel, squad')
-      .in('squad', squadsLideradas);
-    const lista = perfis ?? [];
+    interface Perfil { user_id: string; apelido: string | null; email: string | null; papel: string | null; squad: string | null; }
+    interface Promo { user_id: string; novo_papel: string; status: string; }
+    const perfisR = await apiGet<{ perfis: Perfil[] }>(`/api/profile/sdr-profiles?squads=${squadsLideradas.map(encodeURIComponent).join(',')}`);
+    const lista = perfisR.data.perfis ?? [];
     const ids = lista.map(p => p.user_id);
-    const { data: promos } = ids.length
-      ? await supabase.from('promocoes').select('user_id, novo_papel, status').in('user_id', ids)
-      : { data: [] as any[] };
-    const pmap = new Map((promos ?? []).map(p => [p.user_id, p]));
+    const promosR = ids.length ? await apiGet<{ promocoes: Promo[] }>(`/api/profile/promocoes?userIds=${ids.join(',')}`) : null;
+    const pmap = new Map((promosR?.data.promocoes ?? []).map(p => [p.user_id, p]));
     setMembros(lista.map(p => {
       const pr = pmap.get(p.user_id);
       return {
@@ -90,16 +87,16 @@ export default function Promocoes() {
   useEffect(() => { carregar(); }, [carregar]);
 
   const liberarPromocao = async (membro: Membro, novoPapel: Papel) => {
-    await supabase.from('promocoes').upsert({
-      user_id: membro.userId, novo_papel: novoPapel, promovido_por: userProfile.fullName ?? userProfile.email ?? null,
-      status: 'pendente', created_at: new Date().toISOString(), concluida_at: null,
-    }, { onConflict: 'user_id' });
+    await apiPut('/api/profile/promocoes', {
+      userId: membro.userId, novoPapel, novoSquad: null,
+      promovidoPor: userProfile.fullName ?? userProfile.email ?? undefined,
+    });
     setPromover(null);
     carregar();
   };
 
   const cancelar = async (membro: Membro) => {
-    await supabase.from('promocoes').delete().eq('user_id', membro.userId);
+    await apiDelete(`/api/profile/promocoes?userId=${encodeURIComponent(membro.userId)}`);
     carregar();
   };
 

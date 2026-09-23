@@ -1,6 +1,6 @@
-/** Contexto global do papel selecionado (SDR/Closer) com persistência via Supabase. */
+/** Contexto global do papel selecionado (SDR/Closer) com persistência via API própria. */
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth, type AuthUser } from '@/context/AuthContext';
 
 export type Papel = 'SDR' | 'Closer' | 'Parcerias' | 'Liderança';
 
@@ -51,9 +51,10 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [impersonating, setImpersonating] = useState<ImpersonationTarget | null>(null);
   const [papelReady, setPapelReady] = useState(false);
   const previewLockRef = useRef(false);
+  const { status, user } = useAuth();
 
-  const applyMeta = (m: Record<string, unknown>) => {
-    const saved = m?.papel as Papel | undefined;
+  const applyMeta = (m: AuthUser) => {
+    const saved = m.papel as Papel | null;
     if (saved) {
       // Enquanto o gestor estiver "travado" numa prévia de outro dashboard,
       // não deixa o refresh de sessão sobrescrever a troca manual.
@@ -66,34 +67,26 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     } else {
       setOnboardingActive(true);
     }
-    setSquad((m?.squad as string) ?? null);
-    setSquadsLideradas(Array.isArray(m?.squads_lideradas) ? (m.squads_lideradas as string[]) : []);
-    setApelido((m?.apelido as string) ?? null);
+    setSquad(m.squad ?? null);
+    setSquadsLideradas(Array.isArray(m.squads_lideradas) ? m.squads_lideradas : []);
+    setApelido(m.apelido ?? null);
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) applyMeta(data.session.user.user_metadata ?? {});
+    if (status === 'loading') return;
+    if (status === 'anon' || !user) {
+      previewLockRef.current = false;
+      setLockedPapel(null);
+      setSquad(null);
+      setSquadsLideradas([]);
+      setApelido(null);
+      setOnboardingActive(false);
       setPapelReady(true);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session) {
-        previewLockRef.current = false;
-        setLockedPapel(null);
-        setSquad(null);
-        setSquadsLideradas([]);
-        setApelido(null);
-        setOnboardingActive(false);
-        setPapelReady(true);
-        return;
-      }
-      applyMeta(session.user.user_metadata ?? {});
-      setPapelReady(true);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+      return;
+    }
+    applyMeta(user);
+    setPapelReady(true);
+  }, [status, user]);
 
   const setPapel = (p: Papel) => {
     setPapelState(p);

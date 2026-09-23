@@ -17,7 +17,7 @@ import { useContentStore, useGlobalEditableContent } from '@/store/contentStore'
 import { toast } from '@/hooks/use-toast';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useNavFavorites } from '@/hooks/useNavFavorites';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?: boolean; }
 
@@ -98,6 +98,7 @@ const SECTIONS_COLLAPSED_BY_DEFAULT = ['Cultura e Time'];
 export function Sidebar() {
   const { papel, setPapel, lockedPapel, squad, squadsLideradas, apelido, onboardingActive, papelReady } = useSidebarContext();
   const { isEditing, openPasswordModal, lock, isMaster, isGestor } = useEditor();
+  const { logout } = useAuth();
   const userProfile = useUserProfile();
   const { isFav, toggle: toggleFav } = useNavFavorites(userProfile.email ?? '');
   const navigate = useNavigate();
@@ -291,7 +292,7 @@ export function Sidebar() {
             <KeyRound className="h-4 w-4" />
           </button>
           <button
-            onClick={() => supabase.auth.signOut()}
+            onClick={() => logout()}
             title="Sair"
             className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0 text-[#b89fd4] hover:text-red-400 hover:bg-red-500/10 transition-colors"
           >

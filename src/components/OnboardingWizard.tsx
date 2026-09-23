@@ -5,7 +5,7 @@ import {
   Sparkles, ArrowRight, Check, Bell, AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import type { Papel } from '@/context/SidebarContext';
 
@@ -61,6 +61,7 @@ interface Props {
 }
 
 export function OnboardingWizard({ onComplete, inline = false }: Props) {
+  const { updateProfile } = useAuth();
   const userProfile = useUserProfile();
   const userEmail = userProfile.email?.toLowerCase() ?? '';
   const cargoSugerido = EMAILS_LIDERANCA[userEmail] ?? null;
@@ -122,35 +123,16 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
 
     const squadsLed = papel === 'Liderança' ? squadsLideradas : [];
 
-    // 1. Atualiza metadados do auth (visão do sidebar)
-    const { error, data: authData } = await supabase.auth.updateUser({
-      data: {
-        papel,
-        squad: papel === 'SDR' ? squad : null,
-        cargo_lideranca: papel === 'Liderança' ? cargoLideranca : null,
-        squads_lideradas: squadsLed,
-        apelido: name,
-        onboarding_done: true,
-      },
+    const r = await updateProfile({
+      email: userEmail,
+      apelido: name,
+      papel,
+      squad: papel === 'SDR' ? squad : null,
+      squads_lideradas: squadsLed,
+      cargo_lideranca: papel === 'Liderança' ? cargoLideranca : null,
+      onboarding_done: true,
     });
-    if (error) { setSaving(false); return; }
-
-    // 2. Salva perfil na tabela pública (visível aos gestores)
-    const uid = authData?.user?.id;
-    const email = authData?.user?.email ?? userEmail;
-    if (uid) {
-      await supabase.from('sdr_profiles').upsert({
-        user_id: uid,
-        email,
-        apelido: name,
-        papel,
-        squad: papel === 'SDR' ? squad : null,
-        squads_lideradas: squadsLed,
-        cargo_lideranca: papel === 'Liderança' ? cargoLideranca : null,
-        onboarding_done: true,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' });
-    }
+    if (!r.ok) { setSaving(false); return; }
 
     localStorage.setItem('cw-papel', papel);
     onComplete();
@@ -159,33 +141,16 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
   /** CEOs entram direto como Liderança com acesso a todos os squads, sem passar pelo wizard. */
   const handleCompleteCEO = async () => {
     setSaving(true);
-    const { error, data: authData } = await supabase.auth.updateUser({
-      data: {
-        papel: 'Liderança',
-        squad: null,
-        cargo_lideranca: 'Diretoria',
-        squads_lideradas: SQUADS_SDR,
-        apelido: userProfile.fullName ?? null,
-        onboarding_done: true,
-      },
+    const r = await updateProfile({
+      email: userEmail,
+      apelido: userProfile.fullName ?? null,
+      papel: 'Liderança',
+      squad: null,
+      squads_lideradas: SQUADS_SDR,
+      cargo_lideranca: 'Diretoria',
+      onboarding_done: true,
     });
-    if (error) { setSaving(false); return; }
-
-    const uid = authData?.user?.id;
-    const email = authData?.user?.email ?? userEmail;
-    if (uid) {
-      await supabase.from('sdr_profiles').upsert({
-        user_id: uid,
-        email,
-        apelido: userProfile.fullName ?? null,
-        papel: 'Liderança',
-        squad: null,
-        squads_lideradas: SQUADS_SDR,
-        cargo_lideranca: 'Diretoria',
-        onboarding_done: true,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' });
-    }
+    if (!r.ok) { setSaving(false); return; }
 
     localStorage.setItem('cw-papel', 'Liderança');
     onComplete();

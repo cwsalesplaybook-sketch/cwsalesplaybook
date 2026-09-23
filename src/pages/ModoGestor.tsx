@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { useSidebarContext, type Papel, type ImpersonationTarget } from '@/context/SidebarContext';
 import { useEditor } from '@/admin/EditorContext';
 import { Header } from '@/components/layout/Header';
-import { supabase } from '@/integrations/supabase/client';
+import { apiGet, apiPost } from '@/lib/apiClient';
 import { toast } from '@/hooks/use-toast';
 
 const PLAYBOOKS = [
@@ -55,8 +55,8 @@ export default function ModoGestor() {
 
   useEffect(() => {
     if (!isGestor) return;
-    supabase.functions.invoke('listar-usuarios').then(({ data }) => {
-      const lista = (data as { usuarios?: Usuario[] } | null)?.usuarios ?? [];
+    apiGet<{ usuarios?: Usuario[] }>('/api/admin/listar-usuarios').then((r) => {
+      const lista = r.data.usuarios ?? [];
       setMembros(lista.map(u => ({ ...u, papel: (u.papel as Papel) ?? null })));
       setLoadingMembros(false);
     }).catch(() => setLoadingMembros(false));
@@ -65,12 +65,11 @@ export default function ModoGestor() {
   const resetarSenha = async (u: Usuario) => {
     setResetando(u.userId);
     try {
-      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
-        body: { email: u.email, userId: u.userId },
+      const r = await apiPost<{ senha?: string; error?: string }>('/api/admin/reset-password', {
+        email: u.email, userId: u.userId,
       });
-      if (error) throw error;
-      if (!data?.ok) throw new Error(data?.error ?? 'Falhou');
-      setSenhaTemp(s => ({ ...s, [u.userId]: data.senha as string }));
+      if (!r.data.ok || !r.data.senha) throw new Error(r.data.error ?? 'Falhou');
+      setSenhaTemp(s => ({ ...s, [u.userId]: r.data.senha as string }));
     } catch (e) {
       toast({ title: 'Erro ao resetar', description: e instanceof Error ? e.message : 'Tente de novo.', variant: 'destructive' });
     } finally {
