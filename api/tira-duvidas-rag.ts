@@ -7,36 +7,37 @@
  *  (api/_lib/claria-prompt.js). Se não achar contexto bom o suficiente,
  *  retorna resposta: null — o frontend cai no fallback de sempre (Slack
  *  da pessoa real). */
-import { createClient } from '@supabase/supabase-js';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { query } from './_lib/db';
 import { CLARIA_BASE_PROMPT } from './_lib/claria-prompt.js';
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest';
 const MATCH_COUNT = 6;
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+interface Chunk {
+  title: string | null;
+  source_url: string;
+  content: string;
+}
 
-export default async function handler(req, res) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   if (req.method !== 'POST') return res.status(405).json({ ok: false, erro: 'Método não permitido' });
   if (!GEMINI_KEY) return res.status(500).json({ ok: false, erro: 'GEMINI_API_KEY não configurado' });
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return res.status(500).json({ ok: false, erro: 'Supabase não configurado' });
 
   const { pergunta, persona } = req.body || {};
   if (!pergunta || typeof pergunta !== 'string') return res.status(400).json({ ok: false, erro: 'pergunta obrigatória' });
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
   try {
-    const { data: chunks, error } = await supabase.rpc('match_rag_chunks', {
-      query_text: pergunta,
-      match_count: MATCH_COUNT,
-    });
-    if (error) throw new Error(error.message);
+    // match_rag_chunks é SECURITY DEFINER — roda na role app_user mesmo com RLS fechado em rag_chunks.
+    const chunks = await query<Chunk>(
+      'select title, source_url, content from public.match_rag_chunks($1, $2)',
+      [pergunta, MATCH_COUNT],
+    );
 
-    if (!chunks || chunks.length === 0) {
+    if (chunks.length === 0) {
       return res.status(200).json({ ok: true, resposta: null });
     }
 

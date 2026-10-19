@@ -7,13 +7,13 @@
  *  e docs da API (ambos Mintlify).
  *
  *  Busca é full-text search do Postgres (sem custo/cota de IA nenhuma) —
- *  ver supabase/migrations/..._rag_chunks_fulltext_search.sql. O Gemini só
- *  entra depois, em api/tira-duvidas-rag.js, pra redigir a resposta final.
+ *  ver match_rag_chunks em neon/schema.sql. O Gemini só
+ *  entra depois, em api/tira-duvidas-rag.ts, pra redigir a resposta final.
  *
- *  Env vars obrigatórias: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
+ *  Env vars obrigatórias: SERVICE_DATABASE_URL (Neon, role dona das tabelas),
  *  CONFLUENCE_EMAIL, CONFLUENCE_API_TOKEN.
  */
-import { createClient } from '@supabase/supabase-js';
+import pg from 'pg';
 import { fetchConfluenceDocs } from './lib/confluence.mjs';
 import { fetchGoogleSheetDocs } from './lib/sheets.mjs';
 import { fetchMintlifyDocs } from './lib/mintlify.mjs';
@@ -21,7 +21,7 @@ import { chunkText } from './lib/chunk.mjs';
 
 const GOOGLE_SHEET_ID = process.env.GOOGLE_SHEET_ID || '12IUEiWLFcXnLMqfAD0fAbDX0QBlW8hFI9qJrsWxmnUs';
 
-const REQUIRED_ENV = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CONFLUENCE_EMAIL', 'CONFLUENCE_API_TOKEN'];
+const REQUIRED_ENV = ['SERVICE_DATABASE_URL', 'CONFLUENCE_EMAIL', 'CONFLUENCE_API_TOKEN'];
 
 function checkEnv() {
   const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
@@ -56,7 +56,6 @@ async function collectDocs() {
 async function main() {
   checkEnv();
 
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   console.log('Coletando documentos...');
   const docs = await collectDocs();
@@ -78,19 +77,35 @@ async function main() {
   }
   console.log(`Total de chunks: ${rows.length}`);
 
-  console.log('\nLimpando chunks antigos das fontes atualizadas...');
-  for (const source of sourcesFetched) {
-    const { error } = await supabase.from('rag_chunks').delete().eq('source', source);
-    if (error) throw new Error(`Falha ao limpar source=${source}: ${error.message}`);
-  }
-
-  console.log('Inserindo novos chunks...');
-  const BATCH = 200;
-  for (let i = 0; i < rows.length; i += BATCH) {
-    const batch = rows.slice(i, i + BATCH);
-    const { error } = await supabase.from('rag_chunks').insert(batch);
-    if (error) throw new Error(`Falha ao inserir batch ${i}: ${error.message}`);
-    console.log(`  ${Math.min(i + BATCH, rows.length)}/${rows.length} chunks inseridos`);
+  // Limpa as fontes atualizadas e insere tudo numa transação só — se algo
+  // falhar no meio, o banco fica como estava.
+  console.log('\nGravando no banco...');
+  const client = new pg.Client({ connectionString: process.env.SERVICE_DATABASE_URL });
+  await client.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('delete from public.rag_chunks where source = any($1)', [sourcesFetched]);
+    const BATCH = 200;
+    for (let i = 0; i < rows.length; i += BATCH) {
+      const batch = rows.slice(i, i + BATCH);
+      const values = [];
+      const params = [];
+      batch.forEach((r, j) => {
+        values.push(`($${j * 4 + 1}, $${j * 4 + 2}, $${j * 4 + 3}, $${j * 4 + 4})`);
+        params.push(r.source, r.source_url, r.title, r.content);
+      });
+      await client.query(
+        `insert into public.rag_chunks (source, source_url, title, content) values ${values.join(', ')}`,
+        params,
+      );
+      console.log(`  ${Math.min(i + BATCH, rows.length)}/${rows.length} chunks inseridos`);
+    }
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw e;
+  } finally {
+    await client.end();
   }
 
   console.log('\nResumo por fonte:');

@@ -1,4 +1,4 @@
-/** Chama o RAG do Tira-dúvidas (api/tira-duvidas-rag.js) quando o
+/** Chama o RAG do Tira-dúvidas (api/tira-duvidas-rag.ts) quando o
  *  matchDuvida() local não acha nada no banco curado. Retorna null se a
  *  API não tiver contexto suficiente ou der erro — nesses casos o
  *  TiraDuvidas.tsx cai no fallback de sempre (Slack da pessoa real). */
