@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { query, withUser } from '../_lib/db';
+import { query, withUser } from '../../_lib/db.js';
 import {
   hashPassword,
   signAccessToken,
@@ -7,10 +7,10 @@ import {
   hashRefreshToken,
   refreshTokenExpiry,
   serializeRefreshCookie,
-} from '../_lib/auth';
-import { postSlack } from '../_lib/slack';
-import { acharSdrId } from '../_lib/pipedrive';
-import { withErrorHandling } from '../_lib/handle';
+} from '../../_lib/auth.js';
+import { postSlack } from '../../_lib/slack.js';
+import { acharSdrId } from '../../_lib/pipedrive.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 const DOMINIO = '@cardapioweb.com';
 

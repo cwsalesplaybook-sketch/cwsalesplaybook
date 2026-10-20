@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { withUser } from '../_lib/db';
-import { verifyAccessToken, readBearerToken } from '../_lib/auth';
-import { withErrorHandling } from '../_lib/handle';
+import { withUser } from '../../_lib/db.js';
+import { verifyAccessToken, readBearerToken } from '../../_lib/auth.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 interface MeRow {
   id: string;

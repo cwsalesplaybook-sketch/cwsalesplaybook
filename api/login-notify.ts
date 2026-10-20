@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { withErrorHandling } from './_lib/handle';
+import { withErrorHandling } from './_lib/handle.js';
 
 const NOTIFY_EMAIL = 'gabrieeellyoliveira@gmail.com';
 

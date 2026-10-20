@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/api/(auth|admin|profile|content)/(.*)", "destination": "/api/router?__route=$1/$2" },
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { withUser } from '../_lib/db';
-import { getCaller } from '../_lib/caller';
-import { withErrorHandling } from '../_lib/handle';
+import { withUser } from '../../_lib/db.js';
+import { getCaller } from '../../_lib/caller.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 // KPIs do squad. Mesmo modelo de acesso do team-metas (RLS: membro lê, líder edita).
 async function handlerImpl(req: VercelRequest, res: VercelResponse) {

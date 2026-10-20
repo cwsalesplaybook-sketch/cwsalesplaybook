@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { randomBytes } from 'crypto';
-import { withErrorHandling } from '../../_lib/handle';
+import { withErrorHandling } from '../../../_lib/handle.js';
 
 const STATE_COOKIE = 'cw_oauth_state';
 

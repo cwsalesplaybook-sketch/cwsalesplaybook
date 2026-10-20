@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { queryAsService } from '../_lib/db';
-import { getCaller } from '../_lib/caller';
-import { isGestorOuMaster } from '../_lib/authz';
-import { withErrorHandling } from '../_lib/handle';
+import { queryAsService } from '../../_lib/db.js';
+import { getCaller } from '../../_lib/caller.js';
+import { isGestorOuMaster } from '../../_lib/authz.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 // Visão de gestor: todos os perfis com papel = SDR, de qualquer squad.
 async function handlerImpl(req: VercelRequest, res: VercelResponse) {

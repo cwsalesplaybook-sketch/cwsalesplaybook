@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { queryAsService } from '../_lib/db';
-import { postSlack } from '../_lib/slack';
-import { withErrorHandling } from '../_lib/handle';
+import { queryAsService } from '../../_lib/db.js';
+import { postSlack } from '../../_lib/slack.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 const DOMINIO = '@cardapioweb.com';
 

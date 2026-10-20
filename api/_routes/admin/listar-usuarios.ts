@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { queryAsService } from '../_lib/db';
-import { verifyAccessToken, readBearerToken } from '../_lib/auth';
-import { isGestorOuMaster } from '../_lib/authz';
-import { withErrorHandling } from '../_lib/handle';
+import { queryAsService } from '../../_lib/db.js';
+import { verifyAccessToken, readBearerToken } from '../../_lib/auth.js';
+import { isGestorOuMaster } from '../../_lib/authz.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 interface Row {
   user_id: string;

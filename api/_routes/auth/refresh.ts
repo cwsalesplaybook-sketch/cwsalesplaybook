@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { query } from '../_lib/db';
-import { withErrorHandling } from '../_lib/handle';
+import { query } from '../../_lib/db.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 import {
   signAccessToken,
   generateRefreshToken,
@@ -8,7 +8,7 @@ import {
   serializeRefreshCookie,
   clearRefreshCookie,
   readRefreshCookie,
-} from '../_lib/auth';
+} from '../../_lib/auth.js';
 
 interface RefreshRow {
   id: string;

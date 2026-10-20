@@ -8,7 +8,7 @@
  *  retorna resposta: null — o frontend cai no fallback de sempre (Slack
  *  da pessoa real). */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { query } from './_lib/db';
+import { query } from './_lib/db.js';
 import { CLARIA_BASE_PROMPT } from './_lib/claria-prompt.js';
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY;

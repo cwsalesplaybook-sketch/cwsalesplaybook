@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { queryAsService } from '../_lib/db';
-import { verifyAccessToken, readBearerToken, hashPassword } from '../_lib/auth';
-import { isGestorOuMaster } from '../_lib/authz';
-import { postSlack } from '../_lib/slack';
-import { withErrorHandling } from '../_lib/handle';
+import { queryAsService } from '../../_lib/db.js';
+import { verifyAccessToken, readBearerToken, hashPassword } from '../../_lib/auth.js';
+import { isGestorOuMaster } from '../../_lib/authz.js';
+import { postSlack } from '../../_lib/slack.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 function gerarSenha(): string {
   // 10 chars, fácil de ditar: sem caracteres ambíguos

@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { queryAsService } from '../_lib/db';
-import { getCaller } from '../_lib/caller';
-import { isGestorOuMaster } from '../_lib/authz';
-import { withErrorHandling } from '../_lib/handle';
+import { queryAsService } from '../../_lib/db.js';
+import { getCaller } from '../../_lib/caller.js';
+import { isGestorOuMaster } from '../../_lib/authz.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 // Visão de gestor: TODAS as metas do mês, de qualquer squad (Painel do Gestor /
 // Painel de Controle). Diferente de api/profile/user-metas — aqui não há RLS

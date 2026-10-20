@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { signEditorToken } from '../_lib/auth';
-import { withErrorHandling } from '../_lib/handle';
+import { signEditorToken } from '../../_lib/auth.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 const TOKEN_TTL_SECONDS = 60 * 60 * 8; // 8h
 

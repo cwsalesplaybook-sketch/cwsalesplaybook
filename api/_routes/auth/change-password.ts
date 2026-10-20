@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { query } from '../_lib/db';
-import { getCaller } from '../_lib/caller';
-import { hashPassword } from '../_lib/auth';
-import { withErrorHandling } from '../_lib/handle';
+import { query } from '../../_lib/db.js';
+import { getCaller } from '../../_lib/caller.js';
+import { hashPassword } from '../../_lib/auth.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 const MIN_SENHA = 6;
 

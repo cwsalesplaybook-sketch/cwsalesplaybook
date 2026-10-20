@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { query } from '../_lib/db';
-import { withErrorHandling } from '../_lib/handle';
+import { query } from '../../_lib/db.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 import {
   verifyPassword,
   signAccessToken,
@@ -8,7 +8,7 @@ import {
   hashRefreshToken,
   refreshTokenExpiry,
   serializeRefreshCookie,
-} from '../_lib/auth';
+} from '../../_lib/auth.js';
 
 async function handlerImpl(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Method not allowed' });

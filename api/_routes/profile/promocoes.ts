@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { withUser } from '../_lib/db';
-import { getCaller } from '../_lib/caller';
-import { withErrorHandling } from '../_lib/handle';
+import { withUser } from '../../_lib/db.js';
+import { getCaller } from '../../_lib/caller.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 // Promoções. RLS: dono vê/conclui a própria; líder gerencia a dos usuários
 // que lidera (squads_lideradas). GET com ?userIds=a,b lê em lote (líder);

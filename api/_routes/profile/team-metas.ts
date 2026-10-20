@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { withUser } from '../_lib/db';
-import { getCaller } from '../_lib/caller';
-import { withErrorHandling } from '../_lib/handle';
+import { withUser } from '../../_lib/db.js';
+import { getCaller } from '../../_lib/caller.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 // Meta do squad. RLS: membro lê a do próprio squad; líder edita a(s) do(s)
 // squad(s) que lidera (escrita direta é bloqueada pra todo mundo que não seja

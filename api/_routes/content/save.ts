@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { queryAsService } from '../_lib/db';
-import { verifyAccessToken, verifyEditorToken, readBearerToken } from '../_lib/auth';
-import { isMaster, setorDoGestor, setorDaChave, type Setor } from '../_lib/authz';
-import { withErrorHandling } from '../_lib/handle';
+import { queryAsService } from '../../_lib/db.js';
+import { verifyAccessToken, verifyEditorToken, readBearerToken } from '../../_lib/auth.js';
+import { isMaster, setorDoGestor, setorDaChave, type Setor } from '../../_lib/authz.js';
+import { withErrorHandling } from '../../_lib/handle.js';
 
 interface Upsert {
   key: string;
