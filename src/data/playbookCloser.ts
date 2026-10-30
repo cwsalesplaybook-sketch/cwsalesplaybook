@@ -78,8 +78,6 @@ export const CLOSER_PLANOS: PlanoCloser[] = [
       'Impressão automática de comandas.',
       'Integração com Google Analytics e Google Tag Manager.',
       'Integração com domínio próprio.',
-      'WhatsFácil: Extensão de navegador para WhatsApp.',
-      'ChatBot de WhatsApp.',
     ],
     valores: [
       { fidelidade: 'Anual', total: 'R$ 1.679,88', mensal: 'R$ 139,99' },
@@ -1233,7 +1231,7 @@ export const CLOSER_FOLLOWUP_EXCLUSIVOS: FollowUpStep[] = [
         label: 'Módulos',
         kommoTag: '[CLO][CONFIRMAÇÃO] Módulos',
         template:
-          'Abaixo seguem os módulos extras disponíveis:\n\n📌 Módulo iFood\n• Mensal: R$ 49,99/mês\n• Trimestral: R$ 149,97 (R$ 49,99/mês)\n• Semestral: R$ 299,94 (R$ 49,99/mês)\n• Anual: R$ 599,88 (R$ 49,99/mês)\n\n📌 Módulo Estoque Avançado\n• Mensal: R$ 29,99/mês\n• Anual: R$ 359,88 (R$ 29,99/mês)\n\n📌 Módulo Cupom Fiscal\n• Mensal: R$ 69,99/mês\n• Anual: R$ 839,88 (R$ 69,99/mês)\n\n📌 Módulo Entregadores\n• Mensal: R$ 54,99/mês\n• Anual: R$ 659,88 (R$ 54,99/mês)\n\n📌 Módulo Financeiro\n• Mensal: R$ 69,99/mês\n• Anual: R$ 839,88 (R$ 69,99/mês)\n\n📌 Totem de Autoatendimento (por totem)\n• Mensal: R$ 99,99/mês\n• Anual: R$ 1.199,88 (R$ 99,99/mês)\n\n📌 TEF POS — maquininha integrada (por maquininha)\n• R$ 59,99/mês cada\n• A partir da 3ª maquininha: R$ 49,99/mês cada\n\nFicou alguma dúvida sobre os planos e módulos?',
+          'Abaixo seguem os módulos extras disponíveis:\n\n📌 Módulo iFood\n• Mensal: R$ 29,99/mês\n• Trimestral: R$ 89,97 (R$ 29,99/mês)\n• Semestral: R$ 179,94 (R$ 29,99/mês)\n• Anual: R$ 359,88 (R$ 29,99/mês)\n\n📌 Módulo Estoque Avançado\n• Mensal: R$ 29,99/mês\n• Anual: R$ 359,88 (R$ 29,99/mês)\n\n📌 Módulo Cupom Fiscal\n• Mensal: R$ 69,99/mês\n• Anual: R$ 839,88 (R$ 69,99/mês)\n\n📌 Módulo Entregadores\n• Mensal: R$ 54,99/mês\n• Anual: R$ 659,88 (R$ 54,99/mês)\n\n📌 Módulo Financeiro\n• Mensal: R$ 69,99/mês\n• Anual: R$ 839,88 (R$ 69,99/mês)\n\n📌 Totem de Autoatendimento (por totem)\n• Mensal: R$ 99,99/mês\n• Anual: R$ 1.199,88 (R$ 99,99/mês)\n\n📌 TEF POS — maquininha integrada (por maquininha)\n• R$ 59,99/mês cada\n• A partir da 3ª maquininha: R$ 49,99/mês cada\n\nFicou alguma dúvida sobre os planos e módulos?',
       },
       {
         label: 'Confirmação Delivery',
