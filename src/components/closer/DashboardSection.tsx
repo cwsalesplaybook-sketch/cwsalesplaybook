@@ -2,7 +2,7 @@
  *  Metas pessoais (localStorage) e os contadores de Templates/Descontos. */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Target, TrendingUp, Activity, ArrowUpRight, FileText, Percent, Zap, ChevronRight, Settings, X } from 'lucide-react';
+import { Target, TrendingUp, Activity, ArrowUpRight, FileText, Percent, Zap, ChevronRight, Settings, X, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCloserMetas } from '@/hooks/useCloserMetas';
 import { useContentStore } from '@/store/contentStore';
@@ -23,12 +23,18 @@ function num(v: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-function ConfigMetaModal({ meta1, meta2, meta3, jaFechado, diasUteis, onSave, onClose }: {
-  meta1: number; meta2: number; meta3: number; jaFechado: number; diasUteis: number | null;
-  onSave: (v: { meta1: number; meta2: number; meta3: number; jaFechado: number; diasUteis: number | null }) => void;
+interface MetasForm {
+  meta1: number; meta2: number; meta3: number;
+  mega1: number; mega2: number; mega3: number;
+  jaFechado: number;
+}
+
+function ConfigMetaModal({ initial, diasUteis, onSave, onClose }: {
+  initial: MetasForm; diasUteis: number | null;
+  onSave: (v: MetasForm & { diasUteis: number | null }) => void;
   onClose: () => void;
 }) {
-  const [form, setForm] = useState({ meta1, meta2, meta3, jaFechado });
+  const [form, setForm] = useState<MetasForm>(initial);
   const [diasInput, setDiasInput] = useState(diasUteis != null ? String(diasUteis) : '');
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -50,6 +56,23 @@ function ConfigMetaModal({ meta1, meta2, meta3, jaFechado, diasUteis, onSave, on
               />
             </div>
           ))}
+          <div className="border-t border-cw-border pt-4 space-y-4">
+            <p className="flex items-center gap-1.5 text-[10px] font-black text-amber-500 uppercase tracking-widest">
+              <Rocket className="h-3.5 w-3.5" /> Mega Metas (stretch)
+            </p>
+            {([1, 2, 3] as const).map(n => (
+              <div key={n}>
+                <label className="text-xs font-bold text-amber-500 uppercase tracking-wider mb-1.5 block">Mega Meta {n} (R$)</label>
+                <input
+                  type="number" min={0}
+                  value={form[`mega${n}`]}
+                  onChange={e => setForm(f => ({ ...f, [`mega${n}`]: Number(e.target.value) }))}
+                  className="w-full bg-cw-elevated border border-cw-border rounded-xl px-3 py-2.5 text-sm text-cw-text focus:outline-none focus:border-amber-400"
+                  placeholder="0"
+                />
+              </div>
+            ))}
+          </div>
           <div className="border-t border-cw-border pt-4">
             <label className="text-xs font-bold text-cw-purple uppercase tracking-wider mb-1.5 block">Já Fechado (R$)</label>
             <input
@@ -117,6 +140,7 @@ export function DashboardSection() {
   const meta3 = computed.metas[2];
   const metaDiaria = computed.metas.find(m => !m.batida)?.porDia ?? 0;
   const pctMeta3 = meta3.valor > 0 ? (computed.jaFechado / meta3.valor) * 100 : 0;
+  const temMega = state.mega1 > 0 || state.mega2 > 0 || state.mega3 > 0;
 
   const acoes: Array<{ label: string; icon: typeof Target } & ({ to: string } | { onClick: () => void })> = [
     { to: '/closer/descontos', label: 'Pegar Cupom', icon: Percent },
@@ -155,8 +179,12 @@ export function DashboardSection() {
 
       {configOpen && (
         <ConfigMetaModal
-          meta1={state.meta1} meta2={state.meta2} meta3={state.meta3}
-          jaFechado={state.jaFechado} diasUteis={state.diasUteis}
+          initial={{
+            meta1: state.meta1, meta2: state.meta2, meta3: state.meta3,
+            mega1: state.mega1, mega2: state.mega2, mega3: state.mega3,
+            jaFechado: state.jaFechado,
+          }}
+          diasUteis={state.diasUteis}
           onSave={(v) => { update(v); setConfigOpen(false); }}
           onClose={() => setConfigOpen(false)}
         />
@@ -229,6 +257,38 @@ export function DashboardSection() {
           </div>
         </div>
       </div>
+
+      {/* Progresso das Mega Metas (só aparece se alguma mega meta foi definida) */}
+      {temMega && (
+        <div className="cw-card p-5 border-amber-500/30">
+          <div className="flex items-center gap-2 mb-4">
+            <Rocket className="h-4 w-4 text-amber-400" />
+            <p className="font-bold text-sm text-cw-text">Progresso das Mega Metas</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {computed.megaMetas.map((m, i) => (
+              <div key={i} className="bg-cw-elevated border border-amber-500/30 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="font-bold text-sm text-cw-text">Mega Meta {i + 1} 🚀</p>
+                  <p className="text-sm font-black text-amber-400">{m.progresso.toFixed(0)}%</p>
+                </div>
+                <div className="h-1.5 rounded-full bg-cw-surface overflow-hidden">
+                  <div className="h-full rounded-full transition-all bg-amber-400" style={{ width: `${Math.min(100, m.progresso)}%` }} />
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div><p className="text-cw-muted">Meta</p><p className="text-cw-text font-semibold">{brl(m.valor)}</p></div>
+                  <div><p className="text-cw-muted">Falta</p><p className="text-cw-text font-semibold">{brl(m.falta)}</p></div>
+                </div>
+                <p className="text-xs text-cw-muted">
+                  Por dia: <span className={cn('font-semibold', m.batida ? 'text-emerald-400' : 'text-cw-text')}>
+                    {m.batida ? 'Mega meta batida! 🎉' : brl(m.porDia)}
+                  </span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Módulos */}
       <ModulosSection
