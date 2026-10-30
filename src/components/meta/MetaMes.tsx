@@ -339,7 +339,9 @@ function PersonalMetaView() {
   useEffect(() => { carregarPerfil(); }, [carregarPerfil]);
   useEffect(() => { if (metaData.sdrId) buscarGanhos(metaData.sdrId); }, [metaData.sdrId, buscarGanhos]);
   useEffect(() => {
-    const id = setInterval(() => { if (metaData.sdrId) buscarGanhos(metaData.sdrId); }, 5 * 60 * 1000);
+    const id = setInterval(() => {
+      if (metaData.sdrId && document.visibilityState === 'visible') buscarGanhos(metaData.sdrId);
+    }, 5 * 60 * 1000);
     return () => clearInterval(id);
   }, [metaData.sdrId, buscarGanhos]);
 

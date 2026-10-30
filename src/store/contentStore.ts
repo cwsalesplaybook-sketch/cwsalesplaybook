@@ -3,8 +3,10 @@
  *  Arquitetura:
  *  - Leitura pública via GET /api/content/list (qualquer usuário lê).
  *  - Escrita exclusiva via POST /api/content/save (valida token de gestor).
- *  - Sincronização entre sessões via polling (30s + refetch ao focar a aba) —
- *    Neon não tem um equivalente ao Realtime do Supabase.
+ *  - Sincronização entre sessões via polling (10 min, só com a aba visível, +
+ *    refetch ao focar a aba se o último fetch tiver mais de 2 min) — Neon não
+ *    tem um equivalente ao Realtime do Supabase. Cada chamada conta como edge
+ *    request na Vercel; com 30s o plano Hobby estourou o limite (out/2026).
  *  - Cache local em memória (useSyncExternalStore-friendly via Zustand).
  *
  *  Prefixo de setor:
@@ -19,7 +21,10 @@ import { useSidebarContext } from '@/context/SidebarContext';
 
 export const STORE_VERSION = 2;
 
-const POLL_MS = 30_000;
+const POLL_MS = 10 * 60_000;
+/** Ao voltar pra aba, só refaz o fetch se o último tiver mais que isso. */
+const FOCUS_REFETCH_MIN_MS = 2 * 60_000;
+let lastFetchAt = 0;
 
 /** Prefixo do setor para ações do store (lê localStorage — sem React). */
 function getStoreSectorPrefix(): string {
@@ -133,6 +138,7 @@ export const useContentStore = create<ContentStore>()((set, get) => ({
   },
 
   refetch: async () => {
+    lastFetchAt = Date.now();
     const r = await apiGet<{ overrides?: Array<{ key: string; value: unknown }> }>('/api/content/list');
     if (!r.data.ok || !r.data.overrides) return;
     const map: Record<string, unknown> = {};
@@ -158,7 +164,9 @@ export const useContentStore = create<ContentStore>()((set, get) => ({
 
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') get().refetch();
+        if (document.visibilityState === 'visible' && Date.now() - lastFetchAt > FOCUS_REFETCH_MIN_MS) {
+          get().refetch();
+        }
       });
     }
   },
