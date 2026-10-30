@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { ChevronDown, Search, Copy, Check, Star, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  CLOSER_PLANOS, CLOSER_MODULOS, CLOSER_CUPONS, CLOSER_CUPONS_OBS,
+  CLOSER_PLANOS, CLOSER_MODULOS, CLOSER_NOVIDADES, CLOSER_CUPONS, CLOSER_CUPONS_OBS,
   CLOSER_FRANQUIAS, CLOSER_FRANQUIAS_INTRO, CLOSER_FRANQUIAS_OBS,
   CLOSER_OBJECOES, CLOSER_OBJECOES_CATEGORIAS,
   type PlanoCloser, type ModuloCloser, type CupomGrupo, type FranquiaTabela,
@@ -91,13 +91,27 @@ function ModuloCard({ m }: { m: ModuloCloser }) {
     <div className="cw-card overflow-hidden">
       <button onClick={() => setOpen(o => !o)} className="w-full flex items-center gap-3 p-4 text-left hover:bg-cw-elevated transition-colors">
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-sm text-cw-text">{m.nome}</p>
-          <p className="text-xs text-cw-muted mt-0.5">{m.valores[m.valores.length - 1].mensal}/mês</p>
+          <p className="font-bold text-sm text-cw-text">
+            {m.nome}
+            {m.novo && (
+              <span className="ml-2 align-middle text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">Novo</span>
+            )}
+          </p>
+          <p className="text-xs text-cw-muted mt-0.5">{m.valores[m.valores.length - 1].mensal}{m.unidade ?? '/mês'}</p>
         </div>
         <ChevronDown className={cn('h-4 w-4 text-cw-muted shrink-0 transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <div className="px-4 pb-4 border-t border-cw-border space-y-3">
+          {m.detalhes && (
+            <ul className="mt-3 space-y-1.5">
+              {m.detalhes.map(d => (
+                <li key={d} className="flex gap-2 text-xs text-cw-text leading-relaxed">
+                  <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" /> <span>{d}</span>
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="mt-3"><ValoresTabela valores={m.valores} /></div>
           {m.obs && <p className="text-[11px] text-cw-muted bg-cw-elevated rounded-lg px-3 py-2">{m.obs}</p>}
         </div>
@@ -181,6 +195,18 @@ export function PlanosSection() {
         <div className="space-y-2">
           {CLOSER_MODULOS.map(m => <ModuloCard key={m.nome} m={m} />)}
         </div>
+      </div>
+      <div>
+        <SectionTitle>Novidades da plataforma</SectionTitle>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {CLOSER_NOVIDADES.map(n => (
+            <div key={n.titulo} className="cw-card p-4">
+              <p className="font-bold text-sm text-cw-text">{n.titulo}</p>
+              <p className="text-xs text-cw-muted mt-1 leading-relaxed">{n.texto}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] text-cw-muted mt-2">Fonte: ajuda.cardapioweb.com</p>
       </div>
     </div>
   );

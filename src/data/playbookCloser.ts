@@ -131,11 +131,67 @@ export interface ModuloCloser {
   nome: string;
   valores: PlanoValor[];
   obs?: string;
+  /** Sufixo do preço no card fechado (padrão: "/mês"). */
+  unidade?: string;
+  /** Especificidades pra usar na call — o que é, como funciona, limites. */
+  detalhes?: string[];
+  novo?: boolean;
 }
 
+/** Fonte: ajuda.cardapioweb.com (Planos e módulos, Totem, Smart TEF / TEF POS) — conferido em 30/10/2026.
+ *  A cobrança dos módulos segue a mesma recorrência do plano principal. */
 export const CLOSER_MODULOS: ModuloCloser[] = [
   {
-    nome: 'Módulo iFood',
+    nome: 'Totem de Autoatendimento',
+    novo: true,
+    unidade: '/mês por totem',
+    obs: 'Cobrado por dispositivo: cada totem cadastrado é R$ 99,99/mês. A CW não vende o hardware — só a funcionalidade.',
+    detalhes: [
+      'O cliente final navega no cardápio, monta o pedido e paga sozinho: menos fila e equipe focada no preparo.',
+      'É um site web: roda em qualquer tela com internet e navegador (tablet, monitor touchscreen, totem dedicado; Windows, Android, Linux). Ideal touchscreen na vertical.',
+      'Cardápio sincronizado com o cardápio digital, respeitando a disponibilidade de Retirada e Consumo Local.',
+      'Só Retirada e Consumo Local — NÃO faz pedido de delivery.',
+      'Pagamento no totem: Dinheiro (padrão), Pix Automático (precisa estar configurado) e Crédito/Débito (precisa de maquininha vinculada via Smart TEF).',
+      'Vários totens por loja, cada um com configuração, terminal e formas de pagamento próprios. Dá pra personalizar chamariz e banners.',
+      'Impressora embutida no totem não é usada: imprime na impressora configurada pra Retirada/Consumo Local.',
+      'Não funciona sem internet. Pra travar a tela: fixar o app no Android ou modo quiosque no Windows/Linux.',
+      'Configuração: Configurações > Dispositivos > Adicionar Totem, depois vincular ao aparelho.',
+    ],
+    valores: [
+      { fidelidade: 'Anual', total: 'R$ 1.199,88', mensal: 'R$ 99,99' },
+      { fidelidade: 'Semestral', total: 'R$ 599,94', mensal: 'R$ 99,99' },
+      { fidelidade: 'Trimestral', total: 'R$ 299,97', mensal: 'R$ 99,99' },
+      { fidelidade: 'Mensal', total: 'R$ 99,99', mensal: 'R$ 99,99' },
+    ],
+  },
+  {
+    nome: 'TEF POS (Smart TEF)',
+    novo: true,
+    unidade: '/mês por maquininha',
+    obs: 'R$ 59,99/mês por maquininha integrada. A partir da 3ª maquininha, cada uma adicional sai por R$ 49,99/mês (a 1ª e a 2ª continuam R$ 59,99). Valores da tabela = 1 maquininha.',
+    detalhes: [
+      'Transforma a maquininha Smart em ponto de venda móvel na mesa e no balcão: o sistema manda o valor e a modalidade (Crédito POS / Débito POS) direto pra máquina.',
+      'Argumento-chave: lei de Pagamento Integrado — o pagamento presencial tem que estar vinculado ao sistema na emissão da nota. Já vale em RS, MT, GO e CE, com tendência de ir pro Brasil todo.',
+      'Pagamento vinculado automaticamente à nota fiscal: compliance e menos divergência em auditoria (faz par com o Módulo Cupom Fiscal).',
+      'Usa as maquininhas que o cliente já tem, de qualquer adquirente homologada — sem comprar hardware nem ficar preso a um fornecedor.',
+      'Dá pra cadastrar mais de uma maquininha: se uma falhar ou acabar a bateria, a operação segue.',
+      'A mesma Smart TEF habilita Crédito/Débito no Totem de Autoatendimento.',
+      'Cadastro: Terminais de Pagamento > Adicionar, baixar o app Smart TEF na maquininha, ler o QR Code e informar o código de acesso. Stone e PagSeguro: cadastro finalizado pelo suporte.',
+    ],
+    valores: [
+      { fidelidade: 'Anual', total: 'R$ 719,88', mensal: 'R$ 59,99' },
+      { fidelidade: 'Semestral', total: 'R$ 359,94', mensal: 'R$ 59,99' },
+      { fidelidade: 'Trimestral', total: 'R$ 179,97', mensal: 'R$ 59,99' },
+      { fidelidade: 'Mensal', total: 'R$ 59,99', mensal: 'R$ 59,99' },
+    ],
+  },
+  {
+    nome: 'Módulo Integração com Marketplaces (iFood)',
+    detalhes: [
+      'Recebe os pedidos do iFood direto na gestão de pedidos da CW, com aceite e impressão automáticos (desativar essas funções no painel do iFood).',
+      'Pra emitir nota dos pedidos iFood, vincula os códigos dos produtos da CW no campo "PDV" do iFood.',
+      'Widget do iFood dentro da Gestão de Pedidos: chat com cliente, acompanhamento de entrega e pausa programada da loja.',
+    ],
     valores: [
       { fidelidade: 'Anual', total: 'R$ 359,88', mensal: 'R$ 29,99' },
       { fidelidade: 'Semestral', total: 'R$ 179,94', mensal: 'R$ 29,99' },
@@ -179,6 +235,26 @@ export const CLOSER_MODULOS: ModuloCloser[] = [
       { fidelidade: 'Trimestral', total: 'R$ 209,97', mensal: 'R$ 69,99' },
       { fidelidade: 'Mensal', total: 'R$ 69,99', mensal: 'R$ 69,99' },
     ],
+  },
+];
+
+/** Novidades da plataforma (ajuda.cardapioweb.com, conferido em 30/10/2026) — bons ganchos de call. */
+export const CLOSER_NOVIDADES: { titulo: string; texto: string }[] = [
+  {
+    titulo: 'Novo agente de impressão (CW Desktop)',
+    texto: 'Substitui o QZ Tray, que vai ser descontinuado. Permite criar vias personalizadas e direcionar cada tipo de pedido pra impressora certa (ex.: cozinha, bar, balcão), com áreas de produção. Migração guiada em Configurações > Impressoras > "Conhecer e migrar".',
+  },
+  {
+    titulo: 'Nova IA do Chatbot',
+    texto: 'O chatbot de WhatsApp agora tem IA que responde no tom do estabelecimento, com instruções próprias do dono. Ativa no Cardapinho > Chatbot > Configurações.',
+  },
+  {
+    titulo: 'Site Analytics',
+    texto: 'Tela que mostra em tempo real o desempenho do cardápio digital (acessos e conversão em pedidos).',
+  },
+  {
+    titulo: 'RFV de clientes',
+    texto: 'A tela de Clientes classifica a base em 11 grupos por Recência, Frequência e Valor — dos mais valiosos aos que sumiram. Ótimo pra mostrar como reativar cliente com campanha no WhatsApp.',
   },
 ];
 

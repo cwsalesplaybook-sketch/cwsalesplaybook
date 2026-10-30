@@ -58,7 +58,7 @@ const SECTIONS = [
 ];
 
 /** Dashboard de Closer: navegação própria (hardcoded, não editável).
- *  'Comece Aqui', Pipeline, Cultura e Histórias são compartilhados (idênticos ao SDR). */
+ *  'Comece Aqui' e Histórias são compartilhados (idênticos ao SDR). Pipeline é só do SDR. */
 const NAV_CLOSER: NavItem[] = [
   { to: '/start',               label: 'Comece Aqui',          icon: 'Sparkles',       end: false },
   { to: '/closer/dashboard',    label: 'Metas do Mês',         icon: 'LayoutDashboard',end: false },
@@ -68,7 +68,6 @@ const NAV_CLOSER: NavItem[] = [
   { to: '/closer/objecoes',     label: 'Objeções',             icon: 'ShieldCheck',    end: false },
   { to: '/closer/processo',     label: 'Processo de Venda',    icon: 'Target',         end: false },
   { to: '/closer/concorrentes', label: 'Concorrentes',         icon: 'Sword',          end: false },
-  { to: '/pipeline',            label: 'Pipeline',             icon: 'BarChart2',      end: false },
   { to: '/closer/rotina',       label: 'Rotina & Progressão',  icon: 'TrendingUp',     end: false },
   { to: '/historias',           label: 'Histórias de Sucesso', icon: 'Trophy',         end: false },
   { to: '/ajuda',               label: 'Central de Ajuda',     icon: 'HelpCircle',     end: false },
@@ -76,8 +75,7 @@ const NAV_CLOSER: NavItem[] = [
 
 const CLOSER_SECTIONS = [
   { label: 'Operação',          routes: ['/closer/dashboard'] },
-  { label: 'Comercial',         routes: ['/closer/planos', '/closer/templates', '/closer/descontos', '/closer/objecoes', '/closer/processo', '/closer/concorrentes', '/pipeline'] },
-  { label: 'Carreira & Rotina', routes: ['/closer/rotina'] },
+  { label: 'Comercial',         routes: ['/closer/planos', '/closer/templates', '/closer/descontos', '/closer/objecoes', '/closer/processo', '/closer/concorrentes', '/closer/rotina'] },
   { label: 'Cultura e Time',    routes: ['/historias'] },
 ];
 
