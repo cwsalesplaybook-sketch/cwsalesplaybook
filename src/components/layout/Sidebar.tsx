@@ -73,11 +73,8 @@ const NAV_CLOSER: NavItem[] = [
   { to: '/ajuda',               label: 'Central de Ajuda',     icon: 'HelpCircle',     end: false },
 ];
 
-const CLOSER_SECTIONS = [
-  { label: 'Operação',          routes: ['/closer/dashboard'] },
-  { label: 'Comercial',         routes: ['/closer/planos', '/closer/templates', '/closer/descontos', '/closer/objecoes', '/closer/processo', '/closer/concorrentes', '/closer/rotina'] },
-  { label: 'Cultura e Time',    routes: ['/historias'] },
-];
+/** Closer: sem agrupamento — tudo numa lista só, na ordem de NAV_CLOSER (decisão da Gabi, 30/10/2026). */
+const CLOSER_SECTIONS: { label: string; routes: string[] }[] = [];
 
 /** Seletor de playbooks — cada opção troca o papel inteiro do app */
 const PLAYBOOK_OPTIONS: { label: string; papel: Papel; icon: LucideIcon; short: string }[] = [
