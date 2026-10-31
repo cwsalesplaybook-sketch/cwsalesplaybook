@@ -172,7 +172,7 @@ const barCor = (i: number) => (i === 2 ? 'bg-cw-purple/50' : 'bg-cw-purple');
 
 function MetaCard({ i, m, jaFechado }: { i: number; m: MetaCalculo; jaFechado: number }) {
   return (
-    <div className={cn('rounded-xl border p-3', m.batida ? 'bg-emerald-50 border-emerald-200' : 'bg-cw-elevated border-cw-border')}>
+    <div className={cn('rounded-xl border p-3 h-full flex flex-col justify-between', m.batida ? 'bg-emerald-50 border-emerald-200' : 'bg-cw-elevated border-cw-border')}>
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-bold text-cw-text">Meta {i + 1}</p>
@@ -199,7 +199,7 @@ function MetaCard({ i, m, jaFechado }: { i: number; m: MetaCalculo; jaFechado: n
 
 function ModuloMetaCard({ i, m, conquistado }: { i: number; m: MetaCalculo; conquistado: number }) {
   return (
-    <div className="cw-card px-4 py-3">
+    <div className="cw-card px-4 py-3 h-full flex flex-col justify-between">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-bold text-cw-text">Meta {i + 1}</p>
@@ -248,7 +248,7 @@ export function DashboardSection() {
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="min-h-full flex flex-col gap-3">
       <Confetti active={festa} />
 
       {/* Meu desempenho */}
@@ -310,9 +310,9 @@ export function DashboardSection() {
         </KpiCard>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-3 flex-[2]">
         {/* Progresso das metas */}
-        <div className="cw-card p-4">
+        <div className="cw-card p-4 flex flex-col">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-cw-purple" />
@@ -320,18 +320,18 @@ export function DashboardSection() {
             </div>
             <VerDetalhes />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
             {computed.metas.map((m, i) => <MetaCard key={i} i={i} m={m} jaFechado={computed.jaFechado} />)}
           </div>
         </div>
 
         {/* Ações rápidas */}
-        <div className="cw-card p-4">
+        <div className="cw-card p-4 flex flex-col">
           <div className="flex items-center gap-2 mb-3">
             <Zap className="h-4 w-4 text-cw-purple" />
             <p className="font-bold text-sm text-cw-text">Ações rápidas</p>
           </div>
-          <div className="space-y-2">
+          <div className="flex-1 flex flex-col justify-between gap-2">
             {acoes.map(a => 'to' in a ? (
               <Link key={a.label} to={a.to}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white border border-cw-border text-cw-text hover:bg-cw-elevated transition-colors">
@@ -352,7 +352,7 @@ export function DashboardSection() {
       </div>
 
       {/* Módulos vendidos */}
-      <div>
+      <div className="flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-cw-purple" />
@@ -360,21 +360,21 @@ export function DashboardSection() {
           </div>
           <VerDetalhes />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
           {computed.moduloMetas.map((m, i) => <ModuloMetaCard key={i} i={i} m={m} conquistado={state.moduloConquistado} />)}
         </div>
       </div>
 
       {/* Mega Metas (só aparece se alguma mega meta foi definida) */}
       {temMega && (
-        <div>
+        <div className="flex-1 flex flex-col">
           <div className="flex items-center gap-2 mb-2">
             <Rocket className="h-4 w-4 text-amber-500" />
             <p className="font-bold text-sm text-cw-text">Mega metas</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
             {computed.megaMetas.map((m, i) => (
-              <div key={i} className={cn('rounded-xl border px-4 py-3', m.batida ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-amber-300/60')}>
+              <div key={i} className={cn('rounded-xl border px-4 py-3 h-full flex flex-col justify-between', m.batida ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-amber-300/60')}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-xs font-bold text-cw-text">Mega Meta {i + 1} 🚀</p>
