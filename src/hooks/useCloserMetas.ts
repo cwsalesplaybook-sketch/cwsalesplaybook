@@ -19,6 +19,8 @@ export interface MetasState {
   moduloMeta2: number;
   moduloMeta3: number;
   moduloConquistado: number;
+  /** Fechado registrado em cada mês ("AAAA-MM"), pra comparar com o mês anterior. */
+  fechadoPorMes: Record<string, number>;
 }
 
 const STORAGE_KEY = 'cw-closer-metas';
@@ -36,7 +38,12 @@ const EMPTY: MetasState = {
   moduloMeta2: 0,
   moduloMeta3: 0,
   moduloConquistado: 0,
+  fechadoPorMes: {},
 };
+
+function chaveMes(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
 
 const MESES = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -72,6 +79,8 @@ export interface MetasComputed extends MetasState {
   moduloMetas: MetaCalculo[];  // [moduloMeta1, moduloMeta2, moduloMeta3] em unidades
   projecao: number;          // projeção de fechamento no mês
   performance: number;       // % sobre a maior meta (meta 3)
+  /** Fechado no mês anterior (null = não registrado). */
+  fechadoMesAnterior: number | null;
 }
 
 function load(): MetasState {
@@ -96,6 +105,14 @@ function calcMeta(alvo: number, jaFechado: number, dias: number): MetaCalculo {
 export function useCloserMetas() {
   const [state, setState] = useState<MetasState>(load);
 
+  // Guarda o fechado do mês atual no histórico, pra virar "mês anterior" no mês seguinte.
+  useEffect(() => {
+    const k = chaveMes(new Date());
+    if (state.fechadoPorMes[k] !== state.jaFechado) {
+      setState((s) => ({ ...s, fechadoPorMes: { ...s.fechadoPorMes, [k]: s.jaFechado } }));
+    }
+  }, [state.jaFechado, state.fechadoPorMes]);
+
   // Persiste a cada mudança.
   useEffect(() => {
     try {
@@ -111,6 +128,15 @@ export function useCloserMetas() {
 
   const setJaFechado = useCallback((valor: number) => {
     setState((s) => ({ ...s, jaFechado: Number.isFinite(valor) ? valor : 0 }));
+  }, []);
+
+  /** Soma uma venda ao fechado do mês (e os módulos vendidos nela). */
+  const registrarVenda = useCallback((valor: number, modulos: number) => {
+    setState((s) => ({
+      ...s,
+      jaFechado: s.jaFechado + (Number.isFinite(valor) ? valor : 0),
+      moduloConquistado: s.moduloConquistado + (Number.isFinite(modulos) ? modulos : 0),
+    }));
   }, []);
 
   const now = new Date();
@@ -142,6 +168,7 @@ export function useCloserMetas() {
     moduloMetas,
     projecao,
     performance,
+    fechadoMesAnterior: state.fechadoPorMes[chaveMes(new Date(now.getFullYear(), now.getMonth() - 1, 1))] ?? null,
   };
 
   return {
@@ -149,5 +176,6 @@ export function useCloserMetas() {
     computed,
     update,
     setJaFechado,
+    registrarVenda,
   };
 }
