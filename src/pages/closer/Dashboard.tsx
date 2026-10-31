@@ -3,7 +3,7 @@ import { DashboardSection } from '@/components/closer/DashboardSection';
 
 export default function CloserDashboard() {
   return (
-    <div className="p-8 space-y-6">
+    <div className="px-6 py-4 max-w-[1440px] mx-auto">
       <DashboardSection />
     </div>
   );

@@ -135,14 +135,14 @@ function KpiCard({ icon: Icon, label, value, valueClass, children }: {
   icon: typeof Target; label: string; value: string; valueClass?: string; children?: React.ReactNode;
 }) {
   return (
-    <div className="cw-card p-5 flex items-start gap-4">
+    <div className="cw-card px-4 py-3 flex items-start gap-3">
       <div className="h-10 w-10 rounded-full bg-cw-purple/10 flex items-center justify-center shrink-0">
         <Icon className="h-5 w-5 text-cw-purple" />
       </div>
       <div className="min-w-0">
         <p className="text-xs text-cw-muted">{label}</p>
-        <p className={cn('text-2xl font-black mt-0.5', valueClass ?? 'text-cw-text')}>{value}</p>
-        <div className="text-xs text-cw-muted mt-1">{children}</div>
+        <p className={cn('text-xl font-black', valueClass ?? 'text-cw-text')}>{value}</p>
+        <div className="text-xs text-cw-muted mt-0.5">{children}</div>
       </div>
     </div>
   );
@@ -172,22 +172,22 @@ const barCor = (i: number) => (i === 2 ? 'bg-cw-purple/50' : 'bg-cw-purple');
 
 function MetaCard({ i, m, jaFechado }: { i: number; m: MetaCalculo; jaFechado: number }) {
   return (
-    <div className={cn('rounded-xl border p-4', m.batida ? 'bg-emerald-50 border-emerald-200' : 'bg-cw-elevated border-cw-border')}>
+    <div className={cn('rounded-xl border p-3', m.batida ? 'bg-emerald-50 border-emerald-200' : 'bg-cw-elevated border-cw-border')}>
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-bold text-cw-text">Meta {i + 1}</p>
-          <p className="text-xl font-black text-cw-text mt-1">{brl(m.valor)}</p>
+          <p className="text-lg font-black text-cw-text">{brl(m.valor)}</p>
         </div>
-        {m.batida ? <ConcluidaBadge /> : <p className="text-sm font-bold text-cw-purple mt-6">{m.progresso.toFixed(0)}%</p>}
+        {m.batida ? <ConcluidaBadge small /> : <p className="text-sm font-bold text-cw-purple mt-5">{m.progresso.toFixed(0)}%</p>}
       </div>
-      <div className="flex items-center gap-2 mt-3">
+      <div className="flex items-center gap-2 mt-2">
         <div className="h-2 flex-1 rounded-full bg-cw-border/60 overflow-hidden">
           <div className={cn('h-full rounded-full transition-all', m.batida ? 'bg-emerald-500' : barCor(i))}
             style={{ width: `${Math.min(100, m.progresso)}%` }} />
         </div>
         {m.batida && <p className="text-xs font-bold text-emerald-600">100%</p>}
       </div>
-      <div className="grid grid-cols-2 gap-2 text-xs mt-3">
+      <div className="grid grid-cols-2 gap-2 text-xs mt-2">
         <div><p className="text-cw-muted">Valor fechado</p><p className="text-cw-text font-bold">{brl(jaFechado)}</p></div>
         {m.batida
           ? <div><p className="text-cw-muted">Meta</p><p className="text-cw-text font-bold">{brl(m.valor)}</p></div>
@@ -199,11 +199,11 @@ function MetaCard({ i, m, jaFechado }: { i: number; m: MetaCalculo; jaFechado: n
 
 function ModuloMetaCard({ i, m, conquistado }: { i: number; m: MetaCalculo; conquistado: number }) {
   return (
-    <div className="cw-card p-4">
+    <div className="cw-card px-4 py-3">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-bold text-cw-text">Meta {i + 1}</p>
-          <p className="text-lg font-black text-cw-text">{Math.min(conquistado, m.valor || conquistado)} / {m.valor}</p>
+          <p className="text-base font-black text-cw-text">{Math.min(conquistado, m.valor || conquistado)} / {m.valor}</p>
         </div>
         {m.batida ? <ConcluidaBadge small /> : <p className="text-xs font-bold text-cw-purple mt-5">{m.progresso.toFixed(0)}%</p>}
       </div>
@@ -248,26 +248,26 @@ export function DashboardSection() {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <Confetti active={festa} />
 
       {/* Meu desempenho */}
-      <div className="cw-card relative overflow-visible p-6 pr-6 md:pr-56">
+      <div className="cw-card relative overflow-visible px-6 py-4 md:pr-48">
         <p className="text-[10px] font-black text-cw-purple uppercase tracking-widest">Meu desempenho</p>
-        <h2 className="text-2xl font-black text-cw-text mt-2">Seu próximo fechamento faz a diferença.</h2>
+        <h2 className="text-xl font-black text-cw-text mt-1">Seu próximo fechamento faz a diferença.</h2>
         <p className="text-sm text-cw-muted mt-1">{subtitulo}</p>
-        <div className="flex flex-wrap gap-3 mt-5">
+        <div className="flex flex-wrap gap-3 mt-3">
           <button onClick={() => setVendaOpen(true)}
-            className="flex items-center gap-2 text-sm font-semibold text-white bg-cw-purple px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+            className="flex items-center gap-2 text-sm font-semibold text-white bg-cw-purple px-5 py-2 rounded-xl hover:opacity-90 transition-opacity">
             <Plus className="h-4 w-4" /> Registrar venda
           </button>
           <button onClick={() => setEditarOpen(true)}
-            className="flex items-center gap-2 text-sm font-semibold text-cw-text bg-white border border-cw-purple/30 px-5 py-2.5 rounded-xl hover:bg-cw-purple/5 transition-colors">
+            className="flex items-center gap-2 text-sm font-semibold text-cw-text bg-white border border-cw-purple/30 px-5 py-2 rounded-xl hover:bg-cw-purple/5 transition-colors">
             <Settings className="h-4 w-4 text-cw-purple" /> Editar metas
           </button>
         </div>
         <img src="/cardapinho-viking-metas.webp" alt="Cardapinho viking"
-          className="hidden md:block absolute right-6 bottom-0 h-[170px] w-auto object-contain pointer-events-none select-none" />
+          className="hidden md:block absolute right-6 bottom-0 h-[135px] w-auto object-contain pointer-events-none select-none" />
       </div>
 
       {editarOpen && (
@@ -312,8 +312,8 @@ export function DashboardSection() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-3">
         {/* Progresso das metas */}
-        <div className="cw-card p-5">
-          <div className="flex items-center justify-between mb-4">
+        <div className="cw-card p-4">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-cw-purple" />
               <p className="font-bold text-sm text-cw-text">Progresso das metas</p>
@@ -326,22 +326,22 @@ export function DashboardSection() {
         </div>
 
         {/* Ações rápidas */}
-        <div className="cw-card p-5">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="cw-card p-4">
+          <div className="flex items-center gap-2 mb-3">
             <Zap className="h-4 w-4 text-cw-purple" />
             <p className="font-bold text-sm text-cw-text">Ações rápidas</p>
           </div>
           <div className="space-y-2">
             {acoes.map(a => 'to' in a ? (
               <Link key={a.label} to={a.to}
-                className="flex items-center gap-2.5 px-3 py-3 rounded-xl bg-white border border-cw-border text-cw-text hover:bg-cw-elevated transition-colors">
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white border border-cw-border text-cw-text hover:bg-cw-elevated transition-colors">
                 <a.icon className="h-4 w-4 text-cw-purple shrink-0" />
                 <span className="flex-1 text-sm font-medium">{a.label}</span>
                 <ChevronRight className="h-4 w-4 text-cw-muted" />
               </Link>
             ) : (
               <button key={a.label} onClick={a.onClick}
-                className="flex items-center gap-2.5 px-3 py-3 rounded-xl bg-white border border-cw-border text-cw-text hover:bg-cw-elevated transition-colors w-full text-left">
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white border border-cw-border text-cw-text hover:bg-cw-elevated transition-colors w-full text-left">
                 <a.icon className="h-4 w-4 text-cw-purple shrink-0" />
                 <span className="flex-1 text-sm font-medium">{a.label}</span>
                 <ChevronRight className="h-4 w-4 text-cw-muted" />
@@ -374,21 +374,22 @@ export function DashboardSection() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {computed.megaMetas.map((m, i) => (
-              <div key={i} className={cn('rounded-xl border p-4', m.batida ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-amber-300/60')}>
+              <div key={i} className={cn('rounded-xl border px-4 py-3', m.batida ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-amber-300/60')}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-xs font-bold text-cw-text">Mega Meta {i + 1} 🚀</p>
-                    <p className="text-xl font-black text-cw-text mt-1">{brl(m.valor)}</p>
+                    <p className="text-base font-black text-cw-text">{brl(m.valor)}</p>
                   </div>
-                  {m.batida ? <ConcluidaBadge /> : <p className="text-sm font-bold text-amber-500 mt-6">{m.progresso.toFixed(0)}%</p>}
+                  {m.batida ? <ConcluidaBadge small /> : <p className="text-xs font-bold text-amber-500 mt-5">{m.progresso.toFixed(0)}%</p>}
                 </div>
-                <div className="h-2 rounded-full bg-cw-border/60 overflow-hidden mt-3">
-                  <div className={cn('h-full rounded-full transition-all', m.batida ? 'bg-emerald-500' : 'bg-amber-400')}
-                    style={{ width: `${Math.min(100, m.progresso)}%` }} />
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs mt-3">
-                  <div><p className="text-cw-muted">Valor fechado</p><p className="text-cw-text font-bold">{brl(computed.jaFechado)}</p></div>
-                  <div><p className="text-cw-muted">Faltam</p><p className="text-cw-text font-bold">{brl(m.falta)}</p></div>
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="h-2 flex-1 rounded-full bg-cw-border/60 overflow-hidden">
+                    <div className={cn('h-full rounded-full transition-all', m.batida ? 'bg-emerald-500' : 'bg-amber-400')}
+                      style={{ width: `${Math.min(100, m.progresso)}%` }} />
+                  </div>
+                  <p className={cn('text-xs font-bold', m.batida ? 'text-emerald-600' : 'text-cw-muted')}>
+                    {m.batida ? '100%' : `Faltam ${brl(m.falta)}`}
+                  </p>
                 </div>
               </div>
             ))}
