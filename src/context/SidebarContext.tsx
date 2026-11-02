@@ -2,7 +2,12 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { useAuth, type AuthUser } from '@/context/AuthContext';
 
-export type Papel = 'SDR' | 'Closer' | 'Parcerias' | 'Liderança';
+export type Papel = 'SDR' | 'Closer' | 'Liderança';
+
+/** Dashboards que existem. Papel salvo fora dessa lista (ex.: o antigo "Parcerias")
+ *  é ignorado e a pessoa escolhe de novo no EscolherDashboardGate. */
+export const PAPEIS_VALIDOS: Papel[] = ['SDR', 'Closer', 'Liderança'];
+export const isPapelValido = (p: unknown): p is Papel => PAPEIS_VALIDOS.includes(p as Papel);
 
 export interface ImpersonationTarget {
   apelido: string;
@@ -41,7 +46,8 @@ const SidebarContext = createContext<Ctx | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const [papel, setPapelState] = useState<Papel>(() => {
-    return (localStorage.getItem('cw-papel') as Papel) ?? 'SDR';
+    const salvo = localStorage.getItem('cw-papel');
+    return isPapelValido(salvo) ? salvo : 'SDR';
   });
   const [lockedPapel, setLockedPapel] = useState<Papel | null>(null);
   const [squad, setSquad] = useState<string | null>(null);
@@ -54,7 +60,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const { status, user } = useAuth();
 
   const applyMeta = (m: AuthUser) => {
-    const saved = m.papel as Papel | null;
+    const saved = isPapelValido(m.papel) ? m.papel : null;
     if (saved) {
       // Enquanto o gestor estiver "travado" numa prévia de outro dashboard,
       // não deixa o refresh de sessão sobrescrever a troca manual.
@@ -63,6 +69,11 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('cw-papel', saved);
       }
       setLockedPapel(saved);
+      setOnboardingActive(false);
+    } else if (m.papel) {
+      // Papel de dashboard que não existe mais: não trava o onboarding,
+      // o EscolherDashboardGate pede o dashboard certo.
+      setLockedPapel(null);
       setOnboardingActive(false);
     } else {
       setOnboardingActive(true);

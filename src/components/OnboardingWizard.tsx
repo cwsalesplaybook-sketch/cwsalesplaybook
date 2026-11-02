@@ -50,7 +50,6 @@ const EMAILS_CEO = [
 const PAPEIS_INFO: Record<Papel, { desc: string; aviso?: string }> = {
   SDR:          { desc: 'Prospecção, qualificação e cadências de outbound' },
   Closer:       { desc: 'Negociação, fechamento e expansão de contas' },
-  Parcerias:    { desc: 'Gestão de canais e parcerias estratégicas', aviso: 'Escolha seu setor específico para que seu dashboard seja direcionado corretamente.' },
   Liderança:    { desc: 'Gestão, acompanhamento e desenvolvimento do time comercial' },
 };
 
@@ -243,7 +242,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
               </div>
 
               <div className="grid grid-cols-1 gap-2.5">
-                {((['SDR', 'Closer', 'Parcerias'] as Papel[]).concat(
+                {((['SDR', 'Closer'] as Papel[]).concat(
                   podeEscolherLideranca ? ['Liderança' as Papel] : []
                 )).map(p => {
                   const info = PAPEIS_INFO[p];
@@ -270,7 +269,7 @@ export function OnboardingWizard({ onComplete, inline = false }: Props) {
                           </div>
                         )}
                       </div>
-                      {/* Aviso para Parcerias */}
+                      {/* Aviso do papel selecionado */}
                       {selected && info.aviso && (
                         <div className="mt-2.5 flex items-start gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
                           <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />

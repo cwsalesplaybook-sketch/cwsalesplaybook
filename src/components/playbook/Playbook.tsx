@@ -27,7 +27,6 @@ import { useEditor } from '@/admin/EditorContext';
 import { toast } from '@/hooks/use-toast';
 import { useSidebarContext } from '@/context/SidebarContext';
 import PlaybookCloser from './PlaybookCloser';
-import PlaybookParcerias from './PlaybookParcerias';
 import TreinamentoConteudo from './TreinamentoConteudo';
 
 const SPIN_COLORS: Record<'purple' | 'red' | 'yellow' | 'green', string> = {
@@ -135,7 +134,6 @@ export default function Playbook() {
 
   // Redireciona para o playbook do setor ativo
   if (papel === 'Closer')    return <PlaybookCloser />;
-  if (papel === 'Parcerias') return <PlaybookParcerias />;
 
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab') ?? 'cultura';

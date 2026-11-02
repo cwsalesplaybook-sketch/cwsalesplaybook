@@ -65,14 +65,18 @@ async function handlerImpl(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'PATCH') {
-    // troca só o próprio squad (ex.: SquadReassignGate)
-    const { squad } = (req.body ?? {}) as { squad?: string };
-    if (!squad) return res.status(400).json({ ok: false, error: 'squad obrigatório' });
+    // troca só o próprio squad (ex.: SquadReassignGate) ou o próprio dashboard
+    // (EscolherDashboardGate, pra quem ficou com papel que não existe mais).
+    const { squad, papel } = (req.body ?? {}) as { squad?: string; papel?: string };
+    if (!squad && !papel) return res.status(400).json({ ok: false, error: 'squad ou papel obrigatório' });
+    if (papel && !['SDR', 'Closer'].includes(papel)) {
+      return res.status(400).json({ ok: false, error: 'papel inválido' });
+    }
     await withUser(caller.sub, (client) =>
-      client.query('update public.sdr_profiles set squad = $1, updated_at = now() where user_id = $2', [
-        squad,
-        caller.sub,
-      ]),
+      client.query(
+        'update public.sdr_profiles set squad = coalesce($1, squad), papel = coalesce($2, papel), updated_at = now() where user_id = $3',
+        [squad ?? null, papel ?? null, caller.sub],
+      ),
     );
     return res.status(200).json({ ok: true });
   }
