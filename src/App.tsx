@@ -13,6 +13,7 @@ import { EditorBanner } from '@/admin/EditorBanner';
 import { ImpersonationBanner } from '@/components/layout/ImpersonationBanner';
 import { PasswordGate } from '@/admin/PasswordGate';
 import { SquadReassignGate } from '@/components/SquadReassignGate';
+import { EscolherDashboardGate } from '@/components/EscolherDashboardGate';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import Login from '@/pages/Login';
 import TrocarSenha from '@/pages/TrocarSenha';
@@ -24,7 +25,6 @@ import Carreira from '@/components/carreira/Carreira';
 import Berserker from '@/components/berserker/Berserker';
 import Playbook from '@/components/playbook/Playbook';
 import PlaybookCloser from '@/components/playbook/PlaybookCloser';
-import PlaybookParcerias from '@/components/playbook/PlaybookParcerias';
 import Pipeline from '@/components/pipeline/Pipeline';
 import Gestao from '@/components/gestao/Gestao';
 import MetaMes from '@/components/meta/MetaMes';
@@ -113,7 +113,6 @@ function AnimatedRoutes() {
           {/* Tira-dúvidas saiu da nav, virou Roleplay — redireciona link antigo. */}
           <Route path="/sdr/tira-duvidas" element={<Navigate to="/sdr/roleplay" replace />} />
           <Route path="/playbook/closer" element={<PlaybookCloser />} />
-          <Route path="/playbook/parcerias" element={<PlaybookParcerias />} />
           {/* Seções do dashboard de Closer */}
           <Route path="/closer/dashboard" element={<CloserDashboard />} />
           <Route path="/closer/planos" element={<CloserPlanos />} />
@@ -174,6 +173,7 @@ function AppLayout() {
           </main>
           <PasswordGate />
           <SquadReassignGate />
+          <EscolherDashboardGate />
           <FloatingSearch />
         </div>
       </SidebarProvider>

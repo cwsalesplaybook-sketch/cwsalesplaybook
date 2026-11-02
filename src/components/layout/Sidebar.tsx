@@ -62,7 +62,6 @@ const SECTIONS = [
 const PLAYBOOK_OPTIONS: { label: string; papel: Papel; icon: LucideIcon; short: string }[] = [
   { label: 'SDR',            papel: 'SDR',          icon: Zap,     short: 'SDR'   },
   { label: 'Closer',         papel: 'Closer',       icon: Target,  short: 'Closer'},
-  { label: 'Parcerias',      papel: 'Parcerias',    icon: Users,   short: 'Parc.' },
 ];
 
 const STORE_KEY = 'sidebar.nav';
