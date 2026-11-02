@@ -18,6 +18,7 @@ import { toast } from '@/hooks/use-toast';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useNavFavorites } from '@/hooks/useNavFavorites';
 import { useAuth } from '@/context/AuthContext';
+import { CloserSidebar } from '@/components/layout/CloserSidebar';
 
 interface NavItem { to: string; label: string; icon: keyof typeof ICON_MAP; end?: boolean; }
 
@@ -57,25 +58,6 @@ const SECTIONS = [
   { label: 'Cultura e Time', routes: ['/historias', '/biblioteca', '/regras', '/onboarding', '/carreira'] },
 ];
 
-/** Dashboard de Closer: navegação própria (hardcoded, não editável).
- *  'Comece Aqui' e Histórias são compartilhados (idênticos ao SDR). Pipeline é só do SDR. */
-const NAV_CLOSER: NavItem[] = [
-  { to: '/start',               label: 'Comece Aqui',          icon: 'Sparkles',       end: false },
-  { to: '/closer/dashboard',    label: 'Metas do Mês',         icon: 'LayoutDashboard',end: false },
-  { to: '/closer/planos',       label: 'Planos e Preços',      icon: 'Calculator',     end: false },
-  { to: '/closer/templates',    label: 'Templates',            icon: 'FileText',       end: false },
-  { to: '/closer/descontos',    label: 'Descontos',            icon: 'Percent',        end: false },
-  { to: '/closer/objecoes',     label: 'Objeções',             icon: 'ShieldCheck',    end: false },
-  { to: '/closer/processo',     label: 'Processo de Venda',    icon: 'Target',         end: false },
-  { to: '/closer/concorrentes', label: 'Concorrentes',         icon: 'Sword',          end: false },
-  { to: '/closer/rotina',       label: 'Rotina & Progressão',  icon: 'TrendingUp',     end: false },
-  { to: '/historias',           label: 'Histórias de Sucesso', icon: 'Trophy',         end: false },
-  { to: '/ajuda',               label: 'Central de Ajuda',     icon: 'HelpCircle',     end: false },
-];
-
-/** Closer: sem agrupamento — tudo numa lista só, na ordem de NAV_CLOSER (decisão da Gabi, 30/10/2026). */
-const CLOSER_SECTIONS: { label: string; routes: string[] }[] = [];
-
 /** Seletor de playbooks — cada opção troca o papel inteiro do app */
 const PLAYBOOK_OPTIONS: { label: string; papel: Papel; icon: LucideIcon; short: string }[] = [
   { label: 'SDR',            papel: 'SDR',          icon: Zap,     short: 'SDR'   },
@@ -104,9 +86,9 @@ export function Sidebar() {
   const toggleSection = (label: string) => setCollapsedSections(c => ({ ...c, [label]: !c[label] }));
   const isCloser = papel === 'Closer';
   const rawItems = useGlobalEditableContent<NavItem[]>(STORE_KEY, NAV_PADRAO);
-  // Closer tem navegação própria, hardcoded (não passa pelo override global).
-  const items = isCloser ? NAV_CLOSER : rawItems.filter(i => i.to !== '/mural');
-  const sections = isCloser ? CLOSER_SECTIONS : SECTIONS;
+  // Closer tem sidebar inteira própria (CloserSidebar).
+  const items = rawItems.filter(i => i.to !== '/mural');
+  const sections = SECTIONS;
   // Edição de nav só vale para o nav global (SDR/Liderança), não para Closer.
   const navEditable = isEditing && !isCloser;
   const saveGlobalOverride = useContentStore((s) => s.saveGlobalOverride);
@@ -133,6 +115,8 @@ export function Sidebar() {
   const favItems         = items.filter(i => i.to !== '/start' && isFav(i.to));
 
   const [switching, setSwitching] = useState<Papel | null>(null);
+
+  if (isCloser) return <CloserSidebar />;
 
   const switchPlaybook = async (novoPapel: Papel) => {
     if (novoPapel === papel || switching) return;
