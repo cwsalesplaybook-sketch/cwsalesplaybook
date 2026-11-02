@@ -50,6 +50,7 @@ import CloserDescontos from '@/pages/closer/Descontos';
 import CloserMetas from '@/pages/closer/Metas';
 import CloserProcesso from '@/pages/closer/Processo';
 import CloserRotina from '@/pages/closer/Rotina';
+import CloserCarreira from '@/pages/closer/Carreira';
 import CloserConcorrentes from '@/pages/closer/Concorrentes';
 import Comunidade from '@/pages/Comunidade';
 import CentralAjuda from '@/pages/CentralAjuda';
@@ -124,6 +125,7 @@ function AnimatedRoutes() {
           <Route path="/closer/objecoes" element={<CloserObjecoes />} />
           <Route path="/closer/processo" element={<CloserProcesso />} />
           <Route path="/closer/rotina" element={<CloserRotina />} />
+          <Route path="/closer/carreira" element={<CloserCarreira />} />
           <Route path="/closer/concorrentes" element={<CloserConcorrentes />} />
           <Route path="/comunidade" element={<Comunidade />} />
           <Route path="/agenda" element={<Agenda />} />

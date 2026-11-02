@@ -1,10 +1,10 @@
-/** Seções de Rotina & Progressão: Hora de Ouro (rotina, boas práticas, CRM) e níveis de carreira. */
+/** Seções da aba Rotina: Hora de Ouro (rotina, boas práticas, CRM). */
 import { useState } from 'react';
 import {
   Zap, Clock, FileSpreadsheet, Video, PhoneCall, MessagesSquare, MessageSquareReply,
   Target, Users, ListChecks, CalendarClock, Inbox, Flag, History, RefreshCw, TriangleAlert,
   CalendarCheck, Search, ClipboardList, CircleCheck, Check, ArrowRight, BookOpen,
-  GraduationCap, TrendingUp, Crown, MapPin, ChevronRight, ChevronDown, UtensilsCrossed,
+  ChevronRight, UtensilsCrossed,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -13,7 +13,6 @@ import {
   CLOSER_HORA_OURO_PRATICAS,
   CLOSER_HORA_OURO_CRM,
   CLOSER_HORA_OURO_CRM_OBS,
-  CLOSER_PROGRESSAO,
 } from '@/data/playbookCloser';
 
 /* ----------------------- HORA DE OURO ----------------------- */
@@ -358,104 +357,6 @@ export function HoraOuroSection() {
       {tab === 'rotina' && <RotinaTab />}
       {tab === 'praticas' && <PraticasTab />}
       {tab === 'crm' && <CrmTab />}
-    </div>
-  );
-}
-
-/* ----------------------- PROGRESSÃO ----------------------- */
-
-const GRUPOS: {
-  label: string; prefixo: string; icon: LucideIcon;
-  card: string; iconBox: string; mini: string;
-}[] = [
-  { label: 'Júnior', prefixo: 'Júnior', icon: GraduationCap,
-    card: 'bg-cw-surface border-cw-border', iconBox: 'bg-cw-purple/10 text-cw-purple', mini: 'bg-cw-elevated border-cw-border' },
-  { label: 'Pleno', prefixo: 'Pleno', icon: TrendingUp,
-    card: 'bg-cw-purple/[0.06] border-cw-purple/25', iconBox: 'bg-cw-purple text-white', mini: 'bg-cw-surface border-cw-purple/20' },
-  { label: 'Sênior', prefixo: 'Sênior', icon: Crown,
-    card: 'bg-cw-surface border-cw-yellow/50', iconBox: 'bg-cw-yellow/15 text-[#b07a00]', mini: 'bg-cw-yellow/[0.06] border-cw-yellow/30' },
-];
-
-const meses = (tempo: string) => parseInt(tempo, 10) || 0;
-
-/** `nivelAtual` (ex.: "Pleno 1") destaca a posição do colaborador. O sistema ainda
- *  não tem esse dado, então a página não passa nada e o destaque fica desligado. */
-export function ProgressaoSection({ nivelAtual }: { nivelAtual?: string }) {
-  const idxAtual = nivelAtual ? CLOSER_PROGRESSAO.findIndex(n => n.nome === nivelAtual) : -1;
-  const atual = idxAtual >= 0 ? CLOSER_PROGRESSAO[idxAtual] : undefined;
-  const proximo = idxAtual >= 0 ? CLOSER_PROGRESSAO[idxAtual + 1] : undefined;
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-black text-cw-text">Progressão de carreira</h2>
-        <p className="text-sm text-cw-muted mt-0.5">Níveis de carreira e tempo mínimo de empresa para progressão.</p>
-      </div>
-
-      {atual && (
-        <div className="cw-card px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
-          <p className="flex items-center gap-1.5 text-cw-text">
-            <MapPin className="h-4 w-4 text-cw-purple" /> Sua posição atual: <strong>{atual.nome}</strong>
-          </p>
-          {proximo && (
-            <p className="text-cw-muted">
-              Próximo nível: <strong className="text-cw-text">{proximo.nome}</strong> em {meses(proximo.tempo) - meses(atual.tempo)} meses
-            </p>
-          )}
-        </div>
-      )}
-
-      <div className="flex flex-col lg:flex-row lg:items-stretch gap-2">
-        {GRUPOS.map((g, gi) => {
-          const Icon = g.icon;
-          const niveis = CLOSER_PROGRESSAO.filter(n => n.nome.startsWith(g.prefixo));
-          return (
-            <div key={g.label} className="contents">
-              <div className={cn('flex-1 rounded-2xl border p-4 space-y-3', g.card)}>
-                <div className="flex items-center gap-2.5">
-                  <span className={cn('h-9 w-9 rounded-xl flex items-center justify-center', g.iconBox)}>
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-black uppercase tracking-wider text-cw-text">{g.label}</p>
-                    <p className="text-[11px] text-cw-muted">Etapa {gi + 1} de {GRUPOS.length}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {niveis.map(n => {
-                    const voceAqui = n.nome === atual?.nome;
-                    return (
-                      <div
-                        key={n.nome}
-                        className={cn(
-                          'relative rounded-xl border px-2 py-2.5 text-center',
-                          voceAqui ? 'bg-cw-purple border-cw-purple text-white shadow-md' : g.mini,
-                        )}
-                      >
-                        {voceAqui && (
-                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 inline-flex items-center gap-0.5 rounded-full bg-cw-yellow px-1.5 py-px text-[8px] font-black uppercase text-cw-text whitespace-nowrap">
-                            <MapPin className="h-2 w-2" /> Você está aqui
-                          </span>
-                        )}
-                        <p className={cn('text-xs font-bold', voceAqui ? 'text-white' : 'text-cw-text')}>{n.nome}</p>
-                        <p className={cn('text-[11px] mt-0.5', voceAqui ? 'text-white/80' : 'text-cw-muted')}>
-                          {meses(n.tempo) ? n.tempo : 'Entrada'}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              {gi < GRUPOS.length - 1 && (
-                <div className="flex items-center justify-center text-cw-purple/50 shrink-0">
-                  <ChevronDown className="h-5 w-5 lg:hidden" />
-                  <ChevronRight className="h-5 w-5 hidden lg:block" />
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }

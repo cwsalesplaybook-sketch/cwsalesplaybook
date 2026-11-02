@@ -2,7 +2,7 @@
  *  cards e Modo Gestor destacado no rodapé. Navegação hardcoded (não editável). */
 import { NavLink } from 'react-router-dom';
 import {
-  Rocket, Goal, ChartNoAxesCombined, Trophy, Target, ShieldCheck, Swords,
+  Rocket, Goal, ChartNoAxesCombined, CalendarClock, Trophy, Target, ShieldCheck, Swords,
   Layers, Percent, FileText, Crown, ChevronRight, Link2, LogOut, PartyPopper,
   type LucideIcon,
 } from 'lucide-react';
@@ -18,7 +18,8 @@ interface CloserNavItem { to: string; label: string; icon: LucideIcon; }
 const CLOSER_SECTIONS: { label: string; items: CloserNavItem[] }[] = [
   { label: 'Acompanhamento', items: [
     { to: '/closer/dashboard', label: 'Metas do Mês',         icon: Goal },
-    { to: '/closer/rotina',    label: 'Rotina & Progresso',   icon: ChartNoAxesCombined },
+    { to: '/closer/rotina',    label: 'Rotina',               icon: CalendarClock },
+    { to: '/closer/carreira',  label: 'Progressão de Carreira', icon: ChartNoAxesCombined },
     { to: '/historias',        label: 'Histórias de Sucesso', icon: Trophy },
   ] },
   { label: 'Vendas', items: [
@@ -69,9 +70,38 @@ export function CloserSidebar() {
       className="w-[220px] shrink-0 flex flex-col h-screen sticky top-0 z-30 border-r border-[#ffffff08] overflow-hidden relative"
       style={{ background: 'linear-gradient(180deg, #1a0f2e 0%, #130a22 100%)' }}
     >
-      {/* Brilhos roxos dos cantos */}
+      {/* Brilho roxo do canto superior */}
       <div className="pointer-events-none absolute -top-16 -left-16 h-40 w-40 rounded-full bg-[#6b2bd9]/25 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-16 -right-16 h-40 w-40 rounded-full bg-[#6b2bd9]/30 blur-3xl" />
+
+      {/* Onda decorativa do rodapé — atrás de tudo, não recebe cliques */}
+      <svg
+        aria-hidden
+        className="pointer-events-none absolute bottom-0 left-0 w-full h-[130px] z-0"
+        viewBox="0 0 220 130"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id="closer-wave-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#A23AFF" />
+            <stop offset="45%" stopColor="#8C2CF5" />
+            <stop offset="100%" stopColor="#4B1499" />
+          </linearGradient>
+          <radialGradient id="closer-wave-glow" cx="0.85" cy="0.3" r="0.45">
+            <stop offset="0%" stopColor="#C77DFF" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="#C77DFF" stopOpacity="0" />
+          </radialGradient>
+          <filter id="closer-wave-blur" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="6" />
+          </filter>
+        </defs>
+        {/* Camada de fundo, bem sutil, para dar profundidade */}
+        <path d="M0 34 C 45 26, 85 44, 125 58 C 165 72, 195 46, 220 26 V130 H0 Z" fill="#8C2CF5" opacity="0.16" />
+        {/* Halo suave atrás da crista da direita */}
+        <ellipse cx="190" cy="44" rx="50" ry="22" fill="#A23AFF" opacity="0.35" filter="url(#closer-wave-blur)" />
+        {/* Onda principal */}
+        <path d="M0 50 C 38 40, 72 54, 110 72 C 150 90, 185 68, 220 42 V130 H0 Z" fill="url(#closer-wave-fill)" />
+        <path d="M0 50 C 38 40, 72 54, 110 72 C 150 90, 185 68, 220 42 V130 H0 Z" fill="url(#closer-wave-glow)" />
+      </svg>
 
       {/* ── Logo ── */}
       <div className="relative px-4 pt-5 pb-3 space-y-3">
@@ -201,7 +231,7 @@ export function CloserSidebar() {
       </nav>
 
       {/* ── Footer ── */}
-      <div className="relative px-3 pb-4 pt-1 space-y-1.5">
+      <div className="relative z-10 px-3 pb-3 pt-1 space-y-1.5">
         {/* Promoções — visível só para quem lidera squad */}
         {squadsLideradas.length > 0 && (
           <NavLink
@@ -234,6 +264,15 @@ export function CloserSidebar() {
             <ChevronRight className="h-4 w-4" />
           </NavLink>
         )}
+
+        {/* Cardapinho sobre a onda — some em telas baixas pra não apertar o menu */}
+        <div className="pointer-events-none flex justify-center pt-3 [@media(max-height:760px)]:hidden">
+          <img
+            src="/cardapinho-trofeu-delivery.webp"
+            alt=""
+            className="w-[150px] h-auto drop-shadow-[0_6px_14px_rgba(18,5,31,0.45)]"
+          />
+        </div>
       </div>
     </aside>
   );
