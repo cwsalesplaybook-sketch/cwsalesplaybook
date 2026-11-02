@@ -274,11 +274,19 @@ const DESTINOS_CLOSER: Destino[] = [
   },
   {
     id: 'closer-rotina',
-    tags: ['rotina', 'hora ouro', 'hora de ouro', 'produtividade', 'crm', 'progressão', 'progressao', 'carreira', 'nível', 'niveis', 'níveis', 'promoção', 'promocao'],
-    label: 'Rotina & Progressão',
-    descricao: 'Hora Ouro, CRM e níveis de carreira',
+    tags: ['rotina', 'hora ouro', 'hora de ouro', 'produtividade', 'crm', 'boas práticas', 'boas praticas'],
+    label: 'Rotina',
+    descricao: 'Hora de Ouro, boas práticas e CRM',
     path: '/closer/rotina',
     cor: 'bg-cw-yellow/15 text-cw-yellow border-cw-yellow/30',
+  },
+  {
+    id: 'closer-carreira',
+    tags: ['progressão', 'progressao', 'carreira', 'nível', 'niveis', 'níveis', 'promoção', 'promocao', 'júnior', 'pleno', 'sênior', 'senior'],
+    label: 'Progressão de Carreira',
+    descricao: 'Jornada Júnior → Pleno → Sênior e tempo mínimo por nível',
+    path: '/closer/carreira',
+    cor: 'bg-cw-purple/15 text-cw-purple-light border-cw-purple/30',
   },
   {
     id: 'closer-concorrentes',
